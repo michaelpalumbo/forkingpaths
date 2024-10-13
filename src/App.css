@@ -1,0 +1,21 @@
+.App {
+  font-family: sans-serif;
+  text-align: center;
+}
+
+.modules {
+  display: flex;
+  justify-content: space-around;
+  margin: 20px;
+}
+
+.synth-module {
+  border: 1px solid #ddd;
+  padding: 20px;
+  border-radius: 8px;
+  width: 200px;
+}
+
+.connections {
+  margin-top: 20px;
+}
