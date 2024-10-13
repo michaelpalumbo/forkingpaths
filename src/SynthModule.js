@@ -31,8 +31,13 @@ function SynthModule({ type, onConnect }) {
     onConnect(type, 'Filter'); // Example connection to a filter for now
   };
 
+  // Log the real-time position on drag
+  const handleDrag = (e, data) => {
+    console.log(`Module: ${type}, Position X: ${data.x}, Position Y: ${data.y}`);
+  };
+
   return (
-    <Draggable>
+    <Draggable onDrag={(handleDrag)}>
       <div className="synth-module">
         <h3>{type}</h3>
         <button onClick={handlePlay}>Play</button>
