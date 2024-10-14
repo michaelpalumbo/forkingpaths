@@ -3,51 +3,58 @@ import * as Tone from 'tone';
 import Draggable from 'react-draggable';
 
 function SynthModule() {
-  const [synth, setSynth] = useState(null);
-  const [frequency, setFrequency] = useState(440);
-  const [waveform, setWaveform] = useState('sine');
-  const [volume, setVolume] = useState(-10);
+    const [synth, setSynth] = useState(null);
+    const [frequency, setFrequency] = useState(440);
+    const [waveform, setWaveform] = useState('sine');
+    const [volume, setVolume] = useState(-10);
 
-  useEffect(() => {
-    const oscillator = new Tone.Oscillator(frequency, waveform).start();
-    const volumeControl = new Tone.Volume(volume).toDestination();
+    useEffect(() => {
+        const oscillator = new Tone.Oscillator(frequency, waveform).start();
+        const volumeControl = new Tone.Volume(volume).toDestination();
 
-    oscillator.connect(volumeControl);
-    setSynth(oscillator);
+        oscillator.connect(volumeControl);
+        setSynth(oscillator);
 
-    return () => {
-      oscillator.stop();
+        return () => {
+        oscillator.stop();
+        };
+    }, []);
+
+    useEffect(() => {
+        if (synth) {
+        synth.frequency.value = frequency;
+        synth.type = waveform;
+        }
+    }, [frequency, waveform]);
+
+    useEffect(() => {
+        if (synth) {
+        synth.volume.value = volume;
+        }
+    }, [volume]);
+
+    const handleStart = () => {
+        if (synth) {
+        Tone.start();
+        synth.start();
+        }
     };
-  }, []);
 
-  useEffect(() => {
-    if (synth) {
-      synth.frequency.value = frequency;
-      synth.type = waveform;
-    }
-  }, [frequency, waveform]);
+    const handleStop = () => {
+        if (synth) {
+        synth.stop();
+        }
+    };
 
-  useEffect(() => {
-    if (synth) {
-      synth.volume.value = volume;
-    }
-  }, [volume]);
-
-  const handleStart = () => {
-    if (synth) {
-      Tone.start();
-      synth.start();
-    }
-  };
-
-  const handleStop = () => {
-    if (synth) {
-      synth.stop();
-    }
-  };
+    // Handle drag and log the position
+    const handleDrag = (e, data) => {
+        console.log(`Module position: x=${data.x}, y=${data.y}`);
+      };
 
   return (
-    <Draggable cancel="input, select">
+    <Draggable cancel="input, select"
+        onDrag={handleDrag} // Log position while dragging
+    >
       {/* Ensure Draggable wraps only one child (a single div) */}
       <div
         style={{
