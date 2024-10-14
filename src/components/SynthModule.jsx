@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import * as Tone from 'tone';
-import Draggable from 'react-draggable'; // Import Draggable
+import Draggable from 'react-draggable';
 
 function SynthModule() {
   const [synth, setSynth] = useState(null);
@@ -47,7 +47,8 @@ function SynthModule() {
   };
 
   return (
-    <Draggable>
+    <Draggable cancel="input, select">
+      {/* Ensure Draggable wraps only one child (a single div) */}
       <div
         style={{
           width: '220px',
@@ -57,7 +58,7 @@ function SynthModule() {
           textAlign: 'center',
           backgroundColor: '#e0e0e0',
           cursor: 'move',
-          color: 'black' // Set text color to black
+          color: 'black',
         }}
       >
         <p>Synth Module</p>
