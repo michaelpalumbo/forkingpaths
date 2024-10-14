@@ -48,13 +48,11 @@ function SynthModule() {
 
     // Handle drag and log the position
     const handleDrag = (e, data) => {
-        console.log(`Module position: x=${data.x}, y=${data.y}`);
+        console.log(`Module is being dragged. Current position: x=${data.x}, y=${data.y}`);
       };
 
   return (
-    <Draggable cancel="input, select"
-        onDrag={handleDrag} // Log position while dragging
-    >
+    <Draggable cancel="input, select">
       {/* Ensure Draggable wraps only one child (a single div) */}
       <div
         style={{
