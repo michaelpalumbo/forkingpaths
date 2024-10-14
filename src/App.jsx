@@ -18,7 +18,6 @@ function App() {
 
   const addModule = () => {
     let id = uuidv4()
-    console.log(id)
     // Store the id as metadata in the state
     setModules([...modules, {id: id}]);
   };
@@ -40,7 +39,6 @@ function App() {
       <div style={{ display: 'flex', flexWrap: 'wrap' }}>
         { 
         modules.map((module) => {
-          console.log(module.id)
           return (<SynthModule
             key={module.id}
             id={module.id}

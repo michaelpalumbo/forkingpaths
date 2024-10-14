@@ -4,7 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+
+    "generate:rnbo": "node gatherRnboDevices.js",
+    "dev": "npm run generate:rnbo && vite",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
