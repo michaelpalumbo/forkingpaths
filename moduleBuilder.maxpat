@@ -2163,7 +2163,17 @@
 						"bgfillcolor_color2" : [ 0.263682, 0.004541, 0.038797, 1.0 ],
 						"bgfillcolor_angle" : 270.0,
 						"bgfillcolor_proportion" : 0.39,
-						"bgfillcolor_autogradient" : 0.0
+						"bgfillcolor_autogradient" : 0.0,
+						"export_config" : 						{
+							"web-export" : 							{
+								"json-web-export" : 								{
+									"file_name" : "simpleSynth.export.json"
+								}
+
+							}
+
+						}
+
 					}
 ,
 					"patching_rect" : [ 262.0, 353.0, 108.0, 22.0 ],
