@@ -1,50 +1,68 @@
 import React, { useState, useEffect } from 'react';
-import * as Tone from 'tone';
+
+
 import Draggable from 'react-draggable';
 
-function SynthModule() {
-    const [synth, setSynth] = useState(null);
-    const [frequency, setFrequency] = useState(440);
-    const [waveform, setWaveform] = useState('sine');
-    const [volume, setVolume] = useState(-10);
+import { RNBO } from '@rnbo/js'; // Import RNBO from the package
+
+
+
+function SynthModule({id, audioContext, onRemove}) {
+
+    const [rnboPatch, setRnboPatch, synth, setSynth] = useState(null);
+
 
     useEffect(() => {
-        const oscillator = new Tone.Oscillator(frequency, waveform).start();
-        const volumeControl = new Tone.Volume(volume).toDestination();
+        // Wait until AudioContext is available
+        if (!audioContext) return; 
 
-        oscillator.connect(volumeControl);
-        setSynth(oscillator);
+        const loadRNBO = async () => {
+            // Load the RNBO patch data
+            // todo eventually we'll want to pass the name of a given export patch from the UI when dynamically loading
+            const response = await fetch('/simpleSynth.export.json'); // Adjust path if needed
+            const patchData = await response.json();
+            
 
-        return () => {
-        oscillator.stop();
+            console.log(pathData)
+            // Create RNBO patch from JSON
+            const rnbo = await RNBO.createFromJSON(audioContext, patchData);
+      
+            // Prepare the RNBO patch
+            await rnbo.prepare();
+      
+            // Connect the RNBO patch to the destination (speakers)
+            rnbo.node.connect(audioContext.destination);
+      
+            // Store the RNBO patch in the state
+            setRnboPatch(rnbo);
+          };
+      
+          // Load the RNBO patch
+          loadRNBO();
+      
+          return () => {
+            // Cleanup when the component unmounts
+            if (rnboPatch) {
+              rnboPatch.node.disconnect();
+            }
         };
-    }, []);
+    }, [audioContext]); // Re-run effect if audioContext changes
 
-    useEffect(() => {
-        if (synth) {
-        synth.frequency.value = frequency;
-        synth.type = waveform;
+    const handlePlay = () => {
+        if (rnboPatch) {
+          // Start audio context (required in some browsers)
+          audioContext.resume();
+    
+          // Trigger any event or start audio in RNBO patch
         }
-    }, [frequency, waveform]);
+      };
+    
+      const handleStop = () => {
+        if (rnboPatch) {
+          // Stop or reset RNBO patch if needed
+        }
+      };
 
-    useEffect(() => {
-        if (synth) {
-        synth.volume.value = volume;
-        }
-    }, [volume]);
-
-    const handleStart = () => {
-        if (synth) {
-        Tone.start();
-        synth.start();
-        }
-    };
-
-    const handleStop = () => {
-        if (synth) {
-        synth.stop();
-        }
-    };
 
     // Handle drag and log the position
     const handleDrag = (e, data) => {
@@ -66,11 +84,14 @@ function SynthModule() {
           color: 'black',
         }}
       >
-        <p>Synth Module</p>
-        <button onMouseDown={handleStart} onMouseUp={handleStop}>
+        <p>Synth Module (ID: {id})</p>
+        <button onMouseDown={handlePlay} onMouseUp={handleStop}>
           Play
         </button>
-        <div style={{ margin: '10px 0' }}>
+        <button onClick={onRemove} style={{ marginLeft: '10px', color: 'red' }}>
+        Remove
+      </button>
+        {/* <div style={{ margin: '10px 0' }}>
           <label>
             Frequency:
             <input
@@ -106,7 +127,7 @@ function SynthModule() {
             />
             {volume} dB
           </label>
-        </div>
+        </div> */}
       </div>
     </Draggable>
   );

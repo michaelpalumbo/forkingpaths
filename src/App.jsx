@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import SynthModule from './components/SynthModule';
+import { v4 as uuidv4 } from 'uuid';
+
 
 function App() {
   const [modules, setModules] = useState([]);
@@ -13,8 +15,12 @@ function App() {
     const context = new AudioContext();
     setAudioContext(context);
   }, []);
+
   const addModule = () => {
-    setModules([...modules, <SynthModule id={modules.length} key={modules.length} />]);
+    let id = uuidv4()
+    console.log(id)
+    // Store the id as metadata in the state
+    setModules([...modules, {id: id}]);
   };
 
   // remove modules
@@ -29,14 +35,20 @@ function App() {
       </button>
 
       <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-        {modules.map((module) => (
-          <SynthModule
+        { 
+        modules.map((module) => {
+          console.log(module.id)
+          return (<SynthModule
             key={module.id}
             id={module.id}
             audioContext={audioContext} // Pass the shared AudioContext
             onRemove={() => removeModule(module.id)}
           />
-        ))}
+        )
+        }
+        
+      )}
+        
       </div>
 
       {/* Trash Bin Icon in the bottom left */}
