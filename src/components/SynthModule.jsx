@@ -2,8 +2,6 @@
 import React, { useEffect, useState } from 'react';
 import RNBO from '@rnbo/js'; // Import RNBO from the package
 
-console.log("RNBO Object:", RNBO); // Log RNBO to verify
-
 function SynthModule({ id, audioContext, onRemove }) {
   const [rnboDevice, setRnboDevice] = useState(null);
 
@@ -13,10 +11,8 @@ function SynthModule({ id, audioContext, onRemove }) {
     const loadRNBO = async () => {
       try {
         // Load the RNBO patch data
-        const response = await fetch('/export/simpleSynth.export.json'); // Adjust path if necessary
+        const response = await fetch('/export/cycle440.export.json'); // Adjust path if necessary
         const patchData = await response.json();
-
-        console.log("RNBO Patch Data:", patchData); // Debugging log
 
         // Create the RNBO device
         const rnbo = await RNBO.createDevice({ context: audioContext, patcher: patchData });
@@ -26,6 +22,9 @@ function SynthModule({ id, audioContext, onRemove }) {
 
         // Store the RNBO device in the state
         setRnboDevice(rnbo);
+
+        // Call this function in a loop to check if audio is being generated
+        setInterval(checkAudio, 1000);
       } catch (error) {
         console.error("Error loading RNBO device:", error);
       }
@@ -43,10 +42,16 @@ function SynthModule({ id, audioContext, onRemove }) {
   }, [audioContext]); // Re-run effect if audioContext changes
 
   const handlePlay = () => {
+    
     if (rnboDevice) {
-      // Start audio context (required in some browsers)
-      audioContext.resume();
+        console.log("AudioContext State:", audioContext.state); // Log the state
 
+        if (audioContext.state !== 'running') {
+            audioContext.resume().then(() => {
+              console.log("AudioContext resumed");
+            });
+          }
+          
       // Trigger audio or start event in the RNBO device if needed
       console.log('RNBO device started');
     }
@@ -60,6 +65,7 @@ function SynthModule({ id, audioContext, onRemove }) {
   };
 
   return (
+    
     <div style={{ padding: '10px', border: '1px solid black', margin: '10px' }}>
       <p>Synth Module (ID: {id})</p>
       <button onMouseDown={handlePlay} onMouseUp={handleStop}>

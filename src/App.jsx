@@ -30,6 +30,8 @@ function App() {
   return (
     <div className="App" style={{ position: 'relative', minHeight: '100vh' }}>
       <h1>Dynamic Synth Modules</h1>
+
+      <h2>Does not work in Brave Browser, use Chrome</h2>
       <button onClick={addModule} style={{ padding: '10px 20px', marginBottom: '20px' }}>
         Add Synth Module
       </button>
