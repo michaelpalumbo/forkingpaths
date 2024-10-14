@@ -50,7 +50,10 @@ function SynthModule({ id, audioContext, onRemove }) {
         return () => {
         // Cleanup when the component unmounts
         if (rnboDevice) {
-            rnboDevice.node.disconnect();
+            // Stop the RNBO device (if it has a stop method or similar mechanism)
+            if (rnboDevice.node) {
+                rnboDevice.node.disconnect(); // Disconnect from the audio context
+            }
         }
         };
     }, [audioContext]); // Re-run effect if audioContext changes
@@ -110,7 +113,13 @@ function SynthModule({ id, audioContext, onRemove }) {
         <button onMouseDown={handlePlay}>
             Play
         </button>
-        <button onClick={onRemove} style={{ marginLeft: '10px', color: 'red' }}>
+        <button onClick={() => {
+            if (rnboDevice) {
+              rnboDevice.node.disconnect(); // Ensure RNBO is disconnected before removal
+              console.log("RNBO device removed and disconnected");
+            }
+            onRemove(); // Call parent removal function
+          }} style={{ marginLeft: '10px', color: 'red' }}>
             Remove
         </button>
         </div>

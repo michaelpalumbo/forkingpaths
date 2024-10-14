@@ -25,6 +25,7 @@ function App() {
 
   // remove modules
   const removeModule = (id) => {
+    console.log('module', id, 'was removed')
     setModules(modules.filter(module => module.id !== id)); // Remove the module by id
   };
   return (
@@ -44,7 +45,7 @@ function App() {
             key={module.id}
             id={module.id}
             audioContext={audioContext} // Pass the shared AudioContext
-            onRemove={() => removeModule(module.id)}
+            onRemove={ () => removeModule(module.id) }
           />
         )
         }
