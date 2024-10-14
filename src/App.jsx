@@ -1,13 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import SynthModule from './components/SynthModule';
 
 function App() {
   const [modules, setModules] = useState([]);
+  // setup webaudio context
+  const [audioContext, setAudioContext] = useState(null); // Store a shared AudioContext
   
+  // Create the shared AudioContext when the app loads
+  useEffect(() => {
+    const context = new AudioContext();
+    setAudioContext(context);
+  }, []);
   const addModule = () => {
-    setModules([...modules, <SynthModule key={modules.length} />]);
+    setModules([...modules, <SynthModule id={modules.length} key={modules.length} />]);
   };
 
   // remove modules
@@ -22,7 +29,14 @@ function App() {
       </button>
 
       <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-        {modules}
+        {modules.map((module) => (
+          <SynthModule
+            key={module.id}
+            id={module.id}
+            audioContext={audioContext} // Pass the shared AudioContext
+            onRemove={() => removeModule(module.id)}
+          />
+        ))}
       </div>
 
       {/* Trash Bin Icon in the bottom left */}
