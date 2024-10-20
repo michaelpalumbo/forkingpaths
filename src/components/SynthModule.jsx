@@ -1,8 +1,9 @@
 
 import React, { useEffect, useState } from 'react';
 import RNBO from '@rnbo/js'; // Import RNBO from the package
+import Draggable from 'react-draggable';
 
-function SynthModule({ id, audioContext, onRemove }) {
+function SynthModule({ id, audioContext, onRemove, deviceFile }) {
     const [rnboDevice, setRnboDevice] = useState(null);
 
     // set params
@@ -16,9 +17,8 @@ function SynthModule({ id, audioContext, onRemove }) {
         const loadRNBO = async () => {
         try {
             // Load the RNBO patch data
-            const response = await fetch('/export/cycle440.export.json'); // Adjust path if necessary
-            const patchData = await response.json();
-
+            const response = await fetch(`/export/${deviceFile}`);            const patchData = await response.json();
+            console.log(response)
             // Create the RNBO device
             const rnbo = await RNBO.createDevice({ context: audioContext, patcher: patchData });
 
@@ -95,7 +95,7 @@ function SynthModule({ id, audioContext, onRemove }) {
     };
 
     return (
-        
+        <Draggable cancel="input, select">
         <div style={{ padding: '10px', border: '1px solid black', margin: '10px' }}>
         <p>Synth Module (ID: {id})</p>
 
@@ -123,6 +123,7 @@ function SynthModule({ id, audioContext, onRemove }) {
             Remove
         </button>
         </div>
+        </Draggable>
     );
 }
 
