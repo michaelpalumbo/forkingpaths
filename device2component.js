@@ -41,6 +41,7 @@ const generateReactComponent = (fileName, parameters) => {
   return `
 import React, { useState } from 'react';
 import { RNBO } from '@rnbo/js';
+import Draggable from 'react-draggable';
 
 function ${componentName}({ audioContext, onRemove }) {
   const [rnboDevice, setRnboDevice] = useState(null);

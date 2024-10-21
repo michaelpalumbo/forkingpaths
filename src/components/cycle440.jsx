@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { RNBO } from '@rnbo/js';
+import Draggable from 'react-draggable';
 
 function cycle440({ audioContext, onRemove }) {
   const [rnboDevice, setRnboDevice] = useState(null);
