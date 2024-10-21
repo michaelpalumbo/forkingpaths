@@ -95,8 +95,7 @@ const processRnboFiles = () => {
       console.error('Error reading export directory:', err);
       return;
     }
-
-    files.filter((file) => file.endsWith('.json')).forEach((file) => {
+    files.filter((file) => (file.endsWith('.json'))  && file !== 'dependencies.json'  && file !== 'rnboDevices.json').forEach((file) => {
       const filePath = path.join(exportDir, file);
 
       // Read the RNBO JSON file
@@ -105,11 +104,11 @@ const processRnboFiles = () => {
           console.error('Error reading file:', filePath, err);
           return;
         }
-
+        console.log(data)
         // Parse the RNBO JSON file to get the parameters
         const rnboPatch = JSON.parse(data);
-        console.log(rnboPatch)
-        const parameters = rnboPatch.parameters.map((param) => ({
+        fs.writeFileSync('test.json', JSON.stringify(rnboPatch, null, 2))
+        const parameters = rnboPatch.desc.parameters.map((param) => ({
           id: param.id,
           name: param.name,
           min: param.min,
