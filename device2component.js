@@ -105,8 +105,10 @@ const generateReactComponent = (fileName, parameters, paramString) => {
   // Generate the full JSX component code
   return `
     import React, { useState, useEffect } from 'react';
-    import { RNBO } from '@rnbo/js';
+    // import { RNBO } from '@rnbo/js';
     import Draggable from 'react-draggable';
+
+    // console.log('RNBO:', RNBO)
 
     function ${componentName}({ id, audioContext, onRemove, deviceFile }) {
       const [rnboDevice, setRnboDevice] = useState(null);
@@ -119,6 +121,11 @@ const generateReactComponent = (fileName, parameters, paramString) => {
 
             const loadRNBO = async () => {
             try {
+            
+                    // Log dynamic imports
+                const RNBO = await import('@rnbo/js');
+                console.log('RNBOImport:', RNBO);
+
                 // Load the RNBO patch data
                 const response = await fetch(\`/export/\${deviceFile}\`);   
                         
