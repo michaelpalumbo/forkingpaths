@@ -18,7 +18,7 @@ if (!fs.existsSync(outputDir)) {
 
 // Function to generate a React component from an RNBO device
 const generateReactComponent = (fileName, parameters) => {
-  const componentName = path.basename(fileName, '.json'); // Use filename without extension as component name
+  const componentName = path.basename(fileName, '.export.json'); // Use filename without extension as component name
   const paramControls = parameters
     .map(
       (param) => `
@@ -95,7 +95,7 @@ const processRnboFiles = () => {
       console.error('Error reading export directory:', err);
       return;
     }
-    files.filter((file) => (file.endsWith('.json'))  && file !== 'dependencies.json'  && file !== 'rnboDevices.json').forEach((file) => {
+    files.filter((file) => (file.endsWith('.export.json'))  && file !== 'dependencies.json'  && file !== 'rnboDevices.json').forEach((file) => {
       const filePath = path.join(exportDir, file);
 
       // Read the RNBO JSON file
@@ -104,7 +104,6 @@ const processRnboFiles = () => {
           console.error('Error reading file:', filePath, err);
           return;
         }
-        console.log(data)
         // Parse the RNBO JSON file to get the parameters
         const rnboPatch = JSON.parse(data);
         fs.writeFileSync('test.json', JSON.stringify(rnboPatch, null, 2))
@@ -120,7 +119,7 @@ const processRnboFiles = () => {
         const componentCode = generateReactComponent(file, parameters);
 
         // Write the React component to a new .jsx file in the output directory
-        const componentFileName = path.join(outputDir, `${path.basename(file, '.json')}.jsx`);
+        const componentFileName = path.join(outputDir, `${path.basename(file, '.export.json')}.jsx`);
         fs.writeFile(componentFileName, componentCode, (err) => {
           if (err) {
             console.error('Error writing component file:', componentFileName, err);
