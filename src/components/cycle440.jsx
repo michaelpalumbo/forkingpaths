@@ -3,21 +3,13 @@
     import { RNBO } from '@rnbo/js';
     import Draggable from 'react-draggable';
 
-    function simpleSynth({ id, audioContext, onRemove, deviceFile }) {
+    function cycle440({ id, audioContext, onRemove, deviceFile }) {
       const [rnboDevice, setRnboDevice] = useState(null);
 
       // set params
       
-  const [frequency, setFrequency] = useState(220);
+  const [frequency, setFrequency] = useState(440);
   const [frequencyRange, setFrequencyRange] = useState({ min: 110, max: 880 });
-    
-
-  const [mod, setMod] = useState(1);
-  const [modRange, setModRange] = useState({ min: -100, max: 100 });
-    
-
-  const [volume, setVolume] = useState(0.5);
-  const [volumeRange, setVolumeRange] = useState({ min: 0, max: 100 });
     
 
       useEffect(() => {
@@ -110,32 +102,6 @@
         </div>
       
 
-        <div key={mod}>
-          <label htmlFor="mod">mod: {mod}</label>
-          <input
-            type="range"
-            id="mod"
-            min={-100}
-            max={100}
-            value={mod}
-            onChange={(e) => handleParamChange("mod", e.target.value)}
-          />
-        </div>
-      
-
-        <div key={volume}>
-          <label htmlFor="volume">volume: {volume}</label>
-          <input
-            type="range"
-            id="volume"
-            min={0}
-            max={100}
-            value={volume}
-            onChange={(e) => handleParamChange("volume", e.target.value)}
-          />
-        </div>
-      
-
             <button onMouseDown={handlePlay}>
                 Play
             </button>
@@ -154,5 +120,5 @@
       );
     }
 
-    export default simpleSynth;
+    export default cycle440;
     

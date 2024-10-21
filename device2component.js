@@ -87,13 +87,13 @@ const generateReactComponent = (fileName, parameters, paramString) => {
     .map(
       (param) => `
         <div key={${param.id}}>
-          <label htmlFor="${param.id}">${param.name}: {values.${param.id}}</label>
+          <label htmlFor="${param.id}">${param.name}: {${param.id}}</label>
           <input
             type="range"
             id="${param.id}"
             min={${param.min}}
             max={${param.max}}
-            value={values.${param.id}}
+            value={${param.id}}
             onChange={(e) => handleParamChange("${param.id}", e.target.value)}
           />
         </div>
@@ -104,7 +104,7 @@ const generateReactComponent = (fileName, parameters, paramString) => {
     
   // Generate the full JSX component code
   return `
-    import React, { useState } from 'react';
+    import React, { useState, useEffect } from 'react';
     import { RNBO } from '@rnbo/js';
     import Draggable from 'react-draggable';
 
@@ -121,9 +121,9 @@ const generateReactComponent = (fileName, parameters, paramString) => {
             try {
                 // Load the RNBO patch data
                 const response = await fetch(\`/export/\${deviceFile}\`);   
-                console.log(response)         
+                        
                 const patchData = await response.json();
-                console.log(response)
+                
                 // Create the RNBO device
                 const rnbo = await RNBO.createDevice({ context: audioContext, patcher: patchData });
 
