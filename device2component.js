@@ -16,8 +16,39 @@ if (!fs.existsSync(outputDir)) {
   fs.mkdirSync(outputDir, { recursive: true });
 }
 
+function generateDynamicDeclarations(parameters) {
+  return parameters.map((param) => {
+    const name = param.name;
+    const initialValue = param.initialValue;
+    const min = param.minimum;
+    const max = param.maximum;
+
+    // If required fields are not present, skip generating declaration
+    if (!name || initialValue === undefined || min === undefined || max === undefined) {
+      // notify
+      console.log('skipped param for missing required fields')
+      return ''; // skip incomplete parameter entries
+    }
+
+    const stateName = name;
+    const rangeName = `${name}Range`;
+
+    return `
+const [${stateName}, set${capitalize(stateName)}] = useState(${initialValue});
+const [${rangeName}, set${capitalize(rangeName)}] = useState({ min: ${min}, max: ${max} });
+    `.trim(); // trim to clean up extra spaces
+  }).filter(Boolean).join('\n'); // Filter out empty strings
+}
+
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+// const variableDeclarations = generateDynamicDeclarations(parameters);
+
 // Function to generate a React component from an RNBO device
 const generateReactComponent = (fileName, parameters) => {
+  console.log(parameters)
   const componentName = path.basename(fileName, '.export.json'); // Use filename without extension as component name
   const paramControls = parameters
     .map(
@@ -43,8 +74,12 @@ import React, { useState } from 'react';
 import { RNBO } from '@rnbo/js';
 import Draggable from 'react-draggable';
 
-function ${componentName}({ audioContext, onRemove }) {
+function SynthModule({ id, audioContext, onRemove, deviceFile }) {
   const [rnboDevice, setRnboDevice] = useState(null);
+
+  // set params
+  
+
   const [values, setValues] = useState(${JSON.stringify(
     parameters.reduce((acc, param) => {
       acc[param.id] = param.value;
@@ -109,11 +144,14 @@ const processRnboFiles = () => {
         const rnboPatch = JSON.parse(data);
         fs.writeFileSync('test.json', JSON.stringify(rnboPatch, null, 2))
         const parameters = rnboPatch.desc.parameters.map((param) => ({
-          id: param.id,
+          id: param.paramId,
           name: param.name,
-          min: param.min,
-          max: param.max,
-          value: param.value,
+          min: param.minimum,
+          max: param.maximum,
+          value: param.initialValue,
+          exponent: param.exponent,
+          steps: param.steps,
+          // to do, get other keys in the desc object, like "outputs"
         }));
 
         // Generate the React component
