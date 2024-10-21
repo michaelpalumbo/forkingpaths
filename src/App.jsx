@@ -12,8 +12,6 @@ function App() {
   const [rnboDevices, setRnboDevices] = useState([]); // State to hold the RNBO devices
   const [selectedDevice, setSelectedDevice] = useState(''); // State for selected device
 
-
-
   let menu = {}
   // Fetch the list of RNBO devices when the component mounts
   useEffect(() => {
