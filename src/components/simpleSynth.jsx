@@ -3,7 +3,7 @@
     import { RNBO } from '@rnbo/js';
     import Draggable from 'react-draggable';
 
-    function SynthModule({ id, audioContext, onRemove, deviceFile }) {
+    function simpleSynth({ id, audioContext, onRemove, deviceFile }) {
       const [rnboDevice, setRnboDevice] = useState(null);
 
       // set params

@@ -3,6 +3,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import SynthModule from './components/SynthModule';
 import { v4 as uuidv4 } from 'uuid';
+// import all components from index.js (these are RNBO devices that have been dynamically turned into react components)
+import * as Components from './components'
+
 
 function App() {
   const [modules, setModules] = useState([]);
@@ -56,6 +59,18 @@ function App() {
     // }]);
   };
 
+
+  // Function to load a component by its name
+  const getComponentByName = (name) => {
+    // Find the component in the imported index
+    const component = Components[name];
+    if (!component) {
+      console.error(`Component ${name} not found in index.`);
+    }
+    return component;
+  };
+
+  
   // remove modules
   const removeModule = (id) => {
     console.log('module', id, 'was removed')
@@ -88,19 +103,24 @@ function App() {
       </button>
 
       <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-        { 
-        modules.map((module) => {
-          return (<SynthModule
+      {modules.map((module) => {
+        // Assume the component name matches the device file name
+        const componentName = module.deviceFile.replace('.export.json', '');
+        const SynthModule = getComponentByName(componentName);
+
+        return SynthModule ? (
+          <SynthModule
             key={module.id}
             id={module.id}
-            audioContext={audioContext} // Pass the shared AudioContext
+            audioContext={audioContext}
             deviceFile={module.deviceFile}
-            onRemove={ () => removeModule(module.id) }
+            onRemove={() => removeModule(module.id) } // Adjust to actual removal logic
           />
-        )
-        }
-        
-      )}
+        ) : (
+          <div key={module.id}>Component {componentName} not found...</div>
+        );
+      })}
+
         
       </div>
 

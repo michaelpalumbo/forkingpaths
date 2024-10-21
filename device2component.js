@@ -108,7 +108,7 @@ const generateReactComponent = (fileName, parameters, paramString) => {
     import { RNBO } from '@rnbo/js';
     import Draggable from 'react-draggable';
 
-    function SynthModule({ id, audioContext, onRemove, deviceFile }) {
+    function ${componentName}({ id, audioContext, onRemove, deviceFile }) {
       const [rnboDevice, setRnboDevice] = useState(null);
 
       // set params
