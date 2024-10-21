@@ -115,7 +115,7 @@ function App() {
 
   return (
     <div className="App" style={{ position: 'relative', minHeight: '100vh' }}>
-      <h1>Dynamic Synth Modules</h1>
+      <h1>Forking Paths</h1>
 
       <h2>Does not work in Brave Browser, use Chrome</h2>
 

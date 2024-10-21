@@ -5,10 +5,12 @@ import React, { useState, useEffect } from 'react';
 import Draggable from 'react-draggable';
 
 function cycle440({ id, audioContext, onRemove, deviceFile }) {
+  let moduleName = deviceFile.split('.export.json')[0] 
   const [rnboDevice, setRnboDevice] = useState(null);
-
+    console.log(deviceFile)
   const [values, setValues] = useState({frequency: 440 })
 
+  console.log(Math.random() * (1000 - 1) + 1)
   // set params
   
   const [frequency, setFrequency] = useState(440);
@@ -17,8 +19,6 @@ function cycle440({ id, audioContext, onRemove, deviceFile }) {
 
   useEffect(() => {
     if (!audioContext) return; // Wait until AudioContext is available
-
-    let currentDevice = null; // Keep track of the current device created by loadRNBO
 
     const loadRNBO = async () => {
     try {
@@ -33,13 +33,13 @@ function cycle440({ id, audioContext, onRemove, deviceFile }) {
       const patchData = await response.json();
       
       // Create the RNBO device
-      const currentDevice = await RNBO.createDevice({ context: audioContext, patcher: patchData });
+      const rnbo = await RNBO.createDevice({ context: audioContext, patcher: patchData });
 
       // Connect the RNBO device to the destination (speakers)
-      currentDevice.node.connect(audioContext.destination);
+      rnbo.node.connect(audioContext.destination);
 
       // Store the RNBO device in the state
-      setRnboDevice(currentDevice);
+      setRnboDevice(rnbo);
 
 
     } catch (error) {
@@ -52,13 +52,11 @@ function cycle440({ id, audioContext, onRemove, deviceFile }) {
 
     return () => {
     // Cleanup when the component unmounts
-    if (currentDevice && currentDevice.node) {
+    if (rnboDevice) {
       // Stop the RNBO device (if it has a stop method or similar mechanism)
-      currentDevice.node.disconnect(); // Disconnect from the audio context
-
-      // if (rnboDevice.node) {
-      //   currentDevice.node.disconnect(); // Disconnect from the audio context
-      // }
+      if (rnboDevice.node) {
+          rnboDevice.node.disconnect(); // Disconnect from the audio context
+      }
     }
     };
   }, [audioContext]); // Re-run effect if audioContext changes
@@ -89,18 +87,17 @@ function cycle440({ id, audioContext, onRemove, deviceFile }) {
   };
 
   const handleStop = () => {
-    if (rnboDevice && rnboDevice.node) {
-      rnboDevice.node.disconnect(); // Disconnect the RNBO device from audio context
-      console.log('RNBO device stopped and disconnected');
-    
+    if (rnboDevice) {
+    // Logic to stop/reset RNBO device if needed
+    console.log('RNBO device stopped');
     }
   };
 
   return (
 
-  <Draggable>
+  <Draggable cancel="input, select">
     <div style={{ padding: '10px', border: '1px solid black', margin: '10px' }}>
-      <p>Synth Module (ID: {id})</p>
+      <p>cycle440</p>
         
         <div key={frequency}>
           <label htmlFor="frequency">frequency: {frequency}</label>

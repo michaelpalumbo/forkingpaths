@@ -5,8 +5,9 @@ import React, { useState, useEffect } from 'react';
 import Draggable from 'react-draggable';
 
 function simpleSynth({ id, audioContext, onRemove, deviceFile }) {
+  let moduleName = deviceFile.split('.export.json')[0] 
   const [rnboDevice, setRnboDevice] = useState(null);
-
+    console.log(deviceFile)
   const [values, setValues] = useState({ frequency: 220,  mod: 1, volume: 0.5 })
 
   console.log(Math.random() * (1000 - 1) + 1)
@@ -104,7 +105,7 @@ function simpleSynth({ id, audioContext, onRemove, deviceFile }) {
 
   <Draggable cancel="input, select">
     <div style={{ padding: '10px', border: '1px solid black', margin: '10px' }}>
-      <p>Synth Module (ID: {id})</p>
+      <p>simpleSynth</p>
         
         <div key={frequency}>
           <label htmlFor="frequency">frequency: {frequency}</label>
