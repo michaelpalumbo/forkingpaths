@@ -34,3 +34,5 @@ const generateDeviceList = () => {
 
 // Run the function
 generateDeviceList();
+
+

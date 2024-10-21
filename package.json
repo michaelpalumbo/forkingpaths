@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
 
-    "generate:rnbo": "node gatherRnboDevices.js",
+    "generate:rnbo": "node device2component.js",
     "dev": "npm run generate:rnbo && vite",
     "build": "vite build",
     "lint": "eslint .",

@@ -12,6 +12,14 @@ function SynthModule({ id, audioContext, onRemove, deviceFile }) {
   const [frequencyRange, setFrequencyRange] = useState({ min: 110, max: 880 });
     
 
+  const [mod, setMod] = useState(1);
+  const [modRange, setModRange] = useState({ min: -100, max: 100 });
+    
+
+  const [volume, setVolume] = useState(0.5);
+  const [volumeRange, setVolumeRange] = useState({ min: 0, max: 100 });
+    
+
   // useEffect(() => {
   //   const loadRNBO = async () => {
   //     const response = await fetch('/export/simpleSynth.export.json');
@@ -103,7 +111,7 @@ function SynthModule({ id, audioContext, onRemove, deviceFile }) {
   <Draggable cancel="input, select">
         <div style={{ padding: '10px', border: '1px solid black', margin: '10px' }}>
         <p>Synth Module (ID: {id})</p>
-            
+          
         <div key={frequency}>
           <label htmlFor="frequency">frequency: {values.frequency}</label>
           <input
@@ -113,6 +121,32 @@ function SynthModule({ id, audioContext, onRemove, deviceFile }) {
             max={880}
             value={values.frequency}
             onChange={(e) => handleParamChange("frequency", e.target.value)}
+          />
+        </div>
+      
+
+        <div key={mod}>
+          <label htmlFor="mod">mod: {values.mod}</label>
+          <input
+            type="range"
+            id="mod"
+            min={-100}
+            max={100}
+            value={values.mod}
+            onChange={(e) => handleParamChange("mod", e.target.value)}
+          />
+        </div>
+      
+
+        <div key={volume}>
+          <label htmlFor="volume">volume: {values.volume}</label>
+          <input
+            type="range"
+            id="volume"
+            min={0}
+            max={100}
+            value={values.volume}
+            onChange={(e) => handleParamChange("volume", e.target.value)}
           />
         </div>
       

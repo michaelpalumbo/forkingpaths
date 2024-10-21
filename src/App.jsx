@@ -4,7 +4,6 @@ import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import SynthModule from './components/SynthModule';
 import { v4 as uuidv4 } from 'uuid';
 
-
 function App() {
   const [modules, setModules] = useState([]);
   // setup webaudio context
@@ -12,6 +11,8 @@ function App() {
   
   const [rnboDevices, setRnboDevices] = useState([]); // State to hold the RNBO devices
   const [selectedDevice, setSelectedDevice] = useState(''); // State for selected device
+
+
 
   let menu = {}
   // Fetch the list of RNBO devices when the component mounts

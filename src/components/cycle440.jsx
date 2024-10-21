@@ -103,7 +103,7 @@ function SynthModule({ id, audioContext, onRemove, deviceFile }) {
   <Draggable cancel="input, select">
         <div style={{ padding: '10px', border: '1px solid black', margin: '10px' }}>
         <p>Synth Module (ID: {id})</p>
-            
+          
         <div key={frequency}>
           <label htmlFor="frequency">frequency: {values.frequency}</label>
           <input
