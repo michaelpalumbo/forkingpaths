@@ -38,13 +38,12 @@ function App() {
   }, []);
 
   const addModule = () => {
-    
+    console.log(selectedDevice)
     let id = uuidv4()
-      if (!selectedDevice) {
-        alert("Please select a device before adding a module.");
-        return;
-      }
-    
+    if (!selectedDevice) {
+      alert("Please select a device before adding a module.");
+      return;
+    }
     const newModule = {
       id: id,
       deviceFile: selectedDevice, // Add the selected RNBO device file to the module

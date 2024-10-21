@@ -19,7 +19,7 @@ const generateDeviceList = () => {
     }
 
     // Filter JSON files
-    const jsonFiles = files.filter(file => file.endsWith('.json'));
+    const jsonFiles = files.filter(file => file.endsWith('.json') && file !== 'dependencies.json'  && file !== 'rnboDevices.json');
 
     // Write the list of JSON files to rnboDevices.json
     fs.writeFile(outputFile, JSON.stringify(jsonFiles, null, 2), (err) => {

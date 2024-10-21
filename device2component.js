@@ -108,6 +108,7 @@ const processRnboFiles = () => {
 
         // Parse the RNBO JSON file to get the parameters
         const rnboPatch = JSON.parse(data);
+        console.log(rnboPatch)
         const parameters = rnboPatch.parameters.map((param) => ({
           id: param.id,
           name: param.name,
