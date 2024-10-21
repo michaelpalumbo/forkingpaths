@@ -7,7 +7,8 @@ function SynthModule({ id, audioContext, onRemove, deviceFile }) {
   const [rnboDevice, setRnboDevice] = useState(null);
 
   // set params
-  
+  const [frequency, setFrequency] = useState(220);
+const [frequencyRange, setFrequencyRange] = useState({ min: undefined, max: undefined });
 
   const [values, setValues] = useState({"frequency":220});
 

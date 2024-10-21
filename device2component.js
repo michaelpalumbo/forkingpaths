@@ -19,16 +19,16 @@ if (!fs.existsSync(outputDir)) {
 function generateDynamicDeclarations(parameters) {
   return parameters.map((param) => {
     const name = param.name;
-    const initialValue = param.initialValue;
+    const initialValue = param.value;
     const min = param.minimum;
     const max = param.maximum;
-
-    // If required fields are not present, skip generating declaration
-    if (!name || initialValue === undefined || min === undefined || max === undefined) {
-      // notify
-      console.log('skipped param for missing required fields')
-      return ''; // skip incomplete parameter entries
-    }
+    console.log('param', param)
+    // // If required fields are not present, skip generating declaration
+    // if (!name || initialValue === undefined || min === undefined || max === undefined) {
+    //   // notify
+    //   console.log('skipped param for missing required fields', param)
+    //   return ''; // skip incomplete parameter entries
+    // }
 
     const stateName = name;
     const rangeName = `${name}Range`;
@@ -47,8 +47,8 @@ function capitalize(str) {
 // const variableDeclarations = generateDynamicDeclarations(parameters);
 
 // Function to generate a React component from an RNBO device
-const generateReactComponent = (fileName, parameters) => {
-  console.log(parameters)
+const generateReactComponent = (fileName, parameters, paramString) => {
+  console.log(paramString)
   const componentName = path.basename(fileName, '.export.json'); // Use filename without extension as component name
   const paramControls = parameters
     .map(
@@ -78,7 +78,7 @@ function SynthModule({ id, audioContext, onRemove, deviceFile }) {
   const [rnboDevice, setRnboDevice] = useState(null);
 
   // set params
-  
+  ${paramString}
 
   const [values, setValues] = useState(${JSON.stringify(
     parameters.reduce((acc, param) => {
@@ -153,9 +153,9 @@ const processRnboFiles = () => {
           steps: param.steps,
           // to do, get other keys in the desc object, like "outputs"
         }));
-
+        let paramString = generateDynamicDeclarations(parameters)
         // Generate the React component
-        const componentCode = generateReactComponent(file, parameters);
+        const componentCode = generateReactComponent(file, parameters, paramString);
 
         // Write the React component to a new .jsx file in the output directory
         const componentFileName = path.join(outputDir, `${path.basename(file, '.export.json')}.jsx`);
