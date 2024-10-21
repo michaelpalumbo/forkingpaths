@@ -8,6 +8,9 @@ const __dirname = path.dirname(__filename);
 // Directory where RNBO JSON files are stored
 const exportDir = path.join(__dirname, 'public', 'export');
 
+// path for list of rnbo devices
+const outputFile = path.join(exportDir, 'rnboDevices.json');
+
 // Directory where the generated components will be saved
 const outputDir = path.join(__dirname, 'src', 'components');
 
@@ -15,6 +18,32 @@ const outputDir = path.join(__dirname, 'src', 'components');
 if (!fs.existsSync(outputDir)) {
   fs.mkdirSync(outputDir, { recursive: true });
 }
+
+// Function to generate the JSON file
+const generateDeviceList = () => {
+  fs.readdir(exportDir, (err, files) => {
+    if (err) {
+      console.error('Error reading export directory:', err);
+      return;
+    }
+
+    // Filter JSON files
+    const jsonFiles = files.filter(file => file.endsWith('.json') && file !== 'dependencies.json'  && file !== 'rnboDevices.json');
+
+    // Write the list of JSON files to rnboDevices.json
+    fs.writeFile(outputFile, JSON.stringify(jsonFiles, null, 2), (err) => {
+      if (err) {
+        console.error('Error writing rnboDevices.json:', err);
+        return;
+      }
+      console.log('RNBO device list successfully generated!');
+    });
+  });
+};
+
+
+// Run the function
+generateDeviceList();
 
 function generateDynamicDeclarations(parameters) {
   return parameters.map((param) => {
