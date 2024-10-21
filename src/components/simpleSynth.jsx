@@ -70,12 +70,7 @@ function simpleSynth({ id, audioContext, onRemove, deviceFile }) {
 
 
   const handleParamChange = (paramId, value) => {
-    // Convert value to a number
-    const numericValue = parseFloat(value);
-
-    // Update the local state for the parameter
-    setValues((prev) => ({ ...prev, [paramId]: numericValue }));
-
+    setValues((prev) => ({ ...prev, [paramId]: value }));
     if (rnboDevice) {
       const param = rnboDevice.parameters.find(p => p.id === paramId);
       if (param) param.value = parseFloat(value);
