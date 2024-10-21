@@ -128,7 +128,7 @@ function ${componentName}({ id, audioContext, onRemove, deviceFile }) {
 
   const [values, setValues] = useState({${valueString}})
 
-  console.log(values)
+  console.log(Math.random() * (1000 - 1) + 1)
   // set params
   ${paramString}
 

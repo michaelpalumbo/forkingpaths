@@ -9,7 +9,7 @@ function simpleSynth({ id, audioContext, onRemove, deviceFile }) {
 
   const [values, setValues] = useState({ frequency: 220,  mod: 1, volume: 0.5 })
 
-  console.log(values)
+  console.log(Math.random() * (1000 - 1) + 1)
   // set params
   
   const [frequency, setFrequency] = useState(220);

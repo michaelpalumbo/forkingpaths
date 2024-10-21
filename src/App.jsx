@@ -41,6 +41,11 @@ function App() {
     setAudioContext(context);
   }, []);
 
+  // check for module scene updates
+  useEffect(() => {
+    console.log('Updated modules:', modules);
+  }, [modules]);
+
   const addModule = () => {
     let id = uuidv4()
     if (!selectedDevice) {
@@ -51,12 +56,8 @@ function App() {
       id: id,
       deviceFile: selectedDevice, // Add the selected RNBO device file to the module
     };
-    setModules([...modules, newModule]); // Add new module to the list
-    // // Store the id as metadata in the state
-    // setModules([...modules, {
-    //   id: id,
-    //   deviceFile: selectedDevice
-    // }]);
+    // setModules([...modules, newModule]); // Add new module to the list
+    setModules((prevModules) => [...prevModules, newModule]);
   };
 
 
@@ -75,12 +76,43 @@ function App() {
   const removeModule = (id) => {
     console.log('module', id, 'was removed')
     setModules(modules.filter(module => module.id !== id)); // Remove the module by id
+    RNBOStatus()
+    handleStop()
   };
 
+  
   const handleDeviceChange = (event) => {
     setSelectedDevice(event.target.value); // Update the selected device
     // addModule()
   };
+
+  function RNBOStatus({ rnboDevice }) {
+    const [deviceCount, setDeviceCount] = useState(0);
+    const [parameters, setParameters] = useState([]);
+  
+    useEffect(() => {
+      if (!rnboDevice) {
+        console.log("No RNBO device is connected.");
+        return;
+      }
+  
+      // Log the RNBO device object
+      console.log("RNBO Device:", rnboDevice);
+  
+      // Example: Checking the number of devices
+      const numDevices = rnboDevice ? 1 : 0; // If there's a device, count it as 1
+      setDeviceCount(numDevices);
+      console.log(deviceCount)
+  
+      // Example: Get parameters of the device
+      if (rnboDevice.parameters) {
+        setParameters(rnboDevice.parameters);
+        console.log("RNBO Device Parameters:", rnboDevice.parameters);
+      }
+  
+    }, [rnboDevice]);
+  }
+
   return (
     <div className="App" style={{ position: 'relative', minHeight: '100vh' }}>
       <h1>Dynamic Synth Modules</h1>
@@ -123,7 +155,6 @@ function App() {
 
         
       </div>
-
       {/* Trash Bin Icon in the bottom left */}
       <div style={{ position: 'fixed', bottom: '20px', left: '20px', cursor: 'pointer' }}>
         <FontAwesomeIcon icon={faTrash} size="2x" color="red" />
