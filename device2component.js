@@ -20,23 +20,17 @@ function generateDynamicDeclarations(parameters) {
   return parameters.map((param) => {
     const name = param.name;
     const initialValue = param.value;
-    const min = param.minimum;
-    const max = param.maximum;
+    const min = param.min;
+    const max = param.max;
     console.log('param', param)
-    // // If required fields are not present, skip generating declaration
-    // if (!name || initialValue === undefined || min === undefined || max === undefined) {
-    //   // notify
-    //   console.log('skipped param for missing required fields', param)
-    //   return ''; // skip incomplete parameter entries
-    // }
 
     const stateName = name;
     const rangeName = `${name}Range`;
 
     return `
-const [${stateName}, set${capitalize(stateName)}] = useState(${initialValue});
-const [${rangeName}, set${capitalize(rangeName)}] = useState({ min: ${min}, max: ${max} });
-    `.trim(); // trim to clean up extra spaces
+  const [${stateName}, set${capitalize(stateName)}] = useState(${initialValue});
+  const [${rangeName}, set${capitalize(rangeName)}] = useState({ min: ${min}, max: ${max} });
+    `; // trim to clean up extra spaces
   }).filter(Boolean).join('\n'); // Filter out empty strings
 }
 
@@ -48,7 +42,6 @@ function capitalize(str) {
 
 // Function to generate a React component from an RNBO device
 const generateReactComponent = (fileName, parameters, paramString) => {
-  console.log(paramString)
   const componentName = path.basename(fileName, '.export.json'); // Use filename without extension as component name
   const paramControls = parameters
     .map(
@@ -80,28 +73,60 @@ function SynthModule({ id, audioContext, onRemove, deviceFile }) {
   // set params
   ${paramString}
 
-  const [values, setValues] = useState(${JSON.stringify(
-    parameters.reduce((acc, param) => {
-      acc[param.id] = param.value;
-      return acc;
-    }, {})
-  )});
+  // useEffect(() => {
+  //   const loadRNBO = async () => {
+  //     const response = await fetch('/export/${fileName}');
+  //     const patchData = await response.json();
+  //     const rnbo = await RNBO.createDevice({ context: audioContext, patcher: patchData });
+  //     rnbo.node.connect(audioContext.destination);
+  //     setRnboDevice(rnbo);
+  //   };
+
+  //   loadRNBO();
+
+  //   return () => {
+  //     if (rnboDevice) rnboDevice.node.disconnect();
+  //   };
+  // }, [audioContext]);
 
   useEffect(() => {
-    const loadRNBO = async () => {
-      const response = await fetch('/export/${fileName}');
-      const patchData = await response.json();
-      const rnbo = await RNBO.createDevice({ context: audioContext, patcher: patchData });
-      rnbo.node.connect(audioContext.destination);
-      setRnboDevice(rnbo);
-    };
+        if (!audioContext) return; // Wait until AudioContext is available
 
-    loadRNBO();
+        const loadRNBO = async () => {
+        try {
+            // Load the RNBO patch data
+            const response = await fetch(\`/export/\${deviceFile}\`);            
+            const patchData = await response.json();
+            console.log(response)
+            // Create the RNBO device
+            const rnbo = await RNBO.createDevice({ context: audioContext, patcher: patchData });
 
-    return () => {
-      if (rnboDevice) rnboDevice.node.disconnect();
-    };
-  }, [audioContext]);
+            // Connect the RNBO device to the destination (speakers)
+            rnbo.node.connect(audioContext.destination);
+
+            // Store the RNBO device in the state
+            setRnboDevice(rnbo);
+
+
+        } catch (error) {
+            console.error("Error loading RNBO device:", error);
+        }
+        };
+
+        // Load the RNBO device
+        loadRNBO();
+
+        return () => {
+        // Cleanup when the component unmounts
+        if (rnboDevice) {
+            // Stop the RNBO device (if it has a stop method or similar mechanism)
+            if (rnboDevice.node) {
+                rnboDevice.node.disconnect(); // Disconnect from the audio context
+            }
+        }
+        };
+    }, [audioContext]); // Re-run effect if audioContext changes
+
 
   const handleParamChange = (paramId, value) => {
     setValues((prev) => ({ ...prev, [paramId]: value }));
@@ -111,12 +136,51 @@ function SynthModule({ id, audioContext, onRemove, deviceFile }) {
     }
   };
 
+    const handlePlay = () => {
+        
+        if (rnboDevice) {
+            console.log("AudioContext State:", audioContext.state); // Log the state
+
+            if (audioContext.state !== 'running') {
+                audioContext.resume().then(() => {
+                console.log("AudioContext resumed");
+                });
+            }
+            
+        // Trigger audio or start event in the RNBO device if needed
+        console.log('RNBO device started');
+        }
+    };
+
+    const handleStop = () => {
+        if (rnboDevice) {
+        // Logic to stop/reset RNBO device if needed
+        console.log('RNBO device stopped');
+        }
+    };
+
   return (
-    <div style={{ padding: '10px', border: '1px solid black', margin: '10px' }}>
-      <h3>${componentName} Module</h3>
-      ${paramControls}
-      <button onClick={onRemove} style={{ color: 'red', marginTop: '10px' }}>Remove</button>
-    </div>
+
+  <Draggable cancel="input, select">
+        <div style={{ padding: '10px', border: '1px solid black', margin: '10px' }}>
+        <p>Synth Module (ID: {id})</p>
+            ${paramControls}
+
+        <button onMouseDown={handlePlay}>
+            Play
+        </button>
+        <button onClick={() => {
+            if (rnboDevice) {
+              rnboDevice.node.disconnect(); // Ensure RNBO is disconnected before removal
+              console.log("RNBO device removed and disconnected");
+            }
+            onRemove(); // Call parent removal function
+          }} style={{ marginLeft: '10px', color: 'red' }}>
+            Remove
+        </button>
+        </div>
+        </Draggable>
+        
   );
 }
 

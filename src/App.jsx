@@ -40,7 +40,6 @@ function App() {
   }, []);
 
   const addModule = () => {
-    console.log(selectedDevice)
     let id = uuidv4()
     if (!selectedDevice) {
       alert("Please select a device before adding a module.");
@@ -66,7 +65,7 @@ function App() {
 
   const handleDeviceChange = (event) => {
     setSelectedDevice(event.target.value); // Update the selected device
-    addModule()
+    // addModule()
   };
   return (
     <div className="App" style={{ position: 'relative', minHeight: '100vh' }}>
