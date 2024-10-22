@@ -3,6 +3,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import { v4 as uuidv4 } from 'uuid';
 
+import DSPSwitch from './components/UI/DSPSwitch'; // Adjust the import path as needed
+
 //  import { RNBO } from '@rnbo/js'; // Import RNBO here
 
 
@@ -25,6 +27,9 @@ function App() {
   const [rnboDevices, setRnboDevices] = useState([]); // State to hold the RNBO devices
   const [selectedDevice, setSelectedDevice] = useState(''); // State for selected device
   
+  const [isDSPOn, setIsDSPOn] = useState(false);
+
+
   let menu = {}
   useEffect(() =>{
     if (isRNBOInitialized.current) return; // If already initialized, exit
@@ -122,19 +127,36 @@ function App() {
 
   
   const handleDeviceChange = async (event) => {
-    // Ensure the AudioContext is resumed
-    if (audioContext && audioContext.state !== 'running') {
-      try {
-        await audioContext.resume();
-        setIsAudioContextReady(true); // Mark as ready after resuming
-        console.log('AudioContext resumed');
-      } catch (error) {
-        console.error('Failed to resume AudioContext:', error);
-        return;
-      }
-    }
+    
     setSelectedDevice(event.target.value); // Update the selected device
     // addModule()
+  };
+
+  const handleDSPToggle = async (newState) => {
+    setIsDSPOn(newState);
+    console.log(`DSP is now ${newState ? 'ON' : 'OFF'}`);
+    
+    // You can add additional logic here, e.g., managing the AudioContext
+    if (newState) {
+      // Example: Perform actions when DSP is turned ON
+      console.log('Activating DSP...');
+      // Ensure the AudioContext is resumed
+      if (audioContext && audioContext.state !== 'running') {
+        try {
+          await audioContext.resume();
+          setIsAudioContextReady(true); // Mark as ready after resuming
+          console.log('AudioContext resumed');
+        } catch (error) {
+          console.error('Failed to resume AudioContext:', error);
+          return;
+        }
+      }
+    } else {
+      // Example: Perform actions when DSP is turned OFF
+      console.log('Deactivating DSP...');
+      audioContext.suspend();
+
+    }
   };
 
   function RNBOStatus({ rnboDevice }) {
@@ -166,6 +188,7 @@ function App() {
 
   return (
     <div className="App" style={{ position: 'relative', minHeight: '100vh' }}>
+       <DSPSwitch onToggle={handleDSPToggle} />
       <h1>Forking Paths</h1>
 
       <h2>Does not work in Brave Browser, use Chrome</h2>
