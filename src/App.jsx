@@ -31,10 +31,14 @@ function App() {
   const [rnboDevices, setRnboDevices] = useState([]); // State to hold the RNBO devices
   const [selectedDevice, setSelectedDevice] = useState(''); // State for selected device
   
+  // speaker
+  const speakerID = useRef(uuidv4());
+  
+  // cables
+  const [activeConnection, setActiveConnection] = useState(null); // Global state for active connections
 
 
 
-  let menu = {}
   useEffect(() =>{
     if (isRNBOInitialized.current) return; // If already initialized, exit
     const getRNBO = async () => {
@@ -190,6 +194,24 @@ function App() {
     }, [rnboDevice]);
   }
 
+
+  /* Patching */
+
+  // Function to handle starting a connection from an output jack
+  const startConnection = (moduleId, outputIndex) => {
+    setActiveConnection({ moduleId, outputIndex });
+    console.log(`Starting connection from module ${moduleId}, output ${outputIndex}`);
+  };
+
+  // Function to handle completing a connection to an input jack
+  const completeConnection = (moduleId, inputIndex) => {
+    if (activeConnection) {
+      console.log(`Connecting module ${activeConnection.moduleId} output to module ${moduleId} input ${inputIndex}`);
+      // Logic to add the connection to the global state or module list can be added here
+      setActiveConnection(null); // Reset active connection after completing it
+    }
+  };
+
   return (
     <div className="App" style={{ position: 'relative', minHeight: '100vh' }}>
        <DSPSwitch onToggle={handleDSPToggle} />
@@ -226,12 +248,23 @@ function App() {
             deviceFile={module.deviceFile}
             rnbo={RNBO}
             onRemove={() => removeModule(module.id) } // Adjust to actual removal logic
+            startConnection={startConnection} // Pass start connection handler
+            completeConnection={completeConnection} // Pass complete connection handler
           />
         ) : (
           <div key={module.id}>Component {componentName} not found...</div>
         );
       })}
-      <Speaker />
+      <Speaker 
+        key={speakerID.current}
+        id={speakerID.current}
+        audioContext={audioContext}
+        // deviceFile={module.deviceFile}
+        rnbo={RNBO}
+        // onRemove={() => removeModule(module.id) } // Adjust to actual removal logic
+        startConnection={startConnection} // Pass start connection handler
+        completeConnection={completeConnection} // Pass complete connection handler
+      />
         
       </div>
       {/* Trash Bin Icon in the bottom left */}

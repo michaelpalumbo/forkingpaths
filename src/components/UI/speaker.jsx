@@ -5,7 +5,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Draggable from 'react-draggable';
 
 
-function Speaker({ id, audioContext, onRemove, deviceFile, rnbo }) {
+function Speaker({ id, audioContext, onRemove, deviceFile, rnbo, startConnection, completeConnection }) {
   const [rnboDevice, setRnboDevice] = useState(null);
   const [values, setValues] = useState({})
 
@@ -63,7 +63,15 @@ function Speaker({ id, audioContext, onRemove, deviceFile, rnbo }) {
     };
   }, [audioContext, deviceFile, rnbo]); // Re-run effect if audioContext changes
 
+  // Handler to start a cable connection from the output jack
+  const handleOutputClick = () => {
+    startConnection(id, 0); // Assume a single output for now
+  };
 
+  // Handler to complete a connection at an input jack
+  const handleInputClick = () => {
+    completeConnection(id, 0); // Assume a single input for now
+  };
 
 
   return (
@@ -87,17 +95,21 @@ function Speaker({ id, audioContext, onRemove, deviceFile, rnbo }) {
       <div style={{ marginBottom: '20px', fontWeight: 'bold' }}>Input</div>
 
       {/* Visual input jack */}
+      {/* Interactive Input Jack */}
       <div
-        style={{
-          width: '20px',
-          height: '20px',
-          borderRadius: '50%',
-          backgroundColor: 'black',
-          position: 'absolute',
-          bottom: '5px',
-          left: 'calc(50% - 10px)', // Center the jack horizontally
-        }}
-      />
+          style={{
+            width: '20px',
+            height: '20px',
+            borderRadius: '50%',
+            backgroundColor: 'blue',
+            position: 'absolute',
+            bottom: '5px',
+            left: 'calc(50% - 10px)', // Center the jack horizontally
+            cursor: 'pointer',
+          }}
+          title="Input"
+          onMouseUp={handleInputClick} // Complete connection on mouseup
+        />
     </div>
   </Draggable>
         

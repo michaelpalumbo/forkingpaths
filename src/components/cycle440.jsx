@@ -5,7 +5,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Draggable from 'react-draggable';
 
 
-function cycle440({ id, audioContext, onRemove, deviceFile, rnbo }) {
+function cycle440({ id, audioContext, onRemove, deviceFile, rnbo, startConnection, completeConnection }) {
   const [rnboDevice, setRnboDevice] = useState(null);
   const [values, setValues] = useState({frequency: 440 })
 
@@ -101,11 +101,15 @@ function cycle440({ id, audioContext, onRemove, deviceFile, rnbo }) {
     }
   };
 
-   // Handler to initiate a cable connection from the output jack
-   const handleOutputClick = (event) => {
-    event.stopPropagation();
-    console.log(`Starting connection from module ${id}`);
-    // Additional logic to create a cable component or set the connection state
+
+  // Handler to start a cable connection from the output jack
+  const handleOutputClick = () => {
+    startConnection(id, 0); // Assume a single output for now
+  };
+
+  // Handler to complete a connection at an input jack
+  const handleInputClick = () => {
+    completeConnection(id, 0); // Assume a single input for now
   };
 
 
@@ -127,20 +131,37 @@ function cycle440({ id, audioContext, onRemove, deviceFile, rnbo }) {
           />
         </div>
       
-        {/* Visual Output Jack */}
-              <div
+
+        {/* Interactive Output Jack */}
+        <div
           style={{
             width: '20px',
             height: '20px',
             borderRadius: '50%',
             backgroundColor: 'red',
             position: 'absolute',
-            top: 'calc(50% - 10px)', // Center vertically
-            right: '-10px', // Place at the right edge
+            bottom: '5px',
+            right: '5px',
             cursor: 'pointer',
           }}
-          title="Output Jack"
+          title="Output"
           onMouseDown={handleOutputClick} // Start connection on mousedown
+        />
+
+        {/* Interactive Input Jack */}
+        <div
+          style={{
+            width: '20px',
+            height: '20px',
+            borderRadius: '50%',
+            backgroundColor: 'blue',
+            position: 'absolute',
+            bottom: '5px',
+            left: '5px',
+            cursor: 'pointer',
+          }}
+          title="Input"
+          onMouseUp={handleInputClick} // Complete connection on mouseup
         />
 
       <button onClick={() => {
