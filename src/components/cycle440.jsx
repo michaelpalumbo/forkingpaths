@@ -101,6 +101,14 @@ function cycle440({ id, audioContext, onRemove, deviceFile, rnbo }) {
     }
   };
 
+   // Handler to initiate a cable connection from the output jack
+   const handleOutputClick = (event) => {
+    event.stopPropagation();
+    console.log(`Starting connection from module ${id}`);
+    // Additional logic to create a cable component or set the connection state
+  };
+
+
   return (
 
   <Draggable cancel="input, select">
@@ -119,6 +127,21 @@ function cycle440({ id, audioContext, onRemove, deviceFile, rnbo }) {
           />
         </div>
       
+        {/* Visual Output Jack */}
+              <div
+          style={{
+            width: '20px',
+            height: '20px',
+            borderRadius: '50%',
+            backgroundColor: 'red',
+            position: 'absolute',
+            top: 'calc(50% - 10px)', // Center vertically
+            right: '-10px', // Place at the right edge
+            cursor: 'pointer',
+          }}
+          title="Output Jack"
+          onMouseDown={handleOutputClick} // Start connection on mousedown
+        />
 
       <button onClick={() => {
         if (rnboDevice) {
