@@ -4,7 +4,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Draggable from 'react-draggable';
 
-// import { useRNBO } from './RNBOContext';
 
 function simpleSynth({ id, audioContext, onRemove, deviceFile, rnbo }) {
   const [rnboDevice, setRnboDevice] = useState(null);

@@ -20,7 +20,8 @@ function App() {
   const [modules, setModules] = useState([]);
   // setup webaudio context
   const [audioContext, setAudioContext] = useState(null); // Store a shared AudioContext
-  
+  const [isAudioContextReady, setIsAudioContextReady] = useState(false);
+
   const [rnboDevices, setRnboDevices] = useState([]); // State to hold the RNBO devices
   const [selectedDevice, setSelectedDevice] = useState(''); // State for selected device
   
@@ -88,6 +89,9 @@ function App() {
       alert("Please select a device before adding a module.");
       return;
     }
+
+    
+    
     const newModule = {
       id: id,
       deviceFile: selectedDevice, // Add the selected RNBO device file to the module
@@ -117,7 +121,18 @@ function App() {
   };
 
   
-  const handleDeviceChange = (event) => {
+  const handleDeviceChange = async (event) => {
+    // Ensure the AudioContext is resumed
+    if (audioContext && audioContext.state !== 'running') {
+      try {
+        await audioContext.resume();
+        setIsAudioContextReady(true); // Mark as ready after resuming
+        console.log('AudioContext resumed');
+      } catch (error) {
+        console.error('Failed to resume AudioContext:', error);
+        return;
+      }
+    }
     setSelectedDevice(event.target.value); // Update the selected device
     // addModule()
   };
