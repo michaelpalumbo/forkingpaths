@@ -1,21 +1,51 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
-import SynthModule from './components/SynthModule';
 import { v4 as uuidv4 } from 'uuid';
+
+//  import { RNBO } from '@rnbo/js'; // Import RNBO here
+
+
 // import all components from index.js (these are RNBO devices that have been dynamically turned into react components)
 import * as Components from './components'
 
-
+let getRNBOFlag = true
 function App() {
+  const [RNBO, setRNBO] = useState(null); // State to store the RNBO instance
+  const [isLoading, setIsLoading] = useState(true);
+
+  const isRNBOInitialized = useRef(false);
+
+
   const [modules, setModules] = useState([]);
   // setup webaudio context
   const [audioContext, setAudioContext] = useState(null); // Store a shared AudioContext
   
   const [rnboDevices, setRnboDevices] = useState([]); // State to hold the RNBO devices
   const [selectedDevice, setSelectedDevice] = useState(''); // State for selected device
-
+  
   let menu = {}
+  useEffect(() =>{
+    if (isRNBOInitialized.current) return; // If already initialized, exit
+    const getRNBO = async () => {
+      
+      try{
+        const RNBOimport = await import('@rnbo/js');
+        setRNBO(RNBOimport); // Set the RNBO instance in state
+        isRNBOInitialized.current = true; // Mark as initialized
+        console.log('RNBO loaded:', RNBOimport);
+        setIsLoading(false); // Set loading to false once RNBO is loaded
+
+      } catch (error) {
+        console.error('Error loading RNBO:', error);
+      }
+    }
+    if(isLoading === true){
+      getRNBO()
+    }
+   
+  }, [])
+  
   // Fetch the list of RNBO devices when the component mounts
   useEffect(() => {
     const fetchDevices = async () => {
@@ -47,6 +77,12 @@ function App() {
   }, [modules]);
 
   const addModule = () => {
+
+    if (!RNBO) {
+      console.error("RNBO is not loaded yet");
+      return;
+    }
+
     let id = uuidv4()
     if (!selectedDevice) {
       alert("Please select a device before adding a module.");
@@ -146,6 +182,7 @@ function App() {
             id={module.id}
             audioContext={audioContext}
             deviceFile={module.deviceFile}
+            rnbo={RNBO}
             onRemove={() => removeModule(module.id) } // Adjust to actual removal logic
           />
         ) : (

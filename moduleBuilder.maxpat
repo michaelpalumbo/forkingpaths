@@ -278,19 +278,19 @@
 									"patching_rect" : [ 342.0, 81.0, 239.0, 23.0 ],
 									"rnbo_classname" : "param",
 									"rnbo_extra_attributes" : 									{
-										"sendinit" : 1,
+										"tonormalized" : "",
+										"enum" : "",
 										"unit" : "",
 										"exponent" : 1.0,
-										"displayname" : "",
 										"order" : "",
-										"preset" : 1,
-										"tonormalized" : "",
-										"meta" : "",
+										"displayname" : "",
 										"fromnormalized" : "",
+										"preset" : 1,
+										"displayorder" : "-",
 										"steps" : 0.0,
-										"ctlin" : 0.0,
-										"enum" : "",
-										"displayorder" : "-"
+										"sendinit" : 1,
+										"meta" : "",
+										"ctlin" : 0.0
 									}
 ,
 									"rnbo_serial" : 1,
@@ -697,8 +697,8 @@
 									"patching_rect" : [ 342.0, 124.0, 50.0, 23.0 ],
 									"rnbo_classname" : "number",
 									"rnbo_extra_attributes" : 									{
-										"maximum" : "<none>",
 										"minimum" : "<none>",
+										"maximum" : "<none>",
 										"order" : "",
 										"preset" : 0,
 										"initialFormat" : "float"
@@ -753,19 +753,19 @@
 									"patching_rect" : [ 468.0, 134.5, 245.0, 23.0 ],
 									"rnbo_classname" : "param",
 									"rnbo_extra_attributes" : 									{
-										"sendinit" : 1,
+										"tonormalized" : "",
+										"enum" : "",
 										"unit" : "",
 										"exponent" : 1.0,
-										"displayname" : "",
 										"order" : "",
-										"preset" : 1,
-										"tonormalized" : "",
-										"meta" : "",
+										"displayname" : "",
 										"fromnormalized" : "",
+										"preset" : 1,
+										"displayorder" : "-",
 										"steps" : 0.0,
-										"ctlin" : 0.0,
-										"enum" : "",
-										"displayorder" : "-"
+										"sendinit" : 1,
+										"meta" : "",
+										"ctlin" : 0.0
 									}
 ,
 									"rnbo_serial" : 2,
@@ -1172,8 +1172,8 @@
 									"patching_rect" : [ 468.0, 171.0, 50.0, 23.0 ],
 									"rnbo_classname" : "number",
 									"rnbo_extra_attributes" : 									{
-										"maximum" : "<none>",
 										"minimum" : "<none>",
+										"maximum" : "<none>",
 										"order" : "",
 										"preset" : 0,
 										"initialFormat" : "float"
@@ -1221,9 +1221,9 @@
 									"patching_rect" : [ 34.0, 365.0, 34.0, 23.0 ],
 									"rnbo_classname" : "limi~",
 									"rnbo_extra_attributes" : 									{
-										"channels" : 1.0,
 										"buffersize" : 512.0,
-										"mode" : "exponential"
+										"mode" : "exponential",
+										"channels" : 1.0
 									}
 ,
 									"rnbo_serial" : 1,
@@ -1441,8 +1441,8 @@
 									"rnbo_classname" : "cycle~",
 									"rnbo_extra_attributes" : 									{
 										"index" : "freq",
-										"interp" : "linear",
-										"buffername" : "RNBODefaultSinus"
+										"buffername" : "RNBODefaultSinus",
+										"interp" : "linear"
 									}
 ,
 									"rnbo_serial" : 1,
@@ -1599,8 +1599,8 @@
 									"patching_rect" : [ 34.0, 35.0, 50.0, 23.0 ],
 									"rnbo_classname" : "number",
 									"rnbo_extra_attributes" : 									{
-										"maximum" : "<none>",
 										"minimum" : "<none>",
+										"maximum" : "<none>",
 										"order" : "",
 										"preset" : 0,
 										"initialFormat" : "float"
@@ -1621,19 +1621,19 @@
 									"patching_rect" : [ 34.0, 85.5, 277.0, 23.0 ],
 									"rnbo_classname" : "param",
 									"rnbo_extra_attributes" : 									{
-										"sendinit" : 1,
+										"tonormalized" : "",
+										"enum" : "",
 										"unit" : "",
 										"exponent" : 1.0,
-										"displayname" : "",
 										"order" : "",
-										"preset" : 1,
-										"tonormalized" : "",
-										"meta" : "",
+										"displayname" : "",
 										"fromnormalized" : "",
+										"preset" : 1,
+										"displayorder" : "-",
 										"steps" : 0.0,
-										"ctlin" : 0.0,
-										"enum" : "",
-										"displayorder" : "-"
+										"sendinit" : 1,
+										"meta" : "",
+										"ctlin" : 0.0
 									}
 ,
 									"rnbo_serial" : 3,
@@ -2040,8 +2040,8 @@
 									"patching_rect" : [ 34.0, 120.0, 50.0, 23.0 ],
 									"rnbo_classname" : "number",
 									"rnbo_extra_attributes" : 									{
-										"maximum" : "<none>",
 										"minimum" : "<none>",
+										"maximum" : "<none>",
 										"order" : "",
 										"preset" : 0,
 										"initialFormat" : "float"
@@ -2184,14 +2184,14 @@
 							"parsestring" : ""
 						}
 ,
-						"mod" : 						{
-							"label" : "mod",
+						"volume" : 						{
+							"label" : "volume",
 							"isEnum" : 0,
 							"parsestring" : ""
 						}
 ,
-						"volume" : 						{
-							"label" : "volume",
+						"mod" : 						{
+							"label" : "mod",
 							"isEnum" : 0,
 							"parsestring" : ""
 						}
@@ -2524,26 +2524,26 @@
 									"numinlets" : 2,
 									"numoutlets" : 2,
 									"outlettype" : [ "", "" ],
-									"patching_rect" : [ 342.0, 81.0, 239.0, 23.0 ],
+									"patching_rect" : [ 342.0, 81.0, 275.0, 23.0 ],
 									"rnbo_classname" : "param",
 									"rnbo_extra_attributes" : 									{
-										"sendinit" : 1,
+										"tonormalized" : "",
+										"enum" : "",
 										"unit" : "",
 										"exponent" : 1.0,
-										"displayname" : "",
 										"order" : "",
-										"preset" : 1,
-										"tonormalized" : "",
-										"meta" : "",
+										"displayname" : "",
 										"fromnormalized" : "",
+										"preset" : 1,
+										"displayorder" : "-",
 										"steps" : 0.0,
-										"ctlin" : 0.0,
-										"enum" : "",
-										"displayorder" : "-"
+										"sendinit" : 1,
+										"meta" : "",
+										"ctlin" : 0.0
 									}
 ,
-									"rnbo_serial" : 1,
-									"rnbo_uniqueid" : "mod",
+									"rnbo_serial" : 4,
+									"rnbo_uniqueid" : "modulation",
 									"rnboinfo" : 									{
 										"needsInstanceInfo" : 1,
 										"argnames" : 										{
@@ -2930,8 +2930,8 @@
 										"changesPatcherIO" : 0
 									}
 ,
-									"text" : "param mod @min -100 @max 100 @value 1",
-									"varname" : "mod"
+									"text" : "param modulation @min -100 @max 100 @value 1",
+									"varname" : "modulation"
 								}
 
 							}
@@ -2946,8 +2946,8 @@
 									"patching_rect" : [ 342.0, 124.0, 50.0, 23.0 ],
 									"rnbo_classname" : "number",
 									"rnbo_extra_attributes" : 									{
-										"maximum" : "<none>",
 										"minimum" : "<none>",
+										"maximum" : "<none>",
 										"order" : "",
 										"preset" : 0,
 										"initialFormat" : "float"
@@ -3002,19 +3002,19 @@
 									"patching_rect" : [ 468.0, 134.5, 245.0, 23.0 ],
 									"rnbo_classname" : "param",
 									"rnbo_extra_attributes" : 									{
-										"sendinit" : 1,
+										"tonormalized" : "",
+										"enum" : "",
 										"unit" : "",
 										"exponent" : 1.0,
-										"displayname" : "",
 										"order" : "",
-										"preset" : 1,
-										"tonormalized" : "",
-										"meta" : "",
+										"displayname" : "",
 										"fromnormalized" : "",
+										"preset" : 1,
+										"displayorder" : "-",
 										"steps" : 0.0,
-										"ctlin" : 0.0,
-										"enum" : "",
-										"displayorder" : "-"
+										"sendinit" : 1,
+										"meta" : "",
+										"ctlin" : 0.0
 									}
 ,
 									"rnbo_serial" : 2,
@@ -3421,8 +3421,8 @@
 									"patching_rect" : [ 468.0, 171.0, 50.0, 23.0 ],
 									"rnbo_classname" : "number",
 									"rnbo_extra_attributes" : 									{
-										"maximum" : "<none>",
 										"minimum" : "<none>",
+										"maximum" : "<none>",
 										"order" : "",
 										"preset" : 0,
 										"initialFormat" : "float"
@@ -3470,9 +3470,9 @@
 									"patching_rect" : [ 34.0, 365.0, 34.0, 23.0 ],
 									"rnbo_classname" : "limi~",
 									"rnbo_extra_attributes" : 									{
-										"channels" : 1.0,
 										"buffersize" : 512.0,
-										"mode" : "exponential"
+										"mode" : "exponential",
+										"channels" : 1.0
 									}
 ,
 									"rnbo_serial" : 1,
@@ -3690,8 +3690,8 @@
 									"rnbo_classname" : "cycle~",
 									"rnbo_extra_attributes" : 									{
 										"index" : "freq",
-										"interp" : "linear",
-										"buffername" : "RNBODefaultSinus"
+										"buffername" : "RNBODefaultSinus",
+										"interp" : "linear"
 									}
 ,
 									"rnbo_serial" : 1,
@@ -3848,8 +3848,8 @@
 									"patching_rect" : [ 34.0, 35.0, 50.0, 23.0 ],
 									"rnbo_classname" : "number",
 									"rnbo_extra_attributes" : 									{
-										"maximum" : "<none>",
 										"minimum" : "<none>",
+										"maximum" : "<none>",
 										"order" : "",
 										"preset" : 0,
 										"initialFormat" : "float"
@@ -3870,19 +3870,19 @@
 									"patching_rect" : [ 34.0, 85.5, 277.0, 23.0 ],
 									"rnbo_classname" : "param",
 									"rnbo_extra_attributes" : 									{
-										"sendinit" : 1,
+										"tonormalized" : "",
+										"enum" : "",
 										"unit" : "",
 										"exponent" : 1.0,
-										"displayname" : "",
 										"order" : "",
-										"preset" : 1,
-										"tonormalized" : "",
-										"meta" : "",
+										"displayname" : "",
 										"fromnormalized" : "",
+										"preset" : 1,
+										"displayorder" : "-",
 										"steps" : 0.0,
-										"ctlin" : 0.0,
-										"enum" : "",
-										"displayorder" : "-"
+										"sendinit" : 1,
+										"meta" : "",
+										"ctlin" : 0.0
 									}
 ,
 									"rnbo_serial" : 3,
@@ -4289,8 +4289,8 @@
 									"patching_rect" : [ 34.0, 120.0, 50.0, 23.0 ],
 									"rnbo_classname" : "number",
 									"rnbo_extra_attributes" : 									{
-										"maximum" : "<none>",
 										"minimum" : "<none>",
+										"maximum" : "<none>",
 										"order" : "",
 										"preset" : 0,
 										"initialFormat" : "float"
@@ -4433,14 +4433,14 @@
 							"parsestring" : ""
 						}
 ,
-						"mod" : 						{
-							"label" : "mod",
+						"volume" : 						{
+							"label" : "volume",
 							"isEnum" : 0,
 							"parsestring" : ""
 						}
 ,
-						"volume" : 						{
-							"label" : "volume",
+						"modulation" : 						{
+							"label" : "modulation",
 							"isEnum" : 0,
 							"parsestring" : ""
 						}
@@ -4479,7 +4479,7 @@
 								"value" : 0.5
 							}
 ,
-							"mod" : 							{
+							"modulation" : 							{
 								"value" : 1.0
 							}
 ,
@@ -4506,7 +4506,7 @@
 											"value" : 0.5
 										}
 ,
-										"mod" : 										{
+										"modulation" : 										{
 											"value" : 1.0
 										}
 ,
@@ -4710,9 +4710,9 @@
 									"patching_rect" : [ 65.0, 340.0, 34.0, 23.0 ],
 									"rnbo_classname" : "limi~",
 									"rnbo_extra_attributes" : 									{
-										"channels" : 1.0,
 										"buffersize" : 512.0,
-										"mode" : "exponential"
+										"mode" : "exponential",
+										"channels" : 1.0
 									}
 ,
 									"rnbo_serial" : 1,
@@ -5221,19 +5221,19 @@
 									"patching_rect" : [ 342.0, 81.0, 239.0, 23.0 ],
 									"rnbo_classname" : "param",
 									"rnbo_extra_attributes" : 									{
-										"sendinit" : 1,
+										"tonormalized" : "",
+										"enum" : "",
 										"unit" : "",
 										"exponent" : 1.0,
-										"displayname" : "",
 										"order" : "",
-										"preset" : 1,
-										"tonormalized" : "",
-										"meta" : "",
+										"displayname" : "",
 										"fromnormalized" : "",
+										"preset" : 1,
+										"displayorder" : "-",
 										"steps" : 0.0,
-										"ctlin" : 0.0,
-										"enum" : "",
-										"displayorder" : "-"
+										"sendinit" : 1,
+										"meta" : "",
+										"ctlin" : 0.0
 									}
 ,
 									"rnbo_serial" : 1,
@@ -5640,8 +5640,8 @@
 									"patching_rect" : [ 342.0, 124.0, 50.0, 23.0 ],
 									"rnbo_classname" : "number",
 									"rnbo_extra_attributes" : 									{
-										"maximum" : "<none>",
 										"minimum" : "<none>",
+										"maximum" : "<none>",
 										"order" : "",
 										"preset" : 0,
 										"initialFormat" : "float"
@@ -5696,19 +5696,19 @@
 									"patching_rect" : [ 468.0, 134.5, 245.0, 23.0 ],
 									"rnbo_classname" : "param",
 									"rnbo_extra_attributes" : 									{
-										"sendinit" : 1,
+										"tonormalized" : "",
+										"enum" : "",
 										"unit" : "",
 										"exponent" : 1.0,
-										"displayname" : "",
 										"order" : "",
-										"preset" : 1,
-										"tonormalized" : "",
-										"meta" : "",
+										"displayname" : "",
 										"fromnormalized" : "",
+										"preset" : 1,
+										"displayorder" : "-",
 										"steps" : 0.0,
-										"ctlin" : 0.0,
-										"enum" : "",
-										"displayorder" : "-"
+										"sendinit" : 1,
+										"meta" : "",
+										"ctlin" : 0.0
 									}
 ,
 									"rnbo_serial" : 2,
@@ -6115,8 +6115,8 @@
 									"patching_rect" : [ 468.0, 171.0, 50.0, 23.0 ],
 									"rnbo_classname" : "number",
 									"rnbo_extra_attributes" : 									{
-										"maximum" : "<none>",
 										"minimum" : "<none>",
+										"maximum" : "<none>",
 										"order" : "",
 										"preset" : 0,
 										"initialFormat" : "float"
@@ -6237,14 +6237,14 @@
 ,
 					"patching_rect" : [ 394.0, 223.0, 60.0, 22.0 ],
 					"rnboattrcache" : 					{
-						"mod" : 						{
-							"label" : "mod",
+						"volume" : 						{
+							"label" : "volume",
 							"isEnum" : 0,
 							"parsestring" : ""
 						}
 ,
-						"volume" : 						{
-							"label" : "volume",
+						"mod" : 						{
+							"label" : "mod",
 							"isEnum" : 0,
 							"parsestring" : ""
 						}
@@ -6416,9 +6416,9 @@
 									"patching_rect" : [ 34.0, 365.0, 34.0, 23.0 ],
 									"rnbo_classname" : "limi~",
 									"rnbo_extra_attributes" : 									{
-										"channels" : 1.0,
 										"buffersize" : 512.0,
-										"mode" : "exponential"
+										"mode" : "exponential",
+										"channels" : 1.0
 									}
 ,
 									"rnbo_serial" : 1,
@@ -6636,8 +6636,8 @@
 									"rnbo_classname" : "cycle~",
 									"rnbo_extra_attributes" : 									{
 										"index" : "freq",
-										"interp" : "linear",
-										"buffername" : "RNBODefaultSinus"
+										"buffername" : "RNBODefaultSinus",
+										"interp" : "linear"
 									}
 ,
 									"rnbo_serial" : 1,
@@ -6794,8 +6794,8 @@
 									"patching_rect" : [ 34.0, 35.0, 50.0, 23.0 ],
 									"rnbo_classname" : "number",
 									"rnbo_extra_attributes" : 									{
-										"maximum" : "<none>",
 										"minimum" : "<none>",
+										"maximum" : "<none>",
 										"order" : "",
 										"preset" : 0,
 										"initialFormat" : "float"
@@ -6816,19 +6816,19 @@
 									"patching_rect" : [ 34.0, 85.5, 277.0, 23.0 ],
 									"rnbo_classname" : "param",
 									"rnbo_extra_attributes" : 									{
-										"sendinit" : 1,
+										"tonormalized" : "",
+										"enum" : "",
 										"unit" : "",
 										"exponent" : 1.0,
-										"displayname" : "",
 										"order" : "",
-										"preset" : 1,
-										"tonormalized" : "",
-										"meta" : "",
+										"displayname" : "",
 										"fromnormalized" : "",
+										"preset" : 1,
+										"displayorder" : "-",
 										"steps" : 0.0,
-										"ctlin" : 0.0,
-										"enum" : "",
-										"displayorder" : "-"
+										"sendinit" : 1,
+										"meta" : "",
+										"ctlin" : 0.0
 									}
 ,
 									"rnbo_serial" : 1,
@@ -7235,8 +7235,8 @@
 									"patching_rect" : [ 34.0, 120.0, 50.0, 23.0 ],
 									"rnbo_classname" : "number",
 									"rnbo_extra_attributes" : 									{
-										"maximum" : "<none>",
 										"minimum" : "<none>",
+										"maximum" : "<none>",
 										"order" : "",
 										"preset" : 0,
 										"initialFormat" : "float"

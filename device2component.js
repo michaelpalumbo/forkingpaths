@@ -122,39 +122,34 @@ const generateReactComponent = (fileName, parameters, paramString) => {
 import React, { useState, useEffect } from 'react';
 import Draggable from 'react-draggable';
 
-function ${componentName}({ id, audioContext, onRemove, deviceFile }) {
-  let moduleName = deviceFile.split('.export.json')[0] 
+function ${componentName}({ id, audioContext, onRemove, deviceFile, rnbo }) {
   const [rnboDevice, setRnboDevice] = useState(null);
-    console.log(deviceFile)
   const [values, setValues] = useState({${valueString}})
 
-  console.log(Math.random() * (1000 - 1) + 1)
   // set params
   ${paramString}
 
   useEffect(() => {
-    if (!audioContext) return; // Wait until AudioContext is available
+    if ( !audioContext || !rnbo ) return; // Wait until AudioContext & RNBO is available
+
+    let currentDevice = null; // Local variable to track the current RNBO device
 
     const loadRNBO = async () => {
     try {
-    
-      // load RNBO
-      const RNBO = await import('@rnbo/js');
-
 
       // Load the RNBO patch data
       const response = await fetch(\`/export/\${deviceFile}\`);   
               
       const patchData = await response.json();
       
-      // Create the RNBO device
-      const rnbo = await RNBO.createDevice({ context: audioContext, patcher: patchData });
+      // Create the RNBO module
+      const rnboModule = await rnbo.createDevice({ context: audioContext, patcher: patchData });
 
-      // Connect the RNBO device to the destination (speakers)
-      rnbo.node.connect(audioContext.destination);
+      // Connect the RNBO module to the destination (speakers)
+      rnboModule.node.connect(audioContext.destination);
 
       // Store the RNBO device in the state
-      setRnboDevice(rnbo);
+      setRnboDevice(rnboModule);
 
 
     } catch (error) {
