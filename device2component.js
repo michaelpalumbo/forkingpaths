@@ -38,7 +38,7 @@ const generateDeviceList = () => {
     }
 
     // Filter JSON files
-    const jsonFiles = files.filter(file => file.endsWith('.json') && file !== 'dependencies.json'  && file !== 'rnboDevices.json');
+    const jsonFiles = files.filter(file => file.endsWith('.json') && file !== 'dependencies.json'  && file !== 'rnboDevices.json' && file !== 'speaker.export.json');
 
     // Write the list of JSON files to rnboDevices.json
     fs.writeFile(outputFile, JSON.stringify(jsonFiles, null, 2), (err) => {
@@ -250,7 +250,7 @@ const processRnboFiles = () => {
       console.error('Error reading export directory:', err);
       return;
     }
-    files.filter((file) => (file.endsWith('.export.json'))  && file !== 'dependencies.json'  && file !== 'rnboDevices.json').forEach((file) => {
+    files.filter((file) => (file.endsWith('.export.json'))  && file !== 'dependencies.json'  && file !== 'rnboDevices.json' && file !== 'speaker.export.json').forEach((file) => {
       const filePath = path.join(exportDir, file);
 
       // Read the RNBO JSON file

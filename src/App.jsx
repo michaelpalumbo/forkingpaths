@@ -3,6 +3,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import { v4 as uuidv4 } from 'uuid';
 
+import Speaker from './components/UI/speaker'; // Adjust the import path as needed
+
+
 import DSPSwitch from './components/UI/DSPSwitch'; // Adjust the import path as needed
 
 //  import { RNBO } from '@rnbo/js'; // Import RNBO here
@@ -228,7 +231,7 @@ function App() {
           <div key={module.id}>Component {componentName} not found...</div>
         );
       })}
-
+      <Speaker />
         
       </div>
       {/* Trash Bin Icon in the bottom left */}
