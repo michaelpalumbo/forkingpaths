@@ -35,7 +35,10 @@ function App() {
   const speakerID = useRef(uuidv4());
   
   // cables
+  const [connections, setConnections] = useState([]); // State to store completed connections
+
   const [activeConnection, setActiveConnection] = useState(null); // Global state for active connections
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 }); // Tracks mouse position
 
 
 
@@ -197,9 +200,26 @@ function App() {
 
   /* Patching */
 
+  // Track mouse movement for the temporary cable
+  useEffect(() => {
+    const handleMouseMove = (event) => {
+      setMousePosition({ x: event.clientX, y: event.clientY });
+    };
+
+    if (activeConnection) {
+      window.addEventListener('mousemove', handleMouseMove);
+    } else {
+      window.removeEventListener('mousemove', handleMouseMove);
+    }
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+    };
+  }, [activeConnection]);
+
   // Function to handle starting a connection from an output jack
   const startConnection = (moduleId, outputIndex) => {
-    setActiveConnection({ moduleId, outputIndex });
+    setActiveConnection({ moduleId, outputIndex});
     console.log(`Starting connection from module ${moduleId}, output ${outputIndex}`);
   };
 
@@ -207,7 +227,16 @@ function App() {
   const completeConnection = (moduleId, inputIndex) => {
     if (activeConnection) {
       console.log(`Connecting module ${activeConnection.moduleId} output to module ${moduleId} input ${inputIndex}`);
-      // Logic to add the connection to the global state or module list can be added here
+      
+      // Add the new connection to the connections list
+      const newConnection = {
+        fromModule: activeConnection.moduleId,
+        fromOutput: activeConnection.outputIndex,
+        toModule: moduleId,
+        toInput: inputIndex,
+      };
+      setConnections([...connections, newConnection]);
+
       setActiveConnection(null); // Reset active connection after completing it
     }
   };
@@ -255,6 +284,10 @@ function App() {
           <div key={module.id}>Component {componentName} not found...</div>
         );
       })}
+
+        
+        
+      </div>
       <Speaker 
         key={speakerID.current}
         id={speakerID.current}
@@ -265,8 +298,33 @@ function App() {
         startConnection={startConnection} // Pass start connection handler
         completeConnection={completeConnection} // Pass complete connection handler
       />
-        
-      </div>
+            {/* Render temporary cable
+            {activeConnection && (
+        <svg style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}>
+          <line
+            x1={activeConnection.startX}
+            y1={activeConnection.startY}
+            x2={mousePosition.x}
+            y2={mousePosition.y}
+            stroke="black"
+            strokeWidth="2"
+          />
+        </svg>
+      )} */}
+
+      {/* Render completed cables */}
+      {connections.map((conn, index) => (
+        <svg key={index} style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}>
+          <line
+            x1={conn.fromX}
+            y1={conn.fromY}
+            x2={conn.toX}
+            y2={conn.toY}
+            stroke="white"
+            strokeWidth="8"
+          />
+        </svg>
+      ))}
       {/* Trash Bin Icon in the bottom left */}
       <div style={{ position: 'fixed', bottom: '20px', left: '20px', cursor: 'pointer' }}>
         <FontAwesomeIcon icon={faTrash} size="2x" color="red" />

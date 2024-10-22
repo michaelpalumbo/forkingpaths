@@ -70,7 +70,12 @@ function Speaker({ id, audioContext, onRemove, deviceFile, rnbo, startConnection
 
   // Handler to complete a connection at an input jack
   const handleInputClick = () => {
-    completeConnection(id, 0); // Assume a single input for now
+    const rect = event.target.getBoundingClientRect();
+    const startX = rect.left + rect.width / 2;
+    const startY = rect.top + rect.height / 2;
+
+    startConnection(id, 0, startX, startY); // Pass the starting coordinates
+  
   };
 
 

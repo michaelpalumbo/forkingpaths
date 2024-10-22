@@ -127,7 +127,7 @@ function ${componentName}({ id, audioContext, onRemove, deviceFile, rnbo, startC
   const [rnboDevice, setRnboDevice] = useState(null);
   const [values, setValues] = useState({${valueString}})
 
-    const isLoadedRef = useRef(false); // useRef to track if RNBO device has already been loaded
+  const isLoadedRef = useRef(false); // useRef to track if RNBO device has already been loaded
 
 
   // set params
@@ -218,8 +218,14 @@ function ${componentName}({ id, audioContext, onRemove, deviceFile, rnbo, startC
 
 
   // Handler to start a cable connection from the output jack
-  const handleOutputClick = () => {
-    startConnection(id, 0); // Assume a single output for now
+  const handleOutputClick = (event) => {
+    // Calculate the position of the output jack in the viewport
+    const rect = event.target.getBoundingClientRect();
+    const startX = rect.left + window.scrollX + rect.width / 2;
+    const startY = rect.top + window.scrollY + rect.height / 2;
+
+    // Pass the start coordinates to the global connection state
+    startConnection(id, 0, startX, startY); // Start connection from the output
   };
 
   // Handler to complete a connection at an input jack
