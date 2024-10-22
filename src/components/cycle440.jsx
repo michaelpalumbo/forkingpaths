@@ -4,6 +4,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Draggable from 'react-draggable';
 
+// import { useRNBO } from './RNBOContext';
+
 function cycle440({ id, audioContext, onRemove, deviceFile, rnbo }) {
   const [rnboDevice, setRnboDevice] = useState(null);
   const [values, setValues] = useState({frequency: 440 })
@@ -107,7 +109,7 @@ function cycle440({ id, audioContext, onRemove, deviceFile, rnbo }) {
       <p>cycle440</p>
         
         <div key={frequency}>
-          <label htmlFor="frequency">frequency: {frequency}</label>
+          <label htmlFor="frequency">frequency: {values.frequency}</label>
           <input
             type="range"
             id="frequency"

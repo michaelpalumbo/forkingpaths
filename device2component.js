@@ -100,7 +100,7 @@ const generateReactComponent = (fileName, parameters, paramString) => {
         
         `
         <div key={${param.id}}>
-          <label htmlFor="${param.id}">${param.name}: {${param.id}}</label>
+          <label htmlFor="${param.id}">${param.name}: {values.${param.name}}</label>
           <input
             type="range"
             id="${param.id}"
@@ -121,6 +121,7 @@ const generateReactComponent = (fileName, parameters, paramString) => {
 
 import React, { useState, useEffect, useRef } from 'react';
 import Draggable from 'react-draggable';
+
 
 function ${componentName}({ id, audioContext, onRemove, deviceFile, rnbo }) {
   const [rnboDevice, setRnboDevice] = useState(null);

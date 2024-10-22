@@ -4,6 +4,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Draggable from 'react-draggable';
 
+// import { useRNBO } from './RNBOContext';
+
 function simpleSynth({ id, audioContext, onRemove, deviceFile, rnbo }) {
   const [rnboDevice, setRnboDevice] = useState(null);
   const [values, setValues] = useState({ frequency: 220,  mod: 1, volume: 0.5 })
@@ -115,7 +117,7 @@ function simpleSynth({ id, audioContext, onRemove, deviceFile, rnbo }) {
       <p>simpleSynth</p>
         
         <div key={frequency}>
-          <label htmlFor="frequency">frequency: {frequency}</label>
+          <label htmlFor="frequency">frequency: {values.frequency}</label>
           <input
             type="range"
             id="frequency"
@@ -128,7 +130,7 @@ function simpleSynth({ id, audioContext, onRemove, deviceFile, rnbo }) {
       
 
         <div key={mod}>
-          <label htmlFor="mod">mod: {mod}</label>
+          <label htmlFor="mod">mod: {values.mod}</label>
           <input
             type="range"
             id="mod"
@@ -141,7 +143,7 @@ function simpleSynth({ id, audioContext, onRemove, deviceFile, rnbo }) {
       
 
         <div key={volume}>
-          <label htmlFor="volume">volume: {volume}</label>
+          <label htmlFor="volume">volume: {values.volume}</label>
           <input
             type="range"
             id="volume"
