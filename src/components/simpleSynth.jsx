@@ -154,9 +154,6 @@ function simpleSynth({ id, audioContext, onRemove, deviceFile, rnbo }) {
         </div>
       
 
-      <button onMouseDown={handlePlay}>
-          Play
-      </button>
       <button onClick={() => {
         if (rnboDevice) {
           rnboDevice.node.disconnect(); // Ensure RNBO is disconnected before removal
@@ -164,7 +161,7 @@ function simpleSynth({ id, audioContext, onRemove, deviceFile, rnbo }) {
         }
         onRemove(); // Call parent removal function
           }} style={{ marginLeft: '10px', color: 'red' }}>
-        Remove
+        X
       </button>
     </div>
   </Draggable>

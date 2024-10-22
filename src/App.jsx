@@ -23,11 +23,12 @@ function App() {
   // setup webaudio context
   const [audioContext, setAudioContext] = useState(null); // Store a shared AudioContext
   const [isAudioContextReady, setIsAudioContextReady] = useState(false);
-
+  const [isDSPOn, setIsDSPOn] = useState(false);
+  
   const [rnboDevices, setRnboDevices] = useState([]); // State to hold the RNBO devices
   const [selectedDevice, setSelectedDevice] = useState(''); // State for selected device
   
-  const [isDSPOn, setIsDSPOn] = useState(false);
+
 
 
   let menu = {}
