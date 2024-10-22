@@ -76,9 +76,12 @@ function simpleSynth({ id, audioContext, onRemove, deviceFile, rnbo }) {
 
   const handleParamChange = (paramId, value) => {
     setValues((prev) => ({ ...prev, [paramId]: value }));
+
     if (rnboDevice) {
       const param = rnboDevice.parameters.find(p => p.id === paramId);
-      if (param) param.value = parseFloat(value);
+      if (param){
+        param.value = parseFloat(value);
+      } 
     }
   };
 
@@ -118,7 +121,7 @@ function simpleSynth({ id, audioContext, onRemove, deviceFile, rnbo }) {
             id="frequency"
             min={110}
             max={880}
-            value={220}
+            value={values.frequency}
             onChange={(e) => handleParamChange("frequency", e.target.value)}
           />
         </div>
@@ -131,7 +134,7 @@ function simpleSynth({ id, audioContext, onRemove, deviceFile, rnbo }) {
             id="mod"
             min={-100}
             max={100}
-            value={1}
+            value={values.mod}
             onChange={(e) => handleParamChange("mod", e.target.value)}
           />
         </div>
@@ -144,7 +147,7 @@ function simpleSynth({ id, audioContext, onRemove, deviceFile, rnbo }) {
             id="volume"
             min={0}
             max={100}
-            value={0.5}
+            value={values.volume}
             onChange={(e) => handleParamChange("volume", e.target.value)}
           />
         </div>

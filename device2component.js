@@ -106,7 +106,7 @@ const generateReactComponent = (fileName, parameters, paramString) => {
             id="${param.id}"
             min={${param.min}}
             max={${param.max}}
-            value={${param.value}}
+            value={values.${param.name}}
             onChange={(e) => handleParamChange("${param.id}", e.target.value)}
           />
         </div>
@@ -183,9 +183,12 @@ function ${componentName}({ id, audioContext, onRemove, deviceFile, rnbo }) {
 
   const handleParamChange = (paramId, value) => {
     setValues((prev) => ({ ...prev, [paramId]: value }));
+
     if (rnboDevice) {
       const param = rnboDevice.parameters.find(p => p.id === paramId);
-      if (param) param.value = parseFloat(value);
+      if (param){
+        param.value = parseFloat(value);
+      } 
     }
   };
 
