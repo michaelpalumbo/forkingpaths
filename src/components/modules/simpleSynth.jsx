@@ -5,7 +5,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Draggable from 'react-draggable';
 
 
-function simpleSynth({ id, audioContext, onRemove, deviceFile, rnbo, handleJackClick, onElementClick }) {
+function simpleSynth({ id, audioContext, onRemove, deviceFile, rnbo, handleJackClick }) {
   const [rnboDevice, setRnboDevice] = useState(null);
   const [values, setValues] = useState({ frequency: 220,  mod: 1, volume: 0.5 })
 

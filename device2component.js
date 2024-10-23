@@ -122,7 +122,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Draggable from 'react-draggable';
 
 
-function ${componentName}({ id, audioContext, onRemove, deviceFile, rnbo, handleJackClick, onElementClick }) {
+function ${componentName}({ id, audioContext, onRemove, deviceFile, rnbo, handleJackClick }) {
   const [rnboDevice, setRnboDevice] = useState(null);
   const [values, setValues] = useState({${valueString}})
 

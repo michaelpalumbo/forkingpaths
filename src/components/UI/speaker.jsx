@@ -5,7 +5,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Draggable from 'react-draggable';
 
 
-function Speaker({ id, audioContext, onRemove, deviceFile, rnbo, startConnection, completeConnection }) {
+function Speaker({ id, audioContext, onRemove, deviceFile, rnbo, handleJackClick }) {
   const [rnboDevice, setRnboDevice] = useState(null);
   const [values, setValues] = useState({})
 
