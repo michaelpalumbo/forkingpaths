@@ -69,13 +69,17 @@ function Speaker({ id, audioContext, onRemove, deviceFile, rnbo, startConnection
   };
 
   // Handler to complete a connection at an input jack
-  const handleInputClick = () => {
+  const handleInputClick = (event) => {
     const rect = event.target.getBoundingClientRect();
-    const startX = rect.left + rect.width / 2;
-    const startY = rect.top + rect.height / 2;
+    const endX = rect.left + rect.width / 2;
+    const endY = rect.top + rect.height / 2;
 
-    startConnection(id, 0, startX, startY); // Pass the starting coordinates
-  
+    // Use completeConnection to finish the connection
+    if (typeof completeConnection === 'function') {
+      completeConnection(id, 0, { x: endX, y: endY });
+    } else {
+      console.error('completeConnection is not a function');
+    }
   };
 
 

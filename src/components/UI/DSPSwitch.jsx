@@ -1,43 +1,30 @@
-import React, { useState } from 'react';
+import React from 'react';
 
-const DSPSwitch = ({ onToggle }) => {
-  const [isDSPOn, setIsDSPOn] = useState(false);
-
-  const handleToggle = () => {
-    setIsDSPOn((prev) => {
-      const newState = !prev;
-      if (onToggle) {
-        onToggle(newState); // Call the provided callback with the new state
-      }
-      return newState;
-    });
+function DSPSwitch({ onToggle, isDSPOn }) {
+  const handleClick = () => {
+    onToggle(!isDSPOn); // Call the parent toggle function with the new state
   };
-
-  const backgroundColor = isDSPOn ? 'cornflowerblue' : 'lightgrey';
-  const text = isDSPOn ? 'DSP: ON' : 'DSP: OFF';
 
   return (
     <div
-      onClick={handleToggle}
+      onClick={handleClick}
       style={{
-        position: 'fixed',
-        top: '10px',
-        right: '10px',
-        width: '80px',
-        height: '40px',
-        backgroundColor: backgroundColor,
+        width: '50px',
+        height: '50px',
+        backgroundColor: isDSPOn ? 'lightblue' : 'lightgrey',
+        color: 'black',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         cursor: 'pointer',
-        borderRadius: '5px',
-        fontWeight: 'bold',
-        color: 'black'
+        position: 'absolute',
+        top: '10px',
+        right: '10px',
       }}
     >
-      {text}
+      {isDSPOn ? 'DSP: ON' : 'DSP: OFF'}
     </div>
   );
-};
+}
 
 export default DSPSwitch;
