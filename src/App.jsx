@@ -18,8 +18,8 @@ function App() {
   const [rnboDevices, setRnboDevices] = useState([]);
   const [selectedDevice, setSelectedDevice] = useState('');
   // const [connections, setConnections] = useState([]);
-  const handleJackClickRef = useRef(null); // Ref to store the exposed handleJackClick function
-
+  const handleJackClickRef = useRef(null); // Ref to store the exposed handleJackClick function (in ConnectionManager)
+  const updateCablePositionRef = useRef(null); // Ref to store the exposed updateCablePosition function (in ConnectionManager)
   
   const speakerID = useRef(uuidv4());
 
@@ -69,46 +69,6 @@ function App() {
     }
   };
 
-  // // Centralized handleJackClick function
-  // const handleJackClick = useCallback((moduleId, jackIndex, jackType, jackRef) => {
-  //   if (!clickedJack.current) {
-  //     // No jack currently clicked, store the current jack as clicked
-  //     clickedJack.current = { moduleId, jackIndex, jackType, jackRef };
-  //     console.log('First jack clicked:', moduleId, jackIndex, jackType, jackRef);
-  //   } else {
-  //     // Check if the same type of jack is clicked again
-  //     if (clickedJack.current.jackType === jackType) {
-  //       console.warn('Cannot connect two jacks of the same type.');
-  //       return;
-  //     }
-
-  //     // Create a new connection if types differ
-  //     const newConnection = {
-  //       fromModule: clickedJack.current.jackType === 'output' ? clickedJack.current.moduleId : moduleId,
-  //       fromOutput: clickedJack.current.jackType === 'output' ? clickedJack.current.jackIndex : jackIndex,
-  //       fromRef: clickedJack.current.jackRef,
-  //       toModule: clickedJack.current.jackType === 'input' ? clickedJack.current.moduleId : moduleId,
-  //       toInput: clickedJack.current.jackType === 'input' ? clickedJack.current.jackIndex : jackIndex,
-  //       toRef: jackRef,
-  //     };
-
-  //     setConnections((prevConnections) => [...prevConnections, newConnection]);
-  //     console.log('Connection created:', newConnection);
-
-  //     // Reset the clicked jack after a successful connection
-  //     clickedJack.current = null;
-  //   }
-  // }, []);
-
-  // // Store the jackClick function as a ref on mount
-  // useEffect(() => {
-  //   handleJackClickRef.current = handleJackClick;
-  // }, [handleJackClick]);
-
-  // // Define the click handler in the parent
-  // const handleChildClick = useCallback((message) => {
-  //   console.log('Event received from child:', message);
-  // }, []);
 
 
   return (
@@ -129,7 +89,10 @@ function App() {
         />
         {/* ConnectionManager sets up handleJackClick */}
         <ConnectionManager 
-        onJackClick={(fn) => (handleJackClickRef.current = fn)} />
+        onJackClick={(fn) => (handleJackClickRef.current = fn)}
+        onUpdateCablePosition={(fn) => (updateCablePositionRef.current = fn)}
+         />
+        
 
         <ModuleManager 
         RNBO={RNBO} 
@@ -137,6 +100,7 @@ function App() {
         setModules={setModules} 
         selectedDevice={selectedDevice} 
         handleJackClick={handleJackClickRef.current}
+        updateCablePosition={updateCablePositionRef.current}
         />
 
 
@@ -146,6 +110,7 @@ function App() {
               audioContext={audioContext}
               RNBO={RNBO}
               handleJackClick={handleJackClickRef.current}
+              updateCablePosition={updateCablePositionRef.current}
               // onElementClick={handleChildClick}
               removeModule={(id) => setModules(modules.filter((m) => m.id !== id))}
             />
@@ -156,6 +121,7 @@ function App() {
               audioContext={audioContext}
               rnbo={RNBO}
               handleJackClick={handleJackClickRef.current}
+              updateCablePosition={updateCablePositionRef.current}
             />
           </>
 

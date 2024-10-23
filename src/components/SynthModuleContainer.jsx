@@ -1,7 +1,7 @@
 import React from 'react';
 import * as Components from './modules'; // Dynamically generated components
 
-function SynthModuleContainer({ modules, audioContext, RNBO, removeModule, startConnection, completeConnection, handleJackClick }) {
+function SynthModuleContainer({ modules, audioContext, RNBO, removeModule, handleJackClick, updateCablePosition }) {
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap' }}>
       {modules.map((module) => {
@@ -16,9 +16,8 @@ function SynthModuleContainer({ modules, audioContext, RNBO, removeModule, start
             deviceFile={module.deviceFile}
             rnbo={RNBO}
             onRemove={() => removeModule(module.id)}
-            startConnection={startConnection}
-            completeConnection={completeConnection}
             handleJackClick={handleJackClick}
+            updateCablePosition={updateCablePosition}
           />
         ) : (
           <div key={module.id}>Component {componentName} not found...</div>

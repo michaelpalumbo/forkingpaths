@@ -1,7 +1,7 @@
 import React, { useState, useCallback,useRef, useEffect } from 'react';
 import Cable from './UI/Cable';
 
-function ConnectionManager({ onJackClick }) {
+function ConnectionManager({ onJackClick, onUpdateCablePosition}) {
   const [clickedJack, setClickedJack] = useState(null);
   const [connections, setConnections] = useState([]);
 
@@ -9,6 +9,7 @@ function ConnectionManager({ onJackClick }) {
 
   // Handle clicking a jack
   const handleJackClick = useCallback((moduleId, jackIndex, jackType, jackRef) => {
+    console.log('t')
     console.log(clickedJackRef.current)
     if (!clickedJackRef.current) {
       // No jack is currently clicked, set the current jack as clicked
@@ -38,6 +39,34 @@ function ConnectionManager({ onJackClick }) {
       clickedJackRef.current = null;    }
   }, []);
 
+  
+
+    // Debugging: Check connections on each render
+    useEffect(() => {
+      console.log('Current connections:', connections);
+    }, [connections]);
+  
+  // Function to update cable position based on module movement
+  const updateCablePosition = useCallback((moduleId, jackIndex, jackType, newPos) => {
+    console.log(moduleId, jackIndex, jackType, newPos)
+    
+    setConnections((prevConnections) =>
+      prevConnections.map((conn) => {
+        if (
+          (jackType === 'output' && conn.fromModule === moduleId && conn.fromOutput === jackIndex) ||
+          (jackType === 'input' && conn.toModule === moduleId && conn.toInput === jackIndex)
+        ) {
+          return {
+            ...conn,
+            fromRef: jackType === 'output' ? newPos : conn.fromRef,
+            toRef: jackType === 'input' ? newPos : conn.toRef,
+          };
+        }
+        return conn;
+      })
+    );
+  }, []);
+
   // Expose the handleJackClick function to other components via props
   // Expose handleJackClick to parent
   useEffect(() => {
@@ -46,11 +75,28 @@ function ConnectionManager({ onJackClick }) {
     }
   }, [handleJackClick, onJackClick]);
 
-    // Debugging: Check connections on each render
-    useEffect(() => {
-      console.log('Current connections:', connections);
-    }, [connections]);
+  // Expose updateCablePosition to parent
+  useEffect(() => {
+    if (onUpdateCablePosition) {
+      onUpdateCablePosition(updateCablePosition); // Pass only updateCablePosition
+    }
+  }, [updateCablePosition, onUpdateCablePosition]);
 
+    // // Update cable endpoints when modules move
+    // useEffect(() => {
+    //   setConnections((prevConnections) =>
+    //     prevConnections.map((conn) => {
+    //       const fromModule = modules.find((mod) => mod.id === conn.fromModule);
+    //       const toModule = modules.find((mod) => mod.id === conn.toModule);
+
+    //       return {
+    //         ...conn,
+    //         fromRef: fromModule ? fromModule.output : conn.fromRef,
+    //         toRef: toModule ? toModule.input : conn.toRef,
+    //       };
+    //     })
+    //   );
+    // }, [modules]);
   return (
     <div style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}>
       {/* Render cables dynamically */}
