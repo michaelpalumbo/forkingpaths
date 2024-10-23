@@ -21,7 +21,15 @@ function Cable({ fromRef, toRef }) {
   const path = useMemo(() => generateBezierPath(fromRef, toRef), [fromRef, toRef]);
 
   return (
-    <svg style={{ position: 'absolute', pointerEvents: 'none', overflow: 'visible' }}>
+    <svg style={{ 
+      position: 'absolute', 
+      pointerEvents: 'none', 
+      overflow: 'visible', 
+      zIndex: 1000, // High z-index to ensure it appears on top
+    }}>
+
+      {/* Draw the Bezier path */}
+
       <path
         d={path}
         stroke="black"
@@ -29,19 +37,21 @@ function Cable({ fromRef, toRef }) {
         fill="none"
         markerEnd="url(#arrowhead)" // Optional: Add an arrowhead marker
       />
-      {/* Optional: Arrowhead Marker Definition */}
-      <defs>
-        <marker
-          id="arrowhead"
-          markerWidth="10"
-          markerHeight="7"
-          refX="0"
-          refY="3.5"
-          orient="auto"
-        >
-          <polygon points="0 0, 10 3.5, 0 7" fill="black" />
-        </marker>
-      </defs>
+      {/* Add a circle at the start (plug) */}
+      <circle
+        cx={fromRef.x}
+        cy={fromRef.y}
+        r="5" // Plug radius
+        fill="green" // Color of the plug (adjust as needed)
+      />
+
+      {/* Add a circle at the end (plug) */}
+      <circle
+        cx={toRef.x}
+        cy={toRef.y}
+        r="5" // Plug radius
+        fill="green" // Color of the plug (adjust as needed)
+      />
     </svg>
   );
 }
