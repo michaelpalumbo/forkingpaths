@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 /* Components */
 import RNBOManager from './components/RNBOManager';
@@ -17,11 +17,12 @@ function App() {
   const [isDSPOn, setIsDSPOn] = useState(false);
   const [rnboDevices, setRnboDevices] = useState([]);
   const [selectedDevice, setSelectedDevice] = useState('');
-  const [connections, setConnections] = useState([]);
+  // const [connections, setConnections] = useState([]);
   const handleJackClickRef = useRef(null); // Ref to store the exposed handleJackClick function
 
   
   const speakerID = useRef(uuidv4());
+
 
   useEffect(() => {
     setAudioContext(new AudioContext());
@@ -68,6 +69,48 @@ function App() {
     }
   };
 
+  // // Centralized handleJackClick function
+  // const handleJackClick = useCallback((moduleId, jackIndex, jackType, jackRef) => {
+  //   if (!clickedJack.current) {
+  //     // No jack currently clicked, store the current jack as clicked
+  //     clickedJack.current = { moduleId, jackIndex, jackType, jackRef };
+  //     console.log('First jack clicked:', moduleId, jackIndex, jackType, jackRef);
+  //   } else {
+  //     // Check if the same type of jack is clicked again
+  //     if (clickedJack.current.jackType === jackType) {
+  //       console.warn('Cannot connect two jacks of the same type.');
+  //       return;
+  //     }
+
+  //     // Create a new connection if types differ
+  //     const newConnection = {
+  //       fromModule: clickedJack.current.jackType === 'output' ? clickedJack.current.moduleId : moduleId,
+  //       fromOutput: clickedJack.current.jackType === 'output' ? clickedJack.current.jackIndex : jackIndex,
+  //       fromRef: clickedJack.current.jackRef,
+  //       toModule: clickedJack.current.jackType === 'input' ? clickedJack.current.moduleId : moduleId,
+  //       toInput: clickedJack.current.jackType === 'input' ? clickedJack.current.jackIndex : jackIndex,
+  //       toRef: jackRef,
+  //     };
+
+  //     setConnections((prevConnections) => [...prevConnections, newConnection]);
+  //     console.log('Connection created:', newConnection);
+
+  //     // Reset the clicked jack after a successful connection
+  //     clickedJack.current = null;
+  //   }
+  // }, []);
+
+  // // Store the jackClick function as a ref on mount
+  // useEffect(() => {
+  //   handleJackClickRef.current = handleJackClick;
+  // }, [handleJackClick]);
+
+  // // Define the click handler in the parent
+  // const handleChildClick = useCallback((message) => {
+  //   console.log('Event received from child:', message);
+  // }, []);
+
+
   return (
     <div className="App" style={{ position: 'relative', minHeight: '100vh' }}>
         <h1>Forking Paths</h1>
@@ -84,31 +127,37 @@ function App() {
             selectedDevice={selectedDevice}
             onDeviceChange={(e) => setSelectedDevice(e.target.value)}
         />
+        {/* ConnectionManager sets up handleJackClick */}
+        <ConnectionManager 
+        onJackClick={(fn) => (handleJackClickRef.current = fn)} />
 
-        <ModuleManager RNBO={RNBO} modules={modules} setModules={setModules} selectedDevice={selectedDevice} />
-
-        {/* We use this to load .jsx components created from RNBO devices as Modules */}
-        <SynthModuleContainer
-            modules={modules}
-            audioContext={audioContext}
-            RNBO={RNBO}
-            handleJackClick={handleJackClickRef.current}
-            removeModule={(id) => setModules(modules.filter((m) => m.id !== id))}
+        <ModuleManager 
+        RNBO={RNBO} 
+        modules={modules} 
+        setModules={setModules} 
+        selectedDevice={selectedDevice} 
+        handleJackClick={handleJackClickRef.current}
         />
 
-        <ConnectionManager
-            connections={connections}
-            setConnections={setConnections}
-            onJackClick={(fn) => (handleJackClickRef.current = fn)}
-        />
 
-        <Speaker
-            key={speakerID.current}
-            id={speakerID.current}
-            audioContext={audioContext}
-            rnbo={RNBO}
-            handleJackClick={handleJackClickRef.current}
-        />
+          <>
+            <SynthModuleContainer
+              modules={modules}
+              audioContext={audioContext}
+              RNBO={RNBO}
+              handleJackClick={handleJackClickRef.current}
+              // onElementClick={handleChildClick}
+              removeModule={(id) => setModules(modules.filter((m) => m.id !== id))}
+            />
+
+            <Speaker
+              key={speakerID.current}
+              id={speakerID.current}
+              audioContext={audioContext}
+              rnbo={RNBO}
+              handleJackClick={handleJackClickRef.current}
+            />
+          </>
 
 
         {/* {connections.map((conn, index) => (

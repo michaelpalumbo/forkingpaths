@@ -1,14 +1,15 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 
-function ConnectionManager({ connections, setConnections, onJackClick }) {
+function ConnectionManager({ onJackClick }) {
   const [clickedJack, setClickedJack] = useState(null);
+  const [connections, setConnections] = useState([]);
 
   // Handle clicking a jack
   const handleJackClick = useCallback((moduleId, jackIndex, jackType, jackRef) => {
     if (!clickedJack) {
       // No jack is currently clicked, set the current jack as clicked
       setClickedJack({ moduleId, jackIndex, jackType, jackRef });
-      console.log(moduleId, jackIndex, jackType, jackRef)
+      console.log('first jack clicked for new cable', moduleId, jackIndex, jackType, jackRef)
     } else {
       // If the same type of jack is clicked again
       if (clickedJack.jackType === jackType) {
@@ -32,12 +33,15 @@ function ConnectionManager({ connections, setConnections, onJackClick }) {
       // Reset the clicked jack after a successful connection
       setClickedJack(null);
     }
-  }, [clickedJack, setConnections]);
+  }, [clickedJack]);
 
   // Expose the handleJackClick function to other components via props
-  if (onJackClick) {
-    onJackClick(handleJackClick);
-  }
+  // Expose handleJackClick to parent
+  useEffect(() => {
+    if (onJackClick) {
+      onJackClick(handleJackClick);
+    }
+  }, [handleJackClick, onJackClick]);
   return null; // No direct rendering
 }
 

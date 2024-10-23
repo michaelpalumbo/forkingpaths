@@ -122,7 +122,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Draggable from 'react-draggable';
 
 
-function ${componentName}({ id, audioContext, onRemove, deviceFile, rnbo, handleJackClick, startConnection, completeConnection }) {
+function ${componentName}({ id, audioContext, onRemove, deviceFile, rnbo, handleJackClick, onElementClick }) {
   const [rnboDevice, setRnboDevice] = useState(null);
   const [values, setValues] = useState({${valueString}})
 
@@ -192,32 +192,10 @@ function ${componentName}({ id, audioContext, onRemove, deviceFile, rnbo, handle
     }
   };
 
-  const handlePlay = () => {
-      
-    if (rnboDevice) {
-      console.log("AudioContext State:", audioContext.state); // Log the state
-
-      if (audioContext.state !== 'running') {
-          audioContext.resume().then(() => {
-          console.log("AudioContext resumed");
-          });
-      }
-        
-    // Trigger audio or start event in the RNBO device if needed
-    console.log('RNBO device started');
-    }
-  };
-
-  const handleStop = () => {
-    if (rnboDevice) {
-    // Logic to stop/reset RNBO device if needed
-    console.log('RNBO device stopped');
-    }
-  };
-
 
   // Handler to click an output jack
   const handleOutputClick = (event) => {
+    
     const rect = event.target.getBoundingClientRect();
     const startX = rect.left + rect.width / 2;
     const startY = rect.top + rect.height / 2;
@@ -238,6 +216,11 @@ function ${componentName}({ id, audioContext, onRemove, deviceFile, rnbo, handle
     }
   };
 
+    const handleClick = () => {
+    if (typeof onElementClick === 'function') {
+      onElementClick('Child element clicked!');
+    }
+  };
 
   return (
 
@@ -277,6 +260,7 @@ function ${componentName}({ id, audioContext, onRemove, deviceFile, rnbo, handle
           title="Input"
           onMouseUp={handleInputClick} // Complete connection on mouseup
         />
+            <button onClick={handleClick}>Click Me</button>
 
       <button onClick={() => {
         if (rnboDevice) {
