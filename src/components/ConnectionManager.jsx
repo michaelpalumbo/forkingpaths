@@ -38,17 +38,9 @@ function ConnectionManager({ onJackClick, onUpdateCablePosition}) {
       // Reset the clicked jack after a successful connection
       clickedJackRef.current = null;    }
   }, []);
-
-  
-
-    // Debugging: Check connections on each render
-    useEffect(() => {
-      console.log('Current connections:', connections);
-    }, [connections]);
   
   // Function to update cable position based on module movement
   const updateCablePosition = useCallback((moduleId, jackIndex, jackType, newPos) => {
-    console.log(moduleId, jackIndex, jackType, newPos)
     
     setConnections((prevConnections) =>
       prevConnections.map((conn) => {
