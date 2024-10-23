@@ -5,11 +5,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import Draggable from 'react-draggable';
 
 
-function Speaker({ id, audioContext, onRemove, deviceFile, rnbo, handleJackClick }) {
+function Speaker({ id, audioContext, onRemove, deviceFile, rnbo, handleJackClick, updateCablePosition }) {
   const [rnboDevice, setRnboDevice] = useState(null);
   const [values, setValues] = useState({})
-
-    const isLoadedRef = useRef(false); // useRef to track if RNBO device has already been loaded
+  const [position, setPosition] = useState({ x: 50, y: 50 }); // Initial position
+  const outputJackRef = useRef(null);
+  const inputJackRef = useRef(null);
+  const isLoadedRef = useRef(false); // useRef to track if RNBO device has already been loaded
 
 
   // set params
@@ -80,10 +82,28 @@ function Speaker({ id, audioContext, onRemove, deviceFile, rnbo, handleJackClick
     }
   };
 
+  // handle module repositioning. the connection manager will use this to update cable positioning
+  const handleDrag = (e, data) => {
+    setPosition({ x: data.x, y: data.y });
+
+    // Update jack positions during dragging
+    if (outputJackRef.current) {
+      const rect = outputJackRef.current.getBoundingClientRect();
+      updateCablePosition(id, 0, 'output', { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 });
+    }
+
+    if (inputJackRef.current) {
+      const rect = inputJackRef.current.getBoundingClientRect();
+      updateCablePosition(id, 0, 'input', { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 });
+    }
+  };
 
   return (
 
-  <Draggable cancel="input, select">
+  <Draggable 
+    position={position}
+    onDrag={handleDrag}
+    cancel="input, select">
     <div style={{
         width: '100px',
         height: '100px',
@@ -104,19 +124,20 @@ function Speaker({ id, audioContext, onRemove, deviceFile, rnbo, handleJackClick
       {/* Visual input jack */}
       {/* Interactive Input Jack */}
       <div
-          style={{
-            width: '20px',
-            height: '20px',
-            borderRadius: '50%',
-            backgroundColor: 'blue',
-            position: 'absolute',
-            bottom: '5px',
-            left: 'calc(50% - 10px)', // Center the jack horizontally
-            cursor: 'pointer',
-          }}
-          title="Input"
-          onMouseUp={handleInputClick} // Complete connection on mouseup
-        />
+        ref={inputJackRef}
+        style={{
+          width: '20px',
+          height: '20px',
+          borderRadius: '50%',
+          backgroundColor: 'blue',
+          position: 'absolute',
+          bottom: '5px',
+          left: 'calc(50% - 10px)', // Center the jack horizontally
+          cursor: 'pointer',
+        }}
+        title="Input"
+        onMouseUp={handleInputClick} // Complete connection on mouseup
+      />
     </div>
   </Draggable>
         
