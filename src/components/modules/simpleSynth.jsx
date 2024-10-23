@@ -5,7 +5,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Draggable from 'react-draggable';
 
 
-function simpleSynth({ id, audioContext, onRemove, deviceFile, rnbo, startConnection, completeConnection }) {
+function simpleSynth({ id, audioContext, onRemove, deviceFile, rnbo, handleJackClick, startConnection, completeConnection }) {
   const [rnboDevice, setRnboDevice] = useState(null);
   const [values, setValues] = useState({ frequency: 220,  mod: 1, volume: 0.5 })
 
@@ -110,35 +110,27 @@ function simpleSynth({ id, audioContext, onRemove, deviceFile, rnbo, startConnec
   };
 
 
-  // Handler to start a cable connection from the output jack
+  // Handler to click an output jack
   const handleOutputClick = (event) => {
-    if (typeof startConnection === 'function') {
-      // Calculate the position of the output jack in the viewport
-      const rect = event.target.getBoundingClientRect();
-      const startX = rect.left + rect.width / 2;
-      const startY = rect.top + rect.height / 2;
+    const rect = event.target.getBoundingClientRect();
+    const startX = rect.left + rect.width / 2;
+    const startY = rect.top + rect.height / 2;
 
-      // Pass the start coordinates to the connection state
-      startConnection(id, 0, { x: startX, y: startY });
-    } else {
-      console.error('startConnection is not a function');
+    if (typeof handleJackClick === 'function') {
+      handleJackClick(id, 0, 'output', { x: startX, y: startY });
     }
   };
 
-    // Handler to complete a connection at an input jack
-    const handleInputClick = (event) => {
-      if (typeof completeConnection === 'function') {
-        // Calculate the position of the input jack in the viewport
-        const rect = event.target.getBoundingClientRect();
-        const endX = rect.left + rect.width / 2;
-        const endY = rect.top + rect.height / 2;
-  
-        // Pass the end coordinates to the connection state
-        completeConnection(id, 0, { x: endX, y: endY });
-      } else {
-        console.error('completeConnection is not a function');
-      }
-    };
+  // Handler to click an input jack
+  const handleInputClick = (event) => {
+    const rect = event.target.getBoundingClientRect();
+    const endX = rect.left + rect.width / 2;
+    const endY = rect.top + rect.height / 2;
+
+    if (typeof handleJackClick === 'function') {
+      handleJackClick(id, 0, 'input', { x: endX, y: endY });
+    }
+  };
 
 
   return (

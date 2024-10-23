@@ -64,21 +64,19 @@ function Speaker({ id, audioContext, onRemove, deviceFile, rnbo, startConnection
   }, [audioContext, deviceFile, rnbo]); // Re-run effect if audioContext changes
 
   // Handler to start a cable connection from the output jack
-  const handleOutputClick = () => {
-    startConnection(id, 0); // Assume a single output for now
-  };
+  // const handleOutputClick = () => {
+  //   startConnection(id, 0); // Assume a single output for now
+  // };
 
-  // Handler to complete a connection at an input jack
+
+  // Handler to click an input jack
   const handleInputClick = (event) => {
     const rect = event.target.getBoundingClientRect();
     const endX = rect.left + rect.width / 2;
     const endY = rect.top + rect.height / 2;
 
-    // Use completeConnection to finish the connection
-    if (typeof completeConnection === 'function') {
-      completeConnection(id, 0, { x: endX, y: endY });
-    } else {
-      console.error('completeConnection is not a function');
+    if (typeof handleJackClick === 'function') {
+      handleJackClick(id, 0, 'input', { x: endX, y: endY });
     }
   };
 

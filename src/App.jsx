@@ -18,9 +18,9 @@ function App() {
   const [rnboDevices, setRnboDevices] = useState([]);
   const [selectedDevice, setSelectedDevice] = useState('');
   const [connections, setConnections] = useState([]);
-  const [activeConnection, setActiveConnection] = useState(null);
-  const [startConnectionFn, setStartConnectionFn] = useState(null);
-  const [completeConnectionFn, setCompleteConnectionFn] = useState(null);
+  const handleJackClickRef = useRef(null); // Ref to store the exposed handleJackClick function
+
+  
   const speakerID = useRef(uuidv4());
 
   useEffect(() => {
@@ -87,22 +87,19 @@ function App() {
 
         <ModuleManager RNBO={RNBO} modules={modules} setModules={setModules} selectedDevice={selectedDevice} />
 
+        {/* We use this to load .jsx components created from RNBO devices as Modules */}
         <SynthModuleContainer
             modules={modules}
             audioContext={audioContext}
             RNBO={RNBO}
+            handleJackClick={handleJackClickRef.current}
             removeModule={(id) => setModules(modules.filter((m) => m.id !== id))}
-            startConnection={startConnectionFn}
-            completeConnection={completeConnectionFn}
         />
 
         <ConnectionManager
             connections={connections}
             setConnections={setConnections}
-            activeConnection={activeConnection}
-            setActiveConnection={setActiveConnection}
-            onStartConnection={setStartConnectionFn}
-            onCompleteConnection={setCompleteConnectionFn}
+            onJackClick={(fn) => (handleJackClickRef.current = fn)}
         />
 
         <Speaker
@@ -110,13 +107,13 @@ function App() {
             id={speakerID.current}
             audioContext={audioContext}
             rnbo={RNBO}
-            startConnection={startConnectionFn}
-            completeConnection={completeConnectionFn}
+            handleJackClick={handleJackClickRef.current}
         />
 
-        {connections.map((conn, index) => (
+
+        {/* {connections.map((conn, index) => (
             <Cable key={index} connection={conn} />
-        ))}
+        ))} */}
     </div>
   );
 }

@@ -1,85 +1,44 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 
-function ConnectionManager({ 
-  connections, 
-  setConnections, 
-  activeConnection, 
-  setActiveConnection,
-  onStartConnection, 
-  onCompleteConnection 
-}) {
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+function ConnectionManager({ connections, setConnections, onJackClick }) {
+  const [clickedJack, setClickedJack] = useState(null);
 
-  // Track mouse position for temporary cable visualization
-  useEffect(() => {
-    const handleMouseMove = (event) => {
-      setMousePosition({ x: event.clientX, y: event.clientY });
-    };
-
-    if (activeConnection) {
-      window.addEventListener('mousemove', handleMouseMove);
+  // Handle clicking a jack
+  const handleJackClick = useCallback((moduleId, jackIndex, jackType, jackRef) => {
+    if (!clickedJack) {
+      // No jack is currently clicked, set the current jack as clicked
+      setClickedJack({ moduleId, jackIndex, jackType, jackRef });
+      console.log(moduleId, jackIndex, jackType, jackRef)
     } else {
-      window.removeEventListener('mousemove', handleMouseMove);
-    }
-
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-    };
-  }, [activeConnection]);
-
-  // Start a connection from an output, using useCallback for stability
-  const startConnection = useCallback((moduleId, outputIndex, outputRef) => {
-    if (moduleId !== undefined && outputIndex !== undefined) {
-      setActiveConnection({ moduleId, outputIndex, outputRef });
-      console.log(`Started connection from module ${moduleId}, output ${outputIndex}`);
-    } else {
-      console.warn('Invalid parameters for startConnection');
-    }
-  }, [setActiveConnection]);
-
-   // Complete a connection to an input, using useCallback for stability
-   const completeConnection = useCallback((moduleId, inputIndex, inputRef) => {
-    console.log(activeConnection)
-    if (!activeConnection) {
-      console.warn('No active connection to complete');
-      return;
-    }
-
-    console.log('Completing connection from:', activeConnection);
-
-    const newConnection = {
-      fromModule: activeConnection.moduleId,
-      fromOutput: activeConnection.outputIndex,
-      fromRef: activeConnection.outputRef,
-      toModule: moduleId,
-      toInput: inputIndex,
-      toRef: inputRef,
-    };
-
-    console.log('newConnection', newConnection)
-
-    setConnections((prevConnections) => [...prevConnections, newConnection]);
-    setActiveConnection(null); // Clear the active connection
-  }, [activeConnection, setConnections, setActiveConnection]);
-
-    // Expose functions to other components via props
-    useEffect(() => {
-      if (typeof onStartConnection === 'function') {
-        onStartConnection(() => startConnection);
+      // If the same type of jack is clicked again
+      if (clickedJack.jackType === jackType) {
+        console.warn('Cannot connect two jacks of the same type.');
+        return; // Do not reset the state or create a connection
       }
-      if (typeof onCompleteConnection === 'function') {
-        onCompleteConnection(() => completeConnection);
-      }
-    }, [onStartConnection, onCompleteConnection]);
 
-    useEffect(() => {
-      if (activeConnection) {
-        console.log('Active connection updated:', activeConnection);
-      } else {
-        console.log('Active connection cleared or not set');
-      }
-    }, [activeConnection]);
-  return null; // This component doesn't render anything directly
+      // Create a new connection if types differ
+      const newConnection = {
+        fromModule: clickedJack.jackType === 'output' ? clickedJack.moduleId : moduleId,
+        fromOutput: clickedJack.jackType === 'output' ? clickedJack.jackIndex : jackIndex,
+        fromRef: clickedJack.jackRef,
+        toModule: clickedJack.jackType === 'input' ? clickedJack.moduleId : moduleId,
+        toInput: clickedJack.jackType === 'input' ? clickedJack.jackIndex : jackIndex,
+        toRef: jackRef,
+      };
+
+      setConnections((prevConnections) => [...prevConnections, newConnection]);
+      console.log('Connection created:', newConnection);
+
+      // Reset the clicked jack after a successful connection
+      setClickedJack(null);
+    }
+  }, [clickedJack, setConnections]);
+
+  // Expose the handleJackClick function to other components via props
+  if (onJackClick) {
+    onJackClick(handleJackClick);
+  }
+  return null; // No direct rendering
 }
-// Using React.memo will ensure that ConnectionManager only re-renders when the props actually change.
+
 export default React.memo(ConnectionManager);
