@@ -7,7 +7,7 @@ function SynthModuleContainer({ modules, audioContext, RNBO, removeModule, handl
       {modules.map((module) => {
         const componentName = module.deviceFile.replace('.export.json', '');
         const SynthModule = Components[componentName];
-
+        console.log(module.id)
         return SynthModule ? (
           <SynthModule
             key={module.id}

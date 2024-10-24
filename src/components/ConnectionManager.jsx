@@ -1,5 +1,6 @@
 import React, { useState, useCallback,useRef, useEffect } from 'react';
 import Cable from './UI/Cable';
+import AudioNodeManager from './AudioNodeManager';
 
 function ConnectionManager({ onJackClick, onUpdateCablePosition}) {
   const [clickedJack, setClickedJack] = useState(null);
@@ -9,8 +10,7 @@ function ConnectionManager({ onJackClick, onUpdateCablePosition}) {
 
   // Handle clicking a jack
   const handleJackClick = useCallback((moduleId, jackIndex, jackType, jackRef) => {
-    console.log('t')
-    console.log(clickedJackRef.current)
+
     if (!clickedJackRef.current) {
       // No jack is currently clicked, set the current jack as clicked
       clickedJackRef.current = { moduleId, jackIndex, jackType, jackRef };
@@ -33,8 +33,10 @@ function ConnectionManager({ onJackClick, onUpdateCablePosition}) {
       };
 
       setConnections((prevConnections) => [...prevConnections, newConnection]);
-      console.log('Connection created:', newConnection);
+      // console.log('Connection created:', newConnection);
 
+      // Call handleNewConnection to update the audio graph
+      handleNewConnection(newConnection);
       // Reset the clicked jack after a successful connection
       clickedJackRef.current = null;    }
   }, []);
@@ -58,6 +60,25 @@ function ConnectionManager({ onJackClick, onUpdateCablePosition}) {
       })
     );
   }, []);
+
+  // Update signal flow based on cable creation
+  const handleNewConnection = useCallback((connection) => {
+    const { fromModule, toModule } = connection;
+    AudioNodeManager.connectNodes(fromModule, toModule);
+    console.log(`New connection created: ${fromModule} -> ${toModule}`);
+  }, []);
+
+  // Update signal flow based on cable deletion
+  const deleteCable = useCallback((index) => {
+    const connection = connections[index];
+    if (connection) {
+      const { fromModule, toModule, fromOutput, toInput } = connection;
+      AudioNodeManager.disconnectNodes(fromModule, toModule);
+      console.log(`Connection deleted: ${fromModule} -> ${toModule}`);
+    }
+
+    setConnections((prev) => prev.filter((_, i) => i !== index));
+  }, [connections]);
 
   // Expose the handleJackClick function to other components via props
   // Expose handleJackClick to parent
@@ -97,6 +118,8 @@ function ConnectionManager({ onJackClick, onUpdateCablePosition}) {
           key={index}
           fromRef={connection.fromRef}
           toRef={connection.toRef}
+          onDelete={() => deleteCable(index)}
+
         />
       ))}
     </div>

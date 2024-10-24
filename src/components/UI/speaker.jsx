@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Draggable from 'react-draggable';
-
+import AudioNodeManager from '../AudioNodeManager';
 
 function Speaker({ id, audioContext, onRemove, deviceFile, rnbo, handleJackClick, updateCablePosition }) {
   const [rnboDevice, setRnboDevice] = useState(null);
@@ -12,6 +12,7 @@ function Speaker({ id, audioContext, onRemove, deviceFile, rnbo, handleJackClick
   const outputJackRef = useRef(null);
   const inputJackRef = useRef(null);
   const isLoadedRef = useRef(false); // useRef to track if RNBO device has already been loaded
+  const speakerDeviceRef = useRef(null); // Move the ref declaration here
 
 
   // set params
@@ -34,21 +35,40 @@ function Speaker({ id, audioContext, onRemove, deviceFile, rnbo, handleJackClick
               
       const patchData = await response.json();
 
+       // Create the RNBO device for the speaker
+       const rnboSpeaker = await rnbo.createDevice({ context: audioContext, patcher: patchData });
 
+       // Check if the node is a valid AudioNode
+       if (rnboSpeaker.node instanceof AudioNode) {
+         // Register the RNBO speaker node with AudioNodeManager
+         AudioNodeManager.registerNode(id, rnboSpeaker.node);
+         console.log(`RNBO speaker node registered as AudioNode: ${id}`);
+       } else {
+         console.warn(`RNBO speaker node is not a valid AudioNode: ${id}`);
+       }
+
+       // Store the RNBO device reference
+        speakerDeviceRef.current = rnboSpeaker;
+      } catch (error) {
+        console.error('Error loading RNBO speaker device:', error);
+      }
       
-      // Create the RNBO module
-      rnboModule = await rnbo.createDevice({ context: audioContext, patcher: patchData });
+    //   // Create the RNBO module
+    //   rnboModule = await rnbo.createDevice({ context: audioContext, patcher: patchData });
 
-      // Connect the RNBO module to the destination (speakers)
-      rnboModule.node.connect(audioContext.destination);
+    //   // Connect the RNBO module to the destination (speakers)
+    //   rnboModule.node.connect(audioContext.destination);
 
-      // Store the RNBO device in the state
-      setRnboDevice(rnboModule);
+    //   // Register the speaker node in AudioNodeManager
+    //   AudioNodeManager.registerNode(id, rnboModule);
+
+    //   // Store the RNBO device in the state
+    //   setRnboDevice(rnboModule);
 
 
-    } catch (error) {
-        console.error("Error loading RNBO device:", error);
-    }
+    // } catch (error) {
+    //     console.error("Error loading RNBO device:", error);
+    // }
     };
 
     // Load the RNBO device

@@ -5,21 +5,44 @@ class AudioNodeManager {
   
     // Register a node for a module
     registerNode(moduleId, node) {
-      this.nodes[moduleId] = node;
-      console.log(`Node registered for module: ${moduleId}`);
+        if (node instanceof AudioNode) {
+            this.nodes[moduleId] = node;
+            console.log(`AudioNode registered for module: ${moduleId}`);
+          } else {
+            console.warn(`Failed to register node: ${moduleId} is not an AudioNode.`);
+          }
     }
   
-    // Connect two modules
-    connectNodes(fromModuleId, toModuleId) {
-      const fromNode = this.nodes[fromModuleId];
-      const toNode = this.nodes[toModuleId];
-  
-      if (fromNode && toNode) {
-        fromNode.connect(toNode);
-        console.log(`Connected ${fromModuleId} to ${toModuleId}`);
-      } else {
-        console.warn(`Failed to connect ${fromModuleId} to ${toModuleId}: Node(s) missing`);
-      }
+    // Connect two modules with specified outlet and inlet indices
+    connectNodes(fromModuleId, toModuleId, fromOutputIndex = 0, toInputIndex = 0) {
+        const fromNode = this.nodes[fromModuleId];
+        const toNode = this.nodes[toModuleId];
+    
+        // Check if nodes are valid AudioNodes
+        if (fromNode instanceof AudioNode) {
+          console.log(`fromNode (${fromModuleId}) is an AudioNode`);
+        } else {
+          console.warn(`fromNode (${fromModuleId}) is NOT a valid AudioNode`);
+        }
+    
+        if (toNode instanceof AudioNode) {
+          console.log(`toNode (${toModuleId}) is an AudioNode`);
+        } else {
+          console.warn(`toNode (${toModuleId}) is NOT a valid AudioNode`);
+        }
+    
+        // Ensure nodes are valid and connectable
+        if (!fromNode || !toNode) {
+          console.warn(`Node(s) missing: ${fromModuleId}, ${toModuleId}`);
+          return;
+        }
+    
+        try {
+          fromNode.connect(toNode, fromOutputIndex, toInputIndex);
+          console.log(`Connected ${fromModuleId} [outlet ${fromOutputIndex}] to ${toModuleId} [inlet ${toInputIndex}]`);
+        } catch (error) {
+          console.error(`Failed to connect ${fromModuleId} to ${toModuleId}:`, error);
+        }
     }
   
     // Disconnect two modules

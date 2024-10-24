@@ -3,6 +3,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Draggable from 'react-draggable';
+import AudioNodeManager from '../AudioNodeManager';
 
 
 function simpleSynth({ id, audioContext, onRemove, deviceFile, rnbo, handleJackClick, updateCablePosition }) {
@@ -12,7 +13,7 @@ function simpleSynth({ id, audioContext, onRemove, deviceFile, rnbo, handleJackC
   const outputJackRef = useRef(null);
   const inputJackRef = useRef(null);
   const isLoadedRef = useRef(false); // useRef to track if RNBO device has already been loaded
-
+  const rnboDeviceRef = useRef(null);
 
   // set params
   
@@ -44,17 +45,28 @@ function simpleSynth({ id, audioContext, onRemove, deviceFile, rnbo, handleJackC
       const response = await fetch(`/export/${deviceFile}`);   
               
       const patchData = await response.json();
-
-
       
       // Create the RNBO module
       rnboModule = await rnbo.createDevice({ context: audioContext, patcher: patchData });
 
+      // Register this device in AudioNodeManager
+      // Check if the RNBO device exposes an AudioNode
+        if (rnboModule.node instanceof AudioNode) {
+          // Register this device in AudioNodeManager
+          console.log(`RNBO device output registered as AudioNode: ${id}`);
+          AudioNodeManager.registerNode(id, rnboModule.node);
+        } else {
+          console.warn(`RNBO device ${id} does not expose a valid AudioNode.`);
+        }
+
       // Connect the RNBO module to the destination (speakers)
-      rnboModule.node.connect(audioContext.destination);
+      //! note that this is commented out to experiment with getting audio routed through cables
+      // rnboModule.node.connect(audioContext.destination);
 
       // Store the RNBO device in the state
       setRnboDevice(rnboModule);
+      rnboDeviceRef.current = rnboModule;
+
 
 
     } catch (error) {
@@ -74,7 +86,7 @@ function simpleSynth({ id, audioContext, onRemove, deviceFile, rnbo, handleJackC
       }
     }
     };
-  }, [audioContext, deviceFile, rnbo]); // Re-run effect if audioContext changes
+  }, [audioContext, deviceFile, rnbo, id]); // Re-run effect if audioContext changes
 
 
   const handleParamChange = (paramId, value) => {
