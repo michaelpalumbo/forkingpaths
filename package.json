@@ -4,7 +4,6 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-
     "generate:rnbo": "node device2component.js",
     "dev": "npm run generate:rnbo && vite",
     "build": "vite build",
@@ -19,6 +18,7 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-draggable": "^4.4.6",
+    "react-flow-renderer": "^10.3.17",
     "tone": "^15.0.4",
     "uuid": "^10.0.0"
   },

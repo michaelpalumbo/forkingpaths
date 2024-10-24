@@ -7,6 +7,7 @@ class AudioNodeManager {
     registerNode(moduleId, node) {
         if (node instanceof AudioNode) {
             this.nodes[moduleId] = node;
+            console.log('audioNode', this.nodes[moduleId])
             console.log(`AudioNode registered for module: ${moduleId}`);
           } else {
             console.warn(`Failed to register node: ${moduleId} is not an AudioNode.`);
@@ -14,10 +15,10 @@ class AudioNodeManager {
     }
   
     // Connect two modules with specified outlet and inlet indices
-    connectNodes(fromModuleId, toModuleId, fromOutputIndex = 0, toInputIndex = 0) {
+    connectNodes(fromModuleId, toModuleId, fromOutputIndex, toInputIndex) {
         const fromNode = this.nodes[fromModuleId];
         const toNode = this.nodes[toModuleId];
-    
+        console.log('from', fromNode)
         // Check if nodes are valid AudioNodes
         if (fromNode instanceof AudioNode) {
           console.log(`fromNode (${fromModuleId}) is an AudioNode`);

@@ -5,7 +5,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Draggable from 'react-draggable';
 import AudioNodeManager from '../AudioNodeManager';
 
-function Speaker({ id, audioContext, onRemove, deviceFile, rnbo, handleJackClick, updateCablePosition }) {
+function AudioOut({ id, audioContext, onRemove, deviceFile, rnbo, handleJackClick, updateCablePosition }) {
   const [rnboDevice, setRnboDevice] = useState(null);
   const [values, setValues] = useState({})
   const [position, setPosition] = useState({ x: 50, y: 50 }); // Initial position
@@ -18,77 +18,63 @@ function Speaker({ id, audioContext, onRemove, deviceFile, rnbo, handleJackClick
   // set params
   
 
-  useEffect(() => {
-    if ( !audioContext || !rnbo ) return; // Wait until AudioContext & RNBO is available
+  const gainNodeRef = useRef(null);
+  const analyserRef = useRef(null);
+  const [volumeLevel, setVolumeLevel] = useState(0); // State for VU meter
 
-    // Avoid running the effect twice in React 18's Strict Mode
-    if (isLoadedRef.current) return; // If already loaded, skip
-    isLoadedRef.current = true; // Mark as loaded
+    useEffect(() => {
+        if (!audioContext) return;
 
-    let rnboModule = null; // Local variable to track the current RNBO device
+        // Create a GainNode for the speaker
+        const gainNode = audioContext.createGain();
+        gainNode.gain.value = 1.0; // Set gain to max
 
-    const loadRNBO = async () => {
-    try {
+        // Create an AnalyserNode for visual feedback
+        const analyserNode = audioContext.createAnalyser();
+        analyserNode.fftSize = 256; // Set FFT size
+        const bufferLength = analyserNode.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
 
-      // Load the RNBO patch data
-      const response = await fetch(`/export/speaker.export.json`);   
-              
-      const patchData = await response.json();
+        // Connect GainNode to AnalyserNode and then to the audio output
+        gainNode.connect(analyserNode);
+        analyserNode.connect(audioContext.destination);
 
-       // Create the RNBO device for the speaker
-       const rnboSpeaker = await rnbo.createDevice({ context: audioContext, patcher: patchData });
+        // Register the GainNode as an AudioNode in AudioNodeManager
+        AudioNodeManager.registerNode(id, gainNode);
+        console.log(`Speaker node registered as AudioNode: ${id}`);
 
-       // Check if the node is a valid AudioNode
-       if (rnboSpeaker.node instanceof AudioNode) {
-         // Register the RNBO speaker node with AudioNodeManager
-         AudioNodeManager.registerNode(id, rnboSpeaker.node);
-         console.log(`RNBO speaker node registered as AudioNode: ${id}`);
-       } else {
-         console.warn(`RNBO speaker node is not a valid AudioNode: ${id}`);
-       }
+        gainNodeRef.current = gainNode;
+        analyserRef.current = analyserNode;
 
-       // Store the RNBO device reference
-        speakerDeviceRef.current = rnboSpeaker;
-      } catch (error) {
-        console.error('Error loading RNBO speaker device:', error);
-      }
-      
-    //   // Create the RNBO module
-    //   rnboModule = await rnbo.createDevice({ context: audioContext, patcher: patchData });
+        // Animation loop to update the VU meter
+        const updateVolume = () => {
+        analyserNode.getByteTimeDomainData(dataArray);
 
-    //   // Connect the RNBO module to the destination (speakers)
-    //   rnboModule.node.connect(audioContext.destination);
+        // Calculate peak-to-peak amplitude
+        let min = 255, max = 0;
+        for (let i = 0; i < bufferLength; i++) {
+            const value = dataArray[i];
+            if (value < min) min = value;
+            if (value > max) max = value;
+        }
+        const amplitude = max - min;
 
-    //   // Register the speaker node in AudioNodeManager
-    //   AudioNodeManager.registerNode(id, rnboModule);
+        // Map amplitude to volume level (0-100)
+        const mappedVolume = Math.min((amplitude / 255) * 100, 100);
+        setVolumeLevel(mappedVolume);
 
-    //   // Store the RNBO device in the state
-    //   setRnboDevice(rnboModule);
+        requestAnimationFrame(updateVolume);
+        };
 
+        updateVolume(); // Start animation loop
 
-    // } catch (error) {
-    //     console.error("Error loading RNBO device:", error);
-    // }
-    };
-
-    // Load the RNBO device
-    loadRNBO();
-
-    return () => {
-    // Cleanup when the component unmounts
-    if (rnboDevice) {
-      // Stop the RNBO device (if it has a stop method or similar mechanism)
-      if (rnboDevice.node) {
-          rnboDevice.node.disconnect(); // Disconnect from the audio context
-      }
-    }
-    };
-  }, [audioContext, deviceFile, rnbo]); // Re-run effect if audioContext changes
-
-  // Handler to start a cable connection from the output jack
-  // const handleOutputClick = () => {
-  //   startConnection(id, 0); // Assume a single output for now
-  // };
+        return () => {
+        // Unregister node and disconnect when the component unmounts
+        AudioNodeManager.unregisterNode(id);
+        gainNode.disconnect();
+        analyserNode.disconnect();
+        };
+    }, [audioContext, id]);
 
 
   // Handler to click an input jack
@@ -137,8 +123,16 @@ function Speaker({ id, audioContext, onRemove, deviceFile, rnbo, handleJackClick
         backgroundColor: '#eee',
         color: 'black'
       }}>
-      <p>Audio Out</p>
+      <p>AUDIO OUT</p>
 
+      <div
+          style={{
+            width: `${volumeLevel}%`,
+            height: '100%',
+            backgroundColor: 'green',
+            transition: 'width 0.1s',
+          }}
+        />
       <div style={{ marginBottom: '20px', fontWeight: 'bold' }}>Input</div>
 
       {/* Visual input jack */}
@@ -164,4 +158,4 @@ function Speaker({ id, audioContext, onRemove, deviceFile, rnbo, handleJackClick
   );
 }
 
-export default Speaker;
+export default AudioOut;

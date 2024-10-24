@@ -44,8 +44,6 @@ function cycle440({ id, audioContext, onRemove, deviceFile, rnbo, handleJackClic
       // Register this device in AudioNodeManager
       // Check if the RNBO device exposes an AudioNode
         if (rnboModule.node instanceof AudioNode) {
-          // rnboModule.node.connect(audioContext.destination); // Uncomment this for a temporary test for audio
-
           // Register this device in AudioNodeManager
           console.log(`RNBO device output registered as AudioNode: ${id}`);
           AudioNodeManager.registerNode(id, rnboModule.node);

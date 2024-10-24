@@ -63,8 +63,8 @@ function ConnectionManager({ onJackClick, onUpdateCablePosition}) {
 
   // Update signal flow based on cable creation
   const handleNewConnection = useCallback((connection) => {
-    const { fromModule, toModule } = connection;
-    AudioNodeManager.connectNodes(fromModule, toModule);
+    const { fromModule, toModule, fromOutput, toInput } = connection;
+    AudioNodeManager.connectNodes(fromModule, toModule, fromOutput, toInput);
     console.log(`New connection created: ${fromModule} -> ${toModule}`);
   }, []);
 

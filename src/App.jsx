@@ -8,6 +8,7 @@ import SynthModuleContainer from './components/SynthModuleContainer';
 import ConnectionManager from './components/ConnectionManager';
 import DSPSwitch from './components/UI/DSPSwitch';
 import Speaker from './components/UI/Speaker';
+import AudioOut from './components/UI/audioOut';
 import Cable from './components/UI/Cable';
 
 function App() {
@@ -115,7 +116,16 @@ function App() {
               removeModule={(id) => setModules(modules.filter((m) => m.id !== id))}
             />
 
-            <Speaker
+            {/* <Speaker
+              key={speakerID.current}
+              id={speakerID.current}
+              audioContext={audioContext}
+              rnbo={RNBO}
+              handleJackClick={handleJackClickRef.current}
+              updateCablePosition={updateCablePositionRef.current}
+            /> */}
+
+            <AudioOut
               key={speakerID.current}
               id={speakerID.current}
               audioContext={audioContext}
