@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import ReactFlow, { addEdge, Background, Controls } from 'react-flow-renderer';
+import ReactFlow, { addEdge, Background, Controls, MiniMap } from 'react-flow-renderer';
 import DeviceSelector from './components/DeviceSelector';
 import ModuleManager from './components/ModuleManager';
 import RNBOManager from './components/RNBOManager';
@@ -124,9 +124,17 @@ function App() {
             edges={edges}
             onConnect={onConnect}
             fitView
-        >
-        <Background />
-        <Controls />
+            
+            >
+            <Background />
+            <Controls />
+            <MiniMap 
+                // nodeColor={nodeColor} 
+                // nodeStrokeWidth={3} 
+                zoomable 
+                pannable     
+            />
+
         </ReactFlow>
 
         </div>
