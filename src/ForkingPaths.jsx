@@ -1,6 +1,8 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import ReactFlow, { addEdge, Background, Controls } from 'react-flow-renderer';
 import DeviceSelector from './components/DeviceSelector';
+import ModuleManager from './components/ModuleManager';
+import RNBOManager from './components/RNBOManager';
 
 import './App.css';
 
@@ -36,7 +38,14 @@ const initialNodes = [
 function App() {
     const [rnboDevices, setRnboDevices] = useState([]);
     const [selectedDevice, setSelectedDevice] = useState('');
-    
+
+    const [nodes, setNodes] = useState(initialNodes);
+    const [edges, setEdges] = useState([]);
+
+    const [RNBO, setRNBO] = useState(null);
+
+    const [modules, setModules] = useState([]);
+
     useEffect(() => {
         const fetchDevices = async () => {
         try {
@@ -53,8 +62,7 @@ function App() {
     }, []);
 
 
-  const [nodes, setNodes] = useState(initialNodes);
-  const [edges, setEdges] = useState([]);
+
 
   // Handle edge creation (connection between nodes)
   const onConnect = useCallback((params) => {
@@ -93,10 +101,22 @@ function App() {
             <button onClick={stopAudio}>Stop Audio</button>
         </div>
 
+        <RNBOManager setRNBO={setRNBO} />
+
         <DeviceSelector
             devices={rnboDevices}
             selectedDevice={selectedDevice}
             onDeviceChange={(e) => setSelectedDevice(e.target.value)}
+        />
+
+
+        <ModuleManager 
+            RNBO={RNBO} 
+            modules={modules} 
+            setModules={setModules} 
+            selectedDevice={selectedDevice} 
+            // handleJackClick={handleJackClickRef.current}
+            // updateCablePosition={updateCablePositionRef.current}
         />
 
         <ReactFlow
@@ -105,8 +125,8 @@ function App() {
             onConnect={onConnect}
             fitView
         >
-            <Background />
-            <Controls />
+        <Background />
+        <Controls />
         </ReactFlow>
 
         </div>

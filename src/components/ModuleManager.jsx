@@ -17,7 +17,7 @@ function ModuleManager({ RNBO, modules, setModules, selectedDevice }) {
       id: uuidv4(),
       deviceFile: selectedDevice,
     };
-
+    console.log(newModule)
     setModules((prevModules) => [...prevModules, newModule]);
   };
 
