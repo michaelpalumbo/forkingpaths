@@ -1,5 +1,6 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import ReactFlow, { addEdge, Background, Controls } from 'react-flow-renderer';
+import DeviceSelector from './components/DeviceSelector';
 
 import './App.css';
 
@@ -33,6 +34,25 @@ const initialNodes = [
 ];
 
 function App() {
+    const [rnboDevices, setRnboDevices] = useState([]);
+    const [selectedDevice, setSelectedDevice] = useState('');
+    
+    useEffect(() => {
+        const fetchDevices = async () => {
+        try {
+            const response = await fetch('/export/rnboDevices.json');
+            if (!response.ok) throw new Error('Failed to fetch RNBO devices');
+            const devices = await response.json();
+            setRnboDevices(devices);
+        } catch (error) {
+            console.error('Error fetching RNBO devices:', error);
+        }
+        };
+    
+        fetchDevices();
+    }, []);
+
+
   const [nodes, setNodes] = useState(initialNodes);
   const [edges, setEdges] = useState([]);
 
@@ -44,8 +64,8 @@ function App() {
 
   // Function to handle audio connections
   const handleAudioConnection = ({ source, target }) => {
-    // Stop any active audio
-    // stopAudio();
+    // Function to resume the audio context
+    //? in future, might want to make connections with DSP turned off. 
     if (audioCtx.state === 'suspended') {
         audioCtx.resume().then(() => {
         console.log('Audio context resumed');
@@ -66,33 +86,31 @@ function App() {
     noiseSource.disconnect();
   };
 
-    // Function to resume the audio context
-    const resumeAudioContext = () => {
-        if (audioCtx.state === 'suspended') {
-            audioCtx.resume().then(() => {
-            console.log('Audio context resumed');
-            });
-        }
-        };
 
-  return (
-    <div style={{ height: '100vh' }}>
-        <div className="controls">
-        <button onClick={resumeAudioContext}>Resume Audio</button>
-        <button onClick={stopAudio}>Stop Audio</button>
-      </div>
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onConnect={onConnect}
-        fitView
-      >
-        <Background />
-        <Controls />
-      </ReactFlow>
+    return (
+        <div style={{ height: '100vh' }}>
+            <div className="controls">
+            <button onClick={stopAudio}>Stop Audio</button>
+        </div>
 
-    </div>
-  );
+        <DeviceSelector
+            devices={rnboDevices}
+            selectedDevice={selectedDevice}
+            onDeviceChange={(e) => setSelectedDevice(e.target.value)}
+        />
+
+        <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            onConnect={onConnect}
+            fitView
+        >
+            <Background />
+            <Controls />
+        </ReactFlow>
+
+        </div>
+    );
 }
 
 export default App;
