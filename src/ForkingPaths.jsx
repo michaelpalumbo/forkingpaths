@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import ReactFlow, {
   addEdge,
   useEdgesState,
@@ -10,13 +10,14 @@ import 'reactflow/dist/style.css';
 import './ForkingPaths.css';
 
 import CustomNode from './components/CustomNode';
-import CustomEdge from './components/CustomEdge'; // Import the custom edge
+
 
 
 const nodeTypes = { customNode: CustomNode };
 
 
-const initialNodes = [];
+const initialNodes = [
+];
 
 const initialEdges = [];
 
@@ -24,10 +25,8 @@ function App() {
     const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
     const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
-    //   const onConnect = useCallback(
-    //     (params) => setEdges((eds) => addEdge(params, eds)),
-    //     []
-    //   );
+    const [isCustomNodeOpen, setIsCustomNodeOpen] = useState(false);
+
 
         function getEdgeColor(){
             const edgeColors = [ '#FF3333', '#080FF', '#00FF00', '#9933FF', '#CCCC00', '#FF00FF']
@@ -51,27 +50,49 @@ function App() {
         setNodes((nds) => nds.concat(newNode));
     };
 
+    // Toggle collapsible section
+    const toggleCustomNode = () => {
+        setIsCustomNodeOpen(!isCustomNodeOpen);
+    };
     return (
-        <div style={{ width: '100%', height: '100vh' }}>
-
-        {/* Add Node Button */}
-        <button
-            onClick={addCustomNode}
-            style={{
-            position: 'absolute',
-            top: '10px',
-            left: '10px',
-            zIndex: 100, // Ensure button is above the React Flow canvas
+        <div style={{ display: 'flex', height: '100vh' }}>
+        {/* Left Column for Collapsible Components */}
+        <div
+          style={{
+            width: '300px',
+            backgroundColor: '#f5f5f5',
+            borderRight: '1px solid #ccc',
             padding: '10px',
-            backgroundColor: '#4CAF50',
-            color: 'white',
-            border: 'none',
-            borderRadius: '5px',
-            cursor: 'pointer',
-            }}
+            overflowY: 'auto',
+          }}
         >
-            Add Custom Node
-        </button>
+            <h2>Editing</h2>
+            {/* Add Node Button */}
+            <button
+                onClick={addCustomNode}
+                style={{
+                // position: 'absolute',
+                top: '10px',
+                left: '10px',
+                zIndex: 100, // Ensure button is above the React Flow canvas
+                padding: '10px',
+                backgroundColor: '#4CAF50',
+                color: 'white',
+                border: 'none',
+                borderRadius: '5px',
+                cursor: 'pointer',
+                }}
+            >
+                Add Custom Node
+            </button>
+  
+          {/* Placeholder for Additional Components */}
+          {/* Future components can be added here as more collapsible sections */}
+        </div>
+        
+
+        {/* Right Column for React Flow Viewport */}
+      <div style={{ flex: 1, position: 'relative' }}>
         <ReactFlow
             nodes={nodes}
             edges={edges}
@@ -84,6 +105,7 @@ function App() {
             <Background variant="dots" />
             <Controls />
         </ReactFlow>
+        </div>
     </div>
   );
 }
