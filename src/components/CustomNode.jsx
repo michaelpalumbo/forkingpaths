@@ -7,7 +7,7 @@ function CustomNode({ data }) {
     const [value, setValue] = useState(0); // Knob state
     const UI = {
         inputColor: '#D93',
-        outputColor: '39F'
+        outputColor: '#39F'
     }
 
 
@@ -95,16 +95,118 @@ function CustomNode({ data }) {
         />
     </div>
         
-        {/* Output Handle */}
-        <Handle
-            type="source"
-            position={Position.Right}
-            id="output"
-            style={{ top: '50%', borderRadius: '75%', width: '15px',
-                height: '15px',
-                backgroundColor: UI.outputColor,
-             }}
-        />
+            {/* Output Jack */}
+
+            <div
+                style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    borderWidth: '2px',
+                    borderStyle: 'solid',
+                    borderColor: 'blue',
+                    padding: '20px',
+                    borderRadius: '5px',
+                    position: 'absolute',
+                    bottom: '0px',
+                    right: '0px'
+                }}
+                className="nodrag"
+                onMouseDown={(e) => e.stopPropagation()} // Prevent node dragging when interacting
+                >
+                {/* Centered Label Above the Knob */}
+                <label
+                    id="knob-label"
+                    style={{
+                        fontSize: '20px',
+                        marginBottom: '5px', // Adds space between label and knob
+                    }}
+                    >
+                    Out
+                </label>
+
+                {/* Output Handle */}
+                <Handle
+                    type="source"
+                    position='bottom'
+                    id="output"
+                    style={{ width: '15px',
+                        height: '15px',
+                        marginTop: '0px',
+                        // backgroundColor: UI.outputColor,
+                        borderRadius: '50%',
+                        backgroundColor: 'black',
+                        alignSelf: 'center', // Center handle horizontally
+                        // border: `5px solid ${UI.outputColor}`,
+                        position: 'relative',
+                        top: '10px',
+                        marginBottom: '10px',
+
+                        border: `5px solid ${UI.outputColor}`,
+                        // boxSizing: 'border-box',
+                        // marginTop: '-10px',
+                        zIndex: 2
+                    }}
+                />
+
+            </div>
+
+            {/* Input Jack */}
+
+            <div
+                style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    borderWidth: '2px',
+                    borderStyle: 'solid',
+                    borderColor: 'blue',
+                    padding: '20px',
+                    borderRadius: '5px',
+                    position: 'absolute',
+                    bottom: '0px',
+                    left: '0px'
+                }}
+                className="nodrag"
+                onMouseDown={(e) => e.stopPropagation()} // Prevent node dragging when interacting
+                >
+                {/* Centered Label Above the Knob */}
+                <label
+                    id="knob-label"
+                    style={{
+                        fontSize: '20px',
+                        marginBottom: '5px', // Adds space between label and knob
+                    }}
+                    >
+                    In
+                </label>
+
+                {/* Input Handle */}
+                <Handle
+                    type="target"
+                    position='bottom'
+                    id="input"
+                    style={{ width: '15px',
+                        height: '15px',
+                        marginTop: '0px',
+                        // backgroundColor: UI.inputColor,
+                        borderRadius: '50%',
+                        backgroundColor: 'black',
+                        alignSelf: 'center', // Center handle horizontally
+                        // border: `5px solid ${UI.inputColor}`,
+                        position: 'relative',
+                        top: '10px',
+                        marginBottom: '10px',
+
+                        border: `5px solid ${UI.inputColor}`,
+                        // boxSizing: 'border-box',
+                        // marginTop: '-10px',
+                        zIndex: 2
+                    }}
+                />
+
+            </div>
+
         </div>
     );
 }
