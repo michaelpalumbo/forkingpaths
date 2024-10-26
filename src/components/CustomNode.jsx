@@ -40,8 +40,11 @@ function CustomNode({ data }) {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            border: '2px solid black', 
-            padding: '10px'
+            borderWidth: '2px',
+            borderStyle: 'solid',
+            borderColor: 'blue',
+            padding: '10px',
+            borderRadius: '5px',
         }}
         className="nodrag"
         onMouseDown={(e) => e.stopPropagation()} // Prevent node dragging when interacting
@@ -64,13 +67,17 @@ function CustomNode({ data }) {
             id="label-knob-handle"
             style={{
                 position: 'relative',
-                top: '5px',
+                top: '10px',
                 marginBottom: '10px',
                 borderRadius: '50%',
-                width: '20px',
-                height: '20px',
-                backgroundColor: UI.inputColor,
+                width: '15px',
+                height: '15px',
+                backgroundColor: 'black',
                 alignSelf: 'center', // Center handle horizontally
+                border: `5px solid ${UI.inputColor}`,
+                // boxSizing: 'border-box',
+                marginTop: '-10px',
+                zIndex: 2
             }}
         />
 
@@ -85,17 +92,6 @@ function CustomNode({ data }) {
             ariaLabelledBy="knob-label"
         />
     </div>
-          
-        {/* Input Handle */}
-        <Handle
-            type="target"
-            position={Position.Left}
-            id="input"
-            style={{ top: '20%', borderRadius: '75%', width: '15px',
-                height: '15px',
-                backgroundColor: '#D93',
-             }}
-        />
         
         {/* Output Handle */}
         <Handle
