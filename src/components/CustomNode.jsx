@@ -14,13 +14,15 @@ function CustomNode({ data }) {
   return (
     <div
       style={{
-        padding: '103px',
+        padding: '80px',
         border: '1px solid black',
         borderRadius: '15px',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         backgroundColor: '#f0f0f0',
+        transform: 'scale(0.5)', // Scale down by 50%
+    transformOrigin: 'top left', // Adjust origin if needed
    
       }}
     >

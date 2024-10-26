@@ -25,7 +25,7 @@ function App() {
     const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
     const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
-    const [isCustomNodeOpen, setIsCustomNodeOpen] = useState(false);
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false); // State for sidebar
 
 
         function getEdgeColor(){
@@ -50,20 +50,23 @@ function App() {
         setNodes((nds) => nds.concat(newNode));
     };
 
-    // Toggle collapsible section
-    const toggleCustomNode = () => {
-        setIsCustomNodeOpen(!isCustomNodeOpen);
+    // Toggle sidebar collapse
+    const toggleSidebar = () => {
+        setIsSidebarCollapsed((prev) => !prev);
     };
     return (
         <div style={{ display: 'flex', height: '100vh' }}>
         {/* Left Column for Collapsible Components */}
         <div
           style={{
-            width: '300px',
+            width: isSidebarCollapsed ? '0px' : '300px', // Adjust width based on collapse state
+            transition: 'width 0.3s', // Smooth transition
+
             backgroundColor: '#f5f5f5',
             borderRight: '1px solid #ccc',
-            padding: '10px',
-            overflowY: 'auto',
+            padding: isSidebarCollapsed ? '0' : '10px',
+            isplay: isSidebarCollapsed ? 'none' : 'block',
+            overflowY: 'hidden',
           }}
         >
             <h2>Editing</h2>
@@ -93,6 +96,25 @@ function App() {
 
         {/* Right Column for React Flow Viewport */}
       <div style={{ flex: 1, position: 'relative' }}>
+        {/* Toggle Button */}
+        <button
+          onClick={toggleSidebar}
+          style={{
+            position: 'absolute',
+            top: '10px',
+            left: '-15px', // Adjust position based on sidebar state
+            zIndex: 100,
+            padding: '5px',
+            backgroundColor: '#2196F3',
+            color: 'white',
+            border: 'none',
+            borderRadius: '5px',
+            cursor: 'pointer',
+          }}
+        >
+          {isSidebarCollapsed ? '> >' : '< <'}
+        </button>
+
         <ReactFlow
             nodes={nodes}
             edges={edges}
