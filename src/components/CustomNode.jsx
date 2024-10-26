@@ -5,7 +5,10 @@ import { Silver } from 'react-dial-knob';
 function CustomNode({ data }) {
 
     const [value, setValue] = useState(0); // Knob state
-
+    const UI = {
+        inputColor: '#D93',
+        outputColor: '39F'
+    }
 
 
   return (
@@ -17,17 +20,28 @@ function CustomNode({ data }) {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
+        backgroundColor: '#f0f0f0',
+   
       }}
     >
 
-        <div>{data.label || 'Custom Node'}</div>
+    <div style={{
+        position: 'absolute',
+        top: '10px', // Adjust to set the label close to the top
+        fontSize: '16px',
+        fontWeight: 'bold',
+        }}
+    >   {data.label || 'Custom Node'}
+    </div>
 
     {/* Flexbox Container for Label and Knob */}
     <div
         style={{
             display: 'flex',
             flexDirection: 'column',
-            alignItems: 'center', // Centers both label and knob horizontally
+            alignItems: 'center',
+            border: '2px solid black', 
+            padding: '10px'
         }}
         className="nodrag"
         onMouseDown={(e) => e.stopPropagation()} // Prevent node dragging when interacting
@@ -42,6 +56,23 @@ function CustomNode({ data }) {
             >
             Frequency
         </label>
+
+        {/* New Handle Below the Label */}
+        <Handle
+            type="target"
+            position={Position.Top}
+            id="label-knob-handle"
+            style={{
+                position: 'relative',
+                top: '5px',
+                marginBottom: '10px',
+                borderRadius: '50%',
+                width: '20px',
+                height: '20px',
+                backgroundColor: UI.inputColor,
+                alignSelf: 'center', // Center handle horizontally
+            }}
+        />
 
         {/* Silver Knob */}
         <Silver
@@ -65,7 +96,7 @@ function CustomNode({ data }) {
                 backgroundColor: '#D93',
              }}
         />
-
+        
         {/* Output Handle */}
         <Handle
             type="source"
@@ -73,7 +104,7 @@ function CustomNode({ data }) {
             id="output"
             style={{ top: '50%', borderRadius: '75%', width: '15px',
                 height: '15px',
-                backgroundColor: '#39F',
+                backgroundColor: UI.outputColor,
              }}
         />
         </div>

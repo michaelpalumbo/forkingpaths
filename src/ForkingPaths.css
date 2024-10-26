@@ -15,3 +15,11 @@ body {
     cursor: pointer;
   }
   
+  .react-flow__edge {
+    z-index: 10; /* Bring edges to the front */
+    pointer-events: all; /* Ensure edges remain interactive */
+  }
+  
+  .react-flow__node {
+    z-index: -1 !important;; /* Lower nodes' z-index */
+  }

@@ -7,10 +7,14 @@ import ReactFlow, {
   Controls,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
+import './ForkingPaths.css';
 
 import CustomNode from './components/CustomNode';
+import CustomEdge from './components/CustomEdge'; // Import the custom edge
+
 
 const nodeTypes = { customNode: CustomNode };
+
 
 const initialNodes = [
   {
