@@ -11,9 +11,9 @@ function CustomNode({ data }) {
   return (
     <div
       style={{
-        padding: '10px',
+        padding: '103px',
         border: '1px solid black',
-        borderRadius: '5px',
+        borderRadius: '15px',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -22,29 +22,29 @@ function CustomNode({ data }) {
 
         <div>{data.label || 'Custom Node'}</div>
 
-{/* Flexbox Container for Label and Knob */}
+    {/* Flexbox Container for Label and Knob */}
     <div
-            style={{
+        style={{
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center', // Centers both label and knob horizontally
-            }}
-            className="nodrag"
-            onMouseDown={(e) => e.stopPropagation()} // Prevent node dragging when interacting
+        }}
+        className="nodrag"
+        onMouseDown={(e) => e.stopPropagation()} // Prevent node dragging when interacting
         >
-            {/* Centered Label Above the Knob */}
-            <label
+        {/* Centered Label Above the Knob */}
+        <label
             id="knob-label"
             style={{
-                fontSize: '10px',
+                fontSize: '20px',
                 marginBottom: '5px', // Adds space between label and knob
             }}
             >
             Frequency
-            </label>
+        </label>
 
-            {/* Silver Knob */}
-            <Silver
+        {/* Silver Knob */}
+        <Silver
             diameter={75}
             min={0}
             max={100}
@@ -52,15 +52,18 @@ function CustomNode({ data }) {
             value={value}
             onValueChange={setValue}
             ariaLabelledBy="knob-label"
-            />
-        </div>
+        />
+    </div>
           
         {/* Input Handle */}
         <Handle
             type="target"
             position={Position.Left}
             id="input"
-            style={{ top: '20%', borderRadius: '75%' }}
+            style={{ top: '20%', borderRadius: '75%', width: '15px',
+                height: '15px',
+                backgroundColor: '#D93',
+             }}
         />
 
         {/* Output Handle */}
@@ -68,7 +71,10 @@ function CustomNode({ data }) {
             type="source"
             position={Position.Right}
             id="output"
-            style={{ top: '50%', borderRadius: '50%' }}
+            style={{ top: '50%', borderRadius: '75%', width: '15px',
+                height: '15px',
+                backgroundColor: '#39F',
+             }}
         />
         </div>
     );

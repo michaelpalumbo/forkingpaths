@@ -29,11 +29,21 @@ function App() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
-  const onConnect = useCallback(
-    (params) => setEdges((eds) => addEdge(params, eds)),
+//   const onConnect = useCallback(
+//     (params) => setEdges((eds) => addEdge(params, eds)),
+//     []
+//   );
+
+    function getEdgeColor(){
+        const edgeColors = [ '#FF3333', '#080FF', '#00FF00', '#9933FF', '#CCCC00', '#FF00FF']
+
+        const randomIndex = Math.floor(Math.random() * edgeColors.length);
+        return edgeColors[randomIndex];
+    }
+const onConnect = useCallback(
+    (params) => setEdges((eds) => addEdge({ ...params, style: { strokeWidth: 3, stroke: getEdgeColor() } }, eds)),
     []
   );
-
   return (
     <div style={{ width: '100%', height: '100vh' }}>
       <ReactFlow
