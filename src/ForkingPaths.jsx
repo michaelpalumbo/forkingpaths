@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import ReactFlow, {
   addEdge,
   useEdgesState,
@@ -27,6 +27,8 @@ function App() {
 
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false); // State for sidebar
 
+    const [clickedEdge, setClickedEdge] = useState(null); // State for clicked edge
+
 
         function getEdgeColor(){
             const edgeColors = [ '#FF3333', '#080FF', '#00FF00', '#9933FF', '#CCCC00', '#FF00FF']
@@ -54,6 +56,32 @@ function App() {
     const toggleSidebar = () => {
         setIsSidebarCollapsed((prev) => !prev);
     };
+
+    // Handle delete key press to remove the clicked edge
+    const handleKeyDown = useCallback(
+        (event) => {
+            console.log(event.key)
+        if (event.key === 'Delete' && clickedEdge || event.key === 'Backspace' && clickedEdge) {
+            setEdges((eds) => eds.filter((edge) => edge.id !== clickedEdge.id));
+            setClickedEdge(null); // Reset clicked edge state
+        }
+        },
+        [clickedEdge, setEdges]
+    );
+
+    // Add event listener for keydown
+    useEffect(() => {
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [handleKeyDown]);
+    
+      // Log when an edge is clicked
+    const onEdgeClick = useCallback((event, edge) => {
+        console.log('Edge clicked:', edge);
+        setClickedEdge(edge); // Set the clicked edge
+
+    }, []);
+    
     return (
         <div style={{ display: 'flex', height: '100vh' }}>
         {/* Left Column for Collapsible Components */}
@@ -88,7 +116,9 @@ function App() {
             >
                 Add Custom Node
             </button>
-  
+
+            <p>To delete cables: click a cable and press 'delete' key</p>
+            
           {/* Placeholder for Additional Components */}
           {/* Future components can be added here as more collapsible sections */}
         </div>
@@ -120,9 +150,12 @@ function App() {
             edges={edges}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
+            // onEdgesDelete={onEdgesDelete} // Add edge deletion handler
+            onEdgeClick={onEdgeClick}
             onConnect={onConnect}
             fitView
             nodeTypes={nodeTypes}
+            deleteKeyCode={46} // Set Delete key (keyCode 46) for edge deletion
         >
             <Background variant="dots" />
             <Controls />
