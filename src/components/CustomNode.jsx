@@ -1,6 +1,7 @@
 import React, {useState} from 'react';
 import { Handle, Position } from 'reactflow';
-import { Silver } from 'react-dial-knob';
+import { Knob } from 'primereact/knob';
+
 
 function CustomNode({ data }) {
 
@@ -83,8 +84,8 @@ function CustomNode({ data }) {
             }}
         />
 
-        {/* Silver Knob */}
-        <Silver
+        {/*  Knob */}
+        <Knob
             diameter={75}
             min={0}
             max={100}

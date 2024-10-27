@@ -14,6 +14,11 @@ import CustomNode from './components/CustomNode';
 
 import ContextMenu from './components/UI/ContextMenu';
 
+
+
+// !
+import DynamicLayout from './components/DynamicLayout'; // Adjust the import path as necessary
+
 const nodeTypes = { customNode: CustomNode };
 
 
@@ -182,6 +187,8 @@ function App() {
           {isSidebarCollapsed ? '> >' : '< <'}
         </button>
 
+
+        <DynamicLayout />
         <ReactFlow
 
             // EDITOR UI
