@@ -15,10 +15,6 @@ import CustomNode from './components/CustomNode';
 import ContextMenu from './components/UI/ContextMenu';
 
 
-
-// !
-import DynamicLayout from './components/DynamicLayout'; // Adjust the import path as necessary
-
 const nodeTypes = { customNode: CustomNode };
 
 
@@ -125,107 +121,109 @@ function App() {
     }, []);
     
     return (
-        <div style={{ display: 'flex', height: '100vh' }}>
-        {/* Left Column for Collapsible Components */}
-        <div
-          style={{
-            width: isSidebarCollapsed ? '0px' : '300px', // Adjust width based on collapse state
-            transition: 'width 0.3s', // Smooth transition
 
-            backgroundColor: '#f5f5f5',
-            borderRight: '1px solid #ccc',
-            padding: isSidebarCollapsed ? '0' : '10px',
-            isplay: isSidebarCollapsed ? 'none' : 'block',
-            overflowY: 'hidden',
-          }}
-        >
-            <h2>Editing</h2>
-            {/* Add Node Button */}
+            <div style={{ display: 'flex', height: '100vh' }}>
+            {/* Left Column for Collapsible Components */}
+            <div
+            style={{
+                width: isSidebarCollapsed ? '0px' : '300px', // Adjust width based on collapse state
+                transition: 'width 0.3s', // Smooth transition
+
+                backgroundColor: '#f5f5f5',
+                borderRight: '1px solid #ccc',
+                padding: isSidebarCollapsed ? '0' : '10px',
+                isplay: isSidebarCollapsed ? 'none' : 'block',
+                overflowY: 'hidden',
+            }}
+            >
+                <h2>Editing</h2>
+                {/* Add Node Button */}
+                <button
+                    onClick={addCustomNode}
+                    style={{
+                    // position: 'absolute',
+                    top: '10px',
+                    left: '10px',
+                    zIndex: 100, // Ensure button is above the React Flow canvas
+                    padding: '10px',
+                    backgroundColor: '#4CAF50',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '5px',
+                    cursor: 'pointer',
+                    }}
+                >
+                    Add Custom Node
+                </button>
+
+                <p>To delete cables: click a cable and press 'delete' or 'backspace' key</p>
+                <p>Right click a module to delete or duplicate it</p>
+            {/* Placeholder for Additional Components */}
+            {/* Future components can be added here as more collapsible sections */}
+            </div>
+            
+
+            {/* Right Column for React Flow Viewport */}
+        <div style={{ flex: 1, position: 'relative' }}>
+            {/* Toggle Button */}
             <button
-                onClick={addCustomNode}
-                style={{
-                // position: 'absolute',
+            onClick={toggleSidebar}
+            style={{
+                position: 'absolute',
                 top: '10px',
-                left: '10px',
-                zIndex: 100, // Ensure button is above the React Flow canvas
-                padding: '10px',
-                backgroundColor: '#4CAF50',
+                left: '-15px', // Adjust position based on sidebar state
+                zIndex: 100,
+                padding: '5px',
+                backgroundColor: '#2196F3',
                 color: 'white',
                 border: 'none',
                 borderRadius: '5px',
                 cursor: 'pointer',
-                }}
+            }}
             >
-                Add Custom Node
+            {isSidebarCollapsed ? '> >' : '< <'}
             </button>
 
-            <p>To delete cables: click a cable and press 'delete' or 'backspace' key</p>
-            <p>Right click a module to delete or duplicate it</p>
-          {/* Placeholder for Additional Components */}
-          {/* Future components can be added here as more collapsible sections */}
-        </div>
-        
 
-        {/* Right Column for React Flow Viewport */}
-      <div style={{ flex: 1, position: 'relative' }}>
-        {/* Toggle Button */}
-        <button
-          onClick={toggleSidebar}
-          style={{
-            position: 'absolute',
-            top: '10px',
-            left: '-15px', // Adjust position based on sidebar state
-            zIndex: 100,
-            padding: '5px',
-            backgroundColor: '#2196F3',
-            color: 'white',
-            border: 'none',
-            borderRadius: '5px',
-            cursor: 'pointer',
-          }}
-        >
-          {isSidebarCollapsed ? '> >' : '< <'}
-        </button>
-
-
-        <DynamicLayout />
-        <ReactFlow
-
-            // EDITOR UI
-            ref={contextRef}
-            onPaneClick={onPaneClick}
-            onNodeContextMenu={onNodeContextMenu}
-            fitView
-
-            // PATCHING
-            nodes={nodes}
-            edges={edges}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            onEdgeClick={onEdgeClick}
-            onConnect={onConnect}
-            nodeTypes={nodeTypes}
-            deleteKeyCode={46} // Set Delete key (keyCode 46) for edge deletion
-        >
-            <Background
-                id="1"
-                gap={10}
-                color="#f1f1f1"
-                variant={BackgroundVariant.Lines}
-            />
-        
-            <Background
-                id="2"
-                gap={100}
-                color="#ccc"
-                variant={BackgroundVariant.Lines}
-            />
             
-            {menu && <ContextMenu onClick={onPaneClick} {...menu} />}
-            <Controls />
-        </ReactFlow>
+            <ReactFlow
+
+                // EDITOR UI
+                ref={contextRef}
+                onPaneClick={onPaneClick}
+                onNodeContextMenu={onNodeContextMenu}
+                fitView
+
+                // PATCHING
+                nodes={nodes}
+                edges={edges}
+                onNodesChange={onNodesChange}
+                onEdgesChange={onEdgesChange}
+                onEdgeClick={onEdgeClick}
+                onConnect={onConnect}
+                nodeTypes={nodeTypes}
+                deleteKeyCode={46} // Set Delete key (keyCode 46) for edge deletion
+            >
+                <Background
+                    id="1"
+                    gap={10}
+                    color="#f1f1f1"
+                    variant={BackgroundVariant.Lines}
+                />
+            
+                <Background
+                    id="2"
+                    gap={100}
+                    color="#ccc"
+                    variant={BackgroundVariant.Lines}
+                />
+                
+                {menu && <ContextMenu onClick={onPaneClick} {...menu} />}
+                <Controls />
+            </ReactFlow>
+            </div>
         </div>
-    </div>
+
   );
 }
 

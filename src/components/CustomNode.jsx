@@ -1,9 +1,10 @@
 import React, {useState} from 'react';
 import { Handle, Position } from 'reactflow';
-import { Knob, Arc, Pointer, Value } from 'rc-knob'
-
+// import { Knob, Arc, Pointer, Value } from 'rc-knob'
+import BasicKnob from './UI/BasicKnob';
 
 function CustomNode({ data }) {
+    const [knobValue, setKnobValue] = useState(50);
 
     const [value, setValue] = useState(40); // Knob state
     const UI = {
@@ -11,6 +12,10 @@ function CustomNode({ data }) {
         outputColor: '#39F'
     }
 
+    const handleKnobChange = (newValue) => {
+        setKnobValue(newValue);
+        console.log('Dial Value:', newValue);
+      };
 
   return (
     <div
@@ -90,27 +95,12 @@ function CustomNode({ data }) {
 
         {/*  Knob */}
         <div>
-            <Knob 
-                size={100}  
-                angleOffset={220} 
-                angleRange={280}
-                min={0}
-                max={100}
-                className="styledKnob"
-                onChange={value => console.log(value)}
-            >
-            <Arc 
-                arcWidth={2.5}
-            />
-            <circle r="40" cx="50" cy="50" />
-            <Pointer 
-                width={2}
-                height={35}
-                radius={10}
-                type="rect"
-                color="#fff"
-            />
-            </Knob>
+        {/* <BasicKnob 
+            value={knobValue} 
+            onChange={handleKnobChange} 
+        /> */}
+
+
 
         </div>
             
