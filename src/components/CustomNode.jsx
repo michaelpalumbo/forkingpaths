@@ -1,11 +1,11 @@
 import React, {useState} from 'react';
 import { Handle, Position } from 'reactflow';
-import { Knob } from 'primereact/knob';
+import { Knob, Arc, Pointer, Value } from 'rc-knob'
 
 
 function CustomNode({ data }) {
 
-    const [value, setValue] = useState(0); // Knob state
+    const [value, setValue] = useState(40); // Knob state
     const UI = {
         inputColor: '#D93',
         outputColor: '#39F'
@@ -14,18 +14,18 @@ function CustomNode({ data }) {
 
   return (
     <div
-      style={{
-        padding: '80px',
-        border: '1px solid black',
-        borderRadius: '15px',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        backgroundColor: '#f0f0f0',
-        transform: 'scale(0.5)', // Scale down by 50%
-    transformOrigin: 'top left', // Adjust origin if needed
-   
-      }}
+        style={{
+            padding: '80px',
+            border: '1px solid black',
+            borderRadius: '15px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            backgroundColor: '#f0f0f0',
+            transform: 'scale(0.5)', // Scale down by 50%
+            transformOrigin: 'top left', // Adjust origin if needed
+    
+        }}
     >
 
     <div style={{
@@ -50,7 +50,11 @@ function CustomNode({ data }) {
             borderRadius: '5px',
         }}
         className="nodrag"
-        onMouseDown={(e) => e.stopPropagation()} // Prevent node dragging when interacting
+        onMouseDown={(e) => {
+            console.log(e.target.id)
+            // e.stopPropagation()
+            } // Prevent node dragging when interacting
+        }
         >
         {/* Centered Label Above the Knob */}
         <label
@@ -85,15 +89,32 @@ function CustomNode({ data }) {
         />
 
         {/*  Knob */}
-        <Knob
-            diameter={75}
-            min={0}
-            max={100}
-            step={1}
-            value={value}
-            onValueChange={setValue}
-            ariaLabelledBy="knob-label"
-        />
+        <div>
+            <Knob 
+                size={100}  
+                angleOffset={220} 
+                angleRange={280}
+                min={0}
+                max={100}
+                className="styledKnob"
+                onChange={value => console.log(value)}
+            >
+            <Arc 
+                arcWidth={2.5}
+            />
+            <circle r="40" cx="50" cy="50" />
+            <Pointer 
+                width={2}
+                height={35}
+                radius={10}
+                type="rect"
+                color="#fff"
+            />
+            </Knob>
+
+        </div>
+            
+
     </div>
         
             {/* Output Jack */}
