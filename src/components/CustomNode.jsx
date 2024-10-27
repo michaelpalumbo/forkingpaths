@@ -11,10 +11,7 @@ function CustomNode({ data }) {
         outputColor: '#39F'
     }
 
-    const handleKnobChange = (newValue) => {
-        setKnobValue(newValue);
-        console.log('Dial Value:', newValue);
-      };
+
 
   return (
     <div
