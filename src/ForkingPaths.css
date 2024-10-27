@@ -23,3 +23,24 @@ body {
   .react-flow__node {
     z-index: -1 !important;; /* Lower nodes' z-index */
   }
+
+
+  .context-menu {
+    background: white;
+    border-style: solid;
+    box-shadow: 10px 19px 20px rgba(0, 0, 0, 10%);
+    position: absolute;
+    z-index: 10;
+  }
+  
+  .context-menu button {
+    border: none;
+    display: block;
+    padding: 0.5em;
+    text-align: left;
+    width: 100%;
+  }
+  
+  .context-menu button:hover {
+    background: white;
+  }
