@@ -5,7 +5,7 @@ import ReactFlow, {
   useNodesState,
   Background,
   Controls,
-  MarkerType
+  BackgroundVariant
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import './ForkingPaths.css';
@@ -98,7 +98,6 @@ function App() {
     // Handle delete key press to remove the clicked edge
     const handleKeyDown = useCallback(
         (event) => {
-            console.log(event.key)
         if (event.key === 'Delete' && clickedEdge || event.key === 'Backspace' && clickedEdge) {
             setEdges((eds) => eds.filter((edge) => edge.id !== clickedEdge.id));
             setClickedEdge(null); // Reset clicked edge state
@@ -196,19 +195,25 @@ function App() {
             edges={edges}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
-            // onEdgesDelete={onEdgesDelete} // Add edge deletion handler
             onEdgeClick={onEdgeClick}
             onConnect={onConnect}
             nodeTypes={nodeTypes}
             deleteKeyCode={46} // Set Delete key (keyCode 46) for edge deletion
-
-
-            
-
-
-
         >
-            <Background variant="dots" />
+            <Background
+                id="1"
+                gap={10}
+                color="#f1f1f1"
+                variant={BackgroundVariant.Lines}
+            />
+        
+            <Background
+                id="2"
+                gap={100}
+                color="#ccc"
+                variant={BackgroundVariant.Lines}
+            />
+            
             {menu && <ContextMenu onClick={onPaneClick} {...menu} />}
             <Controls />
         </ReactFlow>

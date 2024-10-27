@@ -26,6 +26,12 @@ export default function ContextMenu({
     });
   }, [id, getNode, addNodes]);
 
+    //TODO when ready, we can use this to reset the state of the module to it's RNBO defaults
+    const resetNode = useCallback(() => {
+        const node = getNode(id);
+        console.log('to michael: feature not written. see fn resetNode() in ContextMenu.js')
+
+    })
   const deleteNode = useCallback(() => {
     setNodes((nodes) => nodes.filter((node) => node.id !== id));
     setEdges((edges) => edges.filter((edge) => edge.source !== id));
@@ -41,6 +47,7 @@ export default function ContextMenu({
         <small>node: {id}</small>
       </p>
       <button onClick={duplicateNode}>duplicate</button>
+      <button onClick={resetNode}>reset</button>
       <button onClick={deleteNode}>delete</button>
     </div>
   );
