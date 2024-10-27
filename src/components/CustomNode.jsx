@@ -1,7 +1,6 @@
 import React, {useState} from 'react';
 import { Handle, Position } from 'reactflow';
-// import { Knob, Arc, Pointer, Value } from 'rc-knob'
-import BasicKnob from './UI/BasicKnob';
+import Slider from './UI/Slider';
 
 function CustomNode({ data }) {
     const [knobValue, setKnobValue] = useState(50);
@@ -95,10 +94,7 @@ function CustomNode({ data }) {
 
         {/*  Knob */}
         <div>
-        {/* <BasicKnob 
-            value={knobValue} 
-            onChange={handleKnobChange} 
-        /> */}
+        <Slider min={0} max={100} step={1} initialValue={50} onChange={(value) => console.log(value)} />
 
 
 
