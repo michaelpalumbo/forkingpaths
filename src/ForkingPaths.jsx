@@ -29,6 +29,7 @@ import CustomNode from './components/CustomNode';
 import ContextMenu from './components/UI/ContextMenu';
 import useAutomergeStore from './components/utility/automergeStore'; // Adjust path as needed
 import repo from './components/utility/automergeRepo'; // Adjust the path based on where automergeRepo.js is located
+import DocumentHandler from './components/DocumentHandler';
 
 /*
     STYLE
@@ -41,12 +42,17 @@ const nodeTypes = { customNode: CustomNode };
 
 function App() {
     // automerge
-      // Access Zustand store
+    // Access Zustand store
     const doc = useAutomergeStore((state) => state.doc);
     const setDoc = useAutomergeStore((state) => state.setDoc);
+    const setHandle = useAutomergeStore((state) => state.setHandle);
+    const handle = useAutomergeStore((state) => state.handle); // Retrieve handle from Zustand
+    // const [nodes, setNodes] = useNodesState([]); // ReactFlow nodes state
 
-    // const [doc, setDoc] = useState(initialDoc);
-    const [renderState, setRenderState] = useState(doc.count);
+    // const [handle, setHandle] = useState(null);
+    
+
+    // const [renderState, setRenderState] = useState(doc.count);
 
 
     const [nodes, setNodes, onNodesChange] = useNodesState([]);
@@ -64,16 +70,41 @@ function App() {
 
         AUTOMERGE
     */
+
+    useEffect(() => {
+        const rootDocUrl = document.location.hash.substring(1);
+        let handle;
+    
+        if (isValidAutomergeUrl(rootDocUrl)) {
+            handle = repo.find(rootDocUrl);
+        } else {
+            handle = repo.create({ count: 0, nodes: [], edges: [] });
+            document.location.hash = handle.url;
+        }
+    
+        setHandle(handle);
+    
+        // Access the document state from the handle
+        const initialDoc = handle.doc();
+        setDoc(() => initialDoc);
+    
+        // Listen for document changes
+        handle.on('change', (newDoc) => {
+            setDoc(() => newDoc);
+            console.log(newDoc)
+        });
+    }, [setDoc, setHandle]);
+
     useEffect(() => {
         // Update renderState when doc changes
-        setRenderState(doc.count);
+        // setRenderState(doc.count);
     }, [doc]);
 
-    const increment = () => {
-        setDoc((d) => {
-          d.count = (d.count || 0) + 1;
-        });
-      };
+    // const increment = () => {
+    //     setDoc((d) => {
+    //       d.count = (d.count || 0) + 1;
+    //     });
+    //   };
 
     let colorIndex = 0
     function getEdgeColor(){
@@ -148,12 +179,13 @@ function App() {
         };
         setNodes((nds) => nds.concat(newNode));
 
-        // Add the new node to Automerge document
-        setDoc((d) => {
+        // Add the new node to the Automerge document
+        handle.change((d) => {
             if (!d.nodes) d.nodes = []; // Initialize the 'nodes' array if it doesn't exist
             d.nodes.push(newNode);
         });
-        console.log(doc)
+
+        console.log('Updated document:', doc);
     };
 
 
@@ -199,8 +231,8 @@ function App() {
             >
                 <h2>Editing</h2>
 
-                <p>Count: {doc.count}</p>
-                <button onClick={increment}>Increment</button>
+                {/* <p>Count: {doc.count}</p> */}
+                {/* <button onClick={increment}>Increment</button> */}
                 {/* Add Node Button */}
                 <button
                     onClick={addCustomNode}
