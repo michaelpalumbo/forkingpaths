@@ -22,15 +22,21 @@ import './ForkingPaths.css';
 import CustomNode from './components/CustomNode';
 import ContextMenu from './components/UI/ContextMenu';
 
+import useAutomergeStore from './components/automergeStore'; // Adjust path as needed
+
+
 const initialDoc = Automerge.from({ count: 0 });
 
 const nodeTypes = { customNode: CustomNode };
 
 
-
 function App() {
     // automerge
-    const [doc, setDoc] = useState(initialDoc);
+      // Access Zustand store
+    const doc = useAutomergeStore((state) => state.doc);
+    const setDoc = useAutomergeStore((state) => state.setDoc);
+
+    // const [doc, setDoc] = useState(initialDoc);
     const [renderState, setRenderState] = useState(doc.count);
 
 
@@ -55,11 +61,11 @@ function App() {
     }, [doc]);
 
     const increment = () => {
-        const newDoc = Automerge.change(doc, (d) => {
-            d.count += 1;
+        setDoc((d) => {
+          d.count = (d.count || 0) + 1;
         });
-        setDoc(newDoc);
-    };
+      };
+      
     let colorIndex = 0
     function getEdgeColor(){
         const edgeColors = [
