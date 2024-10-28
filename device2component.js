@@ -336,7 +336,7 @@ const processRnboFiles = () => {
         }
         // Parse the RNBO JSON file to get the parameters
         const rnboPatch = JSON.parse(data);
-        fs.writeFileSync('test.json', JSON.stringify(rnboPatch, null, 2))
+        // fs.writeFileSync('test.json', JSON.stringify(rnboPatch, null, 2))
         const parameters = rnboPatch.desc.parameters.map((param) => ({
           id: param.paramId,
           name: param.name,

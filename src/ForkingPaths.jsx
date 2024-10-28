@@ -36,9 +36,6 @@ import repo from './components/utility/automergeRepo'; // Adjust the path based 
 import './ForkingPaths.css';
 import 'reactflow/dist/style.css';
 
-
-const initialDoc = Automerge.from({ count: 0 });
-
 const nodeTypes = { customNode: CustomNode };
 
 
