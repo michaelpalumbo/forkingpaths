@@ -22,27 +22,15 @@ import './ForkingPaths.css';
 import CustomNode from './components/CustomNode';
 import ContextMenu from './components/UI/ContextMenu';
 
-import { useAutomerge, AutomergeProvider } from './components/utility/AutomergeContext';
-
-
-
-
 const initialDoc = Automerge.from({ count: 0 });
 
 const nodeTypes = { customNode: CustomNode };
 
-const AutomergeContext = createContext();
-
-// export const useAutomerge = () => useContext(AutomergeContext);
 
 
 function App() {
     // automerge
-    const [doc, setDoc] = useState(Automerge.from({ items: [] }));
-
-
-
-    // const [doc, setDoc] = useState(initialDoc);
+    const [doc, setDoc] = useState(initialDoc);
     const [renderState, setRenderState] = useState(doc.count);
 
 
@@ -171,7 +159,6 @@ function App() {
     }, []);
     
     return (
-        <AutomergeProvider>
 
             <div style={{ display: 'flex', height: '100vh' }}>
             {/* Left Column for Collapsible Components */}
@@ -277,8 +264,6 @@ function App() {
             </ReactFlow>
             </div>
         </div>
-    </AutomergeProvider>
-
 
   );
 }
