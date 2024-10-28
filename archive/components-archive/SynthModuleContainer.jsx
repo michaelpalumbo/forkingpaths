@@ -1,5 +1,5 @@
 import React from 'react';
-import * as Components from './modules'; // Dynamically generated components
+import * as Components from '../../src/components/modules'; // Dynamically generated components
 
 function SynthModuleContainer({ modules, audioContext, RNBO, removeModule, handleJackClick, updateCablePosition }) {
   return (

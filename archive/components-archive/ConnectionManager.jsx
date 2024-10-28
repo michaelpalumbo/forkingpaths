@@ -1,5 +1,5 @@
 import React, { useState, useCallback,useRef, useEffect } from 'react';
-import Cable from './UI/Cable';
+import Cable from '../../src/components/UI/Cable';
 import AudioNodeManager from './AudioNodeManager';
 
 function ConnectionManager({ onJackClick, onUpdateCablePosition}) {
