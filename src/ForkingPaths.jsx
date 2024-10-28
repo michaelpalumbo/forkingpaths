@@ -1,4 +1,11 @@
-import React, { useCallback, useState, useEffect, useRef } from 'react';
+import React, { 
+    useCallback, 
+    useState, 
+    useEffect, 
+    useRef,
+    createContext, // for global state management. i will use this with automerge
+    useContext
+} from 'react';
 import ReactFlow, {
   addEdge,
   useEdgesState,
@@ -8,16 +15,37 @@ import ReactFlow, {
   BackgroundVariant
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import Automerge from 'automerge';
+import * as Automerge from 'automerge';
 
 import './ForkingPaths.css';
 
 import CustomNode from './components/CustomNode';
 import ContextMenu from './components/UI/ContextMenu';
 
+import { useAutomerge, AutomergeProvider } from './components/utility/AutomergeContext';
+
+
+
+
+const initialDoc = Automerge.from({ count: 0 });
+
 const nodeTypes = { customNode: CustomNode };
 
+const AutomergeContext = createContext();
+
+// export const useAutomerge = () => useContext(AutomergeContext);
+
+
 function App() {
+    // automerge
+    const [doc, setDoc] = useState(Automerge.from({ items: [] }));
+
+
+
+    // const [doc, setDoc] = useState(initialDoc);
+    const [renderState, setRenderState] = useState(doc.count);
+
+
     const [nodes, setNodes, onNodesChange] = useNodesState([]);
     const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
@@ -27,6 +55,23 @@ function App() {
 
     const [menu, setMenu] = useState(null);
     const contextRef = useRef(null);
+
+
+    /*
+
+        AUTOMERGE
+    */
+    useEffect(() => {
+        // Update renderState when doc changes
+        setRenderState(doc.count);
+    }, [doc]);
+
+    const increment = () => {
+        const newDoc = Automerge.change(doc, (d) => {
+            d.count += 1;
+        });
+        setDoc(newDoc);
+    };
     let colorIndex = 0
     function getEdgeColor(){
         const edgeColors = [
@@ -126,6 +171,7 @@ function App() {
     }, []);
     
     return (
+        <AutomergeProvider>
 
             <div style={{ display: 'flex', height: '100vh' }}>
             {/* Left Column for Collapsible Components */}
@@ -142,6 +188,9 @@ function App() {
             }}
             >
                 <h2>Editing</h2>
+
+                <p>Count: {doc.count}</p>
+                <button onClick={increment}>Increment</button>
                 {/* Add Node Button */}
                 <button
                     onClick={addCustomNode}
@@ -228,6 +277,8 @@ function App() {
             </ReactFlow>
             </div>
         </div>
+    </AutomergeProvider>
+
 
   );
 }
