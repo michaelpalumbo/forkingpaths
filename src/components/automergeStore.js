@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import * as Automerge from 'automerge';
 
 // Initial Automerge document
-const initialDoc = Automerge.from({ count: 0 });
+const initialDoc = Automerge.from({ count: 0, nodes: [], edges: [] });
 
 // Zustand store
 const useAutomergeStore = create((set) => ({

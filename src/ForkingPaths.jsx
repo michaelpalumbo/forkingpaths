@@ -65,7 +65,7 @@ function App() {
           d.count = (d.count || 0) + 1;
         });
       };
-      
+
     let colorIndex = 0
     function getEdgeColor(){
         const edgeColors = [
@@ -132,13 +132,21 @@ function App() {
     // Function to add a new custom node
     const addCustomNode = () => {
         const newNode = {
-        id: (nodes.length + 1).toString(),
-        type: 'customNode',
-        position: { x: Math.random() * 250, y: Math.random() * 250 }, // Random position
-        data: { label: `Custom Node ${nodes.length + 1}` },
+            id: (nodes.length + 1).toString(),
+            type: 'customNode',
+            position: { x: Math.random() * 250, y: Math.random() * 250 }, // Random position
+            data: { label: `Custom Node ${nodes.length + 1}` },
         };
         setNodes((nds) => nds.concat(newNode));
+
+        // Add the new node to Automerge document
+        setDoc((d) => {
+            if (!d.nodes) d.nodes = []; // Initialize the 'nodes' array if it doesn't exist
+            d.nodes.push(newNode);
+        });
+        console.log(doc)
     };
+
 
     // Handle delete key press to remove the clicked edge
     const handleKeyDown = useCallback(
