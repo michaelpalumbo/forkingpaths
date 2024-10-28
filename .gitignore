@@ -25,4 +25,4 @@ dist-ssr
 
 
 # generated files
-src/components/modules/index.js
+./src/components/modules/index.js
