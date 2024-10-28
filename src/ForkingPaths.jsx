@@ -22,8 +22,10 @@ import './ForkingPaths.css';
 import CustomNode from './components/CustomNode';
 import ContextMenu from './components/UI/ContextMenu';
 
-import useAutomergeStore from './components/automergeStore'; // Adjust path as needed
+import useAutomergeStore from './components/utility/automergeStore'; // Adjust path as needed
 
+import repo from './components/utility/automergeRepo'; // Adjust the path based on where automergeRepo.js is located
+import { isValidAutomergeUrl } from '@automerge/automerge-repo';
 
 const initialDoc = Automerge.from({ count: 0 });
 
