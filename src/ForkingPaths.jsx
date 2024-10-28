@@ -27,12 +27,23 @@ function App() {
 
     const [menu, setMenu] = useState(null);
     const contextRef = useRef(null);
-
+    let colorIndex = 0
     function getEdgeColor(){
-        const edgeColors = [ '#FF3333', '#080FF', '#00FF00', '#9933FF', '#CCCC00', '#FF00FF']
-
-        const randomIndex = Math.floor(Math.random() * edgeColors.length);
-        return edgeColors[randomIndex];
+        const edgeColors = [
+            '#FF0000', // Red (Primary)
+            '#00FFFF', // Cyan (Complementary to Red)
+            '#0000FF', // Blue (Primary)
+            '#FFFF00', // Yellow (Complementary to Blue)
+            '#00FF00', // Green (Primary)
+            '#FF00FF', // Magenta (Complementary to Green)
+            '#FFA500', // Orange
+            '#2E8B57', // Sea Green (Complementary to Orange)
+            '#8B00FF', // Violet
+            '#FFD700'  // Gold (Complementary to Violet)
+          ];
+          const color = edgeColors[colorIndex];
+  colorIndex = (colorIndex + 1) % edgeColors.length; // Cycle to the next index, reset if it reaches the end
+  return color;
     }
     const onConnect = useCallback(
         (params) => setEdges((eds) => addEdge({ ...params, style: { strokeWidth: 3, stroke: getEdgeColor() } }, eds)),
