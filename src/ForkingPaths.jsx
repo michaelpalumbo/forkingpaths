@@ -8,24 +8,18 @@ import ReactFlow, {
   BackgroundVariant
 } from 'reactflow';
 import 'reactflow/dist/style.css';
+import Automerge from 'automerge';
+
 import './ForkingPaths.css';
 
 import CustomNode from './components/CustomNode';
-
 import ContextMenu from './components/UI/ContextMenu';
-
 
 const nodeTypes = { customNode: CustomNode };
 
-
-const initialNodes = [
-];
-
-const initialEdges = [];
-
 function App() {
-    const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-    const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+    const [nodes, setNodes, onNodesChange] = useNodesState([]);
+    const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false); // State for sidebar
 
@@ -34,12 +28,12 @@ function App() {
     const [menu, setMenu] = useState(null);
     const contextRef = useRef(null);
 
-        function getEdgeColor(){
-            const edgeColors = [ '#FF3333', '#080FF', '#00FF00', '#9933FF', '#CCCC00', '#FF00FF']
+    function getEdgeColor(){
+        const edgeColors = [ '#FF3333', '#080FF', '#00FF00', '#9933FF', '#CCCC00', '#FF00FF']
 
-            const randomIndex = Math.floor(Math.random() * edgeColors.length);
-            return edgeColors[randomIndex];
-        }
+        const randomIndex = Math.floor(Math.random() * edgeColors.length);
+        return edgeColors[randomIndex];
+    }
     const onConnect = useCallback(
         (params) => setEdges((eds) => addEdge({ ...params, style: { strokeWidth: 3, stroke: getEdgeColor() } }, eds)),
         []
