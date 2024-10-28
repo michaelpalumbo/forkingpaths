@@ -1,3 +1,6 @@
+/*
+    LIBRARIES
+*/
 import React, { 
     useCallback, 
     useState, 
@@ -6,6 +9,7 @@ import React, {
     createContext, // for global state management. i will use this with automerge
     useContext
 } from 'react';
+
 import ReactFlow, {
   addEdge,
   useEdgesState,
@@ -14,18 +18,24 @@ import ReactFlow, {
   Controls,
   BackgroundVariant
 } from 'reactflow';
-import 'reactflow/dist/style.css';
+
 import * as Automerge from 'automerge';
+import { isValidAutomergeUrl } from '@automerge/automerge-repo';
 
-import './ForkingPaths.css';
-
+/*
+    COMPONENTS
+*/
 import CustomNode from './components/CustomNode';
 import ContextMenu from './components/UI/ContextMenu';
-
 import useAutomergeStore from './components/utility/automergeStore'; // Adjust path as needed
-
 import repo from './components/utility/automergeRepo'; // Adjust the path based on where automergeRepo.js is located
-import { isValidAutomergeUrl } from '@automerge/automerge-repo';
+
+/*
+    STYLE
+*/
+import './ForkingPaths.css';
+import 'reactflow/dist/style.css';
+
 
 const initialDoc = Automerge.from({ count: 0 });
 
