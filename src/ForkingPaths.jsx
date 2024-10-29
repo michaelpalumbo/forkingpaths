@@ -137,26 +137,6 @@ function ForkingPaths() {
         });
     }, [setDoc, setHandle, setNodes, setEdges, nodes, edges]);
 
-    // Update ReactFlow state when Automerge doc changes
-    // useEffect(() => {
-    //     if (doc) {
-    //     reactFlowInstance.setNodes(doc.nodes || []);
-    //     reactFlowInstance.setEdges(doc.edges || []);
-    //     reactFlowInstance.fitView();
-    //     }
-    // }, [doc, reactFlowInstance]);
-
-    useEffect(() => {
-        // Update renderState when doc changes
-        // setRenderState(doc.count);
-    }, [doc]);
-
-    // const increment = () => {
-    //     setDoc((d) => {
-    //       d.count = (d.count || 0) + 1;
-    //     });
-    //   };
-
     let colorIndex = 0
     function getEdgeColor(){
         const edgeColors = [
@@ -170,10 +150,10 @@ function ForkingPaths() {
             '#2E8B57', // Sea Green (Complementary to Orange)
             '#8B00FF', // Violet
             '#FFD700'  // Gold (Complementary to Violet)
-          ];
-          const color = edgeColors[colorIndex];
-  colorIndex = (colorIndex + 1) % edgeColors.length; // Cycle to the next index, reset if it reaches the end
-  return color;
+        ];
+        const color = edgeColors[colorIndex];
+        colorIndex = (colorIndex + 1) % edgeColors.length; // Cycle to the next index, reset if it reaches the end
+        return color;
     }
     
     const onConnect = useCallback(
