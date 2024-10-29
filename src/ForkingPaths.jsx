@@ -57,16 +57,35 @@ function ForkingPaths() {
     const [edges, setEdges, onEdgesChange] = useEdgesState([]);
     const [clickedEdge, setClickedEdge] = useState(null); // State for clicked edge
 
-
+    
     // Handler to log nodes changes
         // can be useful for direct renders (i.e. it may be optimal to update the audio state locally)
-    const handleNodesChange = useCallback(
-        (changes) => {
-        onNodesChange(changes);
-
-        },
-        [onNodesChange, nodes]
-    );
+        const handleNodesChange = useCallback(
+            (changes) => {
+              // Use ReactFlow's built-in onNodesChange handler
+              onNodesChange(changes);
+          
+              // Update the Automerge document with node position changes
+              if (handle) {
+                handle.change((d) => {
+                  changes.forEach((change) => {
+                    if (change.type === 'position' && change.position) {
+                      const node = d.nodes.find((n) => n.id === change.id);
+                      if (node) {
+                        // Ensure position is defined before assigning
+                        node.position = {
+                          x: change.position.x ?? node.position.x,
+                          y: change.position.y ?? node.position.y,
+                        };
+                      }
+                    }
+                  });
+                });
+              }
+            },
+            [onNodesChange, handle]
+          );
+          
     
     // Handler to log edges changes
     // can be useful for direct renders (i.e. it may be optimal to update the audio state locally)
@@ -109,13 +128,18 @@ function ForkingPaths() {
         handle.on('change', (newDoc) => {
             setDoc(() => newDoc);
 
-            // Sync ReactFlow state with new document
-            if (newDoc.doc.nodes) setNodes(newDoc.doc.nodes);
-            if (newDoc.doc.edges) setEdges(newDoc.doc.edges);
+            // Only update ReactFlow if there's a change in nodes or edges
+            if (newDoc.doc.nodes && JSON.stringify(newDoc.doc.nodes) !== JSON.stringify(nodes)) {
+                setNodes((prevNodes) => [...newDoc.doc.nodes]);
+            }
+        
+            if (newDoc.doc.edges && JSON.stringify(newDoc.doc.edges) !== JSON.stringify(edges)) {
+                setEdges((prevEdges) => [...newDoc.doc.edges]);
+            }
 
             console.log(newDoc)
         });
-    }, [setDoc, setHandle, setNodes, setEdges]);
+    }, [setDoc, setHandle, setNodes, setEdges, nodes, edges]);
 
     // Update ReactFlow state when Automerge doc changes
     // useEffect(() => {
@@ -332,7 +356,7 @@ function ForkingPaths() {
                 ref={contextRef}
                 onPaneClick={onPaneClick}
                 onNodeContextMenu={onNodeContextMenu}
-                fitView
+                // fitView
 
                 // PATCHING
                 nodes={nodes}
