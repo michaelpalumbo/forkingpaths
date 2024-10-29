@@ -47,6 +47,9 @@ function ForkingPaths() {
     const setDoc = useAutomergeStore((state) => state.setDoc);
     const setHandle = useAutomergeStore((state) => state.setHandle);
     const handle = useAutomergeStore((state) => state.handle); // Retrieve handle from Zustand
+    // State for the current document hash and simulated peers
+    const [currentHash, setCurrentHash] = useState('');
+    const [peers, setPeers] = useState([]);
     // UI
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false); // State for sidebar
     const [menu, setMenu] = useState(null);
@@ -101,13 +104,18 @@ function ForkingPaths() {
     // update document in automerge-repo:
     useEffect(() => {
         const rootDocUrl = document.location.hash.substring(1);
+        
         let handle;
     
         if (isValidAutomergeUrl(rootDocUrl)) {
             handle = repo.find(rootDocUrl);
+            // store document url hash
+            setCurrentHash(rootDocUrl.split(':')[1]);
         } else {
             handle = repo.create({ nodes: [], edges: [] });
             document.location.hash = handle.url;
+            // store document url hash
+            setCurrentHash(handle.url.split(':')[1]);
         }
     
         setHandle(handle);
@@ -135,7 +143,13 @@ function ForkingPaths() {
 
             console.log(newDoc)
         });
-    }, [setDoc, setHandle, setNodes, setEdges, nodes, edges]);
+
+        // Simulate the initial list of peers
+        setPeers([
+            { id: 1, hash: currentHash || 'No active session' },
+            // Add more simulated peers as needed
+        ]);
+    }, [setDoc, setHandle, setNodes, setEdges, nodes, edges, currentHash]);
 
     let colorIndex = 0
     function getEdgeColor(){
@@ -273,6 +287,10 @@ function ForkingPaths() {
                 overflowY: 'hidden',
             }}
             >
+
+            
+
+            
                 <h2>Editing</h2>
 
                 {/* <p>Count: {doc.count}</p> */}
@@ -298,9 +316,97 @@ function ForkingPaths() {
 
                 <p>To delete cables: click a cable and press 'delete' or 'backspace' key</p>
                 <p>Right click a module to delete or duplicate it</p>
+            
+            {/*  separator */}
+            <div style={{ margin: '10px 0', borderBottom: '5px solid #000', width: '100%' }} />
+            {/* Display Current Session Hash as clickable link */}
+            <div style={{ marginBottom: '10px' }}>
+            <strong>Current Room ID:</strong>
+            <p>
+                {currentHash ? (
+                <a
+                    href={document.location.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: '#4CAF50', textDecoration: 'none' }}
+                >
+                    {currentHash}
+                </a>
+                ) : (
+                'Generating...'
+                )}
+                <h3>Peers in Session</h3>
+                <ul>
+                {peers.map(peer => (
+                    <li key={peer.id}>
+                    Peer {peer.id}
+                    </li>
+                ))}
+                </ul>
+            </p>
+            </div>
+
+            {/* List of Peers Across the Network */}
+            <div style={{ marginBottom: '10px' }}>
+            <h3>Peers Across Network</h3>
+            <ul>
+                {Array.from({ length: 5 }, (_, i) => ({
+                id: i + 2,
+                hash: `network-hash-${i + 1}`,
+                })).map(peer => (
+                <li key={peer.id}>
+                    <a
+                    href={`#${peer.hash}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: '#4CAF50', textDecoration: 'none' }}
+                    >
+                    Peer {peer.id} - Room ID: {peer.hash}
+                    </a>
+                </li>
+                ))}
+            </ul>
+            </div>
+
+            {/* List of Available Room IDs */}
+            <div style={{ marginBottom: '10px' }}>
+            <h3>Available Room IDs</h3>
+            <ul>
+                {/* Display the current room ID first, with " (Joined)" appended */}
+                <li style={{ fontWeight: 'bold' }}>
+                <a
+                    href={`#${currentHash}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: '#4CAF50', textDecoration: 'none' }}
+                >
+                    {currentHash} (Joined)
+                </a>
+                </li>
+                {/* Display the remaining room IDs, excluding the current one */}
+                {['room1', 'room2', 'room4', 'room5']
+                .filter(roomId => roomId !== currentHash)
+                .map(roomId => (
+                    <li key={roomId}>
+                    <a
+                        href={`#${roomId}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: '#4CAF50', textDecoration: 'none' }}
+                    >
+                        {roomId}
+                    </a>
+                    </li>
+                ))}
+            </ul>
+            </div>
+            
             {/* Placeholder for Additional Components */}
             {/* Future components can be added here as more collapsible sections */}
+            
+            
             </div>
+            
             
 
             {/* Right Column for React Flow Viewport */}
