@@ -62,29 +62,25 @@ function ForkingPaths() {
         // can be useful for direct renders (i.e. it may be optimal to update the audio state locally)
         const handleNodesChange = useCallback(
             (changes) => {
-              // Use ReactFlow's built-in onNodesChange handler
               onNodesChange(changes);
           
-              // Update the Automerge document with node position changes
-              if (handle) {
-                handle.change((d) => {
-                  changes.forEach((change) => {
-                    if (change.type === 'position' && change.position) {
+              changes.forEach((change) => {
+                if (change.type === 'position') {
+                  // Only update Automerge when dragging stops
+                  if (!change.dragging && handle) {
+                    handle.change((d) => {
                       const node = d.nodes.find((n) => n.id === change.id);
                       if (node) {
-                        // Ensure position is defined before assigning
-                        node.position = {
-                          x: change.position.x ?? node.position.x,
-                          y: change.position.y ?? node.position.y,
-                        };
+                        node.position = { ...change.position };
                       }
-                    }
-                  });
-                });
-              }
+                    });
+                  }
+                }
+              });
             },
             [onNodesChange, handle]
           );
+          
           
     
     // Handler to log edges changes
@@ -360,8 +356,19 @@ function ForkingPaths() {
 
                 // PATCHING
                 nodes={nodes}
-                edges={edges}
                 onNodesChange={handleNodesChange}
+                onNodeDragStop={(event, node) => {
+                    // Update Automerge when node drag stops
+                    if (handle) {
+                      handle.change((d) => {
+                        const updatedNode = d.nodes.find((n) => n.id === node.id);
+                        if (updatedNode) {
+                          updatedNode.position = { ...node.position };
+                        }
+                      });
+                    }
+                  }}
+                edges={edges}
                 onEdgesChange={handleEdgesChange}
                 onEdgeClick={onEdgeClick}
                 onConnect={onConnect}
