@@ -58,25 +58,25 @@ function ForkingPaths() {
     const [clickedEdge, setClickedEdge] = useState(null); // State for clicked edge
 
 
-      // Handler to log nodes changes
-      const handleNodesChange = useCallback(
+    // Handler to log nodes changes
+        // can be useful for direct renders (i.e. it may be optimal to update the audio state locally)
+    const handleNodesChange = useCallback(
         (changes) => {
-          onNodesChange(changes);
-          console.log('Nodes changed:', changes); // Log changes
-          console.log('Updated nodes state:', nodes); // Log updated nodes state
+        onNodesChange(changes);
+
         },
         [onNodesChange, nodes]
-      );
+    );
     
-      // Handler to log edges changes
-      const handleEdgesChange = useCallback(
+    // Handler to log edges changes
+    // can be useful for direct renders (i.e. it may be optimal to update the audio state locally)
+    const handleEdgesChange = useCallback(
         (changes) => {
-          onEdgesChange(changes);
-          console.log('Edges changed:', changes); // Log changes
-          console.log('Updated edges state:', edges); // Log updated edges state
+        onEdgesChange(changes);
+
         },
         [onEdgesChange, edges]
-      );
+    );
 
 
     /*
@@ -155,10 +155,23 @@ function ForkingPaths() {
   colorIndex = (colorIndex + 1) % edgeColors.length; // Cycle to the next index, reset if it reaches the end
   return color;
     }
+    
     const onConnect = useCallback(
-        (params) => setEdges((eds) => addEdge({ ...params, style: { strokeWidth: 3, stroke: getEdgeColor() } }, eds)),
-        []
-    );
+        (params) => {
+          const newEdge = addEdge({ ...params, style: { strokeWidth: 3, stroke: getEdgeColor() } }, edges);
+      
+          setEdges((eds) => newEdge);
+      
+          // Add the new edge to the Automerge document
+          if (handle) {
+            handle.change((d) => {
+              if (!d.edges) d.edges = [];
+              d.edges.push(newEdge[newEdge.length - 1]);
+            });
+          }
+        },
+        [edges, handle]
+      );
     
 
     /* 
@@ -362,16 +375,3 @@ function ForkingPaths() {
 }
 
 export default ForkingPaths;
-
-// wrapping with ReactFlowProvider is done outside of the component
-// function ForkingPaths (props) {
-//     return (
-//       <ReactFlowProvider>
-//         <ForkingPaths {...props} />
-//       </ReactFlowProvider>
-//     );
-//   }
-   
-//   export default FlowWithProvider;
-
-
