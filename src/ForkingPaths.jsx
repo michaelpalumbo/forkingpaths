@@ -16,7 +16,10 @@ import ReactFlow, {
   useNodesState,
   Background,
   Controls,
-  BackgroundVariant
+  BackgroundVariant,
+  ReactFlowProvider,
+  useReactFlow,
+  MiniMap
 } from 'reactflow';
 
 import * as Automerge from 'automerge';
@@ -29,7 +32,6 @@ import CustomNode from './components/CustomNode';
 import ContextMenu from './components/UI/ContextMenu';
 import useAutomergeStore from './components/utility/automergeStore'; // Adjust path as needed
 import repo from './components/utility/automergeRepo'; // Adjust the path based on where automergeRepo.js is located
-import DocumentHandler from './components/DocumentHandler';
 
 /*
     STYLE
@@ -40,37 +42,49 @@ import 'reactflow/dist/style.css';
 const nodeTypes = { customNode: CustomNode };
 
 
-function App() {
+function ForkingPaths() {
     // automerge
-    // Access Zustand store
     const doc = useAutomergeStore((state) => state.doc);
     const setDoc = useAutomergeStore((state) => state.setDoc);
     const setHandle = useAutomergeStore((state) => state.setHandle);
     const handle = useAutomergeStore((state) => state.handle); // Retrieve handle from Zustand
-    // const [nodes, setNodes] = useNodesState([]); // ReactFlow nodes state
-
-    // const [handle, setHandle] = useState(null);
-    
-
-    // const [renderState, setRenderState] = useState(doc.count);
-
+    // UI
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false); // State for sidebar
+    const [menu, setMenu] = useState(null);
+    const contextRef = useRef(null);
+    // Patching
 
     const [nodes, setNodes, onNodesChange] = useNodesState([]);
     const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-
-    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false); // State for sidebar
-
     const [clickedEdge, setClickedEdge] = useState(null); // State for clicked edge
 
-    const [menu, setMenu] = useState(null);
-    const contextRef = useRef(null);
+
+      // Handler to log nodes changes
+      const handleNodesChange = useCallback(
+        (changes) => {
+          onNodesChange(changes);
+          console.log('Nodes changed:', changes); // Log changes
+          console.log('Updated nodes state:', nodes); // Log updated nodes state
+        },
+        [onNodesChange, nodes]
+      );
+    
+      // Handler to log edges changes
+      const handleEdgesChange = useCallback(
+        (changes) => {
+          onEdgesChange(changes);
+          console.log('Edges changed:', changes); // Log changes
+          console.log('Updated edges state:', edges); // Log updated edges state
+        },
+        [onEdgesChange, edges]
+      );
 
 
     /*
 
         AUTOMERGE
     */
-
+    // update document in automerge-repo:
     useEffect(() => {
         const rootDocUrl = document.location.hash.substring(1);
         let handle;
@@ -78,22 +92,40 @@ function App() {
         if (isValidAutomergeUrl(rootDocUrl)) {
             handle = repo.find(rootDocUrl);
         } else {
-            handle = repo.create({ count: 0, nodes: [], edges: [] });
+            handle = repo.create({ nodes: [], edges: [] });
             document.location.hash = handle.url;
         }
     
         setHandle(handle);
-    
-        // Access the document state from the handle
+
+        // Sync Automerge Repo document with Zustand
         const initialDoc = handle.doc();
         setDoc(() => initialDoc);
-    
-        // Listen for document changes
+
+        if (initialDoc.nodes) setNodes(initialDoc.nodes);
+        if (initialDoc.edges) setEdges(initialDoc.edges);
+
+        
+        // Listen for document changes from this client and peers
         handle.on('change', (newDoc) => {
             setDoc(() => newDoc);
+
+            // Sync ReactFlow state with new document
+            if (newDoc.doc.nodes) setNodes(newDoc.doc.nodes);
+            if (newDoc.doc.edges) setEdges(newDoc.doc.edges);
+
             console.log(newDoc)
         });
-    }, [setDoc, setHandle]);
+    }, [setDoc, setHandle, setNodes, setEdges]);
+
+    // Update ReactFlow state when Automerge doc changes
+    // useEffect(() => {
+    //     if (doc) {
+    //     reactFlowInstance.setNodes(doc.nodes || []);
+    //     reactFlowInstance.setEdges(doc.edges || []);
+    //     reactFlowInstance.fitView();
+    //     }
+    // }, [doc, reactFlowInstance]);
 
     useEffect(() => {
         // Update renderState when doc changes
@@ -171,6 +203,8 @@ function App() {
     */
     // Function to add a new custom node
     const addCustomNode = () => {
+        if (!handle) return;
+        
         const newNode = {
             id: (nodes.length + 1).toString(),
             type: 'customNode',
@@ -184,8 +218,6 @@ function App() {
             if (!d.nodes) d.nodes = []; // Initialize the 'nodes' array if it doesn't exist
             d.nodes.push(newNode);
         });
-
-        console.log('Updated document:', doc);
     };
 
 
@@ -214,7 +246,7 @@ function App() {
     }, []);
     
     return (
-
+        
             <div style={{ display: 'flex', height: '100vh' }}>
             {/* Left Column for Collapsible Components */}
             <div
@@ -293,8 +325,8 @@ function App() {
                 // PATCHING
                 nodes={nodes}
                 edges={edges}
-                onNodesChange={onNodesChange}
-                onEdgesChange={onEdgesChange}
+                onNodesChange={handleNodesChange}
+                onEdgesChange={handleEdgesChange}
                 onEdgeClick={onEdgeClick}
                 onConnect={onConnect}
                 nodeTypes={nodeTypes}
@@ -313,14 +345,32 @@ function App() {
                     color="#ccc"
                     variant={BackgroundVariant.Lines}
                 />
+
+                <Background 
+                    id="3"
+                    variant={BackgroundVariant.Cross} 
+                    color='#0AF' 
+                />
                 
                 {menu && <ContextMenu onClick={onPaneClick} {...menu} />}
                 <Controls />
+                <MiniMap />
             </ReactFlow>
             </div>
         </div>
-
-  );
+   
+    );
 }
+
+// wrapping with ReactFlowProvider is done outside of the component
+function App (props) {
+    return (
+      <ReactFlowProvider>
+        <ForkingPaths {...props} />
+      </ReactFlowProvider>
+    );
+  }
+   
+//   export default FlowWithProvider;
 
 export default App;

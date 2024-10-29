@@ -1,9 +1,6 @@
 import { create } from 'zustand';
 import * as Automerge from 'automerge';
-import repo from './automergeRepo'; // Import the Automerge Repo
 
-// Initial Automerge document
-const initialDoc = Automerge.from({ count: 0, nodes: [], edges: [] });
 
 // Zustand store
 const useAutomergeStore = create((set) => ({
