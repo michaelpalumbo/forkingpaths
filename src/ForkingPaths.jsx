@@ -362,15 +362,17 @@ function ForkingPaths() {
     );
 }
 
+export default ForkingPaths;
+
 // wrapping with ReactFlowProvider is done outside of the component
-function App (props) {
-    return (
-      <ReactFlowProvider>
-        <ForkingPaths {...props} />
-      </ReactFlowProvider>
-    );
-  }
+// function ForkingPaths (props) {
+//     return (
+//       <ReactFlowProvider>
+//         <ForkingPaths {...props} />
+//       </ReactFlowProvider>
+//     );
+//   }
    
 //   export default FlowWithProvider;
 
-export default App;
+
