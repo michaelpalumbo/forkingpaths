@@ -322,7 +322,7 @@ function ForkingPaths() {
             {/* Display Current Session Hash as clickable link */}
             <div style={{ marginBottom: '10px' }}>
             <strong>Current Room ID:</strong>
-            <p>
+            <p></p>
                 {currentHash ? (
                 <a
                     href={document.location.href}
@@ -343,7 +343,7 @@ function ForkingPaths() {
                     </li>
                 ))}
                 </ul>
-            </p>
+            
             </div>
 
             {/* List of Peers Across the Network */}
