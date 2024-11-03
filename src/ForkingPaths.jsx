@@ -263,7 +263,16 @@ function ForkingPaths() {
     const toggleSidebar = () => {
         setIsSidebarCollapsed((prev) => !prev);
     };
-
+    // make it easy for user to copy a room ID to share with someone
+    function copyToClipboard(url) {
+        navigator.clipboard.writeText(url)
+        .then(() => {
+          alert("Link copied to clipboard!");
+        })
+        .catch((error) => {
+          console.error("Failed to copy text: ", error);
+        });
+      }
     /* 
 
         PATCHING
@@ -376,6 +385,8 @@ function ForkingPaths() {
                 ) : (
                 'Generating...'
                 )}
+                <button onClick={() => copyToClipboard(document.location.href)} style={{ border: 'none', background: 'none', cursor: 'pointer' }}> 📋</button>
+
                 <h3>Peers in Session</h3>
                 <ul>
                 {peers.map(peer => (
