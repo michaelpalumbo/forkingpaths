@@ -17,6 +17,10 @@ export function createSlider(cy, parentNodeId, sliderId, options = {}) {
 
     const fixedY = config.position.y;
 
+    let isDragging = false;
+    let isDraggingEnabled = false; // Tracks if 'e' is pressed for repositioning
+
+
     // Create the slider elements
     cy.add([
         {
@@ -90,9 +94,7 @@ export function createSlider(cy, parentNodeId, sliderId, options = {}) {
         getSliderValue();
     }
 
-    // Event listener for dragging the handle
-    let isDragging = false;
-
+    // Handle dragging behavior of the slider handle along the track
     cy.on('grab', `#${sliderHandleId}`, function () {
         isDragging = true;
     });
@@ -147,6 +149,30 @@ export function createSlider(cy, parentNodeId, sliderId, options = {}) {
         isDragging = false; // Stop dragging
     });
 
+
+    // Listen for 'e' key events to toggle repositioning of track and handle
+    window.addEventListener('keydown', (event) => {
+        if (event.key === 'e') {
+            isDraggingEnabled = true;
+        }
+    });
+
+    window.addEventListener('keyup', (event) => {
+        if (event.key === 'e') {
+            isDraggingEnabled = false;
+        }
+    });
+
+    // Drag control for repositioning track and handle within parent node
+    cy.on('grab', `#${sliderTrackId}`, (evt) => {
+        if (!isDraggingEnabled) {
+            evt.target.ungrabify(); // Prevent dragging if 'e' is not held down
+        }
+    });
+
+    cy.on('free', `#${sliderTrackId}`, (evt) => {
+        evt.target.grabify(); // Restore grabbable state for normal slider use
+    });
     return {
         getValue: getSliderValue,
         setPosition: (x, y) => {
