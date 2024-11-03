@@ -23,12 +23,14 @@ import ReactFlow, {
 
 import * as Automerge from 'automerge';
 import { isValidAutomergeUrl } from '@automerge/automerge-repo';
+import { uuidv7 } from "uuidv7";
 
 /*
     COMPONENTS
 */
 import CustomNode from './components/CustomNode';
 import ContextMenu from './components/UI/ContextMenu';
+import ViewportContextMenu from './components/UI/ViewportContextMenu';
 import useAutomergeStore from './components/utility/automergeStore'; // Adjust path as needed
 import repo from './components/utility/automergeRepo'; // Adjust the path based on where automergeRepo.js is located
 
@@ -52,8 +54,9 @@ function ForkingPaths() {
     const [peers, setPeers] = useState([]);
     // UI
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false); // State for sidebar
-    const [menu, setMenu] = useState(null);
+    const [nodeMenu, setnodeMenu] = useState(null);
     const contextRef = useRef(null);
+    const leftPaneRef = useRef(null) // use this to query the width of the pane for viewport clicking
     // Patching
 
     const [nodes, setNodes, onNodesChange] = useNodesState([]);
@@ -140,8 +143,6 @@ function ForkingPaths() {
             if (newDoc.doc.edges && JSON.stringify(newDoc.doc.edges) !== JSON.stringify(edges)) {
                 setEdges((prevEdges) => [...newDoc.doc.edges]);
             }
-
-            console.log(newDoc)
         });
 
         // Simulate the initial list of peers
@@ -192,7 +193,41 @@ function ForkingPaths() {
     
         EDITOR UI
     */
+    // double-click in viewport adds a node (eventually it opens a module library)
+    document.addEventListener("dblclick", (event) => {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        // since the left column of the page (editor controls) can be collapsed, get the current wdith of the column and add it to the mouse xPos so we don't attempt to add new nodes beyond the margins of the viewport
+        if (leftPaneRef.current) {
+            const style = window.getComputedStyle(leftPaneRef.current);
+            const leftPaneWidth = parseInt(style.getPropertyValue('width'), 10)   
+            let posX = parseInt(event.pageX, 10)
+            let posY = parseInt(event.pageY, 10)
+            
+            console.log(posX , leftPaneWidth)
+            // render new menu at current mouse position
+            // only add the node if we are clicking in the viewport
+            if(posX > leftPaneWidth){
+                console.log('snared')
+                // add the node
+                if (!handle) return;
+            
+                const newNode = {
+                    id: uuidv7(),
+                    type: 'customNode',
+                    position: { x: posX, y: posY }, // Random position
+                    data: { label: `Custom Node ${nodes.length + 1}` },
+                };
+                setNodes((nds) => nds.concat(newNode));
 
+                // Add the new node to the Automerge document
+                handle.change((d) => {
+                    if (!d.nodes) d.nodes = []; // Initialize the 'nodes' array if it doesn't exist
+                    d.nodes.push(newNode);
+                });
+            }
+        } 
+    }, { once: true }); // only fire it one at a time
     // Nodes context menu 
     const onNodeContextMenu = useCallback(
         (event, node) => {
@@ -202,7 +237,7 @@ function ForkingPaths() {
             // Calculate position of the context menu. We want to make sure it
             // doesn't get positioned off-screen.
             const pane = contextRef.current.getBoundingClientRect();
-            setMenu({
+            setnodeMenu({
             id: node.id,
             top: event.clientY < pane.height - 100 && event.clientY,
             left: event.clientX < pane.width - 200 && event.clientX,
@@ -211,11 +246,17 @@ function ForkingPaths() {
                 event.clientY >= pane.height - 200 && pane.height - event.clientY,
             });
         },
-        [setMenu],
+        [setnodeMenu],
     );
 
-    // Close the context menu if it's open whenever the window is clicked.
-    const onPaneClick = useCallback(() => setMenu(null), [setMenu]);
+    
+    // get background click (within the viewport)
+    const onPaneClick = useCallback((event) => {
+       
+        // Close the context nodeMenu if it's open whenever the window is clicked.
+        setnodeMenu(null), [setnodeMenu]
+    
+    });
 
     
     // Toggle sidebar collapse
@@ -275,7 +316,7 @@ function ForkingPaths() {
         
             <div style={{ display: 'flex', height: '100vh' }}>
             {/* Left Column for Collapsible Components */}
-            <div
+            <div ref={leftPaneRef}
             style={{
                 width: isSidebarCollapsed ? '0px' : '300px', // Adjust width based on collapse state
                 transition: 'width 0.3s', // Smooth transition
@@ -313,7 +354,7 @@ function ForkingPaths() {
                 >
                     Add Custom Node
                 </button>
-
+                <p>double-click in background to add a module</p>
                 <p>To delete cables: click a cable and press 'delete' or 'backspace' key</p>
                 <p>Right click a module to delete or duplicate it</p>
             
@@ -460,6 +501,8 @@ function ForkingPaths() {
                 onConnect={onConnect}
                 nodeTypes={nodeTypes}
                 deleteKeyCode={46} // Set Delete key (keyCode 46) for edge deletion
+                zoomOnDoubleClick={false} // Disables zoom on double-click
+
             >
                 <Background
                     id="1"
@@ -480,10 +523,13 @@ function ForkingPaths() {
                     variant={BackgroundVariant.Cross} 
                     color='#0AF' 
                 />
-                
-                {menu && <ContextMenu onClick={onPaneClick} {...menu} />}
+                {/* editor context menu */}
+                {/* <ContextMenu style={{ top: xPos, left: yPos }} />   */}
+                 {/* node context menu  */}
+                {nodeMenu && <ContextMenu onClick={onPaneClick} {...nodeMenu} />}
                 <Controls />
                 <MiniMap />
+                
             </ReactFlow>
             </div>
         </div>
