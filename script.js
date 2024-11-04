@@ -85,11 +85,21 @@ document.addEventListener("DOMContentLoaded", function () {
                     'source-arrow-shape': 'triangle', // Adds a circle at the start
                     'source-arrow-color': '#000',
                     'target-arrow-color': '#000',
-                    'target-arrow-size': 15, // Size of the target endpoint shape
-                    'source-arrow-size': 15, // Size of the source endpoint shape
+                    'target-arrow-width': 20, // Size of the target endpoint shape
+                    'source-arrow-width': 50, // Size of the source endpoint shape
+
                     'curve-style': 'unbundled-bezier',
                     'control-point-weights': [0.25, 0.75], // Control the curve points
                     'control-point-distances': [20, -20], // Adjust distances from the line
+                }
+            },
+            {
+                selector: 'edge.highlighted',
+                style: {
+                    'line-color': '#FF0000',           // Highlight color
+                    'target-arrow-color': '#FF0000',    // Highlight arrow color
+                    'source-arrow-color': '#FF0000',
+                    'width': 10  
                 }
             }
         ]
@@ -103,6 +113,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let tempEdge = null; // Track the temporary edge
     let targetNode = null; // Track the target node
     let ghostNode = null; // Temporary ghost node to follow the mouse
+    let highlightedEdge = null; // Variable to store the currently highlighted edge
 
     // Helper function to detect if the click is near an endpoint of an edge
     function isNearEndpoint(mousePos, endpointPos, threshold = 50) {
@@ -114,9 +125,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // function to create a cable
 
-    function startCable(source){
-        sourceNode = source.target;
-        const mousePos = source.position;
+    function startCable(source, position){
+        sourceNode = source;
+        const mousePos = position;
 
         // Get the ghostCable property from the sourceNode, default to 'ellipse' if undefined
         const ghostShape = sourceNode.data('ghostCableShape') || 'ellipse';
@@ -149,6 +160,11 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     // Step 1: Create temporary edge on mousedown
     cy.on('mousedown', (event) => {
+        // Check if the click target is not the highlighted edge
+        if (highlightedEdge && event.target !== highlightedEdge) {
+            highlightedEdge.removeClass('highlighted');
+            highlightedEdge = null;
+        }
         const target = event.target;
         // Check if the target is a node, edge, or the background
         if (target.isNode && target.isNode()) {
@@ -156,8 +172,10 @@ document.addEventListener("DOMContentLoaded", function () {
             console.log("Node kind:", target.data('kind')); // Log the kind of node if available
                     // first check if clicked node is NOT a parent node, and only an input or output (i.e. ignore other UI such as sliders)
             if (!event.target.isParent() && (event.target.data('kind') === 'input' || event.target.data('kind') === 'output')) {
-                let e = event
-                startCable(e)
+                // we have to assign these to temp variables, as otherwise cy acts kinda funky when passing them to helper functions
+                let e = event.target
+                let p = event.position
+                startCable(e, p)
             }
         } else if (target.isEdge && target.isEdge()) {
             const edge = event.target
@@ -174,27 +192,31 @@ document.addEventListener("DOMContentLoaded", function () {
         
                 // Check if the click is near the source or target endpoint
                 if (isNearEndpoint(mousePos, sourcePos)) {
-                    console.log("Clicked near the source endpoint of edge:", edge.id());
-                    // Perform actions specific to clicking the source endpoint
-
-                    
-
+                    // delete the cable
+                    cy.remove(edge);
                     // create a new ghost cable starting from targetPos (opposite of clicked endpoint), call startCable()
-                    
-                    // delete the cable
-                    cy.remove(edge);
+                    // we have to assign these to temp variables, as otherwise cy acts kinda funky when passing them to helper functions
+                    let e = targetNode
+                    let p = targetPos
+                    startCable(e, p)
                 } else if (isNearEndpoint(mousePos, targetPos)) {
-                    console.log("Clicked near the target endpoint of edge:", edge.id());
-                    // Perform actions specific to clicking the target endpoint
-
-
-                    // create a new ghost cable starting from sourcePos (opposite of clicked endpoint), call startCable()
-
                     // delete the cable
                     cy.remove(edge);
+                    // create a new ghost cable starting from sourcePos (opposite of clicked endpoint), call startCable()
+                    // we have to assign these to temp variables, as otherwise cy acts kinda funky when passing them to helper functions
+                    let e = sourceNode
+                    let p = sourcePos
+                    startCable(e, p)
                 } else {
-                    console.log("Clicked on edge, but not near any endpoint:", edge.id());
+                    console.log("Clicked on edge", edge.id());
                     // todo: highlight the cable, if delete pressed, delete it
+                    // Remove highlight from any previously highlighted edge
+                    if (highlightedEdge) {
+                        highlightedEdge.removeClass('highlighted');
+                    }
+                    // Set the clicked edge as the highlighted edge
+                    edge.addClass('highlighted');
+                    highlightedEdge = edge;
                 }
             } else {
                 console.warn("Edge has an undefined source or target node:", edge.id());
@@ -202,13 +224,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // cy.remove(tempEdge)
         } else {
-            console.log("Clicked on the background");
+            console.log("Clicked on the background\nLow priority ToDo: background clicks open module library");
         }
 
 
             
     });
 
+    // Handle keydown event to delete a highlighted edge on backspace or delete
+    document.addEventListener('keydown', (event) => {
+        if (highlightedEdge && (event.key === 'Backspace' || event.key === 'Delete')) {
+            cy.remove(highlightedEdge)
+            highlightedEdge = null; // Clear the reference after deletion
+        }
+    });
     // Helper function to find elements at a specific point
     function getElementsAtPoint(cy, x, y) {
         return cy.elements().filter((ele) => {
