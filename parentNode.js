@@ -52,7 +52,9 @@ export class ParentNode {
                         label: child.label || `${this.parentId}-input${index + 1}`, // Use custom label if provided
                         bgcolour: '#FC9A4F',
                         // shape: 'ellipse',
-                        kind: child.kind
+                        kind: child.kind,
+                        ghostCableShape: 'rectangle', // inputs can only connect to a rectangle (output), so set the ghostCable's jack to look like outputs
+                        ghostCableColour: '#5C9AE3'
                     },
                     position: {
                         x: this.position.x + offsetX,
@@ -68,7 +70,9 @@ export class ParentNode {
                         label: child.label || `${this.parentId}-output${index + 1}`, // Use custom label if provided
                         bgcolour: '#6FB1FC',
                         // shape: 'rectangle',
-                        kind: child.kind
+                        kind: child.kind,
+                        ghostCableShape: 'triangle', // outputs can only connect to a triangle (input), so set the ghostCable's jack to look like inputs
+                        ghostCableColour: '#E68942'
                     },
                     position: {
                         x: this.position.x + offsetX,
