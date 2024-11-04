@@ -50,7 +50,9 @@ export class ParentNode {
                         id: `${this.moduleName}-input${index + 1}`, 
                         parent: this.moduleName,
                         label: child.label || `${this.parentId}-input${index + 1}`, // Use custom label if provided
-                        bgcolour: '#FC9A4F'
+                        bgcolour: '#FC9A4F',
+                        // shape: 'ellipse',
+                        kind: child.kind
                     },
                     position: {
                         x: this.position.x + offsetX,
@@ -64,7 +66,9 @@ export class ParentNode {
                         id: `${this.moduleName}-output${index + 1}`, 
                         parent: this.moduleName,
                         label: child.label || `${this.parentId}-output${index + 1}`, // Use custom label if provided
-                        bgcolour: '#6FB1FC'
+                        bgcolour: '#6FB1FC',
+                        // shape: 'rectangle',
+                        kind: child.kind
                     },
                     position: {
                         x: this.position.x + offsetX,
@@ -86,14 +90,6 @@ export class ParentNode {
                         x: this.position.x + offsetX,
                         y: this.position.y + offsetY
                     },
-                    // grabbable: false, // Disable dragging initially
-
-                    style: {
-                        'background-color': '#6FB1FC',
-                        'width': 40,
-                        'height': 40,
-                        'label': child.label || `${this.moduleName}-child${index + 1}`
-                    }
                 });
             }
         });

@@ -23,9 +23,22 @@ document.addEventListener("DOMContentLoaded", function () {
                     'text-valign': 'center',    // Vertically center the label
                     'text-halign': 'left',      // Horizontally align label to the left of the node
                     'text-margin-x': -10, // Optional: Move the label slightly up if desired
-
+                    // 'shape': 'data(shape)' // set this for accessibility (colour blindness)
                 }
             },
+            {
+                selector: 'node[kind = "input"]',
+                style: {
+                    'shape': 'triangle' // set this for accessibility (colour blindness)
+                }
+            },
+            {
+                selector: 'node[kind = "output"]',
+                style: {
+                    'shape': 'rectangle' // set this for accessibility (colour blindness)
+                }
+            },
+
             {
                 selector: ':parent',
                 style: {

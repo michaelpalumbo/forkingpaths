@@ -29,7 +29,7 @@ export function createSlider(cy, parentNodeId, sliderId, options = {}) {
             grabbable: false // Prevent track from being dragged
         },
         {
-            data: { id: sliderHandleId, parent: parentNodeId },
+            data: { id: sliderHandleId, parent: parentNodeId, shape: 'ellipse' },
             position: {
                 x: config.position.x - config.length / 2 + (config.length * (config.initialValue - config.minValue)) / (config.maxValue - config.minValue),
                 y: fixedY,
@@ -58,7 +58,7 @@ export function createSlider(cy, parentNodeId, sliderId, options = {}) {
     cy.style()
         .selector(`#${sliderHandleId}`)
         .style({
-            'background-color': '#6FB1FC',
+            'background-color': '#4CAF6F',
             'shape': 'ellipse',
             'width': 20,
             'height': 20,
