@@ -98,8 +98,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Step 1: Create temporary edge on mousedown
     cy.on('mousedown', 'node', (event) => {
-        // first check if clicked node is NOT a parent node
-        if (!event.target.isParent()) {
+        // first check if clicked node is NOT a parent node, and only an input or output (i.e. ignore other UI such as sliders)
+        if (!event.target.isParent() && (event.target.data('kind') === 'input' || event.target.data('kind') === 'output')) {
             sourceNode = event.target;
             const mousePos = event.position;
 
