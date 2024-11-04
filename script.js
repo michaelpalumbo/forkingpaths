@@ -106,6 +106,11 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     /*
+        UI
+    */
+   
+
+    /*
         PATCHING
     */
 
@@ -117,7 +122,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Helper function to detect if the click is near an endpoint of an edge
     function isNearEndpoint(mousePos, endpointPos, threshold = 50) {
-        console.log('endpo', endpointPos)
         const dx = mousePos.x - endpointPos.x;
         const dy = mousePos.y - endpointPos.y;
         return Math.sqrt(dx * dx + dy * dy) <= threshold;
@@ -168,9 +172,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const target = event.target;
         // Check if the target is a node, edge, or the background
         if (target.isNode && target.isNode()) {
-            console.log("Clicked on a node:", target.id());
-            console.log("Node kind:", target.data('kind')); // Log the kind of node if available
-                    // first check if clicked node is NOT a parent node, and only an input or output (i.e. ignore other UI such as sliders)
+            // first check if clicked node is NOT a parent node, and only an input or output (i.e. ignore other UI such as sliders)
             if (!event.target.isParent() && (event.target.data('kind') === 'input' || event.target.data('kind') === 'output')) {
                 // we have to assign these to temp variables, as otherwise cy acts kinda funky when passing them to helper functions
                 let e = event.target
@@ -208,8 +210,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     let p = sourcePos
                     startCable(e, p)
                 } else {
-                    console.log("Clicked on edge", edge.id());
-                    // todo: highlight the cable, if delete pressed, delete it
                     // Remove highlight from any previously highlighted edge
                     if (highlightedEdge) {
                         highlightedEdge.removeClass('highlighted');
@@ -269,7 +269,6 @@ document.addEventListener("DOMContentLoaded", function () {
             
             // Filter elements based on the correct `kind`
             const potentialTarget = elementsUnderMouse.filter((el) => {
-                // console.log("Element ID:", el.id(), "Kind:", el.data('kind')); // Debugging line
                 return (
                     el.isNode() &&
                     el !== sourceNode &&
@@ -309,7 +308,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     data: { id: edgeId, source: sourceNode.id(), target: targetNode.id(), kind: 'cable' },
                     classes: 'edge'
                 });
-                console.log("Edge created between:", sourceNode.id(), "and", targetNode.id());
             } else {
                 // If no target node, remove the temporary edge
                 cy.remove(tempEdge);
@@ -329,14 +327,16 @@ document.addEventListener("DOMContentLoaded", function () {
     const parentNode1 = new ParentNode(cy, 'Oscillator', { x: 200, y: 200 }, [
         { kind: 'input', label: 'frequency' },
         { kind: 'input', label: 'amplitude' },
-        { kind: 'slider', label: 'frequency' },
         { kind: 'output', label: 'out' },
+        { kind: 'slider', label: 'frequency' },
     ]);
 
-    const parentNode2 = new ParentNode(cy, 'parentNode2', { x: 400, y: 200 }, [
+    const parentNode2 = new ParentNode(cy, 'parentNode2', { x: 500, y: 400 }, [
         { kind: 'input', label: 'child4' },
         { kind: 'slider', label: 'child5' },
         { kind: 'input', label: 'child9' },
+        { kind: 'output', label: 'audioOut' },
+        { kind: 'output', label: 'envOut' },
     ]);
 
     // Add event listener logic for connecting nodes here as before...
