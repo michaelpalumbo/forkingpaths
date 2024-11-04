@@ -20,6 +20,8 @@ export function createSlider(cy, parentNodeId, sliderId, options = {}) {
     let isDragging = false;
     let isDraggingEnabled = false; // Tracks if 'e' is pressed for repositioning
 
+    // Calculate initial handle position within the track
+    const initialHandleX = config.position.x - config.length / 2 + (config.length * (config.initialValue - config.minValue)) / (config.maxValue - config.minValue);
 
     // Create the slider elements
     cy.add([
@@ -31,7 +33,7 @@ export function createSlider(cy, parentNodeId, sliderId, options = {}) {
         {
             data: { id: sliderHandleId, parent: parentNodeId, shape: 'ellipse' },
             position: {
-                x: config.position.x - config.length / 2 + (config.length * (config.initialValue - config.minValue)) / (config.maxValue - config.minValue),
+                x: initialHandleX,
                 y: fixedY,
             }
         },
