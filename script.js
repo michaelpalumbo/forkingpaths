@@ -130,18 +130,43 @@ document.addEventListener("DOMContentLoaded", function () {
         });
         // Create or load the document
         // Initialize or load the document with a unique ID
+        // Check for a document URL in the fragment
+        let documentUrl = decodeURIComponent(window.location.hash.substring(1));
         let handle;
-        const docUrl = 'automerge://counter-doc';
 
         try {
-            // Try to find the document by its URL
-            handle = repo.find(docUrl);
+            if (documentUrl) {
+                // Attempt to find the document with the provided URL
+                console.log("Attempting to load document from URL in fragment:", documentUrl);
+                handle = repo.find(documentUrl);
+            } else {
+                throw new Error("No document URL found in fragment.");
+            }
         } catch (error) {
-            // If not found, create a new document and save its URL
+            // If document is not found or an error occurs, create a new document
+            console.warn("Document not found or invalid URL. Creating a new document:", error.message);
             handle = repo.create();
-            console.log("Created new document with URL:", handle.url);
+            documentUrl = handle.url;
+
+            // Update the window location to include the new document URL
+            window.location.href = `${window.location.origin}/#${encodeURIComponent(documentUrl)}`;
+            console.log("Created new document and updated URL with handle:", documentUrl);
         }
+
+        // Wait until the document handle is ready
+        await handle.whenReady();
+        // try {
+        //     // Try to find the document by its URL
+        //     handle = repo.find(docUrl);
+        // } catch (error) {
+        //     // If not found, create a new document and save its URL
+        //     handle = repo.create();
+        //     console.log("Created new document with URL:", handle.url);
+        // }
         
+        // Set the document URL in the fragment part of the current URL
+        window.location.href = `${window.location.origin}/#${encodeURIComponent(handle.url)}`;
+        console.log("Updated URL with document handle:", window.location.href);
         // Initialize the document's counter if it's empty
         handle.change((doc) => {
             if (doc.counter == null) { 
