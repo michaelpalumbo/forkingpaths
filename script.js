@@ -1,5 +1,10 @@
 import { ParentNode } from './parentNode.js';
 import { uuidv7 } from "https://unpkg.com/uuidv7@^1";
+// import { Repo } from "@automerge/automerge-repo";
+
+//todo: import { LocalForageStorageAdapter } from "@automerge/automerge-repo-storage-localforage";
+// import { BrowserWebSocketClientAdapter } from '@automerge/automerge-repo-network-websocket';
+
 
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -113,23 +118,43 @@ document.addEventListener("DOMContentLoaded", function () {
         AUTOMERGE
     */
 
-        // main.js
+    let repo
+    (async () => {
+        // Dynamically import the Repo module to avoid blocking
+        const { Repo } = await import("@automerge/automerge-repo");
+        const { BrowserWebSocketClientAdapter } = await import("@automerge/automerge-repo-network-websocket");
 
-    // Check if the browser supports workers
-    if (window.Worker) {
-        // Initialize the renamed worker
-        const worker = new Worker('automergeWorker.js');
-
-        // Listen for messages from the worker
-        worker.addEventListener('message', (event) => {
-            console.log('Message received from automergeWorker:', event.data.result);
+        // Initialize the Automerge repository with WebSocket adapter
+        repo = new Repo({
+            network: [new BrowserWebSocketClientAdapter('ws://localhost:3030')],
+            storage: null, // Add a storage adapter if needed
         });
 
-        // Send a message to the worker
-        worker.postMessage({ value: 10 }); // Replace 10 with any value you'd like to process
-    } else {
-        console.log('Web Workers are not supported in this browser.');
-    }
+        // Signal to the main thread that the repo has been initialized
+        self.postMessage({
+            msg: 'repoInitialized',
+            data: true
+        });
+    })();
+    // let automergeWorker
+    // // Check if the browser supports workers
+    // if (window.Worker) {
+    //     // Initialize the renamed worker
+    //     automergeWorker = new Worker(new URL('./automergeWorker.js', import.meta.url), { type: 'module' });
+
+    //     // Send repo to the worker after creation
+        
+    //     // Listen for messages from the worker
+    //     automergeWorker.addEventListener('message', (event) => {
+    //         console.log('Message received from automergeWorker:', event.data.result);
+
+
+    //     });
+    //     // Send a message to the worker
+    //     automergeWorker.postMessage({ value: 10 }); // Replace 10 with any value you'd like to process
+    // } else {
+    //     console.log('Web Workers are not supported in this browser.');
+    // }
 
 
     /*
