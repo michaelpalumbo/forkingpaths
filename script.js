@@ -5,7 +5,7 @@ import { uuidv7 } from "https://unpkg.com/uuidv7@^1";
 //todo: import { LocalForageStorageAdapter } from "@automerge/automerge-repo-storage-localforage";
 // import { BrowserWebSocketClientAdapter } from '@automerge/automerge-repo-network-websocket';
 
-
+let handle;
 
 document.addEventListener("DOMContentLoaded", function () {
     const cy = cytoscape({
@@ -132,7 +132,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // Initialize or load the document with a unique ID
         // Check for a document URL in the fragment
         let documentUrl = decodeURIComponent(window.location.hash.substring(1));
-        let handle;
+        
 
         try {
             if (documentUrl) {
@@ -153,29 +153,36 @@ document.addEventListener("DOMContentLoaded", function () {
             console.log("Created new document and updated URL with handle:", documentUrl);
         }
 
-        // Wait until the document handle is ready
-        await handle.whenReady();
-        // try {
-        //     // Try to find the document by its URL
-        //     handle = repo.find(docUrl);
-        // } catch (error) {
-        //     // If not found, create a new document and save its URL
-        //     handle = repo.create();
-        //     console.log("Created new document with URL:", handle.url);
-        // }
-        
-        // Set the document URL in the fragment part of the current URL
         window.location.href = `${window.location.origin}/#${encodeURIComponent(handle.url)}`;
         console.log("Updated URL with document handle:", window.location.href);
-        // Initialize the document's counter if it's empty
+        // Wait until the document handle is ready
+        await handle.whenReady();
+        
+        // setup automerge doc structure for the cytoscape elements array
         handle.change((doc) => {
-            if (doc.counter == null) { 
-                doc.counter = 0 
-            };
+            
+            if (!doc.elements) {
+                doc.elements = [];
+            }
+        });
+        // Set the document URL in the fragment part of the current URL
+
+        // Initialize the document's counter if it's empty
+        // Ensure counter is initialized in the document if it's a new document
+        /*
+        handle.change((doc) => {
+            if (doc.counter == null) doc.counter = 0;
         });
 
         // Update the UI when the document changes
         const counterElement = document.getElementById('counter');
+
+        // Display the initial counter value once the document is ready
+        const initialCounterValue = handle.doc.counter ?? 0;
+
+        console.log(handle.doc.counter)
+        counterElement.textContent = initialCounterValue;
+        
         handle.on('change', (newDoc) => {
             console.log('Document changed:', newDoc);  // Log the entire document structure
             const counterValue = newDoc.doc.counter ?? 0;
@@ -193,27 +200,41 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Initial UI load
         counterElement.textContent = handle.doc.counter || 0;
+
+        */
     })();
-    // let automergeWorker
-    // // Check if the browser supports workers
-    // if (window.Worker) {
-    //     // Initialize the renamed worker
-    //     automergeWorker = new Worker(new URL('./automergeWorker.js', import.meta.url), { type: 'module' });
 
-    //     // Send repo to the worker after creation
-        
-    //     // Listen for messages from the worker
-    //     automergeWorker.addEventListener('message', (event) => {
-    //         console.log('Message received from automergeWorker:', event.data.result);
-
-
-    //     });
-    //     // Send a message to the worker
-    //     automergeWorker.postMessage({ value: 10 }); // Replace 10 with any value you'd like to process
-    // } else {
-    //     console.log('Web Workers are not supported in this browser.');
-    // }
-
+    // addNode
+    function addNodeToDoc(node) {
+        handle.change((doc) => {
+            doc.elements.push({
+                type: 'node',
+                id: node.id(),
+                data: node.data(),
+                position: node.position()
+            });
+        });
+    }
+    
+    // addEdge
+    function addEdgeToDoc(edge) {
+        handle.change((doc) => {
+            doc.elements.push({
+                type: 'edge',
+                id: edge.id(),
+                data: edge.data()
+            });
+        });
+    }
+    // remove node or edge
+    function removeElementFromDoc(id) {
+        handle.change((doc) => {
+            const index = doc.elements.findIndex(el => el.id === id);
+            if (index !== -1) {
+                doc.elements.splice(index, 1);
+            }
+        });
+    }
 
     /*
         PATCHING
