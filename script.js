@@ -176,11 +176,25 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (isNearEndpoint(mousePos, sourcePos)) {
                     console.log("Clicked near the source endpoint of edge:", edge.id());
                     // Perform actions specific to clicking the source endpoint
+
+                    
+
+                    // create a new ghost cable starting from targetPos (opposite of clicked endpoint), call startCable()
+                    
+                    // delete the cable
+                    cy.remove(edge);
                 } else if (isNearEndpoint(mousePos, targetPos)) {
                     console.log("Clicked near the target endpoint of edge:", edge.id());
                     // Perform actions specific to clicking the target endpoint
+
+
+                    // create a new ghost cable starting from sourcePos (opposite of clicked endpoint), call startCable()
+
+                    // delete the cable
+                    cy.remove(edge);
                 } else {
                     console.log("Clicked on edge, but not near any endpoint:", edge.id());
+                    // todo: highlight the cable, if delete pressed, delete it
                 }
             } else {
                 console.warn("Edge has an undefined source or target node:", edge.id());
