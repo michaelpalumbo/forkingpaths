@@ -118,23 +118,56 @@ document.addEventListener("DOMContentLoaded", function () {
         AUTOMERGE
     */
 
-    let repo
+    // Import dependencies dynamically
     (async () => {
-        // Dynamically import the Repo module to avoid blocking
-        const { Repo } = await import("@automerge/automerge-repo");
-        const { BrowserWebSocketClientAdapter } = await import("@automerge/automerge-repo-network-websocket");
+        const { Repo } = await import('@automerge/automerge-repo');
+        const { BrowserWebSocketClientAdapter } = await import('@automerge/automerge-repo-network-websocket');
 
         // Initialize the Automerge repository with WebSocket adapter
-        repo = new Repo({
+        const repo = new Repo({
             network: [new BrowserWebSocketClientAdapter('ws://localhost:3030')],
-            storage: null, // Add a storage adapter if needed
+            storage: null, // Optional: use a storage adapter if needed
+        });
+        // Create or load the document
+        // Initialize or load the document with a unique ID
+        let handle;
+        const docUrl = 'automerge://counter-doc';
+
+        try {
+            // Try to find the document by its URL
+            handle = repo.find(docUrl);
+        } catch (error) {
+            // If not found, create a new document and save its URL
+            handle = repo.create();
+            console.log("Created new document with URL:", handle.url);
+        }
+        
+        // Initialize the document's counter if it's empty
+        handle.change((doc) => {
+            if (doc.counter == null) { 
+                doc.counter = 0 
+            };
         });
 
-        // Signal to the main thread that the repo has been initialized
-        self.postMessage({
-            msg: 'repoInitialized',
-            data: true
+        // Update the UI when the document changes
+        const counterElement = document.getElementById('counter');
+        handle.on('change', (newDoc) => {
+            console.log('Document changed:', newDoc);  // Log the entire document structure
+            const counterValue = newDoc.doc.counter ?? 0;
+            console.log('Updated Counter value:', counterValue);  // Log the counter specifically
+            counterElement.textContent = counterValue;
         });
+
+        // Increment the counter when the button is clicked
+        document.getElementById('incrementButton').addEventListener('click', () => {
+            handle.change((doc) => {
+                doc.counter += 1;
+                console.log(doc.counter)
+            });
+        });
+
+        // Initial UI load
+        counterElement.textContent = handle.doc.counter || 0;
     })();
     // let automergeWorker
     // // Check if the browser supports workers
