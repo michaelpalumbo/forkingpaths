@@ -109,6 +109,28 @@ document.addEventListener("DOMContentLoaded", function () {
         UI
     */
    
+    /*
+        AUTOMERGE
+    */
+
+        // main.js
+
+    // Check if the browser supports workers
+    if (window.Worker) {
+        // Initialize the renamed worker
+        const worker = new Worker('automergeWorker.js');
+
+        // Listen for messages from the worker
+        worker.addEventListener('message', (event) => {
+            console.log('Message received from automergeWorker:', event.data.result);
+        });
+
+        // Send a message to the worker
+        worker.postMessage({ value: 10 }); // Replace 10 with any value you'd like to process
+    } else {
+        console.log('Web Workers are not supported in this browser.');
+    }
+
 
     /*
         PATCHING
