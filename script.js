@@ -470,8 +470,10 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    function addParentNode(moduleName, position, children) {
+    function addModule(moduleName, position, children) {
         const parentNode = new ParentNode(moduleName, position, children);
+
+        // parentNode.getModule('oscillator')
         const { parentNode: parentNodeData, childrenNodes } = parentNode.getNodeStructure();
     
         // Add nodes to Cytoscape
@@ -487,14 +489,17 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     let counter = 0
     
+
+    //! remove this once its working
+    
     document.getElementById('addNodeButton').addEventListener('click', () => {
-        
-        addParentNode(`Oscillator-${counter}`, { x: 200, y: 200 }, [
-            { kind: 'input', label: 'frequency' },
-            { kind: 'input', label: 'amplitude' },
-            { kind: 'output', label: 'out' },
-            { kind: 'slider', label: 'frequency' },
-        ]);
+        addModule(`Oscillator`, { x: 200, y: 200 }, [    ]);
+        // addModule(`Oscillator-${counter}`, { x: 200, y: 200 }, [
+        //     // { kind: 'input', label: 'frequency' },
+        //     // { kind: 'input', label: 'amplitude' },
+        //     // { kind: 'output', label: 'out' },
+        //     // { kind: 'slider', label: 'frequency' },
+        // ]);
 
 
         counter++

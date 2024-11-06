@@ -1,15 +1,30 @@
+import modules from './modules.json' assert { type: 'json'}
+
 export class ParentNode {
     constructor(moduleName, position, children) {
         this.moduleName = moduleName;
         this.position = position;
         this.children = children;
         this.isDraggingEnabled = false; // Flag to track if dragging is enabled
-
+        this.module;
         // Set up drag control for child nodes based on the 'e' key
         // this.setupDragControl();
     }
 
     getNodeStructure() {
+        // sift through modules.json, construct node
+        let inputs = modules[this.moduleName].inputs
+        let outputs = modules[this.moduleName].outputs
+        let params = modules[this.moduleName].params
+        for (let i = 0; i<inputs.length; i++){
+            this.children.push(inputs[i])
+        }
+        for (let i = 0; i<params.length; i++){
+            this.children.push(params[i])
+        }
+        for (let i = 0; i<outputs.length; i++){
+            this.children.push(outputs[i])
+        }
         // Returns the structure of the parent node and its children
         const parentNode = {
             data: { id: this.moduleName, label: this.moduleName, kind: 'module' },
