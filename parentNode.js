@@ -12,7 +12,7 @@ export class ParentNode {
     getNodeStructure() {
         // Returns the structure of the parent node and its children
         const parentNode = {
-            data: { id: this.moduleName, label: this.moduleName },
+            data: { id: this.moduleName, label: this.moduleName, kind: 'module' },
             position: this.position,
             classes: ':parent',
         };

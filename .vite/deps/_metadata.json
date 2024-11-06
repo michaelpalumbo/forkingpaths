@@ -7,13 +7,13 @@
     "@automerge/automerge-repo": {
       "src": "../../node_modules/@automerge/automerge-repo/dist/entrypoints/fullfat.js",
       "file": "@automerge_automerge-repo.js",
-      "fileHash": "4f894a3b",
+      "fileHash": "ea803627",
       "needsInterop": false
     },
     "@automerge/automerge-repo-network-websocket": {
       "src": "../../node_modules/@automerge/automerge-repo-network-websocket/dist/index.js",
       "file": "@automerge_automerge-repo-network-websocket.js",
-      "fileHash": "453b4562",
+      "fileHash": "637b84c8",
       "needsInterop": false
     }
   },

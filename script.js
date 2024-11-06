@@ -6,6 +6,7 @@ import { uuidv7 } from "https://unpkg.com/uuidv7@^1";
 // import { BrowserWebSocketClientAdapter } from '@automerge/automerge-repo-network-websocket';
 
 let handle;
+let isDraggingEnabled = false;
 
 document.addEventListener("DOMContentLoaded", function () {
     const cy = cytoscape({
@@ -511,4 +512,50 @@ document.addEventListener("DOMContentLoaded", function () {
     // ]);
 
     // Add event listener logic for connecting nodes here as before...
+
+    // Listen for drag events on child nodes
+    cy.on('grab', (event)=> {
+        console.log(event.target)
+        const node = event.target
+
+        if(node.data('kind') && node.data('kind') != 'module'){
+            // for all elements that aren't modules, determine whether to allow dragging (for rearranging the UI)
+            if(isDraggingEnabled){
+                // if enabled, begin dragging node with mouse
+                node.grabify()
+                console.log('sssss')
+            } else {
+                // If dragging is not enabled, release the node immediately
+                // this allows for cables to spawn or controller elements to be engaged with (i.e. sliders)
+                node.ungrabify(); 
+            }
+        } 
+    })
+
+    // Track when the 'e' key is pressed and released
+    window.addEventListener('keydown', (event) => {
+        if (event.key === 'e') {
+            console.log('yuss')
+            isDraggingEnabled = true;
+        }
+    });
+
+    window.addEventListener('keyup', (event) => {
+        if (event.key === 'e') {
+            isDraggingEnabled = false;
+        }
+    });
+    // this.cy.on('grab', `node[parent = "${this.moduleName}"]`, (evt) => {
+    //     const node = evt.target;
+    //     if (!this.isDraggingEnabled) {
+    //         // If dragging is not enabled, release the node immediately
+    //         node.ungrabify();
+    //     }
+    // });
+
+    // this.cy.on('free', `node[parent = "${this.moduleName}"]`, (evt) => {
+    //     const node = evt.target;
+    //     // Restore the node's grabbable state after releasing it
+    //     node.grabify();
+    // });
 });
