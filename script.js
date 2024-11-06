@@ -165,6 +165,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 doc.elements = [];
             }
         });
+
+        handle.on('change', (newDoc) => {
+            console.log(newDoc)
+        })
         // Set the document URL in the fragment part of the current URL
 
         // Initialize the document's counter if it's empty
@@ -236,6 +240,20 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
+    // cy.on('add', 'node', (event) => {
+    //     addNodeToDoc(event.target);
+    // });
+    
+    cy.on('add', 'edge', (event) => {
+        console.log('test')
+        addEdgeToDoc(event.target);
+    });
+    
+    cy.on('remove', 'node, edge', (event) => {
+        console.log('test2')
+        removeElementFromDoc(event.target.id());
+    });
+    
     /*
         PATCHING
     */
@@ -449,21 +467,46 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // Create parent nodes with children of different kinds
-    const parentNode1 = new ParentNode(cy, 'Oscillator', { x: 200, y: 200 }, [
-        { kind: 'input', label: 'frequency' },
-        { kind: 'input', label: 'amplitude' },
-        { kind: 'output', label: 'out' },
-        { kind: 'slider', label: 'frequency' },
-    ]);
+    function addParentNode(cy, handle, moduleName, position, children) {
+        const parentNode = new ParentNode(moduleName, position, children);
+        const { parentNode: parentNodeData, childrenNodes } = parentNode.getNodeStructure();
+    
+        // Add nodes to Cytoscape
+        cy.add(parentNodeData);
+        cy.add(childrenNodes);
+    
+        // Update Automerge document
+        handle.change((doc) => {
+            if (!doc.elements) doc.elements = [];
+            doc.elements.push(parentNodeData);
+            doc.elements.push(...childrenNodes);
+        });
+    }
+    let counter = 0
+    document.getElementById('addNodeButton').addEventListener('click', () => {
+        addParentNode(cy, handle, `Oscillator-${counter}`, { x: 200, y: 200 }, [
+            { kind: 'input', label: 'frequency' },
+            { kind: 'input', label: 'amplitude' },
+            { kind: 'output', label: 'out' },
+            { kind: 'slider', label: 'frequency' },
+        ]);
+        counter++
+    });
+    // // Create parent nodes with children of different kinds
+    // const parentNode1 = new ParentNode(cy, 'Oscillator', { x: 200, y: 200 }, [
+    //     { kind: 'input', label: 'frequency' },
+    //     { kind: 'input', label: 'amplitude' },
+    //     { kind: 'output', label: 'out' },
+    //     { kind: 'slider', label: 'frequency' },
+    // ]);
 
-    const parentNode2 = new ParentNode(cy, 'parentNode2', { x: 500, y: 400 }, [
-        { kind: 'input', label: 'child4' },
-        { kind: 'slider', label: 'child5' },
-        { kind: 'input', label: 'child9' },
-        { kind: 'output', label: 'audioOut' },
-        { kind: 'output', label: 'envOut' },
-    ]);
+    // const parentNode2 = new ParentNode(cy, 'parentNode2', { x: 500, y: 400 }, [
+    //     { kind: 'input', label: 'child4' },
+    //     { kind: 'slider', label: 'child5' },
+    //     { kind: 'input', label: 'child9' },
+    //     { kind: 'output', label: 'audioOut' },
+    //     { kind: 'output', label: 'envOut' },
+    // ]);
 
     // Add event listener logic for connecting nodes here as before...
 });

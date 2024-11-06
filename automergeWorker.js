@@ -1,5 +1,5 @@
 // automergeWorker.js
-import * as A from "@automerge/automerge/next";
+import * as Automerge from "@automerge/automerge/next";
 // import { Repo } from "@automerge/automerge-repo";
 
 // //todo: import { LocalForageStorageAdapter } from "@automerge/automerge-repo-storage-localforage";
