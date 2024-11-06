@@ -487,40 +487,10 @@ document.addEventListener("DOMContentLoaded", function () {
             doc.elements.push(...childrenNodes);
         });
     }
-    let counter = 0
-    
-
-    //! remove this once its working
     
     document.getElementById('addNodeButton').addEventListener('click', () => {
         addModule(`Oscillator`, { x: 200, y: 200 }, [    ]);
-        // addModule(`Oscillator-${counter}`, { x: 200, y: 200 }, [
-        //     // { kind: 'input', label: 'frequency' },
-        //     // { kind: 'input', label: 'amplitude' },
-        //     // { kind: 'output', label: 'out' },
-        //     // { kind: 'slider', label: 'frequency' },
-        // ]);
-
-
-        counter++
     });
-    // // Create parent nodes with children of different kinds
-    // const parentNode1 = new ParentNode(cy, 'Oscillator', { x: 200, y: 200 }, [
-    //     { kind: 'input', label: 'frequency' },
-    //     { kind: 'input', label: 'amplitude' },
-    //     { kind: 'output', label: 'out' },
-    //     { kind: 'slider', label: 'frequency' },
-    // ]);
-
-    // const parentNode2 = new ParentNode(cy, 'parentNode2', { x: 500, y: 400 }, [
-    //     { kind: 'input', label: 'child4' },
-    //     { kind: 'slider', label: 'child5' },
-    //     { kind: 'input', label: 'child9' },
-    //     { kind: 'output', label: 'audioOut' },
-    //     { kind: 'output', label: 'envOut' },
-    // ]);
-
-    // Add event listener logic for connecting nodes here as before...
 
     // Listen for drag events on child nodes
     cy.on('grab', (event)=> {

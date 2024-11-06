@@ -1,5 +1,5 @@
 import modules from './modules.json' assert { type: 'json'}
-
+import uuidv7 from 'uuidv7'
 export class ParentNode {
     constructor(moduleName, position, children) {
         this.moduleName = moduleName;
@@ -27,7 +27,7 @@ export class ParentNode {
         }
         // Returns the structure of the parent node and its children
         const parentNode = {
-            data: { id: this.moduleName, label: this.moduleName, kind: 'module' },
+            data: { id: uuidv7(), label: this.moduleName, kind: 'module' },
             position: this.position,
             classes: ':parent',
         };
