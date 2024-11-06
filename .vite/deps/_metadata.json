@@ -1,0 +1,25 @@
+{
+  "hash": "7c9fbcd5",
+  "configHash": "fe11929c",
+  "lockfileHash": "c334449c",
+  "browserHash": "b524fc6e",
+  "optimized": {
+    "@automerge/automerge-repo": {
+      "src": "../../node_modules/@automerge/automerge-repo/dist/entrypoints/fullfat.js",
+      "file": "@automerge_automerge-repo.js",
+      "fileHash": "4f894a3b",
+      "needsInterop": false
+    },
+    "@automerge/automerge-repo-network-websocket": {
+      "src": "../../node_modules/@automerge/automerge-repo-network-websocket/dist/index.js",
+      "file": "@automerge_automerge-repo-network-websocket.js",
+      "fileHash": "453b4562",
+      "needsInterop": false
+    }
+  },
+  "chunks": {
+    "chunk-LGBC6PSF": {
+      "file": "chunk-LGBC6PSF.js"
+    }
+  }
+}

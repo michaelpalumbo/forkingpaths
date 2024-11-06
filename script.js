@@ -245,12 +245,12 @@ document.addEventListener("DOMContentLoaded", function () {
     // });
     
     cy.on('add', 'edge', (event) => {
-        console.log('test')
+        
         addEdgeToDoc(event.target);
     });
     
     cy.on('remove', 'node, edge', (event) => {
-        console.log('test2')
+        
         removeElementFromDoc(event.target.id());
     });
     
@@ -308,6 +308,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     // Step 1: Create temporary edge on mousedown
     cy.on('mousedown', (event) => {
+        console.log(event)
         // Check if the click target is not the highlighted edge
         if (highlightedEdge && event.target !== highlightedEdge) {
             highlightedEdge.removeClass('highlighted');
@@ -316,6 +317,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const target = event.target;
         // Check if the target is a node, edge, or the background
         if (target.isNode && target.isNode()) {
+            console.log('snared')
             // first check if clicked node is NOT a parent node, and only an input or output (i.e. ignore other UI such as sliders)
             if (!event.target.isParent() && (event.target.data('kind') === 'input' || event.target.data('kind') === 'output')) {
                 // we have to assign these to temp variables, as otherwise cy acts kinda funky when passing them to helper functions
