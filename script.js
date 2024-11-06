@@ -470,7 +470,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    function addParentNode(cy, handle, moduleName, position, children) {
+    function addParentNode(moduleName, position, children) {
         const parentNode = new ParentNode(moduleName, position, children);
         const { parentNode: parentNodeData, childrenNodes } = parentNode.getNodeStructure();
     
@@ -486,13 +486,17 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
     let counter = 0
+    
     document.getElementById('addNodeButton').addEventListener('click', () => {
-        addParentNode(cy, handle, `Oscillator-${counter}`, { x: 200, y: 200 }, [
+        
+        addParentNode(`Oscillator-${counter}`, { x: 200, y: 200 }, [
             { kind: 'input', label: 'frequency' },
             { kind: 'input', label: 'amplitude' },
             { kind: 'output', label: 'out' },
             { kind: 'slider', label: 'frequency' },
         ]);
+
+
         counter++
     });
     // // Create parent nodes with children of different kinds
@@ -515,7 +519,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Listen for drag events on child nodes
     cy.on('grab', (event)=> {
-        console.log(event.target)
         const node = event.target
 
         if(node.data('kind') && node.data('kind') != 'module'){
@@ -523,7 +526,6 @@ document.addEventListener("DOMContentLoaded", function () {
             if(isDraggingEnabled){
                 // if enabled, begin dragging node with mouse
                 node.grabify()
-                console.log('sssss')
             } else {
                 // If dragging is not enabled, release the node immediately
                 // this allows for cables to spawn or controller elements to be engaged with (i.e. sliders)
@@ -535,7 +537,6 @@ document.addEventListener("DOMContentLoaded", function () {
     // Track when the 'e' key is pressed and released
     window.addEventListener('keydown', (event) => {
         if (event.key === 'e') {
-            console.log('yuss')
             isDraggingEnabled = true;
         }
     });
@@ -545,17 +546,5 @@ document.addEventListener("DOMContentLoaded", function () {
             isDraggingEnabled = false;
         }
     });
-    // this.cy.on('grab', `node[parent = "${this.moduleName}"]`, (evt) => {
-    //     const node = evt.target;
-    //     if (!this.isDraggingEnabled) {
-    //         // If dragging is not enabled, release the node immediately
-    //         node.ungrabify();
-    //     }
-    // });
 
-    // this.cy.on('free', `node[parent = "${this.moduleName}"]`, (evt) => {
-    //     const node = evt.target;
-    //     // Restore the node's grabbable state after releasing it
-    //     node.grabify();
-    // });
 });
