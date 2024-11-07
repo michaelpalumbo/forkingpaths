@@ -175,10 +175,10 @@ document.addEventListener("DOMContentLoaded", function () {
         localPeerID = repo.networkSubsystem.peerId;
 
         handle.on('change', (newDoc) => {
+            console.log(newDoc.doc.elements)
             
-            /*
             // Compare `newDoc.elements` with current `cy` state and update `cy` accordingly
-            const newElements = newDoc.elements;
+            const newElements = newDoc.doc.elements;
             console.log(newElements)
             // Add or update elements
             newElements.forEach((newEl) => {
@@ -197,7 +197,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // Optionally, re-run the layout if needed
             cy.layout({ name: 'preset' }).run();
-            */
+            
         })
         // Set the document URL in the fragment part of the current URL
 
@@ -501,22 +501,21 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     function addModule(module, position, children) {
-
-        const parentNode = new ParentNode(module, position, children);
+        console.log(localPeerID)
+        const parentNode = new ParentNode(module, position, children, localPeerID);
 
         // parentNode.getModule('oscillator')
         const { parentNode: parentNodeData, childrenNodes } = parentNode.getNodeStructure();
     
-        // // Add nodes to Cytoscape
-        // cy.add(parentNodeData);
-        // cy.add(childrenNodes);
+        // Add nodes to Cytoscape
+        cy.add(parentNodeData);
+        cy.add(childrenNodes);
     
         // Update Automerge document
         handle.change((doc) => {
-            console.log(parentNodeData)
             doc.elements.push(parentNodeData);
             doc.elements.push(...childrenNodes);
-            console.log('el',doc.elements)
+
         });
     }
     

@@ -6,7 +6,7 @@ export class ParentNode {
         const hash = uuidv7().split('-').pop()        
         this.moduleName = `${module}_${hash.split('-')[0]}`
         // this.id = id
-
+        this.localPeerID = localPeerID
         this.position = position;
         this.children = children;
         this.isDraggingEnabled = false; // Flag to track if dragging is enabled
@@ -33,7 +33,7 @@ export class ParentNode {
 
         // Returns the structure of the parent node and its children
         const parentNode = {
-            data: { id: this.moduleName, label: this.moduleName, kind: 'module', localPeerID: localPeerID },
+            data: { id: this.moduleName, label: this.moduleName, kind: 'module', localPeerID: this.localPeerID },
             position: this.position,
             classes: ':parent',
         };
@@ -51,7 +51,7 @@ export class ParentNode {
                     bgcolour: child.kind === 'input' ? '#FC9A4F' : child.kind === 'output' ? '#6FB1FC' : '#CCCCCC',
                     ghostCableShape: child.kind === 'input' ? 'rectangle' : 'triangle',
                     ghostCableColour: child.kind === 'input' ? '#5C9AE3' : '#E68942',
-                    localPeerID: localPeerID
+                    localPeerID: this.localPeerID
                 },
                 position: {
                     x: this.position.x + offsetX,
