@@ -7,8 +7,10 @@ import { uuidv7 } from "https://unpkg.com/uuidv7@^1";
 
 let handle;
 let isDraggingEnabled = false;
-
+let moduleDragState = false;
 let localPeerID;
+
+let highlightedNode = null
 
 document.addEventListener("DOMContentLoaded", function () {
     const cy = cytoscape({
@@ -147,14 +149,12 @@ document.addEventListener("DOMContentLoaded", function () {
         try {
             if (docUrl && isValidAutomergeUrl(docUrl)) {
                 // Attempt to find the document with the provided URL
-                console.log("Attempting to load document from URL in fragment:", docUrl);
                 handle = repo.find(docUrl);
             } else {
                 throw new Error("No document URL found in fragment.");
             }
         } catch (error) {
             // If document is not found or an error occurs, create a new document
-            console.warn("Document not found or invalid URL. Creating a new document:", error.message);
             handle = repo.create({
                 elements: []
             });
@@ -162,14 +162,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // Update the window location to include the new document URL
             window.location.href = `${window.location.origin}/#${encodeURIComponent(docUrl)}`;
-            console.log("Created new document and updated URL with handle:", docUrl);
         }
 
         window.location.href = `${window.location.origin}/#${encodeURIComponent(handle.url)}`;
-        console.log("Updated URL with document handle:", window.location.href);
         // Wait until the document handle is ready
         await handle.whenReady();
 
+        handle.docSync().elements
+        // Populate Cytoscape with elements from the document if it exists
+        if (handle.docSync().elements && handle.docSync().elements.length > 0) {
+            let currentGraph = handle.docSync().elements
+            for(let i = 0; i< currentGraph.length; i++){
+                cy.add(currentGraph[i]);
+            }
+            
+            cy.layout({ name: 'preset' }).run(); // Run the layout to position the elements
+        }
         cy.layout({ name: 'preset' }).run();
         // Retrieve the local peer ID after the Repo is initialized
         // Access the local peer ID
@@ -189,7 +197,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     cy.add(newEl);
                 }
             });
-
+            console.log('changed')
             // Remove elements that are no longer in `newDoc`
             cy.elements().forEach((currentEl) => {
                 if (!newElements.find(el => el.data.id === currentEl.id())) {
@@ -263,14 +271,14 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
     // remove node or edge
-    function removeElementFromDoc(id) {
-        handle.change((doc) => {
-            const index = doc.elements.findIndex(el => el.id === id);
-            if (index !== -1) {
-                doc.elements.splice(index, 1);
-            }
-        });
-    }
+    // function removeElementFromDoc(id) {
+    //     handle.change((doc) => {
+    //         const index = doc.elements.findIndex(el => el.id === id);
+    //         if (index !== -1) {
+    //             doc.elements.splice(index, 1);
+    //         }
+    //     });
+    // }
 
     // cy.on('add', 'node', (event) => {
     //     addNodeToDoc(event.target);
@@ -281,10 +289,10 @@ document.addEventListener("DOMContentLoaded", function () {
         addEdgeToDoc(event.target);
     });
     
-    cy.on('remove', 'node, edge', (event) => {
+    // cy.on('remove', 'node, edge', (event) => {
         
-        removeElementFromDoc(event.target.id());
-    });
+    //     removeElementFromDoc(event.target.id());
+    // });
     
     /*
         PATCHING
@@ -415,6 +423,26 @@ document.addEventListener("DOMContentLoaded", function () {
         if (highlightedEdge && (event.key === 'Backspace' || event.key === 'Delete')) {
             cy.remove(highlightedEdge)
             highlightedEdge = null; // Clear the reference after deletion
+        } else if (highlightedNode && (event.key === 'Backspace' || event.key === 'Delete')){
+            if (highlightedNode.isParent()) {
+                const nodeId = highlightedNode.id();
+
+                console.log(`Deleting parent node ID: ${highlightedNode.id()}`);
+                cy.remove(highlightedNode); // Remove the node from the Cytoscape instance
+                highlightedNode = null; // Clear the reference after deletion
+
+
+                // Update the Automerge document to reflect the deletion
+                handle.change((doc) => {
+                    const elementIndex = doc.elements.findIndex(el => el.data.id === nodeId);
+                    if (elementIndex !== -1) {
+                        doc.elements.splice(elementIndex, 1); // Remove the node from the Automerge document
+                    }
+
+                    // Remove child nodes of the parent node from Automerge doc
+                    doc.elements = doc.elements.filter(el => el.data.parent !== nodeId);
+                });
+            }
         }
     });
     // Helper function to find elements at a specific point
@@ -429,8 +457,9 @@ document.addEventListener("DOMContentLoaded", function () {
             );
         });
     }
-     // Step 2: Update ghost node position to follow the mouse and track collisons
     cy.on('mousemove', (event) => {
+        
+        // Step 2: Update ghost node position to follow the mouse and track collisons
         if (ghostNode) {
             const mousePos = event.position;
             ghostNode.position(mousePos); // Update ghost node position
@@ -503,7 +532,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     function addModule(module, position, children) {
-        console.log(localPeerID)
+        
         const parentNode = new ParentNode(module, position, children, localPeerID);
 
         // parentNode.getModule('oscillator')
@@ -523,10 +552,10 @@ document.addEventListener("DOMContentLoaded", function () {
     
 
 
-    // Listen for drag events on child nodes
+    // Listen for drag events on nodes
     cy.on('grab', (event)=> {
         const node = event.target
-
+        // for child nodes
         if(node.data('kind') && node.data('kind') != 'module'){
             // for all elements that aren't modules, determine whether to allow dragging (for rearranging the UI)
             if(isDraggingEnabled){
@@ -537,7 +566,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 // this allows for cables to spawn or controller elements to be engaged with (i.e. sliders)
                 node.ungrabify(); 
             }
-        } 
+        } else {
+
+        }
     })
 
     // Track when the 'e' key is pressed and released
@@ -553,4 +584,43 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
+    // // Listen for drag and position updates on parent nodes
+    // cy.on('drag', 'node:parent', (event) => {
+    //     const node = event.target;
+        
+    //     // Optionally, update the Automerge document with the new position
+    //     handle.change((doc) => {
+    //         const elementIndex = doc.elements.findIndex(el => el.data.id === node.id());
+    //         if (elementIndex !== -1) {
+    //             doc.elements[elementIndex].position = node.position();
+    //         }
+    //     });
+    // });
+
+    // cy.on('position', 'node:parent', (event) => {
+    //     const node = event.target;
+    //     console.log(`Position updated for node ID: ${node.id()}, new position:`, node.position());
+        
+    //     // You can also use this event to log or save the position after dragging is completed
+    // });
+
+
+    // removing modules
+    // Click event to highlight a parent node
+    cy.on('click', 'node:parent', (event) => {
+        // Remove highlight class from any previously highlighted node
+        if (highlightedNode) {
+            highlightedNode.removeClass('highlighted');
+        } 
+        // if highlighted module is clicked again, unhighlighted it
+        if( highlightedNode == event.target){
+            highlightedNode.removeClass('highlighted');
+            highlightedNode = null
+        }
+        else {
+            // Highlight the clicked parent node
+            highlightedNode = event.target;
+            highlightedNode.addClass('highlighted');
+        }
+    });
 });
