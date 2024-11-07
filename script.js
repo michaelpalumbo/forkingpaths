@@ -135,40 +135,34 @@ document.addEventListener("DOMContentLoaded", function () {
         // Create or load the document
         // Initialize or load the document with a unique ID
         // Check for a document URL in the fragment
-        let documentUrl = decodeURIComponent(window.location.hash.substring(1));
+        let docUrl = decodeURIComponent(window.location.hash.substring(1));
         
 
         try {
-            if (documentUrl) {
+            if (docUrl && isValidAutomergeUrl(docUrl)) {
                 // Attempt to find the document with the provided URL
-                console.log("Attempting to load document from URL in fragment:", documentUrl);
-                handle = repo.find(documentUrl);
+                console.log("Attempting to load document from URL in fragment:", docUrl);
+                handle = repo.find(docUrl);
             } else {
                 throw new Error("No document URL found in fragment.");
             }
         } catch (error) {
             // If document is not found or an error occurs, create a new document
             console.warn("Document not found or invalid URL. Creating a new document:", error.message);
-            handle = repo.create();
-            documentUrl = handle.url;
+            handle = repo.create({
+                elements: []
+            });
+            docUrl = handle.url;
 
             // Update the window location to include the new document URL
-            window.location.href = `${window.location.origin}/#${encodeURIComponent(documentUrl)}`;
-            console.log("Created new document and updated URL with handle:", documentUrl);
+            window.location.href = `${window.location.origin}/#${encodeURIComponent(docUrl)}`;
+            console.log("Created new document and updated URL with handle:", docUrl);
         }
 
         window.location.href = `${window.location.origin}/#${encodeURIComponent(handle.url)}`;
         console.log("Updated URL with document handle:", window.location.href);
         // Wait until the document handle is ready
         await handle.whenReady();
-        
-        // setup automerge doc structure for the cytoscape elements array
-        handle.change((doc) => {
-            
-            if (!doc.elements) {
-                doc.elements = [];
-            }
-        });
 
         handle.on('change', (newDoc) => {
             // Compare `newDoc.elements` with current `cy` state and update `cy` accordingly
