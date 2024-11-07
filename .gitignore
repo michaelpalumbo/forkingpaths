@@ -24,5 +24,6 @@ dist-ssr
 *.sw?
 
 
-# generated files
-./src/components/modules/index.js
+# automerge sys files
+
+.amrg

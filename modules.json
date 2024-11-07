@@ -1,0 +1,23 @@
+{
+    "oscillator": {
+        "inputs": [
+            {
+                "label": "frequency", "kind": "input"
+            },
+            {
+                "label": "amplitude", "kind": "input"
+            }
+        ],
+        "params": [
+            {
+                "label": "frequency",
+                "kind": "slider"
+            }
+        ],
+        "outputs": [
+            {
+                "label": "out", "kind": "output"
+            }
+        ]
+    }
+}

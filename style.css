@@ -1,0 +1,23 @@
+ /* Flex container for two-column layout */
+ #container {
+  display: flex;
+  flex-direction: row;
+  height: 100vh;
+}
+
+/* Left column for instructions */
+#instructions {
+  flex: 1;
+  padding: 20px;
+  background-color: #f9f9f9;
+  max-width: 300px; /* Adjust width as desired */
+}
+
+/* Right column for Cytoscape container */
+#cy {
+  width: 100%;
+  height: 100vh;
+  display: block;
+  flex: 3;
+  background-color: #e0e0e0;
+}

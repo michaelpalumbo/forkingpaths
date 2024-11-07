@@ -1,6 +1,12 @@
 import { ParentNode } from './parentNode.js';
 import { uuidv7 } from "https://unpkg.com/uuidv7@^1";
+// import { Repo } from "@automerge/automerge-repo";
 
+//todo: import { LocalForageStorageAdapter } from "@automerge/automerge-repo-storage-localforage";
+// import { BrowserWebSocketClientAdapter } from '@automerge/automerge-repo-network-websocket';
+
+let handle;
+let isDraggingEnabled = false;
 
 document.addEventListener("DOMContentLoaded", function () {
     const cy = cytoscape({
@@ -44,11 +50,12 @@ document.addEventListener("DOMContentLoaded", function () {
             {
                 selector: ':parent',
                 style: {
+                    'id': 'data(id)',
                     'background-opacity': 0.333,
                     'background-color': '#F5A45D',
                     'border-color': '#F57A41',
                     'border-width': 1,
-                    'label': 'data(id)', // Use the node id or any data field as the label
+                    'label': 'data(label)', // Use the node id or any data field as the label
                     'text-valign': 'top', // Position label at the top
                     'text-halign': 'center', // Center label horizontally
                     'color': '#FF0000', // Set the label text color
@@ -109,7 +116,146 @@ document.addEventListener("DOMContentLoaded", function () {
         UI
     */
    
+    /*
+        AUTOMERGE
+    */
 
+    // Import dependencies dynamically
+    (async () => {
+        const { Repo } = await import('@automerge/automerge-repo');
+        const { BrowserWebSocketClientAdapter } = await import('@automerge/automerge-repo-network-websocket');
+
+        // Initialize the Automerge repository with WebSocket adapter
+        const repo = new Repo({
+            network: [new BrowserWebSocketClientAdapter('ws://localhost:3030')],
+            storage: null, // Optional: use a storage adapter if needed
+        });
+        // Create or load the document
+        // Initialize or load the document with a unique ID
+        // Check for a document URL in the fragment
+        let documentUrl = decodeURIComponent(window.location.hash.substring(1));
+        
+
+        try {
+            if (documentUrl) {
+                // Attempt to find the document with the provided URL
+                console.log("Attempting to load document from URL in fragment:", documentUrl);
+                handle = repo.find(documentUrl);
+            } else {
+                throw new Error("No document URL found in fragment.");
+            }
+        } catch (error) {
+            // If document is not found or an error occurs, create a new document
+            console.warn("Document not found or invalid URL. Creating a new document:", error.message);
+            handle = repo.create();
+            documentUrl = handle.url;
+
+            // Update the window location to include the new document URL
+            window.location.href = `${window.location.origin}/#${encodeURIComponent(documentUrl)}`;
+            console.log("Created new document and updated URL with handle:", documentUrl);
+        }
+
+        window.location.href = `${window.location.origin}/#${encodeURIComponent(handle.url)}`;
+        console.log("Updated URL with document handle:", window.location.href);
+        // Wait until the document handle is ready
+        await handle.whenReady();
+        
+        // setup automerge doc structure for the cytoscape elements array
+        handle.change((doc) => {
+            
+            if (!doc.elements) {
+                doc.elements = [];
+            }
+        });
+
+        handle.on('change', (newDoc) => {
+            console.log(newDoc)
+        })
+        // Set the document URL in the fragment part of the current URL
+
+        // Initialize the document's counter if it's empty
+        // Ensure counter is initialized in the document if it's a new document
+        /*
+        handle.change((doc) => {
+            if (doc.counter == null) doc.counter = 0;
+        });
+
+        // Update the UI when the document changes
+        const counterElement = document.getElementById('counter');
+
+        // Display the initial counter value once the document is ready
+        const initialCounterValue = handle.doc.counter ?? 0;
+
+        console.log(handle.doc.counter)
+        counterElement.textContent = initialCounterValue;
+        
+        handle.on('change', (newDoc) => {
+            console.log('Document changed:', newDoc);  // Log the entire document structure
+            const counterValue = newDoc.doc.counter ?? 0;
+            console.log('Updated Counter value:', counterValue);  // Log the counter specifically
+            counterElement.textContent = counterValue;
+        });
+
+        // Increment the counter when the button is clicked
+        document.getElementById('incrementButton').addEventListener('click', () => {
+            handle.change((doc) => {
+                doc.counter += 1;
+                console.log(doc.counter)
+            });
+        });
+
+        // Initial UI load
+        counterElement.textContent = handle.doc.counter || 0;
+
+        */
+    })();
+
+    // addNode
+    function addNodeToDoc(node) {
+        handle.change((doc) => {
+            doc.elements.push({
+                type: 'node',
+                id: node.id(),
+                data: node.data(),
+                position: node.position()
+            });
+        });
+    }
+    
+    // addEdge
+    function addEdgeToDoc(edge) {
+        handle.change((doc) => {
+            doc.elements.push({
+                type: 'edge',
+                id: edge.id(),
+                data: edge.data()
+            });
+        });
+    }
+    // remove node or edge
+    function removeElementFromDoc(id) {
+        handle.change((doc) => {
+            const index = doc.elements.findIndex(el => el.id === id);
+            if (index !== -1) {
+                doc.elements.splice(index, 1);
+            }
+        });
+    }
+
+    // cy.on('add', 'node', (event) => {
+    //     addNodeToDoc(event.target);
+    // });
+    
+    cy.on('add', 'edge', (event) => {
+        
+        addEdgeToDoc(event.target);
+    });
+    
+    cy.on('remove', 'node, edge', (event) => {
+        
+        removeElementFromDoc(event.target.id());
+    });
+    
     /*
         PATCHING
     */
@@ -164,6 +310,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     // Step 1: Create temporary edge on mousedown
     cy.on('mousedown', (event) => {
+        console.log(event)
         // Check if the click target is not the highlighted edge
         if (highlightedEdge && event.target !== highlightedEdge) {
             highlightedEdge.removeClass('highlighted');
@@ -172,6 +319,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const target = event.target;
         // Check if the target is a node, edge, or the background
         if (target.isNode && target.isNode()) {
+            console.log('snared')
             // first check if clicked node is NOT a parent node, and only an input or output (i.e. ignore other UI such as sliders)
             if (!event.target.isParent() && (event.target.data('kind') === 'input' || event.target.data('kind') === 'output')) {
                 // we have to assign these to temp variables, as otherwise cy acts kinda funky when passing them to helper functions
@@ -323,21 +471,57 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // Create parent nodes with children of different kinds
-    const parentNode1 = new ParentNode(cy, 'Oscillator', { x: 200, y: 200 }, [
-        { kind: 'input', label: 'frequency' },
-        { kind: 'input', label: 'amplitude' },
-        { kind: 'output', label: 'out' },
-        { kind: 'slider', label: 'frequency' },
-    ]);
+    function addModule(module, position, children) {
 
-    const parentNode2 = new ParentNode(cy, 'parentNode2', { x: 500, y: 400 }, [
-        { kind: 'input', label: 'child4' },
-        { kind: 'slider', label: 'child5' },
-        { kind: 'input', label: 'child9' },
-        { kind: 'output', label: 'audioOut' },
-        { kind: 'output', label: 'envOut' },
-    ]);
+        const parentNode = new ParentNode(module, position, children);
 
-    // Add event listener logic for connecting nodes here as before...
+        // parentNode.getModule('oscillator')
+        const { parentNode: parentNodeData, childrenNodes } = parentNode.getNodeStructure();
+    
+        // Add nodes to Cytoscape
+        cy.add(parentNodeData);
+        cy.add(childrenNodes);
+    
+        // Update Automerge document
+        handle.change((doc) => {
+            if (!doc.elements) doc.elements = [];
+            doc.elements.push(parentNodeData);
+            doc.elements.push(...childrenNodes);
+        });
+    }
+    
+    document.getElementById('addNodeButton').addEventListener('click', () => {
+        addModule(`oscillator`, { x: 200, y: 200 }, [    ]);
+    });
+
+    // Listen for drag events on child nodes
+    cy.on('grab', (event)=> {
+        const node = event.target
+
+        if(node.data('kind') && node.data('kind') != 'module'){
+            // for all elements that aren't modules, determine whether to allow dragging (for rearranging the UI)
+            if(isDraggingEnabled){
+                // if enabled, begin dragging node with mouse
+                node.grabify()
+            } else {
+                // If dragging is not enabled, release the node immediately
+                // this allows for cables to spawn or controller elements to be engaged with (i.e. sliders)
+                node.ungrabify(); 
+            }
+        } 
+    })
+
+    // Track when the 'e' key is pressed and released
+    window.addEventListener('keydown', (event) => {
+        if (event.key === 'e') {
+            isDraggingEnabled = true;
+        }
+    });
+
+    window.addEventListener('keyup', (event) => {
+        if (event.key === 'e') {
+            isDraggingEnabled = false;
+        }
+    });
+
 });
