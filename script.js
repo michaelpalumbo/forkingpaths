@@ -372,6 +372,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // cy.remove(tempEdge)
         } else {
+            addModule(`oscillator`, { x: event.position.x, y: event.position.y }, [    ]);
             console.log("Clicked on the background\nLow priority ToDo: background clicks open module library");
         }
 
