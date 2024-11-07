@@ -1,8 +1,10 @@
 import modules from './modules.json' assert { type: 'json'}
-import uuidv7 from 'uuidv7'
+import {uuidv7} from 'uuidv7'
 export class ParentNode {
-    constructor(moduleName, position, children) {
+    constructor(moduleName, id, position, children) {
         this.moduleName = moduleName;
+        this.id = id
+        console.log(this.id)
         this.position = position;
         this.children = children;
         this.isDraggingEnabled = false; // Flag to track if dragging is enabled
@@ -27,7 +29,7 @@ export class ParentNode {
         }
         // Returns the structure of the parent node and its children
         const parentNode = {
-            data: { id: uuidv7(), label: this.moduleName, kind: 'module' },
+            data: { id: this.moduleName, label: this.moduleName, kind: 'module' },
             position: this.position,
             classes: ':parent',
         };

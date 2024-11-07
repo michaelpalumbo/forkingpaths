@@ -471,7 +471,8 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     function addModule(moduleName, position, children) {
-        const parentNode = new ParentNode(moduleName, position, children);
+        let id = `${moduleName}_${uuidv7()}`
+        const parentNode = new ParentNode(moduleName, id, position, children);
 
         // parentNode.getModule('oscillator')
         const { parentNode: parentNodeData, childrenNodes } = parentNode.getNodeStructure();
