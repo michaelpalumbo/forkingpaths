@@ -170,18 +170,20 @@ document.addEventListener("DOMContentLoaded", function () {
         // Wait until the document handle is ready
         await handle.whenReady();
 
+        cy.layout({ name: 'preset' }).run();
         // Retrieve the local peer ID after the Repo is initialized
         // Access the local peer ID
         localPeerID = repo.networkSubsystem.peerId;
 
         handle.on('change', (newDoc) => {
-            console.log(newDoc.doc.elements)
             
             // Compare `newDoc.elements` with current `cy` state and update `cy` accordingly
             const newElements = newDoc.doc.elements;
-            console.log(newElements)
+            
             // Add or update elements
             newElements.forEach((newEl) => {
+                // console.log('New Element ID:', newEl.data.id);
+                // console.log('Existing element check:', cy.getElementById(newEl.data.id));
                 if (!cy.getElementById(newEl.data.id).length) {
                     // Add new element if it doesn't exist
                     cy.add(newEl);
@@ -196,7 +198,7 @@ document.addEventListener("DOMContentLoaded", function () {
             });
 
             // Optionally, re-run the layout if needed
-            cy.layout({ name: 'preset' }).run();
+            
             
         })
         // Set the document URL in the fragment part of the current URL
