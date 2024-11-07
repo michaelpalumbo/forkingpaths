@@ -1,7 +1,7 @@
 import modules from './modules.json' assert { type: 'json'}
 import {uuidv7} from 'uuidv7'
 export class ParentNode {
-    constructor(module, position, children) {
+    constructor(module, position, children, localPeerID) {
 
         const hash = uuidv7().split('-').pop()        
         this.moduleName = `${module}_${hash.split('-')[0]}`
@@ -33,7 +33,7 @@ export class ParentNode {
 
         // Returns the structure of the parent node and its children
         const parentNode = {
-            data: { id: this.moduleName, label: this.moduleName, kind: 'module' },
+            data: { id: this.moduleName, label: this.moduleName, kind: 'module', localPeerID: localPeerID },
             position: this.position,
             classes: ':parent',
         };
@@ -50,7 +50,8 @@ export class ParentNode {
                     kind: child.kind,
                     bgcolour: child.kind === 'input' ? '#FC9A4F' : child.kind === 'output' ? '#6FB1FC' : '#CCCCCC',
                     ghostCableShape: child.kind === 'input' ? 'rectangle' : 'triangle',
-                    ghostCableColour: child.kind === 'input' ? '#5C9AE3' : '#E68942'
+                    ghostCableColour: child.kind === 'input' ? '#5C9AE3' : '#E68942',
+                    localPeerID: localPeerID
                 },
                 position: {
                     x: this.position.x + offsetX,

@@ -8,6 +8,8 @@ import { uuidv7 } from "https://unpkg.com/uuidv7@^1";
 let handle;
 let isDraggingEnabled = false;
 
+let localPeerID;
+
 document.addEventListener("DOMContentLoaded", function () {
     const cy = cytoscape({
         container: document.getElementById('cy'),
@@ -132,11 +134,15 @@ document.addEventListener("DOMContentLoaded", function () {
             // storage: LocalForageStorageAdapter, // Optional: use a storage adapter if needed
             storage: storage, // Optional: use a storage adapter if needed
         });
+
+
+
         // Create or load the document
         // Initialize or load the document with a unique ID
         // Check for a document URL in the fragment
         let docUrl = decodeURIComponent(window.location.hash.substring(1));
         
+
 
         try {
             if (docUrl && isValidAutomergeUrl(docUrl)) {
@@ -164,7 +170,13 @@ document.addEventListener("DOMContentLoaded", function () {
         // Wait until the document handle is ready
         await handle.whenReady();
 
+        // Retrieve the local peer ID after the Repo is initialized
+        // Access the local peer ID
+        localPeerID = repo.networkSubsystem.peerId;
+
         handle.on('change', (newDoc) => {
+            
+            /*
             // Compare `newDoc.elements` with current `cy` state and update `cy` accordingly
             const newElements = newDoc.elements;
             console.log(newElements)
@@ -185,6 +197,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // Optionally, re-run the layout if needed
             cy.layout({ name: 'preset' }).run();
+            */
         })
         // Set the document URL in the fragment part of the current URL
 
@@ -500,7 +513,7 @@ document.addEventListener("DOMContentLoaded", function () {
     
         // Update Automerge document
         handle.change((doc) => {
-            if (!doc.elements) doc.elements = [];
+            console.log(parentNodeData)
             doc.elements.push(parentNodeData);
             doc.elements.push(...childrenNodes);
             console.log('el',doc.elements)
