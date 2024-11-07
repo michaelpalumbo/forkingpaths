@@ -3,12 +3,10 @@ import {uuidv7} from 'uuidv7'
 export class ParentNode {
     constructor(module, position, children) {
 
-        const hash = uuidv7().split('-').pop()
-        console.log(hash)
-        
+        const hash = uuidv7().split('-').pop()        
         this.moduleName = `${module}_${hash.split('-')[0]}`
         // this.id = id
-        // console.log(this.id)
+
         this.position = position;
         this.children = children;
         this.isDraggingEnabled = false; // Flag to track if dragging is enabled
@@ -34,8 +32,6 @@ export class ParentNode {
     getNodeStructure() {
 
         // Returns the structure of the parent node and its children
-
-        console.log(this.moduleName)
         const parentNode = {
             data: { id: this.moduleName, label: this.moduleName, kind: 'module' },
             position: this.position,

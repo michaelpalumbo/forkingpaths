@@ -15,8 +15,8 @@
   "dependencies": {
     "@automerge/automerge-repo": "^1.2.1",
     "@automerge/automerge-repo-network-websocket": "^1.2.1",
+    "@automerge/automerge-repo-storage-indexeddb": "^1.2.1",
     "@automerge/automerge-repo-storage-localforage": "^0.1.4",
-    "@automerge/automerge-repo-storage-nodefs": "^1.2.1",
     "@automerge/automerge-repo-sync-server": "^0.2.8",
     "concurrently": "^9.1.0",
     "uuidv7": "^1.0.2",

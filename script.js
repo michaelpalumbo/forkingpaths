@@ -2,7 +2,7 @@ import { ParentNode } from './parentNode.js';
 import { uuidv7 } from "https://unpkg.com/uuidv7@^1";
 // import { Repo } from "@automerge/automerge-repo";
 
-//todo: import { LocalForageStorageAdapter } from "@automerge/automerge-repo-storage-localforage";
+// import { LocalForageStorageAdapter } from "@automerge/automerge-repo-storage-localforage";
 // import { BrowserWebSocketClientAdapter } from '@automerge/automerge-repo-network-websocket';
 
 let handle;
@@ -50,7 +50,6 @@ document.addEventListener("DOMContentLoaded", function () {
             {
                 selector: ':parent',
                 style: {
-                    'id': 'data(id)',
                     'background-opacity': 0.333,
                     'background-color': '#F5A45D',
                     'border-color': '#F57A41',
@@ -122,13 +121,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Import dependencies dynamically
     (async () => {
-        const { Repo } = await import('@automerge/automerge-repo');
+        const { DocHandle, Repo, isValidAutomergeUrl } = await import('@automerge/automerge-repo');
         const { BrowserWebSocketClientAdapter } = await import('@automerge/automerge-repo-network-websocket');
+        const { IndexedDBStorageAdapter } = await import("@automerge/automerge-repo-storage-indexeddb");
 
+        const storage = new IndexedDBStorageAdapter("automerge");
         // Initialize the Automerge repository with WebSocket adapter
         const repo = new Repo({
             network: [new BrowserWebSocketClientAdapter('ws://localhost:3030')],
-            storage: null, // Optional: use a storage adapter if needed
+            // storage: LocalForageStorageAdapter, // Optional: use a storage adapter if needed
+            storage: storage, // Optional: use a storage adapter if needed
         });
         // Create or load the document
         // Initialize or load the document with a unique ID
@@ -169,7 +171,26 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
         handle.on('change', (newDoc) => {
-            console.log(newDoc)
+            // Compare `newDoc.elements` with current `cy` state and update `cy` accordingly
+            const newElements = newDoc.elements;
+            console.log(newElements)
+            // Add or update elements
+            newElements.forEach((newEl) => {
+                if (!cy.getElementById(newEl.data.id).length) {
+                    // Add new element if it doesn't exist
+                    cy.add(newEl);
+                }
+            });
+
+            // Remove elements that are no longer in `newDoc`
+            cy.elements().forEach((currentEl) => {
+                if (!newElements.find(el => el.data.id === currentEl.id())) {
+                    cy.remove(currentEl);
+                }
+            });
+
+            // Optionally, re-run the layout if needed
+            cy.layout({ name: 'preset' }).run();
         })
         // Set the document URL in the fragment part of the current URL
 
@@ -310,7 +331,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     // Step 1: Create temporary edge on mousedown
     cy.on('mousedown', (event) => {
-        console.log(event)
+        
         // Check if the click target is not the highlighted edge
         if (highlightedEdge && event.target !== highlightedEdge) {
             highlightedEdge.removeClass('highlighted');
@@ -479,21 +500,20 @@ document.addEventListener("DOMContentLoaded", function () {
         // parentNode.getModule('oscillator')
         const { parentNode: parentNodeData, childrenNodes } = parentNode.getNodeStructure();
     
-        // Add nodes to Cytoscape
-        cy.add(parentNodeData);
-        cy.add(childrenNodes);
+        // // Add nodes to Cytoscape
+        // cy.add(parentNodeData);
+        // cy.add(childrenNodes);
     
         // Update Automerge document
         handle.change((doc) => {
             if (!doc.elements) doc.elements = [];
             doc.elements.push(parentNodeData);
             doc.elements.push(...childrenNodes);
+            console.log('el',doc.elements)
         });
     }
     
-    document.getElementById('addNodeButton').addEventListener('click', () => {
-        addModule(`oscillator`, { x: 200, y: 200 }, [    ]);
-    });
+
 
     // Listen for drag events on child nodes
     cy.on('grab', (event)=> {
