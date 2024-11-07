@@ -1,5 +1,5 @@
 {
-    "Oscillator": {
+    "oscillator": {
         "inputs": [
             {
                 "label": "frequency", "kind": "input"

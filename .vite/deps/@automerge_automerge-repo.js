@@ -6,7 +6,6 @@ import {
   Repo,
   StorageAdapter,
   UseApi,
-  __export,
   applyChanges,
   cbor_exports,
   deleteAt,
@@ -29,7 +28,10 @@ import {
   unmark,
   updateText,
   view
-} from "./chunk-LGBC6PSF.js";
+} from "./chunk-3N3NGKXR.js";
+import {
+  __export
+} from "./chunk-WOOG5QLI.js";
 
 // node_modules/@automerge/automerge/dist/mjs/wasm_bindgen_output/bundler/automerge_wasm.js
 var automerge_wasm_exports = {};

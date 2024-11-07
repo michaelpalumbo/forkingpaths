@@ -1,33 +1,41 @@
 import modules from './modules.json' assert { type: 'json'}
 import {uuidv7} from 'uuidv7'
 export class ParentNode {
-    constructor(moduleName, id, position, children) {
-        this.moduleName = moduleName;
-        this.id = id
-        console.log(this.id)
+    constructor(module, position, children) {
+
+        const hash = uuidv7().split('-').pop()
+        console.log(hash)
+        
+        this.moduleName = `${module}_${hash.split('-')[0]}`
+        // this.id = id
+        // console.log(this.id)
         this.position = position;
         this.children = children;
         this.isDraggingEnabled = false; // Flag to track if dragging is enabled
         this.module;
         // Set up drag control for child nodes based on the 'e' key
         // this.setupDragControl();
+
+        // sift through modules.json, construct node
+        this.inputs = modules[module].inputs
+        this.outputs = modules[module].outputs
+        this.params = modules[module].params
+        for (let i = 0; i<this.inputs.length; i++){
+            this.children.push(this.inputs[i])
+        }
+        for (let i = 0; i<this.params.length; i++){
+            this.children.push(this.params[i])
+        }
+        for (let i = 0; i<this.outputs.length; i++){
+            this.children.push(this.outputs[i])
+        }
     }
 
     getNodeStructure() {
-        // sift through modules.json, construct node
-        let inputs = modules[this.moduleName].inputs
-        let outputs = modules[this.moduleName].outputs
-        let params = modules[this.moduleName].params
-        for (let i = 0; i<inputs.length; i++){
-            this.children.push(inputs[i])
-        }
-        for (let i = 0; i<params.length; i++){
-            this.children.push(params[i])
-        }
-        for (let i = 0; i<outputs.length; i++){
-            this.children.push(outputs[i])
-        }
+
         // Returns the structure of the parent node and its children
+
+        console.log(this.moduleName)
         const parentNode = {
             data: { id: this.moduleName, label: this.moduleName, kind: 'module' },
             position: this.position,

@@ -50,11 +50,12 @@ document.addEventListener("DOMContentLoaded", function () {
             {
                 selector: ':parent',
                 style: {
+                    'id': 'data(id)',
                     'background-opacity': 0.333,
                     'background-color': '#F5A45D',
                     'border-color': '#F57A41',
                     'border-width': 1,
-                    'label': 'data(id)', // Use the node id or any data field as the label
+                    'label': 'data(label)', // Use the node id or any data field as the label
                     'text-valign': 'top', // Position label at the top
                     'text-halign': 'center', // Center label horizontally
                     'color': '#FF0000', // Set the label text color
@@ -470,9 +471,9 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    function addModule(moduleName, position, children) {
-        let id = `${moduleName}_${uuidv7()}`
-        const parentNode = new ParentNode(moduleName, id, position, children);
+    function addModule(module, position, children) {
+
+        const parentNode = new ParentNode(module, position, children);
 
         // parentNode.getModule('oscillator')
         const { parentNode: parentNodeData, childrenNodes } = parentNode.getNodeStructure();
@@ -490,7 +491,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     
     document.getElementById('addNodeButton').addEventListener('click', () => {
-        addModule(`Oscillator`, { x: 200, y: 200 }, [    ]);
+        addModule(`oscillator`, { x: 200, y: 200 }, [    ]);
     });
 
     // Listen for drag events on child nodes

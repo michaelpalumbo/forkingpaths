@@ -1,14 +1,16 @@
 import {
   NetworkAdapter,
+  cbor_exports,
+  require_browser
+} from "./chunk-3N3NGKXR.js";
+import {
   __privateAdd,
   __privateGet,
   __privateMethod,
   __privateSet,
   __publicField,
-  __toESM,
-  cbor_exports,
-  require_browser
-} from "./chunk-LGBC6PSF.js";
+  __toESM
+} from "./chunk-WOOG5QLI.js";
 
 // node_modules/isomorphic-ws/browser.js
 var ws = null;

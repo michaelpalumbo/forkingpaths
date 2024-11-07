@@ -1,25 +1,34 @@
 {
-  "hash": "7c9fbcd5",
+  "hash": "323aaced",
   "configHash": "fe11929c",
-  "lockfileHash": "c334449c",
-  "browserHash": "b524fc6e",
+  "lockfileHash": "2eeaf170",
+  "browserHash": "4c970bc3",
   "optimized": {
     "@automerge/automerge-repo": {
       "src": "../../node_modules/@automerge/automerge-repo/dist/entrypoints/fullfat.js",
       "file": "@automerge_automerge-repo.js",
-      "fileHash": "ea803627",
+      "fileHash": "8dc111cc",
       "needsInterop": false
     },
     "@automerge/automerge-repo-network-websocket": {
       "src": "../../node_modules/@automerge/automerge-repo-network-websocket/dist/index.js",
       "file": "@automerge_automerge-repo-network-websocket.js",
-      "fileHash": "637b84c8",
+      "fileHash": "7492bedd",
+      "needsInterop": false
+    },
+    "uuidv7": {
+      "src": "../../node_modules/uuidv7/dist/index.js",
+      "file": "uuidv7.js",
+      "fileHash": "7e19f602",
       "needsInterop": false
     }
   },
   "chunks": {
-    "chunk-LGBC6PSF": {
-      "file": "chunk-LGBC6PSF.js"
+    "chunk-3N3NGKXR": {
+      "file": "chunk-3N3NGKXR.js"
+    },
+    "chunk-WOOG5QLI": {
+      "file": "chunk-WOOG5QLI.js"
     }
   }
 }
