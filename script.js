@@ -70,8 +70,8 @@ document.addEventListener("DOMContentLoaded", function () {
             {
                 selector: 'node.highlighted',
                 style: {
-                    'border-color': '#FFD700', // Highlight color
-                    'border-width': 3
+                    'border-color': '#228B22', // Highlight color
+                    'border-width': 10
                 }
             },
             {
@@ -197,7 +197,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     cy.add(newEl);
                 }
             });
-            console.log('changed')
+            
             // Remove elements that are no longer in `newDoc`
             cy.elements().forEach((currentEl) => {
                 if (!newElements.find(el => el.data.id === currentEl.id())) {
@@ -357,7 +357,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const target = event.target;
         // Check if the target is a node, edge, or the background
         if (target.isNode && target.isNode()) {
-            console.log('snared')
+            
             // first check if clicked node is NOT a parent node, and only an input or output (i.e. ignore other UI such as sliders)
             if (!event.target.isParent() && (event.target.data('kind') === 'input' || event.target.data('kind') === 'output')) {
                 // we have to assign these to temp variables, as otherwise cy acts kinda funky when passing them to helper functions
