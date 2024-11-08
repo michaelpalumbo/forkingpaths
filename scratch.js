@@ -1,3 +1,10 @@
+handle.change((newDoc) => {
+    newDoc.elements.push(ghostNode)
+    newDoc.elements.push(tempEdge)
+})
+
+
+
 // Import the createSlider function for adding slider nodes
 import { createSlider } from './slider.js';
 

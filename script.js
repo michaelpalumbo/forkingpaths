@@ -8,11 +8,12 @@ import { uuidv7 } from "https://unpkg.com/uuidv7@^1";
 let handle;
 let isDraggingEnabled = false;
 let moduleDragState = false;
-let localPeerID;
 
 let highlightedNode = null
 let heldModule = null
 let heldModulePos = { x: null, y: null }
+
+let allowMultiSelect = true;
 document.addEventListener("DOMContentLoaded", function () {
     const cy = cytoscape({
         container: document.getElementById('cy'),
@@ -180,9 +181,6 @@ document.addEventListener("DOMContentLoaded", function () {
             cy.layout({ name: 'preset' }).run(); // Run the layout to position the elements
         }
         cy.layout({ name: 'preset' }).run();
-        // Retrieve the local peer ID after the Repo is initialized
-        // Access the local peer ID
-        localPeerID = repo.networkSubsystem.peerId;
 
         handle.on('change', (newDoc) => {
             
@@ -380,7 +378,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 let e = event.target
                 let p = event.position
                 startCable(e, p)
-                console.log('snared')
+                
             } else if (event.target.isParent()){
                 
                 heldModule = event.target
@@ -430,8 +428,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // cy.remove(tempEdge)
         } else {
-            addModule(`oscillator`, { x: event.position.x, y: event.position.y }, [    ]);
-            console.log("Clicked on the background\nLow priority ToDo: background clicks open module library");
+            // allowMultiSelect is set to false if cmd or ctrl is held down to allow for multiple selection
+            if(allowMultiSelect){
+                addModule(`oscillator`, { x: event.position.x, y: event.position.y }, [    ]);
+                console.log("Clicked on the background\nLow priority ToDo: background clicks open module library");
+            }
+            
         }
 
 
@@ -440,6 +442,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Handle keydown event to delete a highlighted edge on backspace or delete
     document.addEventListener('keydown', (event) => {
+        
+        if (event.key === 'Meta' || event.key === 'Control') {
+            allowMultiSelect = false
+        }
+
         if (highlightedEdge && (event.key === 'Backspace' || event.key === 'Delete')) {
             cy.remove(highlightedEdge)
             highlightedEdge = null; // Clear the reference after deletion
@@ -464,7 +471,16 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
             }
         }
+
+        
+
     });
+
+    document.addEventListener('keyup', (event) => {
+        if (event.key === 'Meta' || event.key === 'Control') {
+            allowMultiSelect = true
+        }
+    })
     // Helper function to find elements at a specific point
     function getElementsAtPoint(cy, x, y) {
         return cy.elements().filter((ele) => {
@@ -576,7 +592,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function addModule(module, position, children) {
         
-        const parentNode = new ParentNode(module, position, children, localPeerID);
+        const parentNode = new ParentNode(module, position, children);
 
         // parentNode.getModule('oscillator')
         const { parentNode: parentNodeData, childrenNodes } = parentNode.getNodeStructure();
