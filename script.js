@@ -7,8 +7,6 @@ import { uuidv7 } from "https://unpkg.com/uuidv7@^1";
 
 let handle;
 
-// automerge PeerID
-let localPeerID;
 let isDraggingEnabled = false;
 let moduleDragState = false;
 
@@ -18,7 +16,18 @@ let heldModulePos = { x: null, y: null }
 
 let allowMultiSelect = true;
 
+let peers = {
+    local: {
+        mousePointer: { 
+            position: { x: null, y: null },
+            shape: null,
+        },
+        id: null
+    },
+    remote: {
 
+    }
+}
 
 // temporary cables
 let temporaryCables = {
@@ -31,15 +40,12 @@ let temporaryCables = {
     }, 
     
     peers: {
-
         // example peer pseudocode
         /*'peerID-645': {
             source: null,
             ghostNode: 'cy.add({create ghost node here})',
             ghostEdge: 'cy.add...',
-
         }*/
-            
     }
 }
 document.addEventListener("DOMContentLoaded", function () {
@@ -199,17 +205,16 @@ document.addEventListener("DOMContentLoaded", function () {
         await handle.whenReady();
 
         // Check if a peer ID is already stored in sessionStorage
-        localPeerID = sessionStorage.getItem('localPeerID');
+        peers.local.id = sessionStorage.getItem('localPeerID');
 
-        if (!localPeerID) {
+        if (!peers.local.id) {
             // Generate or retrieve the peer ID from the Automerge-Repo instance
-            localPeerID = repo.networkSubsystem.peerId;
+            peers.local.id = repo.networkSubsystem.peerId;
 
             // Store the peer ID in sessionStorage for the current tab session
-            sessionStorage.setItem('localPeerID', localPeerID);
+            sessionStorage.setItem('localPeerID', peers.local.id);
         } else {
         }
-        
 
         handle.docSync().elements
         // Populate Cytoscape with elements from the document if it exists
@@ -229,8 +234,6 @@ document.addEventListener("DOMContentLoaded", function () {
             
             // Add or update elements
             newElements.forEach((newEl) => {
-                // console.log('New Element ID:', newEl.data.id);
-                // console.log('Existing element check:', cy.getElementById(newEl.data.id));
                 if (!cy.getElementById(newEl.data.id).length) {
                     // Add new element if it doesn't exist
                     cy.add(newEl);
@@ -410,8 +413,6 @@ document.addEventListener("DOMContentLoaded", function () {
             break;
 
             case 'updateRemoteGhostCable':
-
-                console.log(cy.getElementById(temporaryCables.peers[peerID].ghostNode.data.id))
                 // update the tmporary cable's position
                 temporaryCables.peers[peerID].ghostNode.position(position)
             break
@@ -456,7 +457,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     data: {
                         sourceNodeID: e.data().id,
                         position: p,
-                        peer: localPeerID
+                        peer: peers.local.id
                     }
                 })
             } else if (event.target.isParent()){
@@ -478,7 +479,6 @@ document.addEventListener("DOMContentLoaded", function () {
         
                 // Check if the click is near the source or target endpoint
                 if (isNearEndpoint(mousePos, sourcePos)) {
-                    console.log('sourceNode')
                     // delete the cable
                     cy.remove(edge);
                     // also remove the cable from automerge!
@@ -506,7 +506,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         data: {
                             sourceNodeID: e.data().id,
                             position: p,
-                            peer: localPeerID
+                            peer: peers.local.id
                         }
                     })
 
@@ -538,7 +538,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         data: {
                             sourceNodeID: e.data().id,
                             position: p,
-                            peer: localPeerID
+                            peer: peers.local.id
                         }
                     })
 
@@ -583,7 +583,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 data: {
                     sourceNodeID: temporaryCables.local.ghostNode.data().id,
                     position: mousePos,
-                    peer: localPeerID
+                    peer: peers.local.id
                 }
             })
             // Reset temporaryCables.local.targetNode before checking for intersections
@@ -620,7 +620,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             });
         } else if (heldModule){
-            // console.log(heldModule.data().id)
             handle.broadcast({
                 msg: "moveModule",
                 module: heldModule.data().id,
@@ -666,7 +665,7 @@ document.addEventListener("DOMContentLoaded", function () {
             ephemeralData({
                 msg: 'finishRemoteGhostCable',
                 data: {
-                    peer: localPeerID
+                    peer: peers.local.id
                 }
             })
 
@@ -683,7 +682,6 @@ document.addEventListener("DOMContentLoaded", function () {
             
             // update the module position in automerge
             // handle.change((newDoc) => {
-            //     console.log(newDoc.elements)
             //     let match = newDoc.elements.find(obj => obj.data.id === heldModule);
             //     if (match) {
             //         console.log(match)
@@ -786,8 +784,6 @@ document.addEventListener("DOMContentLoaded", function () {
         } else if (highlightedNode && (event.key === 'Backspace' || event.key === 'Delete')){
             if (highlightedNode.isParent()) {
                 const nodeId = highlightedNode.id();
-
-                console.log(`Deleting parent node ID: ${highlightedNode.id()}`);
                 cy.remove(highlightedNode); // Remove the node from the Cytoscape instance
                 highlightedNode = null; // Clear the reference after deletion
 
