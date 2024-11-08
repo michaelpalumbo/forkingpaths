@@ -75,6 +75,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             },
             {
+                selector: 'node[bgcolour]',
+                style: {
+                    'background-color': 'data(bgcolour)'
+                }
+            },
+            {
                 selector: 'node[kind = "input"]',
                 style: {
                     'shape': 'triangle' // set this for accessibility (colour blindness)
@@ -147,6 +153,15 @@ document.addEventListener("DOMContentLoaded", function () {
                     'source-arrow-color': '#FF0000',
                     'width': 10  
                 }
+            },
+            {
+                selector: '.peerPointer',
+                style: {
+                    'background-color': 'red', // Color for the remote peer's mouse node
+                    'width': 15,
+                    'height': 15,
+                    'shape': 'star'
+                }
             }
         ]
     });
@@ -215,7 +230,7 @@ document.addEventListener("DOMContentLoaded", function () {
             sessionStorage.setItem('localPeerID', peers.local.id);
         } else {
         }
-
+        
         handle.docSync().elements
         // Populate Cytoscape with elements from the document if it exists
         if (handle.docSync().elements && handle.docSync().elements.length > 0) {
@@ -268,6 +283,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     handleRemoteCables(msg.msg, msg.data.peer, msg.data.sourceNodeID, msg.data.position)
 
+                break
+
+                case 'peerMousePosition':
+                    displayPeerPointers(msg.data.peer, msg.data.position)
                 break
 
                 default: console.log("got an ephemeral message: ", message)
@@ -452,7 +471,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 let p = event.position
                 startCable(e, p)
 
-                ephemeralData({
+                sendEphemeralData({
                     msg: 'startRemoteGhostCable',
                     data: {
                         sourceNodeID: e.data().id,
@@ -501,7 +520,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     let p = targetPos
                     startCable(e, p)
                     // tell remotes to create a new ghost cable
-                    ephemeralData({
+                    sendEphemeralData({
                         msg: 'startRemoteGhostCable',
                         data: {
                             sourceNodeID: e.data().id,
@@ -533,7 +552,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     let p = sourcePos
                     startCable(e, p)
                     // tell remotes to create a new ghost cable
-                    ephemeralData({
+                    sendEphemeralData({
                         msg: 'startRemoteGhostCable',
                         data: {
                             sourceNodeID: e.data().id,
@@ -578,7 +597,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const mousePos = event.position;
             temporaryCables.local.ghostNode.position(mousePos); // Update ghost node position
             // send the localGhostNode position to all connected peers
-            ephemeralData({
+            sendEphemeralData({
                 msg: 'updateRemoteGhostCable',
                 data: {
                     sourceNodeID: temporaryCables.local.ghostNode.data().id,
@@ -628,6 +647,21 @@ document.addEventListener("DOMContentLoaded", function () {
             heldModulePos = event.position
             
         }
+
+        // // Get the mouse position relative to the Cytoscape canvas
+        // const mouseX = event.position.x;
+        // const mouseY = event.position.y;
+
+        // console.log('Mouse position relative to Cytoscape canvas:', mouseX, mouseY);
+
+        // Send the data with the relative position
+        sendEphemeralData({
+            msg: 'peerMousePosition',
+            data: {
+                position: event.position,
+                peer: peers.local.id
+            }
+        });
     });
 
     // Step 3: Finalize edge on mouseup
@@ -662,7 +696,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // update the remote peers:
             // tell remote to remove the temporary cable from cy instance
-            ephemeralData({
+            sendEphemeralData({
                 msg: 'finishRemoteGhostCable',
                 data: {
                     peer: peers.local.id
@@ -824,6 +858,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
 
+
     // Select the button element by its ID
     const button = document.getElementById('clearGraph');
 
@@ -835,8 +870,49 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
+    // document.addEventListener('mousemove', function(event) {
+    //     // Get the Cytoscape container
+    //     const cyContainer = document.getElementById('cy');
+        
+    //     // Get the container's bounding rectangle
+    //     const rect = cyContainer.getBoundingClientRect();
+        
+    //     // Calculate the mouse position relative to the Cytoscape canvas
+    //     const mouseX = event.clientX - rect.left;
+    //     const mouseY = event.clientY - rect.top;
 
-    function ephemeralData (msg){
+    //     // Send the data with the relative position
+    //     sendEphemeralData({
+    //         msg: 'peerMousePosition',
+    //         data: {
+    //             position: { x: mouseX, y: mouseY },
+    //             peer: peers.local.id
+    //         }
+    //     });
+       
+    // });
+    
+    function displayPeerPointers(peer, position){
+        if(!peers.remote[peer]){
+            peers.remote[peer] = {
+                mousePointer: cy.add({
+                    group: 'nodes',
+                    data: { id: peer, label: peer}, // Add a default color if needed },
+                    position: position,
+                    grabbable: false, // Prevents dragging
+                    selectable: false, // Prevents selection
+                    classes: 'peerPointer'
+
+                }),
+            }
+        }else {
+            peers.remote[peer].mousePointer.position(position)
+
+        }
+        // console.log(peer, position)
+    }
+
+    function sendEphemeralData (msg){
         handle.broadcast(msg);
     }
 });
