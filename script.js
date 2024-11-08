@@ -1,5 +1,6 @@
 import { ParentNode } from './parentNode.js';
 import { uuidv7 } from "https://unpkg.com/uuidv7@^1";
+import randomColor from 'randomcolor';
 // import { Repo } from "@automerge/automerge-repo";
 
 // import { LocalForageStorageAdapter } from "@automerge/automerge-repo-storage-localforage";
@@ -66,7 +67,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     'label': 'data(label)', // Use the custom label attribute
                     'width': 30,
                     'height': 30,
-                    'text-valign': 'center',
                     'color': '#000',            // Label text color
                     'text-valign': 'center',    // Vertically center the label
                     'text-halign': 'left',      // Horizontally align label to the left of the node
@@ -157,10 +157,13 @@ document.addEventListener("DOMContentLoaded", function () {
             {
                 selector: '.peerPointer',
                 style: {
-                    'background-color': 'red', // Color for the remote peer's mouse node
+                    'background-color': 'data(colour)', // Color for the remote peer's mouse node
                     'width': 15,
                     'height': 15,
-                    'shape': 'star'
+                    'shape': 'star',
+                    'text-valign': 'center',    // Vertically center the label
+                    'text-halign': 'right',      // Horizontally align label to the left of the node
+                    'text-margin-x': 10, // Optional: Move the label slightly up if desired
                 }
             }
         ]
@@ -897,13 +900,13 @@ document.addEventListener("DOMContentLoaded", function () {
             peers.remote[peer] = {
                 mousePointer: cy.add({
                     group: 'nodes',
-                    data: { id: peer, label: peer}, // Add a default color if needed },
+                    data: { id: peer, label: peer, colour: randomColor()}, // Add a default color if needed },
                     position: position,
                     grabbable: false, // Prevents dragging
                     selectable: false, // Prevents selection
                     classes: 'peerPointer'
 
-                }),
+                })
             }
         }else {
             peers.remote[peer].mousePointer.position(position)
@@ -913,6 +916,10 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function sendEphemeralData (msg){
-        handle.broadcast(msg);
+        // only send once doc is ready
+        if(handle){
+            handle.broadcast(msg);
+        }
+        
     }
 });
