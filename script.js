@@ -260,12 +260,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 break
 
                 case 'startRemoteGhostCable':
-
-                    startRemoteGhostCable(msg.data.sourceNodeID, msg.data.position, msg.data.peer)
-                break
-
                 case 'updateRemoteGhostCable':
-                    // console.log(msg.data.position)
+                case 'finishRemoteGhostCable':    
+
+                    handleRemoteCables(msg.msg, msg.data.peer, msg.data.sourceNodeID, msg.data.position)
+
                 break
 
                 default: console.log("got an ephemeral message: ", message)
@@ -411,44 +410,62 @@ document.addEventListener("DOMContentLoaded", function () {
         
     }
 
-    function startRemoteGhostCable(sourceID, position, peerID){
-        let ghostId = `ghostNode-${peerID}`
-        let tempEdgeID = `tempEdge-${peerID}`
-        
-        temporaryCables.peers[peerID] = {
-            source: cy.getElementById(sourceID),
-            // Create a ghost node at the mouse position to act as the moving endpoint
-            ghostNode: cy.add({
-                group: 'nodes',
-                data: { id: ghostId },
-                position: position,
-                grabbable: false, // Ghost node shouldn't be draggable
-                classes: 'ghostNode'
-            }),
-            // Create a temporary edge from temporaryCables.local.source to ghostNode
-            tempEdge: cy.add({
-                group: 'edges',
-                data: { id: tempEdgeID, source: sourceID, target: ghostId },
-                classes: 'tempEdge'
-            }),
-            targetNode: null
+    function handleRemoteCables(cmd,  peerID, sourceID, position){
+
+        switch(cmd){
+
+            case 'startRemoteGhostCable':
+                let ghostId = `ghostNode-${peerID}`
+                let tempEdgeID = `tempEdge-${peerID}`
+                
+                temporaryCables.peers[peerID] = {
+                    source: cy.getElementById(sourceID),
+                    // Create a ghost node at the mouse position to act as the moving endpoint
+                    ghostNode: cy.add({
+                        group: 'nodes',
+                        data: { id: ghostId },
+                        position: position,
+                        grabbable: false, // Ghost node shouldn't be draggable
+                        classes: 'ghostNode'
+                    }),
+                    // Create a temporary edge from temporaryCables.local.source to ghostNode
+                    tempEdge: cy.add({
+                        group: 'edges',
+                        data: { id: tempEdgeID, source: sourceID, target: ghostId },
+                        classes: 'tempEdge'
+                    }),
+                    targetNode: null
+                }
+                
+                // set ghostNode Style according to opposite of source Node
+                const ghostShape = temporaryCables.peers[peerID].source.data('ghostCableShape') || 'ellipse';
+                const ghostColour = temporaryCables.peers[peerID].source.data('ghostCableColour') || '#5C9AE3';
+                temporaryCables.peers[peerID].ghostNode.style({
+                    'shape': ghostShape,
+                    'background-color': ghostColour
+                });
+
+                temporaryCables.peers[peerID].tempEdge.style({ 'line-color': '#FFA500' }); // Set temporary edge color
+            break;
+
+            case 'updateRemoteGhostCable':
+                // update the tmporary cable's position
+                temporaryCables.peers[peerID].ghostNode.position(position)
+            break
+
+            case 'finishRemoteGhostCable':
+                // remove the tempEdge
+                cy.remove(temporaryCables.peers[peerID].tempEdge)
+                // remove remote ghostnode
+                cy.remove(temporaryCables.peers[peerID].ghostNode);
+                cy.nodes().removeClass('highlighted');
+
+            break;
+
         }
-        
-        // set ghostNode Style according to opposite of source Node
-        const ghostShape = temporaryCables.peers[peerID].source.data('ghostCableShape') || 'ellipse';
-        const ghostColour = temporaryCables.peers[peerID].source.data('ghostCableColour') || '#5C9AE3';
-        temporaryCables.peers[peerID].ghostNode.style({
-            'shape': ghostShape,
-            'background-color': ghostColour
-        });
-
-        temporaryCables.peers[peerID].tempEdge.style({ 'line-color': '#FFA500' }); // Set temporary edge color
-        
-    }
-
-    function updateRemoteGhostCable(){
 
     }
+
     // Step 1: Create temporary edge on mousedown
     cy.on('mousedown', (event) => {
         
@@ -552,6 +569,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 data: {
                     sourceNodeID: temporaryCables.local.ghostNode.data().id,
                     position: mousePos,
+                    peer: localPeerID
                 }
             })
             // Reset temporaryCables.local.targetNode before checking for intersections
@@ -601,6 +619,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Step 3: Finalize edge on mouseup
     cy.on('mouseup', (event) => {
+
         if (temporaryCables.local.tempEdge) {
             if (temporaryCables.local.targetNode) {
                 // If a target node is highlighted, connect the edge to it
@@ -615,10 +634,27 @@ document.addEventListener("DOMContentLoaded", function () {
                     data: { id: edgeId, source: temporaryCables.local.source.id(), target: temporaryCables.local.targetNode.id(), kind: 'cable' },
                     classes: 'edge'
                 });
+                // todo: then push new cable to automerge and make sure it adds it in remote instances
+                handle.change((doc) => {
+                    doc.elements.push({
+                        type: 'edge',
+                        id: edgeId,
+                        data: { id: edgeId, source: temporaryCables.local.source.id(), target: temporaryCables.local.targetNode.id(), kind: 'cable' }
+                    });
+                });
             } else {
                 // If no target node, remove the temporary edge
                 cy.remove(temporaryCables.local.tempEdge);
             }
+
+            // update the remote peers:
+            // tell remote to remove the temporary cable from cy instance
+            ephemeralData({
+                msg: 'finishRemoteGhostCable',
+                data: {
+                    peer: localPeerID
+                }
+            })
 
             // Clean up by removing ghost node and highlights
             cy.remove(temporaryCables.local.ghostNode);
