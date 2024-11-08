@@ -32,18 +32,26 @@ let ghostEdges = {
     remote: {}
 }
 
-// temporary cables pseudocode
+// temporary cables
 let temporaryCables = {
     local: {
+        source: null,
+        ghostNode: null,
+        tempEdge: null,
+        targetNode: null
 
     }, 
+    
     peers: {
-        'peerID-645': {
-            sourceNodeID: null,
+
+        // example peer pseudocode
+        /*'peerID-645': {
+            source: null,
             ghostNode: 'cy.add({create ghost node here})',
             ghostEdge: 'cy.add...',
 
-        }
+        }*/
+            
     }
 }
 document.addEventListener("DOMContentLoaded", function () {
@@ -366,10 +374,7 @@ document.addEventListener("DOMContentLoaded", function () {
         PATCHING
     */
 
-    let sourceNode = null; // Track the source node
-    let tempEdge = null; // Track the temporary edge
-    let targetNode = null; // Track the target node
-    let ghostNode = null; // Temporary ghost node to follow the mouse
+
     let highlightedEdge = null; // Variable to store the currently highlighted edge
 
     // Helper function to detect if the click is near an endpoint of an edge
@@ -383,36 +388,36 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function startCable(source, position){
         console.log(source)
-        ghostNodes.local.source = source;
+        temporaryCables.local.source = source;
         const mousePos = position;
 
-        // Get the ghostCable property from the ghostNodes.local.source, default to 'ellipse' if undefined
-        const ghostShape = ghostNodes.local.source.data('ghostCableShape') || 'ellipse';
-        const ghostColour = ghostNodes.local.source.data('ghostCableColour') || '#5C9AE3';
+        // Get the ghostCable property from the temporaryCables.local.ghostNode, default to 'ellipse' if undefined
+        const ghostShape =  temporaryCables.local.source.data('ghostCableShape') || 'ellipse';
+        const ghostColour =  temporaryCables.local.source.data('ghostCableColour') || '#5C9AE3';
 
         // Create a ghost node at the mouse position to act as the moving endpoint
-        ghostNode = cy.add({
+        temporaryCables.local.ghostNode = cy.add({
             group: 'nodes',
-            data: { id: 'ghostNode' },
+            data: { id: 'localGhostNode' },
             position: mousePos,
             grabbable: false, // Ghost node shouldn't be draggable
             classes: 'ghostNode'
         });
 
         // Apply the ghostShape to the ghostNode using a direct style override
-        ghostNode.style({
+        temporaryCables.local.ghostNode.style({
             'shape': ghostShape,
             'background-color': ghostColour
         });
-        // Create a temporary edge from ghostNodes.local.source to ghostNode
-        tempEdge = cy.add({
+        // Create a temporary edge from ghostNodes.local.source to temporaryCables.local.ghostNode
+        temporaryCables.local.tempEdge = cy.add({
             group: 'edges',
-            data: { id: 'tempEdge', source: ghostNodes.local.source.id(), target: 'ghostNode' },
+            data: { id: 'localTempEdge', source: temporaryCables.local.source.id(), target: 'localGhostNode' },
             classes: 'tempEdge'
         });
 
         // Set target endpoint to mouse position initially
-        tempEdge.style({ 'line-color': '#FFA500' }); // Set temporary edge color
+        temporaryCables.local.tempEdge.style({ 'line-color': '#FFA500' }); // Set temporary edge color
 
 
         
@@ -422,8 +427,8 @@ document.addEventListener("DOMContentLoaded", function () {
         ghostNodes.remote = cy.getElementById(sourceID);
         const mousePos = position;
 
-        const ghostShape = sourceNode.data('ghostCableShape') || 'ellipse';
-        const ghostColour = sourceNode.data('ghostCableColour') || '#5C9AE3';
+        const ghostShape = temporaryCables.local.source.data('ghostCableShape') || 'ellipse';
+        const ghostColour = temporaryCables.local.source.data('ghostCableColour') || '#5C9AE3';
         let ghostId = `ghostNode-${sourceID}`
         // Create a ghost node at the mouse position to act as the moving endpoint
         ghostNodes.remote[ghostId] = cy.add({
@@ -439,7 +444,7 @@ document.addEventListener("DOMContentLoaded", function () {
             'background-color': ghostColour
         });
 
-        // Create a temporary edge from sourceNode to ghostNode
+        // Create a temporary edge from temporaryCables.local.source to ghostNode
         ghostEdges.remote[ghostId] = cy.add({
             group: 'edges',
             data: { id: 'tempEdge', source: sourceID, target: ghostId },
@@ -595,48 +600,49 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     cy.on('mousemove', (event) => {
         
+        // this is for local Ghost cables only
         // Step 2: Update ghost node position to follow the mouse and track collisons
-        if (ghostNode) {
+        if (temporaryCables.local.ghostNode) {
             const mousePos = event.position;
-            ghostNode.position(mousePos); // Update ghost node position
+            temporaryCables.local.ghostNode.position(mousePos); // Update ghost node position
             // send the localGhostNode position to all connected peers
             ephemeralData({
                 msg: 'updateRemoteGhostCable',
                 data: {
-                    sourceNodeID: ghostNode.data().id,
+                    sourceNodeID: temporaryCables.local.ghostNode.data().id,
                     position: mousePos,
                 }
             })
-            // Reset targetNode before checking for intersections
-            targetNode = null;
+            // Reset temporaryCables.local.targetNode before checking for intersections
+            temporaryCables.local.targetNode = null;
 
             // Get elements under the mouse position using the bounding box check
             const elementsUnderMouse = getElementsAtPoint(cy, mousePos.x, mousePos.y);
 
-            // Determine valid target label based on sourceNode label
-            const matchingTargetKind = sourceNode.data('kind') === 'input' ? 'output' : 'input';
+            // Determine valid target label based on temporaryCables.local.source label
+            const matchingTargetKind = temporaryCables.local.source.data('kind') === 'input' ? 'output' : 'input';
 
-            // Filter out ghostNode and sourceNode from elements under the mouse
+            // Filter out temporaryCables.local.ghostNode and temporaryCables.local.source from elements under the mouse
             
             // Filter elements based on the correct `kind`
             const potentialTarget = elementsUnderMouse.filter((el) => {
                 return (
                     el.isNode() &&
-                    el !== sourceNode &&
-                    el !== ghostNode &&
+                    el !== temporaryCables.local.source &&
+                    el !== temporaryCables.local.ghostNode &&
                     !el.isParent() &&
                     el.data('kind') === matchingTargetKind // Only allow valid target kinds
                 );
             });
-            // If we have a valid potential target, set it as the targetNode
+            // If we have a valid potential target, set it as the temporaryCables.local.targetNode
             if (potentialTarget.length > 0) {
-                targetNode = potentialTarget[0];
-                targetNode.addClass('highlighted');
+                temporaryCables.local.targetNode = potentialTarget[0];
+                temporaryCables.local.targetNode.addClass('highlighted');
             }
 
             // Remove highlight from all other nodes
             cy.nodes().forEach((node) => {
-                if (node !== targetNode) {
+                if (node !== temporaryCables.local.targetNode) {
                     node.removeClass('highlighted');
                 }
             });
@@ -654,32 +660,32 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Step 3: Finalize edge on mouseup
     cy.on('mouseup', (event) => {
-        if (tempEdge) {
-            if (targetNode) {
+        if (temporaryCables.local.tempEdge) {
+            if (temporaryCables.local.targetNode) {
                 // If a target node is highlighted, connect the edge to it
-                // tempEdge.data('target', targetNode.id()); // Update the edge target
+                // tempEdge.data('target', temporaryCables.local.targetNode.id()); // Update the edge target
                 
                 // tempEdge.removeClass('tempEdge'); // Remove temporary class if needed
-                cy.remove(tempEdge)
+                cy.remove(temporaryCables.local.tempEdge)
                 const edgeId = uuidv7()
 
                 cy.add({
                     group: 'edges',
-                    data: { id: edgeId, source: sourceNode.id(), target: targetNode.id(), kind: 'cable' },
+                    data: { id: edgeId, source: temporaryCables.local.source.id(), target: temporaryCables.local.targetNode.id(), kind: 'cable' },
                     classes: 'edge'
                 });
             } else {
                 // If no target node, remove the temporary edge
-                cy.remove(tempEdge);
+                cy.remove(temporaryCables.local.tempEdge);
             }
 
             // Clean up by removing ghost node and highlights
-            cy.remove(ghostNode);
+            cy.remove(temporaryCables.local.ghostNode);
             cy.nodes().removeClass('highlighted');
-            tempEdge = null;
-            sourceNode = null;
-            targetNode = null;
-            ghostNode = null;
+            temporaryCables.local.tempEdge = null;
+            temporaryCables.local.source = null;
+            temporaryCables.local.targetNode = null;
+            temporaryCables.local.ghostNode = null;
         } else if (heldModule){
             
             // update the module position in automerge
