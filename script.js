@@ -298,10 +298,10 @@ document.addEventListener("DOMContentLoaded", function () {
     //     addNodeToDoc(event.target);
     // });
     
-    cy.on('add', 'edge', (event) => {
+    // cy.on('add', 'edge', (event) => {
         
-        addEdgeToDoc(event.target);
-    });
+    //     addEdgeToDoc(event.target);
+    // });
     
     // cy.on('remove', 'node, edge', (event) => {
         
@@ -643,25 +643,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // // Listen for drag and position updates on parent nodes
-    // cy.on('drag', 'node:parent', (event) => {
-    //     const node = event.target;
-        
-    //     // Optionally, update the Automerge document with the new position
-    //     handle.change((doc) => {
-    //         const elementIndex = doc.elements.findIndex(el => el.data.id === node.id());
-    //         if (elementIndex !== -1) {
-    //             doc.elements[elementIndex].position = node.position();
-    //         }
-    //     });
-    // });
 
-    // cy.on('position', 'node:parent', (event) => {
-    //     const node = event.target;
-    //     console.log(`Position updated for node ID: ${node.id()}, new position:`, node.position());
-        
-    //     // You can also use this event to log or save the position after dragging is completed
-    // });
 
 
     // removing modules
