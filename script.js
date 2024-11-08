@@ -224,7 +224,6 @@ document.addEventListener("DOMContentLoaded", function () {
         cy.layout({ name: 'preset' }).run();
 
         handle.on('change', (newDoc) => {
-            console.log('change detected')
             // Compare `newDoc.elements` with current `cy` state and update `cy` accordingly
             const newElements = newDoc.doc.elements;
             
@@ -241,7 +240,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // Remove elements that are no longer in `newDoc`
             cy.elements().forEach((currentEl) => {
                 if (!newElements.find(el => el.data.id === currentEl.id())) {
-                    console.log(currentEl.id())
+                    
                     cy.remove(currentEl);
                 }
             });
@@ -366,16 +365,16 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
         // Set target endpoint to mouse position initially
-        temporaryCables.local.tempEdge.style({ 'line-color': '#FFA500' }); // Set temporary edge color
+        temporaryCables.local.tempEdge.style({ 'line-color': '#FFA500', 'line-style': 'dashed' }); // Set temporary edge color
 
 
         
     }
 
     function handleRemoteCables(cmd,  peerID, sourceID, position){
-
+        
         switch(cmd){
-
+            
             case 'startRemoteGhostCable':
                 let ghostId = `ghostNode-${peerID}`
                 let tempEdgeID = `tempEdge-${peerID}`
@@ -407,10 +406,12 @@ document.addEventListener("DOMContentLoaded", function () {
                     'background-color': ghostColour
                 });
 
-                temporaryCables.peers[peerID].tempEdge.style({ 'line-color': '#FFA500' }); // Set temporary edge color
+                temporaryCables.peers[peerID].tempEdge.style({ 'line-color': '#228B22', 'line-style': 'dashed' }); // Set peer temporary edge color
             break;
 
             case 'updateRemoteGhostCable':
+
+                console.log(cy.getElementById(temporaryCables.peers[peerID].ghostNode.data.id))
                 // update the tmporary cable's position
                 temporaryCables.peers[peerID].ghostNode.position(position)
             break
@@ -480,7 +481,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     console.log('sourceNode')
                     // delete the cable
                     cy.remove(edge);
-                    // todo: also remove the cable from automerge!
+                    // also remove the cable from automerge!
                     handle.change((newDoc) => {
                         // Assuming the array is `doc.elements` and you have an object `targetObj` to match and remove
                         
@@ -513,7 +514,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     // delete the cable
                     cy.remove(edge);
 
-                    // todo: also remove the cable from automerge!
+                    // also remove the cable from automerge!
                     handle.change((newDoc) => {
                         // Assuming the array is `doc.elements` and you have an object `targetObj` to match and remove
                         
