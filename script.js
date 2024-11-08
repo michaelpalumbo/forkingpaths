@@ -374,7 +374,6 @@ document.addEventListener("DOMContentLoaded", function () {
     // function to create a cable
 
     function startCable(source, position){
-        console.log(source)
         temporaryCables.local.source = source;
         const mousePos = position;
 
@@ -460,6 +459,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 cy.remove(temporaryCables.peers[peerID].ghostNode);
                 cy.nodes().removeClass('highlighted');
 
+                // remove remote peer's temporary cable from object
+                delete temporaryCables.peers[peerID]
+
             break;
 
         }
@@ -484,8 +486,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 let e = event.target
                 let p = event.position
                 startCable(e, p)
-                        // send to remotes:
-                        console.log(e)
+
                 ephemeralData({
                     msg: 'startRemoteGhostCable',
                     data: {
@@ -659,6 +660,8 @@ document.addEventListener("DOMContentLoaded", function () {
             // Clean up by removing ghost node and highlights
             cy.remove(temporaryCables.local.ghostNode);
             cy.nodes().removeClass('highlighted');
+
+
             temporaryCables.local.tempEdge = null;
             temporaryCables.local.source = null;
             temporaryCables.local.targetNode = null;
