@@ -18,19 +18,7 @@ let heldModulePos = { x: null, y: null }
 
 let allowMultiSelect = true;
 
-let ghostNodes = {
-    local: {
-        source: null
-    },
-    remote: {
 
-    }
-}
-
-let ghostEdges = {
-    local: null,
-    remote: {}
-}
 
 // temporary cables
 let temporaryCables = {
@@ -273,11 +261,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 case 'startRemoteGhostCable':
 
-                    startRemoteGhostCable(msg.data.sourceNodeID, msg.data.position)
+                    startRemoteGhostCable(msg.data.sourceNodeID, msg.data.position, msg.data.peer)
                 break
 
                 case 'updateRemoteGhostCable':
-                    console.log(msg.data.position)
+                    // console.log(msg.data.position)
                 break
 
                 default: console.log("got an ephemeral message: ", message)
@@ -423,39 +411,43 @@ document.addEventListener("DOMContentLoaded", function () {
         
     }
 
-    function startRemoteGhostCable(sourceID, position){
-        ghostNodes.remote = cy.getElementById(sourceID);
-        const mousePos = position;
-
-        const ghostShape = temporaryCables.local.source.data('ghostCableShape') || 'ellipse';
-        const ghostColour = temporaryCables.local.source.data('ghostCableColour') || '#5C9AE3';
-        let ghostId = `ghostNode-${sourceID}`
-        // Create a ghost node at the mouse position to act as the moving endpoint
-        ghostNodes.remote[ghostId] = cy.add({
-            group: 'nodes',
-            data: { id: ghostId },
-            position: mousePos,
-            grabbable: false, // Ghost node shouldn't be draggable
-            classes: 'ghostNode'
-        });
-
-        ghostNodes.remote[ghostId].style({
+    function startRemoteGhostCable(sourceID, position, peerID){
+        let ghostId = `ghostNode-${peerID}`
+        let tempEdgeID = `tempEdge-${peerID}`
+        
+        temporaryCables.peers[peerID] = {
+            source: cy.getElementById(sourceID),
+            // Create a ghost node at the mouse position to act as the moving endpoint
+            ghostNode: cy.add({
+                group: 'nodes',
+                data: { id: ghostId },
+                position: position,
+                grabbable: false, // Ghost node shouldn't be draggable
+                classes: 'ghostNode'
+            }),
+            // Create a temporary edge from temporaryCables.local.source to ghostNode
+            tempEdge: cy.add({
+                group: 'edges',
+                data: { id: tempEdgeID, source: sourceID, target: ghostId },
+                classes: 'tempEdge'
+            }),
+            targetNode: null
+        }
+        
+        // set ghostNode Style according to opposite of source Node
+        const ghostShape = temporaryCables.peers[peerID].source.data('ghostCableShape') || 'ellipse';
+        const ghostColour = temporaryCables.peers[peerID].source.data('ghostCableColour') || '#5C9AE3';
+        temporaryCables.peers[peerID].ghostNode.style({
             'shape': ghostShape,
             'background-color': ghostColour
         });
 
-        // Create a temporary edge from temporaryCables.local.source to ghostNode
-        ghostEdges.remote[ghostId] = cy.add({
-            group: 'edges',
-            data: { id: 'tempEdge', source: sourceID, target: ghostId },
-            classes: 'tempEdge'
-        });
-
-        // Set target endpoint to mouse position initially
-        ghostEdges.remote[ghostId].style({ 'line-color': '#FFA500' }); // Set temporary edge color
-
-
+        temporaryCables.peers[peerID].tempEdge.style({ 'line-color': '#FFA500' }); // Set temporary edge color
         
+    }
+
+    function updateRemoteGhostCable(){
+
     }
     // Step 1: Create temporary edge on mousedown
     cy.on('mousedown', (event) => {
@@ -482,6 +474,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     data: {
                         sourceNodeID: e.data().id,
                         position: p,
+                        peer: localPeerID
                     }
                 })
             } else if (event.target.isParent()){
@@ -545,59 +538,7 @@ document.addEventListener("DOMContentLoaded", function () {
             
     });
 
-    // Handle keydown event to delete a highlighted edge on backspace or delete
-    document.addEventListener('keydown', (event) => {
-        
-        if (event.key === 'Meta' || event.key === 'Control') {
-            allowMultiSelect = false
-        }
-
-        if (highlightedEdge && (event.key === 'Backspace' || event.key === 'Delete')) {
-            cy.remove(highlightedEdge)
-            highlightedEdge = null; // Clear the reference after deletion
-        } else if (highlightedNode && (event.key === 'Backspace' || event.key === 'Delete')){
-            if (highlightedNode.isParent()) {
-                const nodeId = highlightedNode.id();
-
-                console.log(`Deleting parent node ID: ${highlightedNode.id()}`);
-                cy.remove(highlightedNode); // Remove the node from the Cytoscape instance
-                highlightedNode = null; // Clear the reference after deletion
-
-
-                // Update the Automerge document to reflect the deletion
-                handle.change((doc) => {
-                    const elementIndex = doc.elements.findIndex(el => el.data.id === nodeId);
-                    if (elementIndex !== -1) {
-                        doc.elements.splice(elementIndex, 1); // Remove the node from the Automerge document
-                    }
-
-                    // Remove child nodes of the parent node from Automerge doc
-                    doc.elements = doc.elements.filter(el => el.data.parent !== nodeId);
-                });
-            }
-        }
-
-        
-
-    });
-
-    document.addEventListener('keyup', (event) => {
-        if (event.key === 'Meta' || event.key === 'Control') {
-            allowMultiSelect = true
-        }
-    })
-    // Helper function to find elements at a specific point
-    function getElementsAtPoint(cy, x, y) {
-        return cy.elements().filter((ele) => {
-            const bb = ele.boundingBox();
-            return (
-                x >= bb.x1 &&
-                x <= bb.x2 &&
-                y >= bb.y1 &&
-                y <= bb.y2
-            );
-        });
-    }
+   
     cy.on('mousemove', (event) => {
         
         // this is for local Ghost cables only
@@ -779,6 +720,60 @@ document.addEventListener("DOMContentLoaded", function () {
 
         }
     });
+
+     // Handle keydown event to delete a highlighted edge on backspace or delete
+     document.addEventListener('keydown', (event) => {
+        
+        if (event.key === 'Meta' || event.key === 'Control') {
+            allowMultiSelect = false
+        }
+
+        if (highlightedEdge && (event.key === 'Backspace' || event.key === 'Delete')) {
+            cy.remove(highlightedEdge)
+            highlightedEdge = null; // Clear the reference after deletion
+        } else if (highlightedNode && (event.key === 'Backspace' || event.key === 'Delete')){
+            if (highlightedNode.isParent()) {
+                const nodeId = highlightedNode.id();
+
+                console.log(`Deleting parent node ID: ${highlightedNode.id()}`);
+                cy.remove(highlightedNode); // Remove the node from the Cytoscape instance
+                highlightedNode = null; // Clear the reference after deletion
+
+
+                // Update the Automerge document to reflect the deletion
+                handle.change((doc) => {
+                    const elementIndex = doc.elements.findIndex(el => el.data.id === nodeId);
+                    if (elementIndex !== -1) {
+                        doc.elements.splice(elementIndex, 1); // Remove the node from the Automerge document
+                    }
+
+                    // Remove child nodes of the parent node from Automerge doc
+                    doc.elements = doc.elements.filter(el => el.data.parent !== nodeId);
+                });
+            }
+        }
+
+        
+
+    });
+
+    document.addEventListener('keyup', (event) => {
+        if (event.key === 'Meta' || event.key === 'Control') {
+            allowMultiSelect = true
+        }
+    })
+    // Helper function to find elements at a specific point
+    function getElementsAtPoint(cy, x, y) {
+        return cy.elements().filter((ele) => {
+            const bb = ele.boundingBox();
+            return (
+                x >= bb.x1 &&
+                x <= bb.x2 &&
+                y >= bb.y1 &&
+                y <= bb.y2
+            );
+        });
+    }
 
 
     // Select the button element by its ID
