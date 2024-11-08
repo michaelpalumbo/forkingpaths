@@ -6,6 +6,9 @@ import { uuidv7 } from "https://unpkg.com/uuidv7@^1";
 // import { BrowserWebSocketClientAdapter } from '@automerge/automerge-repo-network-websocket';
 
 let handle;
+
+// automerge PeerID
+let localPeerID;
 let isDraggingEnabled = false;
 let moduleDragState = false;
 
@@ -14,6 +17,35 @@ let heldModule = null
 let heldModulePos = { x: null, y: null }
 
 let allowMultiSelect = true;
+
+let ghostNodes = {
+    local: {
+        source: null
+    },
+    remote: {
+
+    }
+}
+
+let ghostEdges = {
+    local: null,
+    remote: {}
+}
+
+// temporary cables pseudocode
+let temporaryCables = {
+    local: {
+
+    }, 
+    peers: {
+        'peerID-645': {
+            sourceNodeID: null,
+            ghostNode: 'cy.add({create ghost node here})',
+            ghostEdge: 'cy.add...',
+
+        }
+    }
+}
 document.addEventListener("DOMContentLoaded", function () {
     const cy = cytoscape({
         container: document.getElementById('cy'),
@@ -170,6 +202,19 @@ document.addEventListener("DOMContentLoaded", function () {
         // Wait until the document handle is ready
         await handle.whenReady();
 
+        // Check if a peer ID is already stored in sessionStorage
+        localPeerID = sessionStorage.getItem('localPeerID');
+
+        if (!localPeerID) {
+            // Generate or retrieve the peer ID from the Automerge-Repo instance
+            localPeerID = repo.networkSubsystem.peerId;
+
+            // Store the peer ID in sessionStorage for the current tab session
+            sessionStorage.setItem('localPeerID', localPeerID);
+        } else {
+        }
+        
+
         handle.docSync().elements
         // Populate Cytoscape with elements from the document if it exists
         if (handle.docSync().elements && handle.docSync().elements.length > 0) {
@@ -216,6 +261,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 case 'moveModule':
                     cy.getElementById(msg.module).position(msg.position);
+                break
+
+                case 'startRemoteGhostCable':
+
+                    startRemoteGhostCable(msg.data.sourceNodeID, msg.data.position)
+                break
+
+                case 'updateRemoteGhostCable':
+                    console.log(msg.data.position)
                 break
 
                 default: console.log("got an ephemeral message: ", message)
@@ -328,12 +382,13 @@ document.addEventListener("DOMContentLoaded", function () {
     // function to create a cable
 
     function startCable(source, position){
-        sourceNode = source;
+        console.log(source)
+        ghostNodes.local.source = source;
         const mousePos = position;
 
-        // Get the ghostCable property from the sourceNode, default to 'ellipse' if undefined
-        const ghostShape = sourceNode.data('ghostCableShape') || 'ellipse';
-        const ghostColour = sourceNode.data('ghostCableColour') || '#5C9AE3';
+        // Get the ghostCable property from the ghostNodes.local.source, default to 'ellipse' if undefined
+        const ghostShape = ghostNodes.local.source.data('ghostCableShape') || 'ellipse';
+        const ghostColour = ghostNodes.local.source.data('ghostCableColour') || '#5C9AE3';
 
         // Create a ghost node at the mouse position to act as the moving endpoint
         ghostNode = cy.add({
@@ -349,15 +404,52 @@ document.addEventListener("DOMContentLoaded", function () {
             'shape': ghostShape,
             'background-color': ghostColour
         });
-        // Create a temporary edge from sourceNode to ghostNode
+        // Create a temporary edge from ghostNodes.local.source to ghostNode
         tempEdge = cy.add({
             group: 'edges',
-            data: { id: 'tempEdge', source: sourceNode.id(), target: 'ghostNode' },
+            data: { id: 'tempEdge', source: ghostNodes.local.source.id(), target: 'ghostNode' },
             classes: 'tempEdge'
         });
 
         // Set target endpoint to mouse position initially
         tempEdge.style({ 'line-color': '#FFA500' }); // Set temporary edge color
+
+
+        
+    }
+
+    function startRemoteGhostCable(sourceID, position){
+        ghostNodes.remote = cy.getElementById(sourceID);
+        const mousePos = position;
+
+        const ghostShape = sourceNode.data('ghostCableShape') || 'ellipse';
+        const ghostColour = sourceNode.data('ghostCableColour') || '#5C9AE3';
+        let ghostId = `ghostNode-${sourceID}`
+        // Create a ghost node at the mouse position to act as the moving endpoint
+        ghostNodes.remote[ghostId] = cy.add({
+            group: 'nodes',
+            data: { id: ghostId },
+            position: mousePos,
+            grabbable: false, // Ghost node shouldn't be draggable
+            classes: 'ghostNode'
+        });
+
+        ghostNodes.remote[ghostId].style({
+            'shape': ghostShape,
+            'background-color': ghostColour
+        });
+
+        // Create a temporary edge from sourceNode to ghostNode
+        ghostEdges.remote[ghostId] = cy.add({
+            group: 'edges',
+            data: { id: 'tempEdge', source: sourceID, target: ghostId },
+            classes: 'tempEdge'
+        });
+
+        // Set target endpoint to mouse position initially
+        ghostEdges.remote[ghostId].style({ 'line-color': '#FFA500' }); // Set temporary edge color
+
+
         
     }
     // Step 1: Create temporary edge on mousedown
@@ -378,7 +470,15 @@ document.addEventListener("DOMContentLoaded", function () {
                 let e = event.target
                 let p = event.position
                 startCable(e, p)
-                
+                        // send to remotes:
+                        console.log(e)
+                ephemeralData({
+                    msg: 'startRemoteGhostCable',
+                    data: {
+                        sourceNodeID: e.data().id,
+                        position: p,
+                    }
+                })
             } else if (event.target.isParent()){
                 
                 heldModule = event.target
@@ -499,7 +599,14 @@ document.addEventListener("DOMContentLoaded", function () {
         if (ghostNode) {
             const mousePos = event.position;
             ghostNode.position(mousePos); // Update ghost node position
-
+            // send the localGhostNode position to all connected peers
+            ephemeralData({
+                msg: 'updateRemoteGhostCable',
+                data: {
+                    sourceNodeID: ghostNode.data().id,
+                    position: mousePos,
+                }
+            })
             // Reset targetNode before checking for intersections
             targetNode = null;
 
@@ -678,4 +785,9 @@ document.addEventListener("DOMContentLoaded", function () {
             doc.elements = []
         });
     });
+
+
+    function ephemeralData (msg){
+        handle.broadcast(msg);
+    }
 });
