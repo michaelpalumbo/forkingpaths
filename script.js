@@ -224,7 +224,7 @@ document.addEventListener("DOMContentLoaded", function () {
         cy.layout({ name: 'preset' }).run();
 
         handle.on('change', (newDoc) => {
-            
+            console.log('change detected')
             // Compare `newDoc.elements` with current `cy` state and update `cy` accordingly
             const newElements = newDoc.doc.elements;
             
@@ -241,6 +241,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // Remove elements that are no longer in `newDoc`
             cy.elements().forEach((currentEl) => {
                 if (!newElements.find(el => el.data.id === currentEl.id())) {
+                    console.log(currentEl.id())
                     cy.remove(currentEl);
                 }
             });
@@ -271,44 +272,6 @@ document.addEventListener("DOMContentLoaded", function () {
             }
             
         })
-
-        // Set the document URL in the fragment part of the current URL
-
-        // Initialize the document's counter if it's empty
-        // Ensure counter is initialized in the document if it's a new document
-        /*
-        handle.change((doc) => {
-            if (doc.counter == null) doc.counter = 0;
-        });
-
-        // Update the UI when the document changes
-        const counterElement = document.getElementById('counter');
-
-        // Display the initial counter value once the document is ready
-        const initialCounterValue = handle.doc.counter ?? 0;
-
-        console.log(handle.doc.counter)
-        counterElement.textContent = initialCounterValue;
-        
-        handle.on('change', (newDoc) => {
-            console.log('Document changed:', newDoc);  // Log the entire document structure
-            const counterValue = newDoc.doc.counter ?? 0;
-            console.log('Updated Counter value:', counterValue);  // Log the counter specifically
-            counterElement.textContent = counterValue;
-        });
-
-        // Increment the counter when the button is clicked
-        document.getElementById('incrementButton').addEventListener('click', () => {
-            handle.change((doc) => {
-                doc.counter += 1;
-                console.log(doc.counter)
-            });
-        });
-
-        // Initial UI load
-        counterElement.textContent = handle.doc.counter || 0;
-
-        */
     })();
 
     // addNode
@@ -514,21 +477,70 @@ document.addEventListener("DOMContentLoaded", function () {
         
                 // Check if the click is near the source or target endpoint
                 if (isNearEndpoint(mousePos, sourcePos)) {
+                    console.log('sourceNode')
                     // delete the cable
                     cy.remove(edge);
+                    // todo: also remove the cable from automerge!
+                    handle.change((newDoc) => {
+                        // Assuming the array is `doc.elements` and you have an object `targetObj` to match and remove
+                        
+                        // Find the index of the object that matches the condition
+                        const index = newDoc.elements.findIndex(el => el.id === edge.data().id);
+                    
+                        // If a match is found, remove the object from the array
+                        if (index !== -1) {
+                           
+                            newDoc.elements.splice(index, 1);
+                        }
+                    });
+
                     // create a new ghost cable starting from targetPos (opposite of clicked endpoint), call startCable()
                     // we have to assign these to temp variables, as otherwise cy acts kinda funky when passing them to helper functions
                     let e = targetNode
                     let p = targetPos
                     startCable(e, p)
+                    // tell remotes to create a new ghost cable
+                    ephemeralData({
+                        msg: 'startRemoteGhostCable',
+                        data: {
+                            sourceNodeID: e.data().id,
+                            position: p,
+                            peer: localPeerID
+                        }
+                    })
+
                 } else if (isNearEndpoint(mousePos, targetPos)) {
                     // delete the cable
                     cy.remove(edge);
+
+                    // todo: also remove the cable from automerge!
+                    handle.change((newDoc) => {
+                        // Assuming the array is `doc.elements` and you have an object `targetObj` to match and remove
+                        
+                        // Find the index of the object that matches the condition
+                        const index = newDoc.elements.findIndex(el => el.id === edge.data().id);
+                    
+                        // If a match is found, remove the object from the array
+                        if (index !== -1) {
+                            
+                            newDoc.elements.splice(index, 1);
+                        }
+                    });
                     // create a new ghost cable starting from sourcePos (opposite of clicked endpoint), call startCable()
                     // we have to assign these to temp variables, as otherwise cy acts kinda funky when passing them to helper functions
                     let e = sourceNode
                     let p = sourcePos
                     startCable(e, p)
+                    // tell remotes to create a new ghost cable
+                    ephemeralData({
+                        msg: 'startRemoteGhostCable',
+                        data: {
+                            sourceNodeID: e.data().id,
+                            position: p,
+                            peer: localPeerID
+                        }
+                    })
+
                 } else {
                     // Remove highlight from any previously highlighted edge
                     if (highlightedEdge) {
