@@ -380,6 +380,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 let e = event.target
                 let p = event.position
                 startCable(e, p)
+                console.log('snared')
             } else if (event.target.isParent()){
                 
                 heldModule = event.target
@@ -666,5 +667,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
         }
+    });
+
+
+    // Select the button element by its ID
+    const button = document.getElementById('clearGraph');
+
+    // Add an event listener to the button for the 'click' event
+    button.addEventListener('click', function() {
+        cy.elements().remove()
+        handle.change((doc) => {
+            doc.elements = []
+        });
     });
 });
