@@ -11,7 +11,8 @@ let moduleDragState = false;
 let localPeerID;
 
 let highlightedNode = null
-
+let heldModule = null
+let heldModulePos = { x: null, y: null }
 document.addEventListener("DOMContentLoaded", function () {
     const cy = cytoscape({
         container: document.getElementById('cy'),
@@ -209,6 +210,21 @@ document.addEventListener("DOMContentLoaded", function () {
             
             
         })
+
+        handle.on("ephemeral-message", (message) => {
+
+            let msg = message.message
+            switch (msg.msg){
+
+                case 'moveModule':
+                    cy.getElementById(msg.module).position(msg.position);
+                break
+
+                default: console.log("got an ephemeral message: ", message)
+            }
+            
+        })
+
         // Set the document URL in the fragment part of the current URL
 
         // Initialize the document's counter if it's empty
@@ -364,6 +380,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 let e = event.target
                 let p = event.position
                 startCable(e, p)
+            } else if (event.target.isParent()){
+                
+                heldModule = event.target
             }
         } else if (target.isEdge && target.isEdge()) {
             const edge = event.target
@@ -497,6 +516,15 @@ document.addEventListener("DOMContentLoaded", function () {
                     node.removeClass('highlighted');
                 }
             });
+        } else if (heldModule){
+            // console.log(heldModule.data().id)
+            handle.broadcast({
+                msg: "moveModule",
+                module: heldModule.data().id,
+                position: event.position
+            });
+            heldModulePos = event.position
+            
         }
     });
 
@@ -528,6 +556,20 @@ document.addEventListener("DOMContentLoaded", function () {
             sourceNode = null;
             targetNode = null;
             ghostNode = null;
+        } else if (heldModule){
+            
+            // update the module position in automerge
+            // handle.change((newDoc) => {
+            //     console.log(newDoc.elements)
+            //     let match = newDoc.elements.find(obj => obj.data.id === heldModule);
+            //     if (match) {
+            //         console.log(match)
+            //     }
+            // })
+
+            
+            heldModulePos = { }
+            heldModule = null
         }
     });
 
@@ -621,6 +663,8 @@ document.addEventListener("DOMContentLoaded", function () {
             // Highlight the clicked parent node
             highlightedNode = event.target;
             highlightedNode.addClass('highlighted');
+
+
         }
     });
 });
