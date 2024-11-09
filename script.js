@@ -804,7 +804,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 const trackLength = childNode.data('length') || 100; // Assuming track length is stored in data
                 const newTrackStartX = parentNode.position().x - trackLength / 2;
                 const newTrackEndX = parentNode.position().x + trackLength / 2;
-                const fixedY = cy.getElementById(currentHandleNode.data().trackID).position().y; // Update if necessary based on your layout logic
+                const fixedY = parentNode.position().y; // Update if necessary based on your layout logic
 
                 // Update data attributes for the handle to use when dragging
                 childNode.data('trackStartX', newTrackStartX);
