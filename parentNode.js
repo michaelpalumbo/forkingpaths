@@ -99,8 +99,8 @@ export class ParentNode {
                             
                         },
                         position: {
-                            x: this.position.x + offsetX,
-                            y: this.position.y + offsetY
+                            x: config.position.x,
+                            y: config.position.y
                         },
                         classes: 'sliderTrack'
                     },
@@ -118,7 +118,7 @@ export class ParentNode {
                         },
                         position: {
                             x: initialHandleX,
-                            y: fixedY
+                            y: config.position.y // Match Y-position with the track
                         },
                         classes: 'sliderHandle'
                     }
