@@ -49,7 +49,6 @@ export class ParentNode {
         // Arrange the child nodes in a vertical line below the parent node
         const offsetY = index * 60; // Each child node is 60px below the previous one
         const offsetX = 0; // Keep the X position the same for a vertical arrangement
-            console.log(index)
             if(child.kind === 'slider'){
                 const sliderId = `${this.moduleName}-slider${index + 1}`
                 const defaultOptions = {
@@ -151,7 +150,7 @@ export class ParentNode {
            
             
         });
-        console.log(childrenNodes)
+        
         return { parentNode, childrenNodes };
     }
 }

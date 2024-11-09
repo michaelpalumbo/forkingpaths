@@ -15,7 +15,7 @@ let highlightedNode = null
 let heldModule = null
 let heldModulePos = { x: null, y: null }
 
-let allowMultiSelect = true;
+let allowMultiSelect = false;
 
 let isSliderDragging = false;
 let currentHandleNode;
@@ -678,7 +678,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 // cy.remove(tempEdge)
             } else {
                 // allowMultiSelect is set to false if cmd or ctrl is held down to allow for multiple selection
-                if(allowMultiSelect){
+                if(!allowMultiSelect){
+
+
                     addModule(`oscillator`, { x: event.position.x, y: event.position.y }, [    ]);
                     console.log("Clicked on the background\nLow priority ToDo: background clicks open module library");
                 }
@@ -810,8 +812,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 childNode.data('trackStartX', newTrackStartX);
                 childNode.data('trackEndX', newTrackEndX);
                 childNode.data('fixedY', fixedY);
-
-                console.log(`Updated handle data for ${childNode.data().id}: StartX=${newTrackStartX}, EndX=${newTrackEndX}, FixedY=${fixedY}`);
             }
         });
     }
@@ -957,7 +957,7 @@ document.addEventListener("DOMContentLoaded", function () {
      document.addEventListener('keydown', (event) => {
         
         if (event.key === 'Meta' || event.key === 'Control') {
-            allowMultiSelect = false
+            allowMultiSelect = true
         }
 
         if (highlightedEdge && (event.key === 'Backspace' || event.key === 'Delete')) {
@@ -989,7 +989,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     document.addEventListener('keyup', (event) => {
         if (event.key === 'Meta' || event.key === 'Control') {
-            allowMultiSelect = true
+            allowMultiSelect = false
         }
     })
     // Helper function to find elements at a specific point
