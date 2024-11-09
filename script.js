@@ -52,6 +52,10 @@ let temporaryCables = {
         }*/
     }
 }
+
+let paramBoundaries = {
+
+}
 document.addEventListener("DOMContentLoaded", function () {
     const cy = cytoscape({
         container: document.getElementById('cy'),
@@ -701,44 +705,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 // Ensure trackStartX and trackEndX are numbers before clamping
                 if (typeof trackStartX === 'number' && typeof trackEndX === 'number') {
-                    const clampedX = Math.max(trackStartX, Math.min(newMouseX, trackEndX));
-                    currentHandleNode.position({ x: clampedX, y: fixedY });
-                    console.log(`Handle position updated: ${clampedX}, ${fixedY}`);
+                    const newSliderValue = Math.max(trackStartX, Math.min(newMouseX, trackEndX));
+                    currentHandleNode.position({ x: newSliderValue, y: fixedY });
+                    console.log(`Handle position updated: ${newSliderValue}, ${fixedY}`);
                 } else {
                     console.error('Invalid trackStartX or trackEndX:', trackStartX, trackEndX);
                 }
 
-                /*
-                // Constrain the new position to stay within the track bounds
-                const clampedX = Math.max(trackStartX, Math.min(newMouseX, trackEndX));
-                console.log(trackStartX)
-                // Update the position of the handle on the x-axis and lock the y-axis
-                currentHandleNode.position({ x: clampedX, y: fixedY });
-                console.log(`Handle position updated: ${clampedX}, ${fixedY}`);
-                */
-                /* 
-                const handleNode = event.target;
-                const newPosX = handleNode.position('x');
-                
-                const trackStartX = handleNode.data().trackStartX
-                const trackEndX = handleNode.data().trackEndX
-                const fixedY = handleNode.data().fixedY
-                // Constrain the handle to stay within the track on the x-axis
-                if (newPosX < trackStartX) {
-                    handleNode.position({ x: trackStartX, y: handleNode.data().fixedY });
-                } else if (newPosX > trackEndX) {
-                    handleNode.position({ x: trackEndX, y: fixedY });
-                } else {
-                    // Allow movement on x-axis only and lock y-axis to fixedY
-                    handleNode.position({ x: newPosX, y: fixedY });
-                }
-    
-                // Update slider value based on the new position
-                // cy.getElementById(handleNode.data().id).position({ x: clampedX, y: fixedY });
-                console.log(handleNode.position())
-                // Update the handle position
-                // handleNode.position({ x: clampedX, y: fixedY });
-                */
             }
         }
         // this is for local Ghost cables only
@@ -795,6 +768,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 position: event.position
             });
             heldModulePos = event.position
+
+  
             
         }
 
@@ -814,6 +789,27 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
+
+    function updateSliderBoundaries(parentNode){
+        // console.log(parentNode)
+        // Update the position constraints for all slider handles that are children of this parent node
+        cy.nodes(`node[parent="${parentNode.data().id}"]`).forEach((childNode) => {
+            if (childNode.hasClass('sliderHandle')) {
+                // console.log(parentNode.position())
+                const trackLength = childNode.data('length') || 100; // Assuming track length is stored in data
+                const newTrackStartX = parentNode.position().x - trackLength / 2;
+                const newTrackEndX = parentNode.position().x + trackLength / 2;
+                const fixedY = parentNode.position().y; // Update if necessary based on your layout logic
+
+                // Update data attributes for the handle to use when dragging
+                childNode.data('trackStartX', newTrackStartX);
+                childNode.data('trackEndX', newTrackEndX);
+                childNode.data('fixedY', fixedY);
+
+                console.log(`Updated handle data for ${childNode.data().id}: StartX=${newTrackStartX}, EndX=${newTrackEndX}, FixedY=${fixedY}`);
+            }
+        });
+    }
     // Step 3: Finalize edge on mouseup
     cy.on('mouseup', (event) => {
         if(isSliderDragging){
@@ -866,14 +862,9 @@ document.addEventListener("DOMContentLoaded", function () {
             temporaryCables.local.ghostNode = null;
         } else if (heldModule){
             
-            // update the module position in automerge
-            // handle.change((newDoc) => {
-            //     let match = newDoc.elements.find(obj => obj.data.id === heldModule);
-            //     if (match) {
-            //         console.log(match)
-            //     }
-            // })
-
+            // if module has any param UI, need to update the internal positioning 
+            // toDO: also pass this to automerge handle, and then write a handle.on('change'...) for grabbing this value and passing it to this same function below:
+            updateSliderBoundaries(heldModule)
             
             heldModulePos = { }
             heldModule = null

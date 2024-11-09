@@ -53,7 +53,7 @@ export class ParentNode {
             if(child.kind === 'slider'){
                 const sliderId = `${this.moduleName}-slider${index + 1}`
                 const defaultOptions = {
-                    length: 100, // Length of the slider track in pixels
+                    length: 127, // Length of the slider track in pixels
                     minValue: 0, // Minimum slider value
                     maxValue: 100, // Maximum slider value
                     initialValue: 50, // Initial slider value
