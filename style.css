@@ -21,3 +21,10 @@
   flex: 3;
   background-color: #e0e0e0;
 }
+
+.bottom-button {
+  position: absolute;
+  bottom: 5%;
+  /* left: 100%; */
+  /* transform: translateX(-50%); Centers the button horizontally */
+}
