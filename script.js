@@ -24,8 +24,6 @@ let currentHandleNode;
 let lastClickTime = 0;
 const doubleClickDelay = 300; // Delay in milliseconds to register a double-click
 
-
-
 let peers = {
     local: {
         mousePointer: { 
@@ -69,7 +67,8 @@ document.addEventListener("DOMContentLoaded", function () {
         elements: [], // Start with no elements; add them dynamically
 
         layout: {
-            name: 'preset' // Preset layout allows manual positioning
+            name: 'preset', // Preset layout allows manual positioning
+            
         },
 
         style: [
@@ -533,30 +532,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 break;
 
                 case 'handle':
-
                     currentHandleNode = event.target;
                     isSliderDragging = true;
-
-                        // Log trackStartX and trackEndX to ensure they are defined
-                    console.log('Track start X:', currentHandleNode.data('trackStartX'));
-                    console.log('Track end X:', currentHandleNode.data('trackEndX'));
-                    
-                    // document.body.style.cursor = 'ew-resize'; // Change cursor to indicate dragging
-                    
-                //     const clickX = event.position.x; // X-coordinate of the click
-                    
-                //     isSliderDragging = true; // Start dragging
-
-                //     // Constrain x to the track boundaries
-                //     const clampedX = Math.max(event.target.data().trackStartX, Math.min(clickX, event.target.data().trackEndX));
-
-                //     // Update the handle position
-                //     cy.getElementById(event.target.data().id).position({ x: clampedX, y: event.target.position().y });
-
-                //     // Report the new slider value
-                //     // getSliderValue();
-                //     console.log(clampedX)                
-                // break
             }
             
         } else {
@@ -709,9 +686,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 const rect = cyContainer.getBoundingClientRect();
                 const newMouseX = event.position.x;
 
-                // Log the calculated newMouseX to check if it's valid
-                console.log('New mouse X:', newMouseX);
-
                 // Get the track's start and end positions from the handle's data
                 const trackStartX = currentHandleNode.data('trackStartX');
                 const trackEndX = currentHandleNode.data('trackEndX');
@@ -721,7 +695,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (typeof trackStartX === 'number' && typeof trackEndX === 'number') {
                     const newSliderValue = Math.max(trackStartX, Math.min(newMouseX, trackEndX));
                     currentHandleNode.position({ x: newSliderValue, y: fixedY });
-                    console.log(`Handle position updated: ${newSliderValue}, ${fixedY}`);
                 } else {
                     console.error('Invalid trackStartX or trackEndX:', trackStartX, trackEndX);
                 }
@@ -786,13 +759,6 @@ document.addEventListener("DOMContentLoaded", function () {
   
             
         }
-
-        // // Get the mouse position relative to the Cytoscape canvas
-        // const mouseX = event.position.x;
-        // const mouseY = event.position.y;
-
-        // console.log('Mouse position relative to Cytoscape canvas:', mouseX, mouseY);
-
         // Send the data with the relative position
         sendEphemeralData({
             msg: 'peerMousePosition',
@@ -805,11 +771,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     function updateSliderBoundaries(parentNode){
-        // console.log(parentNode)
         // Update the position constraints for all slider handles that are children of this parent node
         cy.nodes(`node[parent="${parentNode.data().id}"]`).forEach((childNode) => {
             if (childNode.hasClass('sliderHandle')) {
-                // console.log(parentNode.position())
                 const trackLength = childNode.data('length') || 100; // Assuming track length is stored in data
                 const newTrackStartX = parentNode.position().x - trackLength / 2;
                 const newTrackEndX = parentNode.position().x + trackLength / 2;
@@ -1065,7 +1029,6 @@ document.addEventListener("DOMContentLoaded", function () {
             peers.remote[peer].mousePointer.position(position)
 
         }
-        // console.log(peer, position)
     }
 
     function sendEphemeralData (msg){
@@ -1075,4 +1038,36 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         
     }
+
+    // modify graph edge control point distance
+    const CPDslider = document.getElementById('controlPointDistance')
+    
+    CPDslider.addEventListener('input', function() {
+        let x = this.value
+        let y = this.value * -1
+        updateCableControlPointDistances(x, y)
+
+        localStorage.setItem('sliderValue', CPDslider.value);
+
+    });
+
+    // Retrieve the saved slider value from localStorage and set it
+    const savedValue = localStorage.getItem('sliderValue');
+    if (savedValue !== null) {
+        CPDslider.value = savedValue;
+        let x = savedValue
+        let y = x * -1 
+        updateCableControlPointDistances(x, y)
+    }
+
+    function updateCableControlPointDistances(x, y){
+        cy.style()
+        .selector(`edge`)
+        .style({
+            'control-point-distances': [y, x, y]
+        })
+        .update();
+    }
+
+    
 });
