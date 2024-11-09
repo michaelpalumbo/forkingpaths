@@ -20,6 +20,12 @@ let allowMultiSelect = false;
 let isSliderDragging = false;
 let currentHandleNode;
 
+// double-clicking
+let lastClickTime = 0;
+const doubleClickDelay = 300; // Delay in milliseconds to register a double-click
+
+
+
 let peers = {
     local: {
         mousePointer: { 
@@ -680,15 +686,16 @@ document.addEventListener("DOMContentLoaded", function () {
                 // allowMultiSelect is set to false if cmd or ctrl is held down to allow for multiple selection
                 if(!allowMultiSelect){
 
-
-                    addModule(`oscillator`, { x: event.position.x, y: event.position.y }, [    ]);
-                    console.log("Clicked on the background\nLow priority ToDo: background clicks open module library");
+                    const currentTime = new Date().getTime();
+                    if (currentTime - lastClickTime < doubleClickDelay) {
+                        // Double-click detected
+                        addModule(`oscillator`, { x: event.position.x, y: event.position.y }, [    ]);
+                        console.log("Double-clicked on the background\nLow priority ToDo: background clicks open module library");
+                    }
+                    lastClickTime = currentTime; // Update the last click time
                 }
-                
             }
-
         }
-            
     });
 
    
