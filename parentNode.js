@@ -1,5 +1,10 @@
 import modules from './modules.json' assert { type: 'json'}
 import {uuidv7} from 'uuidv7'
+
+
+
+
+
 export class ParentNode {
     constructor(module, position, children) {
 
@@ -37,28 +42,113 @@ export class ParentNode {
             classes: ':parent',
         };
 
-        const childrenNodes = this.children.map((child, index) => {
+        let sliderArray = []
+        const childrenNodes = this.children.flatMap((child, index) => {
+
             const offsetX = Math.cos((index * (360 / this.children.length)) * (Math.PI / 180)) * 60;
             const offsetY = Math.sin((index * (360 / this.children.length)) * (Math.PI / 180)) * 60;
-            
-            return {
-                data: {
-                    id: `${this.moduleName}-${child.kind}${index + 1}`,
-                    parent: this.moduleName,
-                    label: child.label || `${this.moduleName}-${child.kind}${index + 1}`,
-                    kind: child.kind,
-                    bgcolour: child.kind === 'input' ? '#FC9A4F' : child.kind === 'output' ? '#6FB1FC' : '#CCCCCC',
-                    ghostCableShape: child.kind === 'input' ? 'rectangle' : 'triangle',
-                    ghostCableColour: child.kind === 'input' ? '#5C9AE3' : '#E68942',
-                    
-                },
-                position: {
-                    x: this.position.x + offsetX,
-                    y: this.position.y + offsetY
-                }
-            };
-        });
+      
+            if(child.kind === 'slider'){
+                const sliderId = `${this.moduleName}-slider${index + 1}`
+                const defaultOptions = {
+                    length: 100, // Length of the slider track in pixels
+                    minValue: 0, // Minimum slider value
+                    maxValue: 100, // Maximum slider value
+                    initialValue: 50, // Initial slider value
+                    position: { x: 200, y: 200 }, // Default position
+                };
+                let options = {}
+                const config = { ...defaultOptions, ...options };
 
+                    // Define the track and handle nodes for the slider
+                const sliderTrackId = `${sliderId}-track`;
+                const sliderHandleId = `${sliderId}-handle`;
+
+                const fixedY = config.position.y;
+
+                let isDragging = false;
+                let isDraggingEnabled = false; // Tracks if 'e' is pressed for repositioning
+            
+                // Calculate initial handle position within the track
+                const initialHandleX = config.position.x - config.length / 2 + (config.length * (config.initialValue - config.minValue)) / (config.maxValue - config.minValue);
+            
+                // {
+                //     data: { id: sliderTrackId, parent: parentNodeId },
+                //     position: config.position,
+                //     grabbable: false // Prevent track from being dragged
+                // },
+                // {
+                //     data: { id: sliderHandleId, parent: parentNodeId, shape: 'ellipse' },
+                //     position: {
+                //         x: initialHandleX,
+                //         y: fixedY,
+                //     }
+                // }
+                return [
+                    // slider track
+                    {                  
+                        data: {
+                            id: sliderTrackId,
+                            parent: this.moduleName,
+                            label: child.label || `${this.moduleName}-${sliderTrackId}${index + 1}`,
+                            kind: child.kind,
+                            bgcolour: '#CCCCCC',
+                            length: config.length
+                            // ghostCableShape: child.kind === 'input' ? 'rectangle' : 'triangle',
+                            // ghostCableColour: child.kind === 'input' ? '#5C9AE3' : '#E68942',
+                            
+                        },
+                        position: {
+                            x: this.position.x + offsetX,
+                            y: this.position.y + offsetY
+                        },
+                        classes: 'sliderTrack'
+                    },
+                    {                  
+                        data: {
+                            id: sliderHandleId,
+                            parent: this.moduleName,
+                            label: child.label || `${this.moduleName}-${sliderHandleId}${index + 1}`,
+                            kind: child.kind,
+                            shape: 'ellipse',
+                            bgcolour: '#CCCCCC',
+                            // ghostCableShape: child.kind === 'input' ? 'rectangle' : 'triangle',
+                            // ghostCableColour: child.kind === 'input' ? '#5C9AE3' : '#E68942',
+                            
+                        },
+                        position: {
+                            x: initialHandleX,
+                            y: fixedY
+                        },
+                        classes: 'sliderHandle'
+                    }
+                ]
+                
+                    
+
+                
+            } else {
+                return {
+                    data: {
+                        id: `${this.moduleName}-${child.kind}${index + 1}`,
+                        parent: this.moduleName,
+                        label: child.label || `${this.moduleName}-${child.kind}${index + 1}`,
+                        kind: child.kind,
+                        bgcolour: child.kind === 'input' ? '#FC9A4F' : child.kind === 'output' ? '#6FB1FC' : '#CCCCCC',
+                        ghostCableShape: child.kind === 'input' ? 'rectangle' : 'triangle',
+                        ghostCableColour: child.kind === 'input' ? '#5C9AE3' : '#E68942',
+                        
+                    },
+                    position: {
+                        x: this.position.x + offsetX,
+                        y: this.position.y + offsetY
+                    }
+                };
+            }
+           
+            
+        });
+        console.log(childrenNodes)
         return { parentNode, childrenNodes };
     }
 }

@@ -165,7 +165,54 @@ document.addEventListener("DOMContentLoaded", function () {
                     'text-halign': 'right',      // Horizontally align label to the left of the node
                     'text-margin-x': 10, // Optional: Move the label slightly up if desired
                 }
+            },
+            {
+                selector: '.sliderTrack',
+                style: {
+                    'background-color': '#ddd', // Color for the remote peer's mouse node
+                    'shape': 'rectangle',
+                        'width': 'data(length)',
+                        'height': 10,
+                        'border-color': '#999',
+                        'border-width': 1,
+                        'label': '', // Remove label for track
+                        'text-opacity': 0, // Ensure no text is shown
+                        'outline-width': 0, // Remove focus outline
+                        'user-select': 'none', // Prevent text selection
+                        'pointer-events': 'none' // Disable pointer events on the track
+                }
+            },
+            {
+                selector: '.sliderHandle',
+                style: {
+                    'background-color': '#4CAF6F',
+                    'shape': 'ellipse',
+                    'width': 20,
+                    'height': 20,
+                    'label': '', // Remove label for handle
+                    'text-opacity': 0, // Ensure no text is shown
+                    'outline-width': 0, // Remove focus outline
+                    'user-select': 'none', // Prevent text selection
+                    'pointer-events': 'auto' // Enable pointer events for handle
+                }
             }
+
+            // .selector(`#${sliderTrackId}`)
+            // .style({
+            //     'background-color': '#ddd',
+            //     'shape': 'rectangle',
+            //     'width': config.length,
+            //     'height': 10,
+            //     'border-color': '#999',
+            //     'border-width': 1,
+            //     'label': '', // Remove label for track
+            //     'text-opacity': 0, // Ensure no text is shown
+            //     'outline-width': 0, // Remove focus outline
+            //     'user-select': 'none', // Prevent text selection
+            //     'pointer-events': 'none' // Disable pointer events on the track
+            // })
+
+
         ]
     });
 
