@@ -17,6 +17,9 @@ let heldModulePos = { x: null, y: null }
 
 let allowMultiSelect = true;
 
+let isSliderDragging = false;
+let currentHandleNode;
+
 let peers = {
     local: {
         mousePointer: { 
@@ -507,143 +510,237 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Step 1: Create temporary edge on mousedown
     cy.on('mousedown', (event) => {
-        
-        // Check if the click target is not the highlighted edge
-        if (highlightedEdge && event.target !== highlightedEdge) {
-            highlightedEdge.removeClass('highlighted');
-            highlightedEdge = null;
-        }
-        const target = event.target;
-        // Check if the target is a node, edge, or the background
-        if (target.isNode && target.isNode()) {
+        // handle slider events
+        if(event.target.data().kind && event.target.data().kind === 'slider'){
+            switch(event.target.data().sliderComponent){
+                case 'track':
+                    console.log('slider track clicked')
+                break;
+
+                case 'handle':
+
+                    currentHandleNode = event.target;
+                    isSliderDragging = true;
+
+                        // Log trackStartX and trackEndX to ensure they are defined
+                    console.log('Track start X:', currentHandleNode.data('trackStartX'));
+                    console.log('Track end X:', currentHandleNode.data('trackEndX'));
+                    
+                    // document.body.style.cursor = 'ew-resize'; // Change cursor to indicate dragging
+                    
+                //     const clickX = event.position.x; // X-coordinate of the click
+                    
+                //     isSliderDragging = true; // Start dragging
+
+                //     // Constrain x to the track boundaries
+                //     const clampedX = Math.max(event.target.data().trackStartX, Math.min(clickX, event.target.data().trackEndX));
+
+                //     // Update the handle position
+                //     cy.getElementById(event.target.data().id).position({ x: clampedX, y: event.target.position().y });
+
+                //     // Report the new slider value
+                //     // getSliderValue();
+                //     console.log(clampedX)                
+                // break
+            }
             
-            // first check if clicked node is NOT a parent node, and only an input or output (i.e. ignore other UI such as sliders)
-            if (!event.target.isParent() && (event.target.data('kind') === 'input' || event.target.data('kind') === 'output')) {
-                // we have to assign these to temp variables, as otherwise cy acts kinda funky when passing them to helper functions
-                let e = event.target
-                let p = event.position
-                startCable(e, p)
-
-                sendEphemeralData({
-                    msg: 'startRemoteGhostCable',
-                    data: {
-                        sourceNodeID: e.data().id,
-                        position: p,
-                        peer: peers.local.id
-                    }
-                })
-            } else if (event.target.isParent()){
-                
-                heldModule = event.target
-            }
-        } else if (target.isEdge && target.isEdge()) {
-            const edge = event.target
-            const mousePos = event.position
-
-            // Get the source and target nodes of the edge
-            const sourceNode = cy.getElementById(edge.data('source'));
-            const targetNode = cy.getElementById(edge.data('target'));
-
-            if (sourceNode && targetNode) {
-                // Extract positions to simple variables to avoid potential issues
-                const sourcePos = { x: sourceNode.position('x'), y: sourceNode.position('y') };
-                const targetPos = { x: targetNode.position('x'), y: targetNode.position('y') };
-        
-                // Check if the click is near the source or target endpoint
-                if (isNearEndpoint(mousePos, sourcePos)) {
-                    // delete the cable
-                    cy.remove(edge);
-                    // also remove the cable from automerge!
-                    handle.change((newDoc) => {
-                        // Assuming the array is `doc.elements` and you have an object `targetObj` to match and remove
-                        
-                        // Find the index of the object that matches the condition
-                        const index = newDoc.elements.findIndex(el => el.id === edge.data().id);
-                    
-                        // If a match is found, remove the object from the array
-                        if (index !== -1) {
-                           
-                            newDoc.elements.splice(index, 1);
-                        }
-                    });
-
-                    // create a new ghost cable starting from targetPos (opposite of clicked endpoint), call startCable()
-                    // we have to assign these to temp variables, as otherwise cy acts kinda funky when passing them to helper functions
-                    let e = targetNode
-                    let p = targetPos
-                    startCable(e, p)
-                    // tell remotes to create a new ghost cable
-                    sendEphemeralData({
-                        msg: 'startRemoteGhostCable',
-                        data: {
-                            sourceNodeID: e.data().id,
-                            position: p,
-                            peer: peers.local.id
-                        }
-                    })
-
-                } else if (isNearEndpoint(mousePos, targetPos)) {
-                    // delete the cable
-                    cy.remove(edge);
-
-                    // also remove the cable from automerge!
-                    handle.change((newDoc) => {
-                        // Assuming the array is `doc.elements` and you have an object `targetObj` to match and remove
-                        
-                        // Find the index of the object that matches the condition
-                        const index = newDoc.elements.findIndex(el => el.id === edge.data().id);
-                    
-                        // If a match is found, remove the object from the array
-                        if (index !== -1) {
-                            
-                            newDoc.elements.splice(index, 1);
-                        }
-                    });
-                    // create a new ghost cable starting from sourcePos (opposite of clicked endpoint), call startCable()
-                    // we have to assign these to temp variables, as otherwise cy acts kinda funky when passing them to helper functions
-                    let e = sourceNode
-                    let p = sourcePos
-                    startCable(e, p)
-                    // tell remotes to create a new ghost cable
-                    sendEphemeralData({
-                        msg: 'startRemoteGhostCable',
-                        data: {
-                            sourceNodeID: e.data().id,
-                            position: p,
-                            peer: peers.local.id
-                        }
-                    })
-
-                } else {
-                    // Remove highlight from any previously highlighted edge
-                    if (highlightedEdge) {
-                        highlightedEdge.removeClass('highlighted');
-                    }
-                    // Set the clicked edge as the highlighted edge
-                    edge.addClass('highlighted');
-                    highlightedEdge = edge;
-                }
-            } else {
-                console.warn("Edge has an undefined source or target node:", edge.id());
-            }
-
-            // cy.remove(tempEdge)
         } else {
-            // allowMultiSelect is set to false if cmd or ctrl is held down to allow for multiple selection
-            if(allowMultiSelect){
-                addModule(`oscillator`, { x: event.position.x, y: event.position.y }, [    ]);
-                console.log("Clicked on the background\nLow priority ToDo: background clicks open module library");
+
+       
+            // Check if the click target is not the highlighted edge
+            if (highlightedEdge && event.target !== highlightedEdge) {
+                highlightedEdge.removeClass('highlighted');
+                highlightedEdge = null;
             }
+            const target = event.target;
+            // Check if the target is a node, edge, or the background
+            if (target.isNode && target.isNode()) {
+                
+                // first check if clicked node is NOT a parent node, and only an input or output (i.e. ignore other UI such as sliders)
+                if (!event.target.isParent() && (event.target.data('kind') === 'input' || event.target.data('kind') === 'output')) {
+                    // we have to assign these to temp variables, as otherwise cy acts kinda funky when passing them to helper functions
+                    let e = event.target
+                    let p = event.position
+                    startCable(e, p)
+
+                    sendEphemeralData({
+                        msg: 'startRemoteGhostCable',
+                        data: {
+                            sourceNodeID: e.data().id,
+                            position: p,
+                            peer: peers.local.id
+                        }
+                    })
+                } else if (event.target.isParent()){
+                    
+                    heldModule = event.target
+                }
+            } else if (target.isEdge && target.isEdge()) {
+                const edge = event.target
+                const mousePos = event.position
+
+                // Get the source and target nodes of the edge
+                const sourceNode = cy.getElementById(edge.data('source'));
+                const targetNode = cy.getElementById(edge.data('target'));
+
+                if (sourceNode && targetNode) {
+                    // Extract positions to simple variables to avoid potential issues
+                    const sourcePos = { x: sourceNode.position('x'), y: sourceNode.position('y') };
+                    const targetPos = { x: targetNode.position('x'), y: targetNode.position('y') };
             
+                    // Check if the click is near the source or target endpoint
+                    if (isNearEndpoint(mousePos, sourcePos)) {
+                        // delete the cable
+                        cy.remove(edge);
+                        // also remove the cable from automerge!
+                        handle.change((newDoc) => {
+                            // Assuming the array is `doc.elements` and you have an object `targetObj` to match and remove
+                            
+                            // Find the index of the object that matches the condition
+                            const index = newDoc.elements.findIndex(el => el.id === edge.data().id);
+                        
+                            // If a match is found, remove the object from the array
+                            if (index !== -1) {
+                            
+                                newDoc.elements.splice(index, 1);
+                            }
+                        });
+
+                        // create a new ghost cable starting from targetPos (opposite of clicked endpoint), call startCable()
+                        // we have to assign these to temp variables, as otherwise cy acts kinda funky when passing them to helper functions
+                        let e = targetNode
+                        let p = targetPos
+                        startCable(e, p)
+                        // tell remotes to create a new ghost cable
+                        sendEphemeralData({
+                            msg: 'startRemoteGhostCable',
+                            data: {
+                                sourceNodeID: e.data().id,
+                                position: p,
+                                peer: peers.local.id
+                            }
+                        })
+
+                    } else if (isNearEndpoint(mousePos, targetPos)) {
+                        // delete the cable
+                        cy.remove(edge);
+
+                        // also remove the cable from automerge!
+                        handle.change((newDoc) => {
+                            // Assuming the array is `doc.elements` and you have an object `targetObj` to match and remove
+                            
+                            // Find the index of the object that matches the condition
+                            const index = newDoc.elements.findIndex(el => el.id === edge.data().id);
+                        
+                            // If a match is found, remove the object from the array
+                            if (index !== -1) {
+                                
+                                newDoc.elements.splice(index, 1);
+                            }
+                        });
+                        // create a new ghost cable starting from sourcePos (opposite of clicked endpoint), call startCable()
+                        // we have to assign these to temp variables, as otherwise cy acts kinda funky when passing them to helper functions
+                        let e = sourceNode
+                        let p = sourcePos
+                        startCable(e, p)
+                        // tell remotes to create a new ghost cable
+                        sendEphemeralData({
+                            msg: 'startRemoteGhostCable',
+                            data: {
+                                sourceNodeID: e.data().id,
+                                position: p,
+                                peer: peers.local.id
+                            }
+                        })
+
+                    } else {
+                        // Remove highlight from any previously highlighted edge
+                        if (highlightedEdge) {
+                            highlightedEdge.removeClass('highlighted');
+                        }
+                        // Set the clicked edge as the highlighted edge
+                        edge.addClass('highlighted');
+                        highlightedEdge = edge;
+                    }
+                } else {
+                    console.warn("Edge has an undefined source or target node:", edge.id());
+                }
+
+                // cy.remove(tempEdge)
+            } else {
+                // allowMultiSelect is set to false if cmd or ctrl is held down to allow for multiple selection
+                if(allowMultiSelect){
+                    addModule(`oscillator`, { x: event.position.x, y: event.position.y }, [    ]);
+                    console.log("Clicked on the background\nLow priority ToDo: background clicks open module library");
+                }
+                
+            }
+
         }
-
-
             
     });
 
    
     cy.on('mousemove', (event) => {
-        
+        if(event.target.data() && event.target.data().sliderComponent === 'handle'){
+            
+            if (isSliderDragging) {
+                
+                // Get the new mouse position relative to the Cytoscape container
+                const cyContainer = cy.container();
+                const rect = cyContainer.getBoundingClientRect();
+                const newMouseX = event.position.x;
+
+                // Log the calculated newMouseX to check if it's valid
+                console.log('New mouse X:', newMouseX);
+
+                // Get the track's start and end positions from the handle's data
+                const trackStartX = currentHandleNode.data('trackStartX');
+                const trackEndX = currentHandleNode.data('trackEndX');
+                const fixedY = currentHandleNode.data('fixedY');
+
+                // Ensure trackStartX and trackEndX are numbers before clamping
+                if (typeof trackStartX === 'number' && typeof trackEndX === 'number') {
+                    const clampedX = Math.max(trackStartX, Math.min(newMouseX, trackEndX));
+                    currentHandleNode.position({ x: clampedX, y: fixedY });
+                    console.log(`Handle position updated: ${clampedX}, ${fixedY}`);
+                } else {
+                    console.error('Invalid trackStartX or trackEndX:', trackStartX, trackEndX);
+                }
+
+                /*
+                // Constrain the new position to stay within the track bounds
+                const clampedX = Math.max(trackStartX, Math.min(newMouseX, trackEndX));
+                console.log(trackStartX)
+                // Update the position of the handle on the x-axis and lock the y-axis
+                currentHandleNode.position({ x: clampedX, y: fixedY });
+                console.log(`Handle position updated: ${clampedX}, ${fixedY}`);
+                */
+                /* 
+                const handleNode = event.target;
+                const newPosX = handleNode.position('x');
+                
+                const trackStartX = handleNode.data().trackStartX
+                const trackEndX = handleNode.data().trackEndX
+                const fixedY = handleNode.data().fixedY
+                // Constrain the handle to stay within the track on the x-axis
+                if (newPosX < trackStartX) {
+                    handleNode.position({ x: trackStartX, y: handleNode.data().fixedY });
+                } else if (newPosX > trackEndX) {
+                    handleNode.position({ x: trackEndX, y: fixedY });
+                } else {
+                    // Allow movement on x-axis only and lock y-axis to fixedY
+                    handleNode.position({ x: newPosX, y: fixedY });
+                }
+    
+                // Update slider value based on the new position
+                // cy.getElementById(handleNode.data().id).position({ x: clampedX, y: fixedY });
+                console.log(handleNode.position())
+                // Update the handle position
+                // handleNode.position({ x: clampedX, y: fixedY });
+                */
+            }
+        }
         // this is for local Ghost cables only
         // Step 2: Update ghost node position to follow the mouse and track collisons
         if (temporaryCables.local.ghostNode) {
@@ -719,7 +816,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Step 3: Finalize edge on mouseup
     cy.on('mouseup', (event) => {
-
+        if(isSliderDragging){
+            isSliderDragging = false
+        }
         if (temporaryCables.local.tempEdge) {
             if (temporaryCables.local.targetNode) {
                 // If a target node is highlighted, connect the edge to it
@@ -945,6 +1044,7 @@ document.addEventListener("DOMContentLoaded", function () {
        
     // });
     
+
     function displayPeerPointers(peer, position){
         if(!peers.remote[peer]){
             peers.remote[peer] = {

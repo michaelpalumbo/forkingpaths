@@ -66,6 +66,9 @@ export class ParentNode {
                 const sliderTrackId = `${sliderId}-track`;
                 const sliderHandleId = `${sliderId}-handle`;
 
+                const trackStartX = config.position.x - config.length / 2;
+                const trackEndX = config.position.x + config.length / 2;
+
                 const fixedY = config.position.y;
 
                 let isDragging = false;
@@ -83,14 +86,16 @@ export class ParentNode {
                             label: child.label || `${this.moduleName}-${sliderTrackId}${index + 1}`,
                             kind: child.kind,
                             bgcolour: '#CCCCCC',
-                            length: config.length
+                            length: config.length,
+                            sliderComponent: 'track',
+
                             // ghostCableShape: child.kind === 'input' ? 'rectangle' : 'triangle',
                             // ghostCableColour: child.kind === 'input' ? '#5C9AE3' : '#E68942',
                             
                         },
                         position: {
                             x: config.position.x,
-                            y: config.position.y
+                            y: config.position.y + 10 // add 10 to make space for slider label
                         },
                         classes: 'sliderTrack'
                     },
@@ -100,15 +105,20 @@ export class ParentNode {
                             parent: this.moduleName,
                             label: child.label || `${this.moduleName}-${sliderHandleId}${index + 1}`,
                             kind: child.kind,
+                            sliderComponent: 'handle',
                             shape: 'ellipse',
                             bgcolour: '#CCCCCC',
+                            // set the track dimensions in the handle data for later access
+                            trackStartX: trackStartX, 
+                            trackEndX: trackEndX,
+                            fixedY: config.position.y +10
                             // ghostCableShape: child.kind === 'input' ? 'rectangle' : 'triangle',
                             // ghostCableColour: child.kind === 'input' ? '#5C9AE3' : '#E68942',
                             
                         },
                         position: {
                             x: initialHandleX,
-                            y: config.position.y // Match Y-position with the track
+                            y: config.position.y + 10 // Match Y-position with the track
                         },
                         classes: 'sliderHandle'
                     }
