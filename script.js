@@ -706,7 +706,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 // Get the track's start and end positions from the handle's data
                 const trackStartX = currentHandleNode.data('trackStartX');
                 const trackEndX = currentHandleNode.data('trackEndX');
-                const fixedY = currentHandleNode.data('fixedY');
+                const fixedY = cy.getElementById(currentHandleNode.data().trackID).position().y;
 
                 // Ensure trackStartX and trackEndX are numbers before clamping
                 if (typeof trackStartX === 'number' && typeof trackEndX === 'number') {
@@ -804,7 +804,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 const trackLength = childNode.data('length') || 100; // Assuming track length is stored in data
                 const newTrackStartX = parentNode.position().x - trackLength / 2;
                 const newTrackEndX = parentNode.position().x + trackLength / 2;
-                const fixedY = parentNode.position().y; // Update if necessary based on your layout logic
+                const fixedY = cy.getElementById(currentHandleNode.data().trackID).position().y; // Update if necessary based on your layout logic
 
                 // Update data attributes for the handle to use when dragging
                 childNode.data('trackStartX', newTrackStartX);

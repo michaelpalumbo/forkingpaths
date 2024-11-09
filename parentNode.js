@@ -56,7 +56,7 @@ export class ParentNode {
                     length: 127, // Length of the slider track in pixels
                     minValue: 0, // Minimum slider value
                     maxValue: 100, // Maximum slider value
-                    initialValue: 50, // Initial slider value
+                    initialValue: 64, // Initial slider value
                     position: { x: this.position.x + offsetX, y: this.position.y + offsetY }, // Default position
                 };
   
@@ -88,6 +88,7 @@ export class ParentNode {
                             bgcolour: '#CCCCCC',
                             length: config.length,
                             sliderComponent: 'track',
+                            hash: sliderId
 
                             // ghostCableShape: child.kind === 'input' ? 'rectangle' : 'triangle',
                             // ghostCableColour: child.kind === 'input' ? '#5C9AE3' : '#E68942',
@@ -111,7 +112,9 @@ export class ParentNode {
                             // set the track dimensions in the handle data for later access
                             trackStartX: trackStartX, 
                             trackEndX: trackEndX,
-                            fixedY: config.position.y +10
+                            fixedY: config.position.y +10,
+                            hash: sliderId,
+                            trackID: sliderTrackId
                             // ghostCableShape: child.kind === 'input' ? 'rectangle' : 'triangle',
                             // ghostCableColour: child.kind === 'input' ? '#5C9AE3' : '#E68942',
                             
