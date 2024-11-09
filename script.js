@@ -335,6 +335,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 case 'moveModule':
                     cy.getElementById(msg.module).position(msg.position);
+
+                    // also update the module internal boundaries for params
+                    updateSliderBoundaries(cy.getElementById(msg.module))
                 break
 
                 case 'startRemoteGhostCable':
@@ -348,6 +351,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 case 'peerMousePosition':
                     displayPeerPointers(msg.data.peer, msg.data.position)
                 break
+
+
 
                 default: console.log("got an ephemeral message: ", message)
             }
