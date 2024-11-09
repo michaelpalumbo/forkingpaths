@@ -34,6 +34,8 @@ export class ParentNode {
     }
 
     getNodeStructure() {
+        // Reset or initialize an offset index counter for this instance
+        const numChildren = this.children.length;
 
         // Returns the structure of the parent node and its children
         const parentNode = {
@@ -42,12 +44,12 @@ export class ParentNode {
             classes: ':parent',
         };
 
-        let sliderArray = []
         const childrenNodes = this.children.flatMap((child, index) => {
 
-            const offsetX = Math.cos((index * (360 / this.children.length)) * (Math.PI / 180)) * 60;
-            const offsetY = Math.sin((index * (360 / this.children.length)) * (Math.PI / 180)) * 60;
-      
+        // Arrange the child nodes in a vertical line below the parent node
+        const offsetY = index * 60; // Each child node is 60px below the previous one
+        const offsetX = 0; // Keep the X position the same for a vertical arrangement
+            console.log(index)
             if(child.kind === 'slider'){
                 const sliderId = `${this.moduleName}-slider${index + 1}`
                 const defaultOptions = {
@@ -55,10 +57,10 @@ export class ParentNode {
                     minValue: 0, // Minimum slider value
                     maxValue: 100, // Maximum slider value
                     initialValue: 50, // Initial slider value
-                    position: { x: 200, y: 200 }, // Default position
+                    position: { x: this.position.x + offsetX, y: this.position.y + offsetY }, // Default position
                 };
-                let options = {}
-                const config = { ...defaultOptions, ...options };
+  
+                const config = { ...defaultOptions };
 
                     // Define the track and handle nodes for the slider
                 const sliderTrackId = `${sliderId}-track`;
@@ -72,18 +74,6 @@ export class ParentNode {
                 // Calculate initial handle position within the track
                 const initialHandleX = config.position.x - config.length / 2 + (config.length * (config.initialValue - config.minValue)) / (config.maxValue - config.minValue);
             
-                // {
-                //     data: { id: sliderTrackId, parent: parentNodeId },
-                //     position: config.position,
-                //     grabbable: false // Prevent track from being dragged
-                // },
-                // {
-                //     data: { id: sliderHandleId, parent: parentNodeId, shape: 'ellipse' },
-                //     position: {
-                //         x: initialHandleX,
-                //         y: fixedY,
-                //     }
-                // }
                 return [
                     // slider track
                     {                  

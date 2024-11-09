@@ -175,8 +175,11 @@ document.addEventListener("DOMContentLoaded", function () {
                         'height': 10,
                         'border-color': '#999',
                         'border-width': 1,
-                        'label': '', // Remove label for track
-                        'text-opacity': 0, // Ensure no text is shown
+                        'label': 'data(label)', // Remove label for track
+                        'text-valign': 'center',    // Vertically center the label
+                        'text-halign': 'center', 
+                        'text-margin-y': -20,
+                        'text-opacity': 1, // Ensure no text is shown
                         'outline-width': 0, // Remove focus outline
                         'user-select': 'none', // Prevent text selection
                         'pointer-events': 'none' // Disable pointer events on the track
