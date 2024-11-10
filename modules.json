@@ -14,6 +14,12 @@
                 "kind": "slider",
                 "min": 110,
                 "max": 3000
+            },
+            {
+                "label": "amplitude",
+                "kind": "slider",
+                "min": -70,
+                "max": 6
             }
         ],
         "outputs": [

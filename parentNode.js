@@ -118,9 +118,7 @@ export class ParentNode {
                             trackID: sliderTrackId,
                             sliderMin: child.min,
                             sliderMax: child.max,
-                            value: null
-                            // ghostCableShape: child.kind === 'input' ? 'rectangle' : 'triangle',
-                            // ghostCableColour: child.kind === 'input' ? '#5C9AE3' : '#E68942',
+                            value: child.value
                             
                         },
                         position: {
