@@ -513,12 +513,10 @@ document.addEventListener("DOMContentLoaded", function () {
         function updateHistory(){
             // Extract the history from the document using the latest Automerge
             history = retrieveHistory(handle.docSync());
-            
-            
+            // get only the latest changes     
             let arrayLengthDifference = history.length - previousHistoryLength
             let historyUpdates = history.slice(-arrayLengthDifference)
-            console.log(historyUpdates)
-
+            // temporary array to store nodes and edges that we'll add to cytoscape instance
             const elements = [];
 
             // Track existing node IDs, including those already in the full history
@@ -560,9 +558,8 @@ document.addEventListener("DOMContentLoaded", function () {
             // Add elements to Cytoscape
             historyCy.add(elements);
             historyCy.layout({ name: 'dagre', rankDir: 'BT' }).run();
+            // update the history length for next time
             previousHistoryLength = history.length
-            
-           
         }
 
     // cy.on('add', 'node', (event) => {
@@ -1040,6 +1037,19 @@ document.addEventListener("DOMContentLoaded", function () {
             temporaryCables.local.ghostNode = null;
         } else if (heldModule){
             
+            handle.change((newDoc) => {                
+                
+                const elementIndex = newDoc.elements.findIndex(el => el.data.id === heldModule.data().id);
+                if (elementIndex !== -1) {
+                    // update the position
+                    newDoc.elements[elementIndex].position.x = heldModule.position().x;
+                    newDoc.elements[elementIndex].position.y = heldModule.position().y;
+                }
+
+            }, {
+                message: `move ${heldModule.data().label}` // Set a custom change message here
+            });
+
             // if module has any param UI, need to update the internal positioning 
             // toDO: also pass this to automerge handle, and then write a handle.on('change'...) for grabbing this value and passing it to this same function below:
             updateSliderBoundaries(heldModule)
