@@ -286,20 +286,12 @@ document.addEventListener("DOMContentLoaded", function () {
             {
                 selector: 'edge',
                 style: {
-                    'width': 6,
-                    'line-color': '#ccc',
+                    'width': 2,
+                    'line-color': '#3498db',
                     'target-arrow-shape': 'triangle',
-
-                    'source-arrow-shape': 'triangle', // Adds a circle at the start
-                    'source-arrow-color': '#000',
-                    'target-arrow-color': '#000',
+                    'target-arrow-color': '#3498db',
                     'target-arrow-width': 20, // Size of the target endpoint shape
-                    'source-arrow-width': 50, // Size of the source endpoint shape
-
-                    'curve-style': 'unbundled-bezier',
-                    'control-point-weights': [0.25, 0.75], // Control the curve points
-                    'control-point-distances': [20, -20], // Adjust distances from the line
-                }
+                 }
             }
         ]
     });
@@ -456,37 +448,54 @@ document.addEventListener("DOMContentLoaded", function () {
                 console.error('No history available for the document.');
             } else {
                 const elements = [];
-    
+
+                // Track existing node IDs
+                const nodeIds = new Set();
+
                 // Create nodes for each change in the history
-                history.forEach((entry, index) => {
+                history.forEach((entry) => {
+                    const nodeId = entry.change.hash;
+                    nodeIds.add(nodeId);
+
                     elements.push({
                         data: {
-                            id: entry.changeHash,
+                            id: nodeId,
                             label: entry.change.message || 'new document',
                             actor: entry.change.actor
                         },
                         classes: 'node'
                     });
-                    
                 });
-    
+
                 // Create edges based on dependencies between changes
                 history.forEach(entry => {
+                    // Log the current entry to debug
+                    console.log('Processing entry:', entry);
+                
                     entry.change.deps.forEach(dep => {
-                        elements.push({
-                            data: {
-                                id: `${entry.changeHash}-${dep}`,
-                                source: dep,
-                                target: entry.changeHash
-                            },
-                            classes: 'edge'
-                        });
+                        // Log dependencies for debugging
+                        console.log('Dependency:', dep);
+                        console.log('source:', entry.change.hash )
+                        if (entry.change.hash && dep && nodeIds.has(dep) && nodeIds.has(entry.change.hash)) {
+                            elements.push({
+                                data: {
+                                    id: `${entry.change.hash}-${dep}`,
+                                    source: dep,
+                                    target: entry.change.hash
+                                },
+                                classes: 'edge'
+                            });
+                        } else {
+                            console.warn(`Skipping edge creation: ${entry.changeHash}-${dep} because one or both nodes do not exist`);
+                        }
                     });
                 });
-                console.log(elements.length)
+
+                console.log(elements.length);
                 // Add elements to Cytoscape
                 historyCy.add(elements);
                 historyCy.layout({ name: 'dagre', rankDir: 'BT' }).run();
+
             }
         } catch (error) {
             console.error('Error extracting or visualizing history:', error);
