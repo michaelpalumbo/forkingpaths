@@ -254,6 +254,57 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     /*
+        DOCUMENT HISTORY CYTOSCAPE INSTANCE
+    */
+    cytoscape.use( dagre );
+    const historyCy = cytoscape({
+        container: document.getElementById('docHistory-cy'),
+        elements: [],
+        layout: {
+            name: 'dagre',
+            rankDir: 'BT', // Set the graph direction to top-to-bottom
+            nodeSep: 50, // Optional: adjust node separation
+            edgeSep: 10, // Optional: adjust edge separation
+            rankSep: 50, // Optional: adjust rank separation for vertical spacing
+        },  
+        style: [
+            {
+                selector: 'node',
+                style: {
+                    'background-color': '#ccc',
+                    'label': 'data(label)', // Use the custom label attribute
+                    'width': 30,
+                    'height': 30,
+                    'color': '#000',            // Label text color
+                    'text-valign': 'center',    // Vertically center the label
+                    'text-halign': 'left',      // Horizontally align label to the left of the node
+                    'text-margin-x': -10, // Optional: Move the label slightly up if desired
+                    // 'shape': 'data(shape)' // set this for accessibility (colour blindness)
+                }
+            
+            },
+            {
+                selector: 'edge',
+                style: {
+                    'width': 6,
+                    'line-color': '#ccc',
+                    'target-arrow-shape': 'triangle',
+
+                    'source-arrow-shape': 'triangle', // Adds a circle at the start
+                    'source-arrow-color': '#000',
+                    'target-arrow-color': '#000',
+                    'target-arrow-width': 20, // Size of the target endpoint shape
+                    'source-arrow-width': 50, // Size of the source endpoint shape
+
+                    'curve-style': 'unbundled-bezier',
+                    'control-point-weights': [0.25, 0.75], // Control the curve points
+                    'control-point-distances': [20, -20], // Adjust distances from the line
+                }
+            }
+        ]
+    });
+
+    /*
         UI
     */
    
@@ -411,10 +462,12 @@ document.addEventListener("DOMContentLoaded", function () {
                     elements.push({
                         data: {
                             id: entry.changeHash,
-                            label: `Change ${index + 1}`,
+                            label: entry.change.message || 'new document',
                             actor: entry.change.actor
-                        }
+                        },
+                        classes: 'node'
                     });
+                    
                 });
     
                 // Create edges based on dependencies between changes
@@ -425,14 +478,15 @@ document.addEventListener("DOMContentLoaded", function () {
                                 id: `${entry.changeHash}-${dep}`,
                                 source: dep,
                                 target: entry.changeHash
-                            }
+                            },
+                            classes: 'edge'
                         });
                     });
                 });
-                console.log(history)
+                console.log(elements.length)
                 // Add elements to Cytoscape
-                // cy.add(elements);
-                // cy.layout({ name: 'dagre' }).run();
+                historyCy.add(elements);
+                historyCy.layout({ name: 'dagre', rankDir: 'BT' }).run();
             }
         } catch (error) {
             console.error('Error extracting or visualizing history:', error);
@@ -440,37 +494,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     })();
 
-    // addNode
-    function addNodeToDoc(node) {
-        handle.change((doc) => {
-            doc.elements.push({
-                type: 'node',
-                id: node.id(),
-                data: node.data(),
-                position: node.position()
-            });
-        });
-    }
-    
-    // addEdge
-    function addEdgeToDoc(edge) {
-        handle.change((doc) => {
-            doc.elements.push({
-                type: 'edge',
-                id: edge.id(),
-                data: edge.data()
-            });
-        });
-    }
-    // remove node or edge
-    // function removeElementFromDoc(id) {
-    //     handle.change((doc) => {
-    //         const index = doc.elements.findIndex(el => el.id === id);
-    //         if (index !== -1) {
-    //             doc.elements.splice(index, 1);
-    //         }
-    //     });
-    // }
+
 
     // cy.on('add', 'node', (event) => {
     //     addNodeToDoc(event.target);
@@ -671,6 +695,8 @@ document.addEventListener("DOMContentLoaded", function () {
                             
                                 newDoc.elements.splice(index, 1);
                             }
+                        }, {
+                            message: 'deleteCable' // Set a custom change message here
                         });
 
                         // create a new ghost cable starting from targetPos (opposite of clicked endpoint), call startCable()
@@ -704,6 +730,8 @@ document.addEventListener("DOMContentLoaded", function () {
                                 
                                 newDoc.elements.splice(index, 1);
                             }
+                        }, {
+                            message: 'deleteCable' // Set a custom change message here
                         });
                         // create a new ghost cable starting from sourcePos (opposite of clicked endpoint), call startCable()
                         // we have to assign these to temp variables, as otherwise cy acts kinda funky when passing them to helper functions
@@ -792,6 +820,8 @@ document.addEventListener("DOMContentLoaded", function () {
                         // handle.change((doc) => {
                         //     // Update the document with the new value
                         //     // Example: doc.elements.find(el => el.id === currentHandleNode.id()).data.slidervalue = scaledValue;
+                        // }, {
+                            // message: `paramUpdate ${labelNode.data('label')}` // Set a custom change message here
                         // });
                     }
 
@@ -913,6 +943,8 @@ document.addEventListener("DOMContentLoaded", function () {
                         id: edgeId,
                         data: { id: edgeId, source: temporaryCables.local.source.id(), target: temporaryCables.local.targetNode.id(), kind: 'cable' }
                     });
+                }, {
+                    message: `addCable ${temporaryCables.local.source.id()} to ${temporaryCables.local.targetNode.id()}` // Set a custom change message here
                 });
             } else {
                 // If no target node, remove the temporary edge
@@ -964,7 +996,10 @@ document.addEventListener("DOMContentLoaded", function () {
             doc.elements.push(parentNodeData);
             doc.elements.push(...childrenNodes);
 
-        });
+        },{
+            message: `addModule ${parentNodeData.data.id}` // Set a custom change message here
+        }
+    );
     }
     
 
@@ -1051,6 +1086,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     // Remove child nodes of the parent node from Automerge doc
                     doc.elements = doc.elements.filter(el => el.data.parent !== nodeId);
+                },{
+                    message: `removeModule ${nodeId}` // Set a custom change message here
                 });
             }
         }
@@ -1087,6 +1124,8 @@ document.addEventListener("DOMContentLoaded", function () {
         cy.elements().remove()
         handle.change((doc) => {
             doc.elements = []
+        },{
+            message: `clear synth graph` // Set a custom change message here
         });
     });
 
@@ -1169,50 +1208,8 @@ document.addEventListener("DOMContentLoaded", function () {
         })
         .update();
     }
+
     
-    cytoscape.use( dagre );
-    const historyCy = cytoscape({
-        container: document.getElementById('docHistory-cy'),
-        elements: [],
-        layout: {
-            name: 'dagre',
-        },
-        style: [
-            {
-                selector: 'node',
-                style: {
-                    'background-color': 'data(bgcolour)',
-                    'label': 'data(label)', // Use the custom label attribute
-                    'width': 30,
-                    'height': 30,
-                    'color': '#000',            // Label text color
-                    'text-valign': 'center',    // Vertically center the label
-                    'text-halign': 'left',      // Horizontally align label to the left of the node
-                    'text-margin-x': -10, // Optional: Move the label slightly up if desired
-                    // 'shape': 'data(shape)' // set this for accessibility (colour blindness)
-                }
-            
-            },
-            {
-                selector: 'edge',
-                style: {
-                    'width': 6,
-                    'line-color': '#ccc',
-                    'target-arrow-shape': 'triangle',
-
-                    'source-arrow-shape': 'triangle', // Adds a circle at the start
-                    'source-arrow-color': '#000',
-                    'target-arrow-color': '#000',
-                    'target-arrow-width': 20, // Size of the target endpoint shape
-                    'source-arrow-width': 50, // Size of the source endpoint shape
-
-                    'curve-style': 'unbundled-bezier',
-                    'control-point-weights': [0.25, 0.75], // Control the curve points
-                    'control-point-distances': [20, -20], // Adjust distances from the line
-                }
-            }
-        ]
-    });
 });
 
 
