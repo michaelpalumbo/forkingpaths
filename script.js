@@ -695,6 +695,28 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (typeof trackStartX === 'number' && typeof trackEndX === 'number') {
                     const newSliderValue = Math.max(trackStartX, Math.min(newMouseX, trackEndX));
                     currentHandleNode.position({ x: newSliderValue, y: fixedY });
+
+                    // Normalize newSliderValue to a range of 0 to 1
+                    const normalizedValue = (newSliderValue - trackStartX) / (trackEndX - trackStartX);
+
+                    // Scale to the min and max range
+                    const sliderMin = currentHandleNode.data('sliderMin');
+                    const sliderMax = currentHandleNode.data('sliderMax');
+                    const scaledValue = sliderMin + (normalizedValue * (sliderMax - sliderMin));
+
+                    // Check if the new scaled value is different from the last emitted value
+                    if (scaledValue !== currentHandleNode.data('value')) {
+                        // Update the node's data and write to Automerge only if the value has changed
+                        currentHandleNode.data('value', scaledValue);
+
+                        // Optionally, trigger an Automerge update here if necessary
+                        // handle.change((doc) => {
+                        //     // Update the document with the new value
+                        //     // Example: doc.elements.find(el => el.id === currentHandleNode.id()).data.slidervalue = scaledValue;
+                        // });
+                    }
+
+                
                 } else {
                     console.error('Invalid trackStartX or trackEndX:', trackStartX, trackEndX);
                 }

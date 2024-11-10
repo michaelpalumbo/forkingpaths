@@ -11,7 +11,9 @@
         "params": [
             {
                 "label": "frequency",
-                "kind": "slider"
+                "kind": "slider",
+                "min": 110,
+                "max": 3000
             }
         ],
         "outputs": [

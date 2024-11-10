@@ -87,7 +87,9 @@ export class ParentNode {
                             bgcolour: '#CCCCCC',
                             length: config.length,
                             sliderComponent: 'track',
-                            hash: sliderId
+                            hash: sliderId,
+
+
 
                             // ghostCableShape: child.kind === 'input' ? 'rectangle' : 'triangle',
                             // ghostCableColour: child.kind === 'input' ? '#5C9AE3' : '#E68942',
@@ -113,7 +115,10 @@ export class ParentNode {
                             trackEndX: trackEndX,
                             fixedY: config.position.y +10,
                             hash: sliderId,
-                            trackID: sliderTrackId
+                            trackID: sliderTrackId,
+                            sliderMin: child.min,
+                            sliderMax: child.max,
+                            Value: null
                             // ghostCableShape: child.kind === 'input' ? 'rectangle' : 'triangle',
                             // ghostCableColour: child.kind === 'input' ? '#5C9AE3' : '#E68942',
                             
