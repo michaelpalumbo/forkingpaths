@@ -9,6 +9,9 @@ import dagre from 'cytoscape-dagre';
 // import { BrowserWebSocketClientAdapter } from '@automerge/automerge-repo-network-websocket';
 
 let handle;
+let history;
+let retrieveHistory;
+let previousHistoryLength;
 
 let isDraggingEnabled = false;
 let moduleDragState = false;
@@ -397,6 +400,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             });
 
+            // update the focumentHistory graph:
+            updateHistory()
             // Optionally, re-run the layout if needed
             
             
@@ -435,6 +440,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // get document history
         const { getHistory, Automerge } = await import ('@automerge/automerge');
+        retrieveHistory = getHistory; // assign method to global variable
         try {
             const currentDoc = handle.docSync();
             if (!currentDoc) {
@@ -443,7 +449,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
     
             // Extract the history from the document using the latest Automerge
-            const history = getHistory(currentDoc);
+            history = getHistory(currentDoc);
             if (!history || history.length === 0) {
                 console.error('No history available for the document.');
             } else {
@@ -468,14 +474,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
 
                 // Create edges based on dependencies between changes
-                history.forEach(entry => {
-                    // Log the current entry to debug
-                    console.log('Processing entry:', entry);
-                
+                history.forEach(entry => {                
                     entry.change.deps.forEach(dep => {
-                        // Log dependencies for debugging
-                        console.log('Dependency:', dep);
-                        console.log('source:', entry.change.hash )
                         if (entry.change.hash && dep && nodeIds.has(dep) && nodeIds.has(entry.change.hash)) {
                             elements.push({
                                 data: {
@@ -490,20 +490,80 @@ document.addEventListener("DOMContentLoaded", function () {
                         }
                     });
                 });
-
-                console.log(elements.length);
                 // Add elements to Cytoscape
                 historyCy.add(elements);
                 historyCy.layout({ name: 'dagre', rankDir: 'BT' }).run();
-
+                previousHistoryLength = history.length
             }
         } catch (error) {
             console.error('Error extracting or visualizing history:', error);
         }
+                
+
+
 
     })();
 
 
+    /*
+
+        DOCUMENT HISTORY CYTOSCAPE
+    */
+
+        function updateHistory(){
+            // Extract the history from the document using the latest Automerge
+            history = retrieveHistory(handle.docSync());
+            
+            
+            let arrayLengthDifference = history.length - previousHistoryLength
+            let historyUpdates = history.slice(-arrayLengthDifference)
+            console.log(historyUpdates)
+
+            const elements = [];
+
+            // Track existing node IDs, including those already in the full history
+            const nodeIds = new Set(history.map(entry => entry.change.hash));
+
+            // Create nodes for each change in the history updates
+            historyUpdates.forEach((entry) => {
+                const nodeId = entry.change.hash;
+                nodeIds.add(nodeId);
+
+                elements.push({
+                    data: {
+                        id: nodeId,
+                        label: entry.change.message || 'new document',
+                        actor: entry.change.actor
+                    },
+                    classes: 'node'
+                });
+            });
+            
+            // Create edges based on dependencies between changes
+            historyUpdates.forEach(entry => {                
+                entry.change.deps.forEach(dep => {
+                    if (entry.change.hash && dep && nodeIds.has(dep) && nodeIds.has(dep)) {
+                        elements.push({
+                            data: {
+                                id: `${entry.change.hash}-${dep}`,
+                                source: dep,
+                                target: entry.change.hash
+                            },
+                            classes: 'edge'
+                        });
+                    } else {
+                        console.warn(`Skipping edge creation: ${entry.change.hash}-${dep} because one or both nodes do not exist`);
+                    }
+                });
+            });
+            
+            // Add elements to Cytoscape
+            historyCy.add(elements);
+            historyCy.layout({ name: 'dagre', rankDir: 'BT' }).run();
+            previousHistoryLength = history.length
+            
+           
+        }
 
     // cy.on('add', 'node', (event) => {
     //     addNodeToDoc(event.target);
