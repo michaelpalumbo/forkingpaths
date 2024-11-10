@@ -42,6 +42,17 @@ let peers = {
     }
 }
 
+let docHistoryGraphStyling = {
+    nodeColours: {
+        connect: "#004cb8",
+        disconnect: "#b85c00",
+        add: "#00b806",
+        remove: "#b8000f",
+        move: "#b89000",
+        paramUpdate: "#6b00b8",
+        clear: "#000000"
+    }
+}
 // temporary cables
 let temporaryCables = {
     local: {
@@ -274,14 +285,14 @@ document.addEventListener("DOMContentLoaded", function () {
             {
                 selector: 'node',
                 style: {
-                    'background-color': '#ccc',
+                    'background-color': 'data(color)', // based on edit type
                     'label': 'data(label)', // Use the custom label attribute
                     'width': 30,
                     'height': 30,
                     'color': '#000',            // Label text color
                     'text-valign': 'center',    // Vertically center the label
-                    'text-halign': 'left',      // Horizontally align label to the left of the node
-                    'text-margin-x': -10, // Optional: Move the label slightly up if desired
+                    'text-halign': 'right',      // Horizontally align label to the left of the node
+                    'text-margin-x': 10, // Optional: Move the label slightly up if desired
                     // 'shape': 'data(shape)' // set this for accessibility (colour blindness)
                 }
             
@@ -289,12 +300,14 @@ document.addEventListener("DOMContentLoaded", function () {
             {
                 selector: 'edge',
                 style: {
-                    'width': 2,
-                    'line-color': '#3498db',
+                    'width': 6,
+                    'line-color': '#ccc',
                     'target-arrow-shape': 'triangle',
-                    'target-arrow-color': '#3498db',
+                    'target-arrow-color': '#ccc',
                     'target-arrow-width': 20, // Size of the target endpoint shape
-                 }
+                    'curve-style': 'bezier' // Use a Bezier curve to help arrows render more clearly
+
+                }
             }
         ]
     });
@@ -462,12 +475,17 @@ document.addEventListener("DOMContentLoaded", function () {
                 history.forEach((entry) => {
                     const nodeId = entry.change.hash;
                     nodeIds.add(nodeId);
-
+                    let bgColour = "#ccc"
+                    if(entry.change.message){
+                        bgColour = docHistoryGraphStyling.nodeColours[entry.change.message.split(' ')[0]]
+                    }
+                    console.log(bgColour)
                     elements.push({
                         data: {
                             id: nodeId,
                             label: entry.change.message || 'new document',
-                            actor: entry.change.actor
+                            actor: entry.change.actor,
+                            color: bgColour
                         },
                         classes: 'node'
                     });
@@ -526,12 +544,16 @@ document.addEventListener("DOMContentLoaded", function () {
             historyUpdates.forEach((entry) => {
                 const nodeId = entry.change.hash;
                 nodeIds.add(nodeId);
-
+                let bgColour = "#ccc"
+                if(entry.change.message){
+                    bgColour = docHistoryGraphStyling.nodeColours[entry.change.message.split(' ')[0]]
+                }
                 elements.push({
                     data: {
                         id: nodeId,
                         label: entry.change.message || 'new document',
-                        actor: entry.change.actor
+                        actor: entry.change.actor,
+                        color: bgColour
                     },
                     classes: 'node'
                 });
@@ -762,7 +784,7 @@ document.addEventListener("DOMContentLoaded", function () {
                                 newDoc.elements.splice(index, 1);
                             }
                         }, {
-                            message: 'deleteCable' // Set a custom change message here
+                            message: 'disconnect' // Set a custom change message here
                         });
 
                         // create a new ghost cable starting from targetPos (opposite of clicked endpoint), call startCable()
@@ -797,7 +819,7 @@ document.addEventListener("DOMContentLoaded", function () {
                                 newDoc.elements.splice(index, 1);
                             }
                         }, {
-                            message: 'deleteCable' // Set a custom change message here
+                            message: 'disconnect' // Set a custom change message here
                         });
                         // create a new ghost cable starting from sourcePos (opposite of clicked endpoint), call startCable()
                         // we have to assign these to temp variables, as otherwise cy acts kinda funky when passing them to helper functions
@@ -1010,7 +1032,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         data: { id: edgeId, source: temporaryCables.local.source.id(), target: temporaryCables.local.targetNode.id(), kind: 'cable' }
                     });
                 }, {
-                    message: `addCable ${temporaryCables.local.source.id()} to ${temporaryCables.local.targetNode.id()}` // Set a custom change message here
+                    message: `connect ${temporaryCables.local.source.id()} to ${temporaryCables.local.targetNode.id()}` // Set a custom change message here
                 });
             } else {
                 // If no target node, remove the temporary edge
@@ -1076,7 +1098,7 @@ document.addEventListener("DOMContentLoaded", function () {
             doc.elements.push(...childrenNodes);
 
         },{
-            message: `addModule ${parentNodeData.data.id}` // Set a custom change message here
+            message: `add ${parentNodeData.data.id}` // Set a custom change message here
         }
     );
     }
@@ -1166,7 +1188,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     // Remove child nodes of the parent node from Automerge doc
                     doc.elements = doc.elements.filter(el => el.data.parent !== nodeId);
                 },{
-                    message: `removeModule ${nodeId}` // Set a custom change message here
+                    message: `remove ${nodeId}` // Set a custom change message here
                 });
             }
         }
@@ -1204,7 +1226,7 @@ document.addEventListener("DOMContentLoaded", function () {
         handle.change((doc) => {
             doc.elements = []
         },{
-            message: `clear synth graph` // Set a custom change message here
+            message: `clear` // Set a custom change message here
         });
     });
 
