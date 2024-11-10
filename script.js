@@ -677,13 +677,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
    
     cy.on('mousemove', (event) => {
-        if(event.target.data() && event.target.data().sliderComponent === 'handle'){
+        // if(event.target.data() && event.target.data().sliderComponent === 'handle'){
             
             if (isSliderDragging) {
                 
                 // Get the new mouse position relative to the Cytoscape container
-                const cyContainer = cy.container();
-                const rect = cyContainer.getBoundingClientRect();
+                // const cyContainer = cy.container();
+                // const rect = cyContainer.getBoundingClientRect();
                 const newMouseX = event.position.x;
 
                 // Get the track's start and end positions from the handle's data
@@ -700,7 +700,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
 
             }
-        }
+        // }
         // this is for local Ghost cables only
         // Step 2: Update ghost node position to follow the mouse and track collisons
         if (temporaryCables.local.ghostNode) {
