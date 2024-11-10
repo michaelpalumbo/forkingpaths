@@ -316,6 +316,10 @@ document.addEventListener("DOMContentLoaded", function () {
         } else {
         }
         
+
+
+
+
         handle.docSync().elements
         // Populate Cytoscape with elements from the document if it exists
         if (handle.docSync().elements && handle.docSync().elements.length > 0) {
@@ -383,6 +387,55 @@ document.addEventListener("DOMContentLoaded", function () {
             }
             
         })
+
+        // get document history
+        const { getHistory, Automerge } = await import ('@automerge/automerge');
+        try {
+            const currentDoc = handle.docSync();
+            if (!currentDoc) {
+                console.error('Document not properly loaded.');
+                return;
+            }
+    
+            // Extract the history from the document using the latest Automerge
+            const history = getHistory(currentDoc);
+            if (!history || history.length === 0) {
+                console.error('No history available for the document.');
+            } else {
+                const elements = [];
+    
+                // Create nodes for each change in the history
+                history.forEach((entry, index) => {
+                    elements.push({
+                        data: {
+                            id: entry.changeHash,
+                            label: `Change ${index + 1}`,
+                            actor: entry.change.actor
+                        }
+                    });
+                });
+    
+                // Create edges based on dependencies between changes
+                history.forEach(entry => {
+                    entry.change.deps.forEach(dep => {
+                        elements.push({
+                            data: {
+                                id: `${entry.changeHash}-${dep}`,
+                                source: dep,
+                                target: entry.changeHash
+                            }
+                        });
+                    });
+                });
+                console.log(history)
+                // Add elements to Cytoscape
+                // cy.add(elements);
+                // cy.layout({ name: 'dagre' }).run();
+            }
+        } catch (error) {
+            console.error('Error extracting or visualizing history:', error);
+        }
+
     })();
 
     // addNode
