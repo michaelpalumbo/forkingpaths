@@ -1,6 +1,8 @@
 import { ParentNode } from './parentNode.js';
 import { uuidv7 } from "https://unpkg.com/uuidv7@^1";
 import randomColor from 'randomcolor';
+import dagre from 'cytoscape-dagre';
+
 // import { Repo } from "@automerge/automerge-repo";
 
 // import { LocalForageStorageAdapter } from "@automerge/automerge-repo-storage-localforage";
@@ -1167,6 +1169,50 @@ document.addEventListener("DOMContentLoaded", function () {
         })
         .update();
     }
-
     
+    cytoscape.use( dagre );
+    const historyCy = cytoscape({
+        container: document.getElementById('docHistory-cy'),
+        elements: [],
+        layout: {
+            name: 'dagre',
+        },
+        style: [
+            {
+                selector: 'node',
+                style: {
+                    'background-color': 'data(bgcolour)',
+                    'label': 'data(label)', // Use the custom label attribute
+                    'width': 30,
+                    'height': 30,
+                    'color': '#000',            // Label text color
+                    'text-valign': 'center',    // Vertically center the label
+                    'text-halign': 'left',      // Horizontally align label to the left of the node
+                    'text-margin-x': -10, // Optional: Move the label slightly up if desired
+                    // 'shape': 'data(shape)' // set this for accessibility (colour blindness)
+                }
+            
+            },
+            {
+                selector: 'edge',
+                style: {
+                    'width': 6,
+                    'line-color': '#ccc',
+                    'target-arrow-shape': 'triangle',
+
+                    'source-arrow-shape': 'triangle', // Adds a circle at the start
+                    'source-arrow-color': '#000',
+                    'target-arrow-color': '#000',
+                    'target-arrow-width': 20, // Size of the target endpoint shape
+                    'source-arrow-width': 50, // Size of the source endpoint shape
+
+                    'curve-style': 'unbundled-bezier',
+                    'control-point-weights': [0.25, 0.75], // Control the curve points
+                    'control-point-distances': [20, -20], // Adjust distances from the line
+                }
+            }
+        ]
+    });
 });
+
+

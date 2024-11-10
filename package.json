@@ -21,6 +21,7 @@
     "@automerge/automerge-repo-sync-server": "^0.2.8",
     "concurrently": "^9.1.0",
     "cytoscape-canvas": "^3.0.1",
+    "cytoscape-dagre": "^2.5.0",
     "randomcolor": "^0.6.2",
     "uuidv7": "^1.0.2",
     "ws": "^8.18.0"

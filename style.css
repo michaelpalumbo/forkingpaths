@@ -22,6 +22,11 @@
   background-color: #e0e0e0;
 }
 
+#docHistory-cy {
+  flex: 1; /* Take up remaining space */
+  border: 1px solid #ccc; /* Optional: add a border for visibility */
+  min-height: 500px; /* Ensure it has a minimum height */
+}
 .bottom-button {
   position: absolute;
   bottom: 5%;
