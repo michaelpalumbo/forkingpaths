@@ -476,10 +476,11 @@ document.addEventListener("DOMContentLoaded", function () {
                     const nodeId = entry.change.hash;
                     nodeIds.add(nodeId);
                     let bgColour = "#ccc"
+                    // set the node colours according to the edit type
                     if(entry.change.message){
                         bgColour = docHistoryGraphStyling.nodeColours[entry.change.message.split(' ')[0]]
                     }
-                    console.log(bgColour)
+                    
                     elements.push({
                         data: {
                             id: nodeId,
@@ -584,20 +585,14 @@ document.addEventListener("DOMContentLoaded", function () {
             previousHistoryLength = history.length
         }
 
-    // cy.on('add', 'node', (event) => {
-    //     addNodeToDoc(event.target);
-    // });
+        historyCy.on('mousedown', (event) => {
+            console.log(event.target.data())
+        })
     
-    // cy.on('add', 'edge', (event) => {
-        
-    //     addEdgeToDoc(event.target);
-    // });
-    
-    // cy.on('remove', 'node, edge', (event) => {
-        
-    //     removeElementFromDoc(event.target.id());
-    // });
-    
+
+    /*
+        cytoscape editor
+    */ 
     /*
         PATCHING
     */
@@ -709,7 +704,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     }
 
-    // Step 1: Create temporary edge on mousedown
+    // get mousedown events from cytoscape
     cy.on('mousedown', (event) => {
         // handle slider events
         if(event.target.data().kind && event.target.data().kind === 'slider'){
@@ -1181,12 +1176,41 @@ document.addEventListener("DOMContentLoaded", function () {
                 // Update the Automerge document to reflect the deletion
                 handle.change((doc) => {
                     const elementIndex = doc.elements.findIndex(el => el.data.id === nodeId);
+                    // IMPORTANT: here we need to remove elements in this order:
+                    // 1. connected edges
+                    // 2. children belonging to the parentNode
+                    // 3. the parentNode
+                    // any other order, and cytoscape throws an error because it attempts to draw the descendents
+
+                    // Collect IDs of child nodes to remove edges connected to them
+                    const childNodeIds = [];
+                    for (let i = doc.elements.length - 1; i >= 0; i--) {
+                        if (doc.elements[i].data.parent === nodeId) {
+                            childNodeIds.push(doc.elements[i].data.id); // Collect the child node ID
+                        }
+                    }
+
+                    // Remove edges connected to the child nodes
+                    for (let i = doc.elements.length - 1; i >= 0; i--) {
+                        const element = doc.elements[i];
+                        if (element.type === 'edge' &&
+                            (childNodeIds.includes(element.data.source) || childNodeIds.includes(element.data.target))) {
+                            doc.elements.splice(i, 1); // Remove the edge
+                        }
+                    }
+
+                    // Iterate through the array to remove child nodes
+                    for (let i = doc.elements.length - 1; i >= 0; i--) {
+                        if (doc.elements[i].data.parent === nodeId) {
+                            doc.elements.splice(i, 1);
+                        }
+                    }
+                    
                     if (elementIndex !== -1) {
                         doc.elements.splice(elementIndex, 1); // Remove the node from the Automerge document
                     }
 
-                    // Remove child nodes of the parent node from Automerge doc
-                    doc.elements = doc.elements.filter(el => el.data.parent !== nodeId);
+
                 },{
                     message: `remove ${nodeId}` // Set a custom change message here
                 });
