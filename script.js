@@ -189,8 +189,9 @@ document.addEventListener("DOMContentLoaded", function () {
                         'border-width': 1,
                         'label': 'data(label)', // Remove label for track
                         'text-valign': 'center',    // Vertically center the label
-                        'text-halign': 'center', 
+                        'text-halign': 'left', 
                         'text-margin-y': -20,
+                        'text-margin-x': 70,
                         'text-opacity': 1, // Ensure no text is shown
                         'outline-width': 0, // Remove focus outline
                         'user-select': 'none', // Prevent text selection
@@ -209,6 +210,24 @@ document.addEventListener("DOMContentLoaded", function () {
                     'outline-width': 0, // Remove focus outline
                     'user-select': 'none', // Prevent text selection
                     'pointer-events': 'auto' // Enable pointer events for handle
+                }
+            },
+            {
+                selector: '.sliderLabel',
+                style: {
+                    'background-opacity': 0, // Transparent background
+                    'color': '#333', // Dark text color for good contrast
+                    'font-size': 12, // Adjust font size as needed
+                    'text-halign': 'right', // Center the text horizontally
+                    'text-valign': 'center', // Center the text vertically
+                    'text-margin-x': -60, // Adjust the margin to position the label above the slider
+                    'text-margin-y': -10, // Adjust the margin to position the label above the slider
+                    'font-weight': 'bold', // Make the label stand out
+                    'pointer-events': 'none', // Prevent interaction with the label
+                    'text-background-opacity': 1, // Background for readability (set to 0 if not needed)
+                    'text-background-color': '#FFFFFF', // Light background for better visibility
+                    'text-background-padding': 2, // Add slight padding to the background
+                    'border-width': 0 // No border around the label
                 }
             }
 
@@ -708,7 +727,11 @@ document.addEventListener("DOMContentLoaded", function () {
                     if (scaledValue !== currentHandleNode.data('value')) {
                         // Update the node's data and write to Automerge only if the value has changed
                         currentHandleNode.data('value', scaledValue);
-
+                        
+                        // Find the label node and update its displayed text
+                        const labelNode = cy.getElementById(`${currentHandleNode.data('trackID')}-label`);
+                        labelNode.data('label', scaledValue.toFixed(2)); // Display the value with 2 decimal places
+                        
                         // Optionally, trigger an Automerge update here if necessary
                         // handle.change((doc) => {
                         //     // Update the document with the new value

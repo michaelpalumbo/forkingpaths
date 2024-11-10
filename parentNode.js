@@ -118,7 +118,7 @@ export class ParentNode {
                             trackID: sliderTrackId,
                             sliderMin: child.min,
                             sliderMax: child.max,
-                            Value: null
+                            value: null
                             // ghostCableShape: child.kind === 'input' ? 'rectangle' : 'triangle',
                             // ghostCableColour: child.kind === 'input' ? '#5C9AE3' : '#E68942',
                             
@@ -128,7 +128,23 @@ export class ParentNode {
                             y: config.position.y + 10 // Match Y-position with the track
                         },
                         classes: 'sliderHandle'
+                    },
+                    // Add the text label node
+                    {
+                        data: {
+                            id: `${sliderTrackId}-label`,
+                            parent: this.moduleName,
+                            label: `${child.min}`, // Initial value; will be updated dynamically
+                            kind: 'label',
+                            hash: sliderId,
+                        },
+                        position: {
+                            x: config.position.x + (config.length / 2), // Shift left by half the track length plus some margin (adjust 30 as needed)
+                            y: config.position.y // Adjust Y-position to place it above the slider
+                        },
+                        classes: 'sliderLabel' // Define a class for styling if needed
                     }
+
                 ]
                 
                     
