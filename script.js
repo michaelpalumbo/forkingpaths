@@ -215,6 +215,7 @@ document.addEventListener("DOMContentLoaded", function () {
             {
                 selector: '.sliderLabel',
                 style: {
+                    'background-color': '#4CAF6F',
                     'background-opacity': 0, // Transparent background
                     'color': '#333', // Dark text color for good contrast
                     'font-size': 12, // Adjust font size as needed
@@ -260,7 +261,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Import dependencies dynamically
     (async () => {
-        const { DocHandle, Repo, isValidAutomergeUrl } = await import('@automerge/automerge-repo');
+        const { DocHandle, Repo, isValidAutomergeUrl, DocumentId } = await import('@automerge/automerge-repo');
         const { BrowserWebSocketClientAdapter } = await import('@automerge/automerge-repo-network-websocket');
         const { IndexedDBStorageAdapter } = await import("@automerge/automerge-repo-storage-indexeddb");
 

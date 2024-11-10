@@ -13,13 +13,15 @@
                 "label": "frequency",
                 "kind": "slider",
                 "min": 110,
-                "max": 3000
+                "max": 3000,
+                "value": 110
             },
             {
                 "label": "amplitude",
                 "kind": "slider",
                 "min": -70,
-                "max": 6
+                "max": 6,
+                "value": 0
             }
         ],
         "outputs": [
