@@ -285,7 +285,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // viewport: {
         //     zoom: parseFloat(localStorage.getItem('docHistoryCy_Zoom')) || 1.
         // },
-        zoomingEngabled: false,
+        zoomingEnabled: false,
         layout: {
             name: 'dagre',
             rankDir: 'BT', // Set the graph direction to top-to-bottom
@@ -547,9 +547,11 @@ document.addEventListener("DOMContentLoaded", function () {
                     });
                 });
                 // Add elements to Cytoscape
-                historyCy.add(elements);
-                historyCy.layout({ name: 'dagre', rankDir: 'BT' }).run();
-                previousHistoryLength = history.length
+                // historyCy.add(elements);
+                // historyCy.layout({ name: 'dagre', rankDir: 'BT' }).run();
+                // previousHistoryLength = history.length
+
+                addToHistoryGraph(elements, history.length)
             }
         } catch (error) {
             console.error('Error extracting or visualizing history:', error);
@@ -565,6 +567,49 @@ document.addEventListener("DOMContentLoaded", function () {
 
         DOCUMENT HISTORY CYTOSCAPE
     */
+        
+        function moveLatestNodeToTop() {
+            // Get all nodes sorted by their creation order or other criteria if needed
+            const nodes = historyCy.nodes();
+            if (nodes.length === 0) return; // Exit if no nodes
+        
+            // Identify the "latest" node, assuming the last one in the collection is the most recent
+            const latestNode = nodes[nodes.length - 1];
+            
+            // Find the minimum Y position to identify the top position
+            let minY = Math.min(...nodes.map(node => node.position().y));
+        
+            // Calculate 5% of the viewport height
+            const topThreshold = window.innerHeight * 0.05;
+
+            // Position the latest node at the top, ensuring it is not higher than 5% from the top of the viewport
+            // const newYPosition = Math.max(minY - 100, topThreshold);
+            // Move the latest node to the top (above the current top node)
+            latestNode.position().y = Math.max(minY, topThreshold); // Adjust -100 as needed
+        
+            // Shift all other nodes down to make space for the latest node
+            nodes.forEach(node => {
+                if (node.id() !== latestNode.id()) {
+                    node.position({
+                        x: node.position().x,
+                        y: node.position().y// Match the spacing used above
+                    });
+                }
+            });
+        
+            // Optional: Refresh the layout if needed
+            historyCy.fit();
+        }
+
+        function addToHistoryGraph(elements, historyLength){
+            // Add elements to Cytoscape
+            historyCy.add(elements);
+            historyCy.layout({ name: 'dagre', rankDir: 'BT' }).run();
+            previousHistoryLength = historyLength
+
+            // commented out because it is super slow
+            // moveLatestNodeToTop()
+        }
 
         function updateHistory(){
             // Extract the history from the document using the latest Automerge
@@ -638,15 +683,11 @@ document.addEventListener("DOMContentLoaded", function () {
             });
             
             // Add elements to Cytoscape
-            historyCy.add(elements);
-            historyCy.layout({ name: 'dagre', rankDir: 'BT' }).run();
-            // update the history length for next time
-            previousHistoryLength = history.length
+            addToHistoryGraph(elements, history.length)
         }
 
         historyCy.on('mousedown', (event) => {
             
-            console.log(event.target.data())
             loadVersion(event.target.data().id)
 
         })
@@ -731,32 +772,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
         }
 
-
+        // cmd + scroll = scroll vertically through history graph
         document.addEventListener('wheel', function(event) {
-
             if(allowPan){
-                console.log(event.deltaY)
                 historyCy.panBy({
                     x: 0,
                     y: event.deltaY 
                   });
-                // if (event.deltaY > 0) {
-                //     historyCy.panBy({
-                //         x: 0,
-                //         y: event.deltaY 
-                //       });
-                // } else if (event.deltaY < 0) {
-                //     historyCy.panBy({
-                //         x: 0,
-                //         y: -10 
-                //       });
-                // } else {
-                //     console.log('No vertical scroll detected');
-                // }
-                
-
             }
-
         });
 
 
@@ -1294,6 +1317,9 @@ document.addEventListener("DOMContentLoaded", function () {
         if (event.key === 'e') {
             isDraggingEnabled = true;
         }
+        if (event.key === 'z') {
+            historyCy.zoomingEnabled(true)
+        }
         if (event.key === 'Meta' || event.key === 'Control') {
             allowMultiSelect = false
             allowPan = true
@@ -1306,9 +1332,11 @@ document.addEventListener("DOMContentLoaded", function () {
             isDraggingEnabled = false;
         }
         if (event.key === 'Meta' || event.key === 'Control') {
-            console.log('yea')
             allowMultiSelect = false
             historyCy.userZoomingEnabled(true)
+        }
+        if (event.key === 'z') {
+            historyCy.zoomingEnabled(false)
         }
     });
 
@@ -1507,7 +1535,8 @@ document.addEventListener("DOMContentLoaded", function () {
         .update();
     }
 
-    // modify graph edge control point distance
+    /* 
+    // modify historyCy zoom
     const docHistoryCy_Zoom = document.getElementById('docHistoryCy-Zoom')
 
     docHistoryCy_Zoom.addEventListener('input', function() {
@@ -1524,17 +1553,16 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function updatedocHistoryCy_Zoom(x){
-    console.log(x, cy.zoomingEnabled())
-    if (historyCy.zoomingEnabled()) {
-        historyCy.zoom({
-            level: parseFloat(x), // Ensure the input is a number
-            position: { x: 0, y: 0 } // Optionally set a different position if needed
-        });
-    } else {
-        console.warn("Zooming is not enabled on this Cytoscape instance.");
+        if (historyCy.zoomingEnabled()) {
+            historyCy.zoom({
+                level: parseFloat(x), // Ensure the input is a number
+                position: { x: 0, y: 0 } // Optionally set a different position if needed
+            });
+        } else {
+            console.warn("Zooming is not enabled on this Cytoscape instance.");
+        }
     }
-    }
-
+    */
 
     
 
