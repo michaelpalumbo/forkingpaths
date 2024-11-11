@@ -15,6 +15,7 @@ let applyNewChanges
 let retrieveHistory;
 let automergeInit;
 let automergeEncodeChange;
+let automergeDocument;
 
 let historyNodes = []
 let previousHistoryLength;
@@ -334,7 +335,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Import dependencies dynamically
     (async () => {
-        const { DocHandle, Repo, isValidAutomergeUrl, DocumentId } = await import('@automerge/automerge-repo');
+        const { DocHandle, Repo, isValidAutomergeUrl, DocumentId, Document } = await import('@automerge/automerge-repo');
         const { BrowserWebSocketClientAdapter } = await import('@automerge/automerge-repo-network-websocket');
         const { IndexedDBStorageAdapter } = await import("@automerge/automerge-repo-storage-indexeddb");
 
@@ -346,7 +347,7 @@ document.addEventListener("DOMContentLoaded", function () {
             storage: storage, // Optional: use a storage adapter if needed
         });
 
-
+        automergeDocument = Document
 
         // Create or load the document
         // Initialize or load the document with a unique ID
@@ -567,48 +568,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
         DOCUMENT HISTORY CYTOSCAPE
     */
-        
-        function moveLatestNodeToTop() {
-            // Get all nodes sorted by their creation order or other criteria if needed
-            const nodes = historyCy.nodes();
-            if (nodes.length === 0) return; // Exit if no nodes
-        
-            // Identify the "latest" node, assuming the last one in the collection is the most recent
-            const latestNode = nodes[nodes.length - 1];
-            
-            // Find the minimum Y position to identify the top position
-            let minY = Math.min(...nodes.map(node => node.position().y));
-        
-            // Calculate 5% of the viewport height
-            const topThreshold = window.innerHeight * 0.05;
-
-            // Position the latest node at the top, ensuring it is not higher than 5% from the top of the viewport
-            // const newYPosition = Math.max(minY - 100, topThreshold);
-            // Move the latest node to the top (above the current top node)
-            latestNode.position().y = Math.max(minY, topThreshold); // Adjust -100 as needed
-        
-            // Shift all other nodes down to make space for the latest node
-            nodes.forEach(node => {
-                if (node.id() !== latestNode.id()) {
-                    node.position({
-                        x: node.position().x,
-                        y: node.position().y// Match the spacing used above
-                    });
-                }
-            });
-        
-            // Optional: Refresh the layout if needed
-            historyCy.fit();
-        }
 
         function addToHistoryGraph(elements, historyLength){
             // Add elements to Cytoscape
             historyCy.add(elements);
             historyCy.layout({ name: 'dagre', rankDir: 'BT' }).run();
             previousHistoryLength = historyLength
-
-            // commented out because it is super slow
-            // moveLatestNodeToTop()
         }
 
         function updateHistory(){
@@ -692,85 +657,127 @@ document.addEventListener("DOMContentLoaded", function () {
 
         })
     
-        function loadVersion(hash){
-            console.log(hash)
-            /*
-            // Extract the history from the document using the latest Automerge
-            history = retrieveHistory(handle.docSync());
-            console.log(hash)
-            // Find the index of the target hash in the history
-            const targetNode = historyNodes.find(node => node.data.id === hash);
-
-            if (targetNode) {
-                let revertedDoc = automergeInit();
+        async function loadVersion(targetHash) {
+            const { DocHandle, init, applyChanges } = await import('@automerge/automerge');
+            
+            // Create a new document for the fork
+            let forkedDoc = init();
         
-                // Get the serialized changes up to the target node and apply them
-                const changesToApply = historyNodes
-                    .slice(0, historyNodes.findIndex(node => node.data.id === hash) + 1)
-                    .map(node => node.data.serializedChange);
+            // Find the index of the target change in history
+            const targetIndex = history.findIndex(entry => entry.change.hash === targetHash);
         
-                // Apply changes in a single batch if possible
-                if (changesToApply.every(change => change instanceof Uint8Array)) {
-                    revertedDoc = applyNewChanges(revertedDoc, changesToApply);
+            if (targetIndex === -1) {
+                console.error('Target hash not found in document history.');
+                return;
+            }
+        
+            // Apply changes up to the target hash to the forked document
+            for (let i = 0; i <= targetIndex; i++) {
+                const changeBinary = history[i].change.raw || history[i].change.bytes;
+                console.log(changeBinary)
+                if (changeBinary instanceof Uint8Array) {
+                    forkedDoc = applyChanges(forkedDoc, [changeBinary]);
                 } else {
-                    console.error(`One or more changes are not in Uint8Array format`);
+                    console.error(`Change ${i} is not in Uint8Array format`);
                     return;
                 }
-        
-                // Replace the document's content with the reverted state
-                handle.change((doc) => {
-                    Object.assign(doc, revertedDoc);
-                }, {
-                    message: `Reverted to version ${hash}`
-                });
-                
-        
-                // // Replace the document's content with the reverted state
-                // handle.change((doc) => {
-                //     Object.assign(doc, revertedDoc);
-                // }, {
-                //     message: `Reverted to version ${hash}`
-                // });
-        
-                console.log('Document successfully reverted to the specified version.');
-            } else {
-                console.warn('Hash not found in document history.');
             }
-            */
-            // if (targetIndex !== -1) {
-            //     // // Create a document up to the target hash
-            //     // const revertedDoc = history.slice(0, targetIndex + 1).reduce((doc, entry) => {
-            //     //     return applyNewChanges(doc, entry.change);
-            //     // }, automergeInit());
-            
-            //             // Create a new document by applying changes up to the target hash
-            //     let revertedDoc = automergeInit();
-            //     for (let i = 0; i <= targetIndex; i++) {
-            //         // Ensure change is in the correct Uint8Array format
-            //         const changeBinary = history[i].change.raw || history[i].change.bytes;
         
-            //         if (changeBinary instanceof Uint8Array) {
-            //             revertedDoc = applyNewChanges(revertedDoc, [changeBinary]);
-            //         } else {
-            //             console.error(`Change ${i} is not in Uint8Array format`);
-            //             return;
-            //         }
-            //     }
-                
-            //     // Use the reverted document as the new state for a branch or replace the current state
-            //     handle.change((doc) => {
-            //         // Replace the document's content with the reverted state
-            //         Object.assign(doc, revertedDoc);
-            //     }, {
-            //         message: `Reverted to version ${targetHash}`
-            //     });
+            // Create a new handle for the forked document
+            const forkedHandle = repo.create({ elements: forkedDoc.elements });
             
-            //     console.log('Document successfully reverted to the specified version.');
-            // } else {
-            //     console.warn('Hash not found in document history.');
-            // }
-
+            console.log(`Fork created at hash ${targetHash}`);
+            return forkedHandle;
         }
+        
+        // function loadVersion(hash){
+        //     console.log(hash)
+
+            
+
+        //     // for (const change of mainDoc.getHistory()) {
+        //     //     branchDoc.applyChange(change);
+        //     //     if (change.hash === targetHash) {
+        //     //         break; // Stop applying changes once the target hash is reached
+        //     //     }
+        //     // }
+        //     /*
+        //     // Extract the history from the document using the latest Automerge
+        //     history = retrieveHistory(handle.docSync());
+        //     console.log(hash)
+        //     // Find the index of the target hash in the history
+        //     const targetNode = historyNodes.find(node => node.data.id === hash);
+
+        //     if (targetNode) {
+        //         let revertedDoc = automergeInit();
+        
+        //         // Get the serialized changes up to the target node and apply them
+        //         const changesToApply = historyNodes
+        //             .slice(0, historyNodes.findIndex(node => node.data.id === hash) + 1)
+        //             .map(node => node.data.serializedChange);
+        
+        //         // Apply changes in a single batch if possible
+        //         if (changesToApply.every(change => change instanceof Uint8Array)) {
+        //             revertedDoc = applyNewChanges(revertedDoc, changesToApply);
+        //         } else {
+        //             console.error(`One or more changes are not in Uint8Array format`);
+        //             return;
+        //         }
+        
+        //         // Replace the document's content with the reverted state
+        //         handle.change((doc) => {
+        //             Object.assign(doc, revertedDoc);
+        //         }, {
+        //             message: `Reverted to version ${hash}`
+        //         });
+                
+        
+        //         // // Replace the document's content with the reverted state
+        //         // handle.change((doc) => {
+        //         //     Object.assign(doc, revertedDoc);
+        //         // }, {
+        //         //     message: `Reverted to version ${hash}`
+        //         // });
+        
+        //         console.log('Document successfully reverted to the specified version.');
+        //     } else {
+        //         console.warn('Hash not found in document history.');
+        //     }
+        //     */
+        //     // if (targetIndex !== -1) {
+        //     //     // // Create a document up to the target hash
+        //     //     // const revertedDoc = history.slice(0, targetIndex + 1).reduce((doc, entry) => {
+        //     //     //     return applyNewChanges(doc, entry.change);
+        //     //     // }, automergeInit());
+            
+        //     //             // Create a new document by applying changes up to the target hash
+        //     //     let revertedDoc = automergeInit();
+        //     //     for (let i = 0; i <= targetIndex; i++) {
+        //     //         // Ensure change is in the correct Uint8Array format
+        //     //         const changeBinary = history[i].change.raw || history[i].change.bytes;
+        
+        //     //         if (changeBinary instanceof Uint8Array) {
+        //     //             revertedDoc = applyNewChanges(revertedDoc, [changeBinary]);
+        //     //         } else {
+        //     //             console.error(`Change ${i} is not in Uint8Array format`);
+        //     //             return;
+        //     //         }
+        //     //     }
+                
+        //     //     // Use the reverted document as the new state for a branch or replace the current state
+        //     //     handle.change((doc) => {
+        //     //         // Replace the document's content with the reverted state
+        //     //         Object.assign(doc, revertedDoc);
+        //     //     }, {
+        //     //         message: `Reverted to version ${targetHash}`
+        //     //     });
+            
+        //     //     console.log('Document successfully reverted to the specified version.');
+        //     // } else {
+        //     //     console.warn('Hash not found in document history.');
+        //     // }
+
+        // }
 
         // cmd + scroll = scroll vertically through history graph
         document.addEventListener('wheel', function(event) {
@@ -1455,6 +1462,16 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
+    // Select the button element by its ID
+    const newSession = document.getElementById('newSession');
+
+    // open a new session (with empty document)
+    newSession.addEventListener('click', function() {
+        // Reload the page with the new URL
+        window.location.href = window.location.origin
+    });
+
+    
     // document.addEventListener('mousemove', function(event) {
     //     // Get the Cytoscape container
     //     const cyContainer = document.getElementById('cy');
