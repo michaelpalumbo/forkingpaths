@@ -8,14 +8,18 @@ import dagre from 'cytoscape-dagre';
 // import { LocalForageStorageAdapter } from "@automerge/automerge-repo-storage-localforage";
 // import { BrowserWebSocketClientAdapter } from '@automerge/automerge-repo-network-websocket';
 
+
 let handle;
 let history;
 
+// automerge methods made global:
 let applyNewChanges
 let retrieveHistory;
 let automergeInit;
 let automergeEncodeChange;
 let automergeDocument;
+let repo;
+let getClone;
 
 let historyNodes = []
 let previousHistoryLength;
@@ -338,10 +342,10 @@ document.addEventListener("DOMContentLoaded", function () {
         const { DocHandle, Repo, isValidAutomergeUrl, DocumentId, Document } = await import('@automerge/automerge-repo');
         const { BrowserWebSocketClientAdapter } = await import('@automerge/automerge-repo-network-websocket');
         const { IndexedDBStorageAdapter } = await import("@automerge/automerge-repo-storage-indexeddb");
-
+        
         const storage = new IndexedDBStorageAdapter("automerge");
         // Initialize the Automerge repository with WebSocket adapter
-        const repo = new Repo({
+        repo = new Repo({
             network: [new BrowserWebSocketClientAdapter('ws://localhost:3030')],
             // storage: LocalForageStorageAdapter, // Optional: use a storage adapter if needed
             storage: storage, // Optional: use a storage adapter if needed
@@ -367,6 +371,8 @@ document.addEventListener("DOMContentLoaded", function () {
             // If document is not found or an error occurs, create a new document
             handle = repo.create({
                 elements: []
+            }, {
+                message: 'set array: elements'
             });
             docUrl = handle.url;
 
@@ -465,11 +471,12 @@ document.addEventListener("DOMContentLoaded", function () {
         })
 
         // get document history
-        const { getHistory, applyChanges, init, encodeChange } = await import ('@automerge/automerge');
+        const { getHistory, applyChanges, init, encodeChange, clone } = await import ('@automerge/automerge');
         retrieveHistory = getHistory; // assign method to global variable
         applyNewChanges = applyChanges
         automergeInit = init
         automergeEncodeChange = encodeChange
+        getClone = clone
         try {
             const currentDoc = handle.docSync();
             if (!currentDoc) {
@@ -594,7 +601,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 // Serialize the change data and store it in the node's data object
                 let serializedChange;
                 try {
-                    serializedChange = entry.change.bytes || entry.change.raw || automergeEncodeChange(entry.change);
+                    let change = entry.change.bytes || entry.change.raw || automergeEncodeChange(entry.change);
+                    serializedChange = new Uint8Array(change); // Explicitly ensure Uint8Array format
                 } catch (error) {
                     console.error(`Error serializing change at index:`, error);
                     return; // Skip this change if it can't be serialized
@@ -658,37 +666,63 @@ document.addEventListener("DOMContentLoaded", function () {
         })
     
         async function loadVersion(targetHash) {
-            const { DocHandle, init, applyChanges } = await import('@automerge/automerge');
-            
-            // Create a new document for the fork
-            let forkedDoc = init();
+            // Set a batch size based on your performance tolerance
+            const BATCH_SIZE = 100; // Adjust as needed
         
-            // Find the index of the target change in history
-            const targetIndex = history.findIndex(entry => entry.change.hash === targetHash);
+            // Initialize a blank document to start replaying history
+            let forkedDoc = automergeInit();
+        
+            // Create a document handle via the repo
+            let forkedHandle = repo.create({ elements: [] });
+        
+            // Wait for the handle to be ready
+            await forkedHandle.whenReady();
+        
+            // Find the target index in historyNodes based on the hash
+            const targetIndex = historyNodes.findIndex(node => node.data.id === targetHash);
         
             if (targetIndex === -1) {
                 console.error('Target hash not found in document history.');
                 return;
             }
         
-            // Apply changes up to the target hash to the forked document
-            for (let i = 0; i <= targetIndex; i++) {
-                const changeBinary = history[i].change.raw || history[i].change.bytes;
-                console.log(changeBinary)
-                if (changeBinary instanceof Uint8Array) {
-                    forkedDoc = applyChanges(forkedDoc, [changeBinary]);
-                } else {
-                    console.error(`Change ${i} is not in Uint8Array format`);
+            // Ensure changes are in chronological order (reverse if needed)
+            const orderedHistory = historyNodes.slice(0, targetIndex + 1);
+            if (orderedHistory[0].data.timestamp > orderedHistory[orderedHistory.length - 1].data.timestamp) {
+                orderedHistory.reverse();
+            }
+
+            // Apply changes in batches
+            let batch = [];
+            for (let i = 0; i < orderedHistory.length; i++) {
+                const changeBinary = orderedHistory[i].data.serializedChange;
+        
+                if (!(changeBinary instanceof Uint8Array)) {
+                    console.error(`Serialized change at index ${i} is not in Uint8Array format. Found:`, changeBinary);
                     return;
+                }
+        
+                batch.push(changeBinary);
+        
+                // Apply changes in the batch if it reaches the batch size or if it's the last batch
+                if (batch.length >= BATCH_SIZE || i === orderedHistory.length) {
+                    try {
+                        forkedDoc = applyNewChanges(forkedDoc, batch);
+                        forkedDoc = getClone(forkedDoc); // Clone only after applying the batch
+                        batch = []; // Clear the batch
+                    } catch (error) {
+                        console.error(`Error applying batch ending at index ${i}`, error);
+                        return;
+                    }
                 }
             }
         
-            // Create a new handle for the forked document
-            const forkedHandle = repo.create({ elements: forkedDoc.elements });
-            
-            console.log(`Fork created at hash ${targetHash}`);
+            console.log(`Version loaded successfully at hash ${targetHash}`);
+            console.log(forkedHandle)
             return forkedHandle;
         }
+        
+        
         
         // function loadVersion(hash){
         //     console.log(hash)
