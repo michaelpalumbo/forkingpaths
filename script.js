@@ -27,6 +27,7 @@ let heldModule = null
 let heldModulePos = { x: null, y: null }
 
 let allowMultiSelect = false;
+let allowPan = false;
 
 let isSliderDragging = false;
 let currentHandleNode;
@@ -280,6 +281,11 @@ document.addEventListener("DOMContentLoaded", function () {
     const historyCy = cytoscape({
         container: document.getElementById('docHistory-cy'),
         elements: [],
+        zoom: parseFloat(localStorage.getItem('docHistoryCy_Zoom')) || 1., 
+        // viewport: {
+        //     zoom: parseFloat(localStorage.getItem('docHistoryCy_Zoom')) || 1.
+        // },
+        zoomingEngabled: false,
         layout: {
             name: 'dagre',
             rankDir: 'BT', // Set the graph direction to top-to-bottom
@@ -724,6 +730,35 @@ document.addEventListener("DOMContentLoaded", function () {
             // }
 
         }
+
+
+        document.addEventListener('wheel', function(event) {
+
+            if(allowPan){
+                console.log(event.deltaY)
+                historyCy.panBy({
+                    x: 0,
+                    y: event.deltaY 
+                  });
+                // if (event.deltaY > 0) {
+                //     historyCy.panBy({
+                //         x: 0,
+                //         y: event.deltaY 
+                //       });
+                // } else if (event.deltaY < 0) {
+                //     historyCy.panBy({
+                //         x: 0,
+                //         y: -10 
+                //       });
+                // } else {
+                //     console.log('No vertical scroll detected');
+                // }
+                
+
+            }
+
+        });
+
 
     /*
         cytoscape editor
@@ -1259,11 +1294,21 @@ document.addEventListener("DOMContentLoaded", function () {
         if (event.key === 'e') {
             isDraggingEnabled = true;
         }
+        if (event.key === 'Meta' || event.key === 'Control') {
+            allowMultiSelect = false
+            allowPan = true
+            historyCy.userZoomingEnabled(false)
+        }
     });
 
     window.addEventListener('keyup', (event) => {
         if (event.key === 'e') {
             isDraggingEnabled = false;
+        }
+        if (event.key === 'Meta' || event.key === 'Control') {
+            console.log('yea')
+            allowMultiSelect = false
+            historyCy.userZoomingEnabled(true)
         }
     });
 
@@ -1293,10 +1338,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
      // Handle keydown event to delete a highlighted edge on backspace or delete
      document.addEventListener('keydown', (event) => {
-        
-        if (event.key === 'Meta' || event.key === 'Control') {
-            allowMultiSelect = true
-        }
+
 
         if (highlightedEdge && (event.key === 'Backspace' || event.key === 'Delete')) {
             cy.remove(highlightedEdge)
@@ -1356,11 +1398,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     });
 
-    document.addEventListener('keyup', (event) => {
-        if (event.key === 'Meta' || event.key === 'Control') {
-            allowMultiSelect = false
-        }
-    })
+
     // Helper function to find elements at a specific point
     function getElementsAtPoint(cy, x, y) {
         return cy.elements().filter((ele) => {
@@ -1469,7 +1507,37 @@ document.addEventListener("DOMContentLoaded", function () {
         .update();
     }
 
+    // modify graph edge control point distance
+    const docHistoryCy_Zoom = document.getElementById('docHistoryCy-Zoom')
+
+    docHistoryCy_Zoom.addEventListener('input', function() {
+    updatedocHistoryCy_Zoom(this.value)
+        localStorage.setItem('docHistoryCy_Zoom', docHistoryCy_Zoom.value);
+    });
+
+    // Retrieve the saved slider value from localStorage and set it
+    const docHistoryCy_Zoom_Saved = localStorage.getItem('docHistoryCy_Zoom');
+    if (docHistoryCy_Zoom_Saved !== null) {
+        docHistoryCy_Zoom.value = docHistoryCy_Zoom_Saved;
+        
+        updatedocHistoryCy_Zoom(docHistoryCy_Zoom_Saved)
+    }
+
+    function updatedocHistoryCy_Zoom(x){
+    console.log(x, cy.zoomingEnabled())
+    if (historyCy.zoomingEnabled()) {
+        historyCy.zoom({
+            level: parseFloat(x), // Ensure the input is a number
+            position: { x: 0, y: 0 } // Optionally set a different position if needed
+        });
+    } else {
+        console.warn("Zooming is not enabled on this Cytoscape instance.");
+    }
+    }
+
+
     
+
 });
 
 
