@@ -10,7 +10,13 @@ import dagre from 'cytoscape-dagre';
 
 let handle;
 let history;
+
+let applyNewChanges
 let retrieveHistory;
+let automergeInit;
+let automergeEncodeChange;
+
+let historyNodes = []
 let previousHistoryLength;
 
 let isDraggingEnabled = false;
@@ -452,8 +458,11 @@ document.addEventListener("DOMContentLoaded", function () {
         })
 
         // get document history
-        const { getHistory, Automerge } = await import ('@automerge/automerge');
+        const { getHistory, applyChanges, init, encodeChange } = await import ('@automerge/automerge');
         retrieveHistory = getHistory; // assign method to global variable
+        applyNewChanges = applyChanges
+        automergeInit = init
+        automergeEncodeChange = encodeChange
         try {
             const currentDoc = handle.docSync();
             if (!currentDoc) {
@@ -473,6 +482,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 // Create nodes for each change in the history
                 history.forEach((entry) => {
+
+                    // Serialize the change data and store it in the node's data object
+                    let serializedChange;
+                    try {
+                        serializedChange = entry.change.bytes || entry.change.raw || encodeChange(entry.change);
+                    } catch (error) {
+                        console.error(`Error serializing change at index:`, error);
+                        return; // Skip this change if it can't be serialized
+                    }
+                    
                     const nodeId = entry.change.hash;
                     nodeIds.add(nodeId);
                     let bgColour = "#ccc"
@@ -486,10 +505,21 @@ document.addEventListener("DOMContentLoaded", function () {
                             id: nodeId,
                             label: entry.change.message || 'new document',
                             actor: entry.change.actor,
-                            color: bgColour
+                            color: bgColour,
+                            serializedChange: serializedChange
                         },
                         classes: 'node'
                     });
+                    historyNodes.push({
+                        data: {
+                            id: nodeId,
+                            label: entry.change.message || 'new document',
+                            actor: entry.change.actor,
+                            color: bgColour,
+                            serializedChange: serializedChange
+                        },
+                        classes: 'node'
+                    })
                 });
 
                 // Create edges based on dependencies between changes
@@ -504,6 +534,7 @@ document.addEventListener("DOMContentLoaded", function () {
                                 },
                                 classes: 'edge'
                             });
+                            
                         } else {
                             console.warn(`Skipping edge creation: ${entry.changeHash}-${dep} because one or both nodes do not exist`);
                         }
@@ -543,6 +574,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // Create nodes for each change in the history updates
             historyUpdates.forEach((entry) => {
+
+                // Serialize the change data and store it in the node's data object
+                let serializedChange;
+                try {
+                    serializedChange = entry.change.bytes || entry.change.raw || automergeEncodeChange(entry.change);
+                } catch (error) {
+                    console.error(`Error serializing change at index:`, error);
+                    return; // Skip this change if it can't be serialized
+                }
+                
                 const nodeId = entry.change.hash;
                 nodeIds.add(nodeId);
                 let bgColour = "#ccc"
@@ -554,10 +595,22 @@ document.addEventListener("DOMContentLoaded", function () {
                         id: nodeId,
                         label: entry.change.message || 'new document',
                         actor: entry.change.actor,
-                        color: bgColour
+                        color: bgColour,
+                        serializedChange: serializedChange
                     },
                     classes: 'node'
                 });
+
+                historyNodes.push({
+                    data: {
+                        id: nodeId,
+                        label: entry.change.message || 'new document',
+                        actor: entry.change.actor,
+                        color: bgColour,
+                        serializedChange: serializedChange
+                    },
+                    classes: 'node'
+                })
             });
             
             // Create edges based on dependencies between changes
@@ -586,9 +639,91 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         historyCy.on('mousedown', (event) => {
+            
             console.log(event.target.data())
+            loadVersion(event.target.data().id)
+
         })
     
+        function loadVersion(hash){
+            console.log(hash)
+            /*
+            // Extract the history from the document using the latest Automerge
+            history = retrieveHistory(handle.docSync());
+            console.log(hash)
+            // Find the index of the target hash in the history
+            const targetNode = historyNodes.find(node => node.data.id === hash);
+
+            if (targetNode) {
+                let revertedDoc = automergeInit();
+        
+                // Get the serialized changes up to the target node and apply them
+                const changesToApply = historyNodes
+                    .slice(0, historyNodes.findIndex(node => node.data.id === hash) + 1)
+                    .map(node => node.data.serializedChange);
+        
+                // Apply changes in a single batch if possible
+                if (changesToApply.every(change => change instanceof Uint8Array)) {
+                    revertedDoc = applyNewChanges(revertedDoc, changesToApply);
+                } else {
+                    console.error(`One or more changes are not in Uint8Array format`);
+                    return;
+                }
+        
+                // Replace the document's content with the reverted state
+                handle.change((doc) => {
+                    Object.assign(doc, revertedDoc);
+                }, {
+                    message: `Reverted to version ${hash}`
+                });
+                
+        
+                // // Replace the document's content with the reverted state
+                // handle.change((doc) => {
+                //     Object.assign(doc, revertedDoc);
+                // }, {
+                //     message: `Reverted to version ${hash}`
+                // });
+        
+                console.log('Document successfully reverted to the specified version.');
+            } else {
+                console.warn('Hash not found in document history.');
+            }
+            */
+            // if (targetIndex !== -1) {
+            //     // // Create a document up to the target hash
+            //     // const revertedDoc = history.slice(0, targetIndex + 1).reduce((doc, entry) => {
+            //     //     return applyNewChanges(doc, entry.change);
+            //     // }, automergeInit());
+            
+            //             // Create a new document by applying changes up to the target hash
+            //     let revertedDoc = automergeInit();
+            //     for (let i = 0; i <= targetIndex; i++) {
+            //         // Ensure change is in the correct Uint8Array format
+            //         const changeBinary = history[i].change.raw || history[i].change.bytes;
+        
+            //         if (changeBinary instanceof Uint8Array) {
+            //             revertedDoc = applyNewChanges(revertedDoc, [changeBinary]);
+            //         } else {
+            //             console.error(`Change ${i} is not in Uint8Array format`);
+            //             return;
+            //         }
+            //     }
+                
+            //     // Use the reverted document as the new state for a branch or replace the current state
+            //     handle.change((doc) => {
+            //         // Replace the document's content with the reverted state
+            //         Object.assign(doc, revertedDoc);
+            //     }, {
+            //         message: `Reverted to version ${targetHash}`
+            //     });
+            
+            //     console.log('Document successfully reverted to the specified version.');
+            // } else {
+            //     console.warn('Hash not found in document history.');
+            // }
+
+        }
 
     /*
         cytoscape editor
