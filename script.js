@@ -362,7 +362,7 @@ document.addEventListener("DOMContentLoaded", function () {
         Automerge = await import('@automerge/automerge');
     
         // todo: if we set a different string as docId and pass it into await loadDocument(), it will return a new document for the user
-        docID = 'forkingPathsDoc2'; // Unique identifier for the document
+        docID = 'forkingPathsDoc'; // Unique identifier for the document
         // Load the document from IndexedDB or create a new one if it doesn't exist
         amDoc = await loadDocument(docID);
         if (!amDoc) {
@@ -379,16 +379,6 @@ document.addEventListener("DOMContentLoaded", function () {
             amDoc = Automerge.load(amDoc);
             console.log("Loaded document from IndexedDB:", amDoc);
         }
-    
-        // Function to update the document and save changes
-        async function updateAndSaveDocument(changeCallback) {
-            amDoc = Automerge.change(amDoc, changeCallback);
-        }
-    
-        // Example usage of updateAndSaveDocument to modify the document
-        await updateAndSaveDocument((amDoc) => {
-            amDoc.elements.push({ id: 1, name: 'Element 1' });
-        });
     
         console.log("Updated document state:", amDoc);
     })();
@@ -1394,9 +1384,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // open a new session (with empty document)
     newSession.addEventListener('click', function() {
+        // deletes the document in the indexedDB instance
+        deleteDocument(docID)
         // Reload the page with the new URL
         window.location.href = window.location.origin
     });
+
+    
 
     // modify graph edge control point distance
     const CPDslider = document.getElementById('controlPointDistance')
@@ -1539,7 +1533,18 @@ document.addEventListener("DOMContentLoaded", function () {
         cy.add(parentNodeData);
         cy.add(childrenNodes);
     
-        // Update Automerge document
+
+        // * automerge version:
+        amDoc = Automerge.change(amDoc, (amDoc) => {
+            
+            amDoc.elements.push(parentNodeData);
+            amDoc.elements.push(...childrenNodes);
+        });
+
+        console.log(amDoc)
+
+        // todo: remove the -repo version once AM is working
+        // Update Automerge-repo document
         handle.change((doc) => {
             doc.elements.push(parentNodeData);
             doc.elements.push(...childrenNodes);
@@ -1547,6 +1552,7 @@ document.addEventListener("DOMContentLoaded", function () {
         },{
             message: `add ${parentNodeData.data.id}` // Set a custom change message here
         }
+
     );
     }
     

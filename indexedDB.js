@@ -19,6 +19,16 @@ export async function loadDocument(docId) {
 }
 
 export async function deleteDocument(docId) {
-    const db = await dbPromise;
-    await db.delete('documents', docId);
+    try {
+        const db = await dbPromise;
+        // Open a transaction on the 'documents' store with readwrite permissions
+        const tx = db.transaction('documents', 'readwrite');
+        // Access the object store and delete the specified document
+        await tx.store.delete(docId);
+        // Ensure the transaction completes
+        await tx.done;
+        console.log(`Document with ID ${docId} successfully deleted.`);
+    } catch (error) {
+        console.error(`Failed to delete document with ID ${docId}:`, error);
+    }
 }
