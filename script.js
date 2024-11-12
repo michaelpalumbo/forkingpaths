@@ -9,6 +9,14 @@ import randomColor from 'randomcolor';
 import dagre from 'cytoscape-dagre';
 
 
+
+// * new automerge implementation
+let Automerge;
+
+
+// * old automerge-repo stuff
+// todo: phase out
+
 let handle;
 let history;
 
@@ -86,6 +94,10 @@ let temporaryCables = {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
+
+    
+
+
     //*
     //*
     //* CONFIGURE CYTOSCAPE INSTANCES
@@ -339,6 +351,29 @@ document.addEventListener("DOMContentLoaded", function () {
     //* Implement functions for creating, updating, patching, and reverting document states.
     //*
 
+
+    //* NEW AUTOMERGE IMPLEMENTATION
+    (async () => {
+        // Load Automerge asynchronously and assign it to the global variable
+        Automerge = await import('@automerge/automerge');
+    
+        // Initialize a new document
+        let doc = Automerge.init();
+    
+        // Apply initial changes to the document
+        doc = Automerge.change(doc, (doc) => {
+            // Add properties to the document structure
+            doc.title = "ForkingPaths New Document";
+            doc.elements = [];
+        });
+    
+        // Log the initial state of the document
+        console.log("Initial document state:", doc);
+    })();
+
+
+
+    //TODO OLD AUTOMERGE-REPO IMPLEMENTATION, PHASE IT OUT EVENTUALLY
     // Import dependencies dynamically
     (async () => {
         const { DocHandle, Repo, isValidAutomergeUrl, DocumentId, Document } = await import('@automerge/automerge-repo');
