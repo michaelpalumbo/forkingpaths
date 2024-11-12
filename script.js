@@ -7,13 +7,15 @@ import { ParentNode } from './parentNode.js';
 import { uuidv7 } from "https://unpkg.com/uuidv7@^1";
 import randomColor from 'randomcolor';
 import dagre from 'cytoscape-dagre';
-
+import { openDB } from 'idb'; // indexedDB
+import { saveDocument, loadDocument, deleteDocument } from './indexedDB.js';
 
 
 // * new automerge implementation
 let Automerge;
-
-
+let amDoc = null
+let docID = null
+let saveInterval = 2000; // how frequently to store the automerge document in indexedDB
 // * old automerge-repo stuff
 // todo: phase out
 
@@ -357,21 +359,46 @@ document.addEventListener("DOMContentLoaded", function () {
         // Load Automerge asynchronously and assign it to the global variable
         Automerge = await import('@automerge/automerge');
     
-        // Initialize a new document
-        let doc = Automerge.init();
+        // todo: if we set a different string as docId and pass it into await loadDocument(), it will return a new document for the user
+        docID = 'forkingPathsDoc2'; // Unique identifier for the document
+
+        // Load the document from IndexedDB or create a new one if it doesn't exist
+        amDoc = await loadDocument(docID);
+        if (!amDoc) {
+            amDoc = Automerge.init();
+            // Apply initial changes to the new document
+            amDoc = Automerge.change(amDoc, (amDoc) => {
+                amDoc.title = "ForkingPaths New Document";
+                amDoc.elements = [];
+            });
+            console.log("Created new document:", amDoc);
+            await saveDocument(docID, Automerge.save(amDoc));
+        } else {
+            // If loaded, convert saved document state back to Automerge document
+            amDoc = Automerge.load(amDoc);
+            console.log("Loaded document from IndexedDB:", amDoc);
+        }
     
-        // Apply initial changes to the document
-        doc = Automerge.change(doc, (doc) => {
-            // Add properties to the document structure
-            doc.title = "ForkingPaths New Document";
-            doc.elements = [];
+        // Function to update the document and save changes
+        async function updateAndSaveDocument(changeCallback) {
+            amDoc = Automerge.change(amDoc, changeCallback);
+            await saveDocument(docID, Automerge.save(amDoc)); // Save updated doc state to IndexedDB
+        }
+    
+        // Example usage of updateAndSaveDocument to modify the document
+        await updateAndSaveDocument((amDoc) => {
+            amDoc.elements.push({ id: 1, name: 'Element 1' });
         });
     
-        // Log the initial state of the document
-        console.log("Initial document state:", doc);
+        console.log("Updated document state:", amDoc);
     })();
 
-
+    // Set an interval to periodically save the document to IndexedDB
+    setInterval(async () => {
+        if(amDoc){
+            await saveDocument(docID, Automerge.save(amDoc));
+        }
+    }, saveInterval);
 
     //TODO OLD AUTOMERGE-REPO IMPLEMENTATION, PHASE IT OUT EVENTUALLY
     // Import dependencies dynamically
