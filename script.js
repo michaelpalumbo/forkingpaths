@@ -570,6 +570,49 @@ document.addEventListener("DOMContentLoaded", function () {
 
     })();
 
+    // Function to update Cytoscape with the state from forkedDoc
+    function updateCytoscapeFromDocument(forkedDoc) {
+
+        console.log("History Nodes:", historyNodes.map((node, index) => ({
+            index,
+            hash: node.data.id,
+            message: node.data.label,
+            change: node.data.serializedChange
+        })));
+
+        console.log('forkedDoc.doc.elements',forkedDoc.doc())
+        // 1. Extract nodes and edges from `forkedDoc`
+        const elements = forkedDoc.elements || [];
+        console.log(elements)
+        // Separate nodes and edges
+        const nodes = elements.filter(el => el.type === 'node').map(node => ({
+            data: {
+                id: node.data.id,
+                label: node.data.label,
+                ...node.data // any additional node properties
+            },
+            position: node.position || { x: 0, y: 0 } // default position if not set
+        }));
+
+        const edges = elements.filter(el => el.type === 'edge').map(edge => ({
+            data: {
+                id: edge.data.id,
+                source: edge.data.source,
+                target: edge.data.target,
+                ...edge.data // any additional edge properties
+            }
+        }));
+        console.log(nodes)
+        // 2. Clear existing elements from Cytoscape instance
+        cy.elements().remove();
+        console.log(cy.elements())
+        // 3. Add new elements to Cytoscape
+        cy.add([...nodes, ...edges]);
+
+        // Optional: Run layout
+        cy.layout({ name: 'preset' }).run(); // `preset` uses the position data directly
+        
+    }
 
     /*
 
@@ -705,10 +748,13 @@ document.addEventListener("DOMContentLoaded", function () {
                 batch.push(changeBinary);
         
                 // Apply changes in the batch if it reaches the batch size or if it's the last batch
-                if (batch.length >= BATCH_SIZE || i === orderedHistory.length) {
+                if (batch.length >= BATCH_SIZE || i === orderedHistory.length -1) {
+                    console.log('snared')
                     try {
                         forkedDoc = applyNewChanges(forkedDoc, batch);
                         forkedDoc = getClone(forkedDoc); // Clone only after applying the batch
+                        console.log(`After batch ${Math.floor(i / BATCH_SIZE) + 1}, elements:`, forkedDoc.doc.elements);
+
                         batch = []; // Clear the batch
                     } catch (error) {
                         console.error(`Error applying batch ending at index ${i}`, error);
@@ -719,99 +765,9 @@ document.addEventListener("DOMContentLoaded", function () {
         
             console.log(`Version loaded successfully at hash ${targetHash}`);
             console.log(forkedHandle)
-            return forkedHandle;
+            // Usage: assuming `cy` is your Cytoscape instance and `forkedDoc` holds the document state
+            updateCytoscapeFromDocument(forkedHandle);
         }
-        
-        
-        
-        // function loadVersion(hash){
-        //     console.log(hash)
-
-            
-
-        //     // for (const change of mainDoc.getHistory()) {
-        //     //     branchDoc.applyChange(change);
-        //     //     if (change.hash === targetHash) {
-        //     //         break; // Stop applying changes once the target hash is reached
-        //     //     }
-        //     // }
-        //     /*
-        //     // Extract the history from the document using the latest Automerge
-        //     history = retrieveHistory(handle.docSync());
-        //     console.log(hash)
-        //     // Find the index of the target hash in the history
-        //     const targetNode = historyNodes.find(node => node.data.id === hash);
-
-        //     if (targetNode) {
-        //         let revertedDoc = automergeInit();
-        
-        //         // Get the serialized changes up to the target node and apply them
-        //         const changesToApply = historyNodes
-        //             .slice(0, historyNodes.findIndex(node => node.data.id === hash) + 1)
-        //             .map(node => node.data.serializedChange);
-        
-        //         // Apply changes in a single batch if possible
-        //         if (changesToApply.every(change => change instanceof Uint8Array)) {
-        //             revertedDoc = applyNewChanges(revertedDoc, changesToApply);
-        //         } else {
-        //             console.error(`One or more changes are not in Uint8Array format`);
-        //             return;
-        //         }
-        
-        //         // Replace the document's content with the reverted state
-        //         handle.change((doc) => {
-        //             Object.assign(doc, revertedDoc);
-        //         }, {
-        //             message: `Reverted to version ${hash}`
-        //         });
-                
-        
-        //         // // Replace the document's content with the reverted state
-        //         // handle.change((doc) => {
-        //         //     Object.assign(doc, revertedDoc);
-        //         // }, {
-        //         //     message: `Reverted to version ${hash}`
-        //         // });
-        
-        //         console.log('Document successfully reverted to the specified version.');
-        //     } else {
-        //         console.warn('Hash not found in document history.');
-        //     }
-        //     */
-        //     // if (targetIndex !== -1) {
-        //     //     // // Create a document up to the target hash
-        //     //     // const revertedDoc = history.slice(0, targetIndex + 1).reduce((doc, entry) => {
-        //     //     //     return applyNewChanges(doc, entry.change);
-        //     //     // }, automergeInit());
-            
-        //     //             // Create a new document by applying changes up to the target hash
-        //     //     let revertedDoc = automergeInit();
-        //     //     for (let i = 0; i <= targetIndex; i++) {
-        //     //         // Ensure change is in the correct Uint8Array format
-        //     //         const changeBinary = history[i].change.raw || history[i].change.bytes;
-        
-        //     //         if (changeBinary instanceof Uint8Array) {
-        //     //             revertedDoc = applyNewChanges(revertedDoc, [changeBinary]);
-        //     //         } else {
-        //     //             console.error(`Change ${i} is not in Uint8Array format`);
-        //     //             return;
-        //     //         }
-        //     //     }
-                
-        //     //     // Use the reverted document as the new state for a branch or replace the current state
-        //     //     handle.change((doc) => {
-        //     //         // Replace the document's content with the reverted state
-        //     //         Object.assign(doc, revertedDoc);
-        //     //     }, {
-        //     //         message: `Reverted to version ${targetHash}`
-        //     //     });
-            
-        //     //     console.log('Document successfully reverted to the specified version.');
-        //     // } else {
-        //     //     console.warn('Hash not found in document history.');
-        //     // }
-
-        // }
 
         // cmd + scroll = scroll vertically through history graph
         document.addEventListener('wheel', function(event) {
@@ -1505,28 +1461,7 @@ document.addEventListener("DOMContentLoaded", function () {
         window.location.href = window.location.origin
     });
 
-    
-    // document.addEventListener('mousemove', function(event) {
-    //     // Get the Cytoscape container
-    //     const cyContainer = document.getElementById('cy');
-        
-    //     // Get the container's bounding rectangle
-    //     const rect = cyContainer.getBoundingClientRect();
-        
-    //     // Calculate the mouse position relative to the Cytoscape canvas
-    //     const mouseX = event.clientX - rect.left;
-    //     const mouseY = event.clientY - rect.top;
 
-    //     // Send the data with the relative position
-    //     sendEphemeralData({
-    //         msg: 'peerMousePosition',
-    //         data: {
-    //             position: { x: mouseX, y: mouseY },
-    //             peer: peers.local.id
-    //         }
-    //     });
-       
-    // });
     
 
     function displayPeerPointers(peer, position){
