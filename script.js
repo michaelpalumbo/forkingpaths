@@ -1,12 +1,12 @@
+//*
+//*
+//* INITIALIZATION AND SETUP
+//* Set up dependencies, initialize core variables
+//*
 import { ParentNode } from './parentNode.js';
 import { uuidv7 } from "https://unpkg.com/uuidv7@^1";
 import randomColor from 'randomcolor';
 import dagre from 'cytoscape-dagre';
-
-// import { Repo } from "@automerge/automerge-repo";
-
-// import { LocalForageStorageAdapter } from "@automerge/automerge-repo-storage-localforage";
-// import { BrowserWebSocketClientAdapter } from '@automerge/automerge-repo-network-websocket';
 
 
 let handle;
@@ -85,10 +85,13 @@ let temporaryCables = {
     }
 }
 
-let paramBoundaries = {
-
-}
 document.addEventListener("DOMContentLoaded", function () {
+    //*
+    //*
+    //* CONFIGURE CYTOSCAPE INSTANCES
+    //* 
+    //*
+
     const cy = cytoscape({
         container: document.getElementById('cy'),
 
@@ -329,13 +332,12 @@ document.addEventListener("DOMContentLoaded", function () {
         ]
     });
 
-    /*
-        UI
-    */
-   
-    /*
-        AUTOMERGE
-    */
+
+    //*
+    //*
+    //* DOCUMENT & HISTORY MANAGEMENT 
+    //* Implement functions for creating, updating, patching, and reverting document states.
+    //*
 
     // Import dependencies dynamically
     (async () => {
@@ -393,13 +395,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // Store the peer ID in sessionStorage for the current tab session
             sessionStorage.setItem('localPeerID', peers.local.id);
-        } else {
-        }
+        } else { }
         
-
-
-
-
         handle.docSync().elements
         // Populate Cytoscape with elements from the document if it exists
         if (handle.docSync().elements && handle.docSync().elements.length > 0) {
@@ -439,36 +436,9 @@ document.addEventListener("DOMContentLoaded", function () {
             
         })
 
-        handle.on("ephemeral-message", (message) => {
-
-            let msg = message.message
-            switch (msg.msg){
-
-                case 'moveModule':
-                    cy.getElementById(msg.module).position(msg.position);
-
-                    // also update the module internal boundaries for params
-                    updateSliderBoundaries(cy.getElementById(msg.module))
-                break
-
-                case 'startRemoteGhostCable':
-                case 'updateRemoteGhostCable':
-                case 'finishRemoteGhostCable':    
-
-                    handleRemoteCables(msg.msg, msg.data.peer, msg.data.sourceNodeID, msg.data.position)
-
-                break
-
-                case 'peerMousePosition':
-                    displayPeerPointers(msg.data.peer, msg.data.position)
-                break
 
 
-
-                default: console.log("got an ephemeral message: ", message)
-            }
-            
-        })
+ 
 
         // get document history
         const { getHistory, applyChanges, init, encodeChange, clone } = await import ('@automerge/automerge');
@@ -566,9 +536,51 @@ document.addEventListener("DOMContentLoaded", function () {
         }
                 
 
+    //*
+    //*
+    //* SYNCHRONIZATION
+    //* Functions related to custom network and sync handling.
+    //*
+        handle.on("ephemeral-message", (message) => {
 
+            let msg = message.message
+            switch (msg.msg){
+
+                case 'moveModule':
+                    cy.getElementById(msg.module).position(msg.position);
+
+                    // also update the module internal boundaries for params
+                    updateSliderBoundaries(cy.getElementById(msg.module))
+                break
+
+                case 'startRemoteGhostCable':
+                case 'updateRemoteGhostCable':
+                case 'finishRemoteGhostCable':    
+
+                    handleRemoteCables(msg.msg, msg.data.peer, msg.data.sourceNodeID, msg.data.position)
+
+                break
+
+                case 'peerMousePosition':
+                    displayPeerPointers(msg.data.peer, msg.data.position)
+                break
+
+
+
+                default: console.log("got an ephemeral message: ", message)
+            }
+            
+        })
 
     })();
+
+    function sendEphemeralData (msg){
+        // only send once doc is ready
+        if(handle){
+            handle.broadcast(msg);
+        }
+        
+    }
 
     // Function to update Cytoscape with the state from forkedDoc
     function updateCytoscapeFromDocument(forkedDoc) {
@@ -702,11 +714,7 @@ document.addEventListener("DOMContentLoaded", function () {
             addToHistoryGraph(elements, history.length)
         }
 
-        historyCy.on('mousedown', (event) => {
-            
-            loadVersion(event.target.data().id)
 
-        })
     
 
         async function loadVersion(targetHash) {
@@ -809,119 +817,20 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
 
-    /*
-        cytoscape editor
-    */ 
-    /*
-        PATCHING
-    */
 
 
-    let highlightedEdge = null; // Variable to store the currently highlighted edge
 
-    // Helper function to detect if the click is near an endpoint of an edge
-    function isNearEndpoint(mousePos, endpointPos, threshold = 50) {
-        const dx = mousePos.x - endpointPos.x;
-        const dy = mousePos.y - endpointPos.y;
-        return Math.sqrt(dx * dx + dy * dy) <= threshold;
-    }
+//*
+//*
+//* UI UPDATES & EVENT HANDLERS
+//* Functions that directly handle UI interactions and update elements in cytoscape
+//*
 
-    // function to create a cable
-
-    function startCable(source, position){
-        temporaryCables.local.source = source;
-        const mousePos = position;
-
-        // Get the ghostCable property from the temporaryCables.local.ghostNode, default to 'ellipse' if undefined
-        const ghostShape =  temporaryCables.local.source.data('ghostCableShape') || 'ellipse';
-        const ghostColour =  temporaryCables.local.source.data('ghostCableColour') || '#5C9AE3';
-
-        // Create a ghost node at the mouse position to act as the moving endpoint
-        temporaryCables.local.ghostNode = cy.add({
-            group: 'nodes',
-            data: { id: 'localGhostNode' },
-            position: mousePos,
-            grabbable: false, // Ghost node shouldn't be draggable
-            classes: 'ghostNode'
-        });
-
-        // Apply the ghostShape to the ghostNode using a direct style override
-        temporaryCables.local.ghostNode.style({
-            'shape': ghostShape,
-            'background-color': ghostColour
-        });
-        // Create a temporary edge from ghostNodes.local.source to temporaryCables.local.ghostNode
-        temporaryCables.local.tempEdge = cy.add({
-            group: 'edges',
-            data: { id: 'localTempEdge', source: temporaryCables.local.source.id(), target: 'localGhostNode' },
-            classes: 'tempEdge'
-        });
-
-        // Set target endpoint to mouse position initially
-        temporaryCables.local.tempEdge.style({ 'line-color': '#FFA500', 'line-style': 'dashed' }); // Set temporary edge color
-
-
-        
-    }
-
-    function handleRemoteCables(cmd,  peerID, sourceID, position){
-        
-        switch(cmd){
-            
-            case 'startRemoteGhostCable':
-                let ghostId = `ghostNode-${peerID}`
-                let tempEdgeID = `tempEdge-${peerID}`
+    historyCy.on('mousedown', (event) => {
                 
-                temporaryCables.peers[peerID] = {
-                    source: cy.getElementById(sourceID),
-                    // Create a ghost node at the mouse position to act as the moving endpoint
-                    ghostNode: cy.add({
-                        group: 'nodes',
-                        data: { id: ghostId },
-                        position: position,
-                        grabbable: false, // Ghost node shouldn't be draggable
-                        classes: 'ghostNode'
-                    }),
-                    // Create a temporary edge from temporaryCables.local.source to ghostNode
-                    tempEdge: cy.add({
-                        group: 'edges',
-                        data: { id: tempEdgeID, source: sourceID, target: ghostId },
-                        classes: 'tempEdge'
-                    }),
-                    targetNode: null
-                }
-                
-                // set ghostNode Style according to opposite of source Node
-                const ghostShape = temporaryCables.peers[peerID].source.data('ghostCableShape') || 'ellipse';
-                const ghostColour = temporaryCables.peers[peerID].source.data('ghostCableColour') || '#5C9AE3';
-                temporaryCables.peers[peerID].ghostNode.style({
-                    'shape': ghostShape,
-                    'background-color': ghostColour
-                });
+        loadVersion(event.target.data().id)
 
-                temporaryCables.peers[peerID].tempEdge.style({ 'line-color': '#228B22', 'line-style': 'dashed' }); // Set peer temporary edge color
-            break;
-
-            case 'updateRemoteGhostCable':
-                // update the tmporary cable's position
-                temporaryCables.peers[peerID].ghostNode.position(position)
-            break
-
-            case 'finishRemoteGhostCable':
-                // remove the tempEdge
-                cy.remove(temporaryCables.peers[peerID].tempEdge)
-                // remove remote ghostnode
-                cy.remove(temporaryCables.peers[peerID].ghostNode);
-                cy.nodes().removeClass('highlighted');
-
-                // remove remote peer's temporary cable from object
-                delete temporaryCables.peers[peerID]
-
-            break;
-
-        }
-
-    }
+    })
 
     // get mousedown events from cytoscape
     cy.on('mousedown', (event) => {
@@ -1202,23 +1111,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
-
-    function updateSliderBoundaries(parentNode){
-        // Update the position constraints for all slider handles that are children of this parent node
-        cy.nodes(`node[parent="${parentNode.data().id}"]`).forEach((childNode) => {
-            if (childNode.hasClass('sliderHandle')) {
-                const trackLength = childNode.data('length') || 100; // Assuming track length is stored in data
-                const newTrackStartX = parentNode.position().x - trackLength / 2;
-                const newTrackEndX = parentNode.position().x + trackLength / 2;
-                const fixedY = parentNode.position().y; // Update if necessary based on your layout logic
-
-                // Update data attributes for the handle to use when dragging
-                childNode.data('trackStartX', newTrackStartX);
-                childNode.data('trackEndX', newTrackEndX);
-                childNode.data('fixedY', fixedY);
-            }
-        });
-    }
     // Step 3: Finalize edge on mouseup
     cy.on('mouseup', (event) => {
         if(isSliderDragging){
@@ -1295,30 +1187,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    function addModule(module, position, children) {
-        
-        const parentNode = new ParentNode(module, position, children);
-
-        // parentNode.getModule('oscillator')
-        const { parentNode: parentNodeData, childrenNodes } = parentNode.getNodeStructure();
-    
-        // Add nodes to Cytoscape
-        cy.add(parentNodeData);
-        cy.add(childrenNodes);
-    
-        // Update Automerge document
-        handle.change((doc) => {
-            doc.elements.push(parentNodeData);
-            doc.elements.push(...childrenNodes);
-
-        },{
-            message: `add ${parentNodeData.data.id}` // Set a custom change message here
-        }
-    );
-    }
-    
-
-
     // Listen for drag events on nodes
     cy.on('grab', (event)=> {
         const node = event.target
@@ -1337,6 +1205,27 @@ document.addEventListener("DOMContentLoaded", function () {
 
         }
     })
+
+    // removing modules
+    // Click event to highlight a parent node
+    cy.on('click', 'node:parent', (event) => {
+        // Remove highlight class from any previously highlighted node
+        if (highlightedNode) {
+            highlightedNode.removeClass('highlighted');
+        } 
+        // if highlighted module is clicked again, unhighlighted it
+        if( highlightedNode == event.target){
+            highlightedNode.removeClass('highlighted');
+            highlightedNode = null
+        }
+        else {
+            // Highlight the clicked parent node
+            highlightedNode = event.target;
+            highlightedNode.addClass('highlighted');
+
+
+        }
+    });
 
     // Track when the 'e' key is pressed and released
     window.addEventListener('keydown', (event) => {
@@ -1363,30 +1252,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         if (event.key === 'z') {
             historyCy.zoomingEnabled(false)
-        }
-    });
-
-
-
-
-    // removing modules
-    // Click event to highlight a parent node
-    cy.on('click', 'node:parent', (event) => {
-        // Remove highlight class from any previously highlighted node
-        if (highlightedNode) {
-            highlightedNode.removeClass('highlighted');
-        } 
-        // if highlighted module is clicked again, unhighlighted it
-        if( highlightedNode == event.target){
-            highlightedNode.removeClass('highlighted');
-            highlightedNode = null
-        }
-        else {
-            // Highlight the clicked parent node
-            highlightedNode = event.target;
-            highlightedNode.addClass('highlighted');
-
-
         }
     });
 
@@ -1447,26 +1312,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
             }
         }
-
-        
-
     });
-
-
-    // Helper function to find elements at a specific point
-    function getElementsAtPoint(cy, x, y) {
-        return cy.elements().filter((ele) => {
-            const bb = ele.boundingBox();
-            return (
-                x >= bb.x1 &&
-                x <= bb.x2 &&
-                y >= bb.y1 &&
-                y <= bb.y2
-            );
-        });
-    }
-
-
 
     // Select the button element by its ID
     const button = document.getElementById('clearGraph');
@@ -1489,36 +1335,6 @@ document.addEventListener("DOMContentLoaded", function () {
         // Reload the page with the new URL
         window.location.href = window.location.origin
     });
-
-
-    
-
-    function displayPeerPointers(peer, position){
-        if(!peers.remote[peer]){
-            peers.remote[peer] = {
-                mousePointer: cy.add({
-                    group: 'nodes',
-                    data: { id: peer, label: peer, colour: randomColor()}, // Add a default color if needed },
-                    position: position,
-                    grabbable: false, // Prevents dragging
-                    selectable: false, // Prevents selection
-                    classes: 'peerPointer'
-
-                })
-            }
-        }else {
-            peers.remote[peer].mousePointer.position(position)
-
-        }
-    }
-
-    function sendEphemeralData (msg){
-        // only send once doc is ready
-        if(handle){
-            handle.broadcast(msg);
-        }
-        
-    }
 
     // modify graph edge control point distance
     const CPDslider = document.getElementById('controlPointDistance')
@@ -1550,37 +1366,191 @@ document.addEventListener("DOMContentLoaded", function () {
         .update();
     }
 
-    /* 
-    // modify historyCy zoom
-    const docHistoryCy_Zoom = document.getElementById('docHistoryCy-Zoom')
+    //*
+    //* PATCHING
+    //*
 
-    docHistoryCy_Zoom.addEventListener('input', function() {
-    updatedocHistoryCy_Zoom(this.value)
-        localStorage.setItem('docHistoryCy_Zoom', docHistoryCy_Zoom.value);
-    });
+    let highlightedEdge = null; // Variable to store the currently highlighted edge
 
-    // Retrieve the saved slider value from localStorage and set it
-    const docHistoryCy_Zoom_Saved = localStorage.getItem('docHistoryCy_Zoom');
-    if (docHistoryCy_Zoom_Saved !== null) {
-        docHistoryCy_Zoom.value = docHistoryCy_Zoom_Saved;
+    // function to create a cable
+
+    function startCable(source, position){
+        temporaryCables.local.source = source;
+        const mousePos = position;
+
+        // Get the ghostCable property from the temporaryCables.local.ghostNode, default to 'ellipse' if undefined
+        const ghostShape =  temporaryCables.local.source.data('ghostCableShape') || 'ellipse';
+        const ghostColour =  temporaryCables.local.source.data('ghostCableColour') || '#5C9AE3';
+
+        // Create a ghost node at the mouse position to act as the moving endpoint
+        temporaryCables.local.ghostNode = cy.add({
+            group: 'nodes',
+            data: { id: 'localGhostNode' },
+            position: mousePos,
+            grabbable: false, // Ghost node shouldn't be draggable
+            classes: 'ghostNode'
+        });
+
+        // Apply the ghostShape to the ghostNode using a direct style override
+        temporaryCables.local.ghostNode.style({
+            'shape': ghostShape,
+            'background-color': ghostColour
+        });
+        // Create a temporary edge from ghostNodes.local.source to temporaryCables.local.ghostNode
+        temporaryCables.local.tempEdge = cy.add({
+            group: 'edges',
+            data: { id: 'localTempEdge', source: temporaryCables.local.source.id(), target: 'localGhostNode' },
+            classes: 'tempEdge'
+        });
+
+        // Set target endpoint to mouse position initially
+        temporaryCables.local.tempEdge.style({ 'line-color': '#FFA500', 'line-style': 'dashed' }); // Set temporary edge color        
+    }
+
+    function handleRemoteCables(cmd,  peerID, sourceID, position){
         
-        updatedocHistoryCy_Zoom(docHistoryCy_Zoom_Saved)
-    }
+        switch(cmd){
+            
+            case 'startRemoteGhostCable':
+                let ghostId = `ghostNode-${peerID}`
+                let tempEdgeID = `tempEdge-${peerID}`
+                
+                temporaryCables.peers[peerID] = {
+                    source: cy.getElementById(sourceID),
+                    // Create a ghost node at the mouse position to act as the moving endpoint
+                    ghostNode: cy.add({
+                        group: 'nodes',
+                        data: { id: ghostId },
+                        position: position,
+                        grabbable: false, // Ghost node shouldn't be draggable
+                        classes: 'ghostNode'
+                    }),
+                    // Create a temporary edge from temporaryCables.local.source to ghostNode
+                    tempEdge: cy.add({
+                        group: 'edges',
+                        data: { id: tempEdgeID, source: sourceID, target: ghostId },
+                        classes: 'tempEdge'
+                    }),
+                    targetNode: null
+                }
+                
+                // set ghostNode Style according to opposite of source Node
+                const ghostShape = temporaryCables.peers[peerID].source.data('ghostCableShape') || 'ellipse';
+                const ghostColour = temporaryCables.peers[peerID].source.data('ghostCableColour') || '#5C9AE3';
+                temporaryCables.peers[peerID].ghostNode.style({
+                    'shape': ghostShape,
+                    'background-color': ghostColour
+                });
 
-    function updatedocHistoryCy_Zoom(x){
-        if (historyCy.zoomingEnabled()) {
-            historyCy.zoom({
-                level: parseFloat(x), // Ensure the input is a number
-                position: { x: 0, y: 0 } // Optionally set a different position if needed
-            });
-        } else {
-            console.warn("Zooming is not enabled on this Cytoscape instance.");
+                temporaryCables.peers[peerID].tempEdge.style({ 'line-color': '#228B22', 'line-style': 'dashed' }); // Set peer temporary edge color
+            break;
+
+            case 'updateRemoteGhostCable':
+                // update the tmporary cable's position
+                temporaryCables.peers[peerID].ghostNode.position(position)
+            break
+
+            case 'finishRemoteGhostCable':
+                // remove the tempEdge
+                cy.remove(temporaryCables.peers[peerID].tempEdge)
+                // remove remote ghostnode
+                cy.remove(temporaryCables.peers[peerID].ghostNode);
+                cy.nodes().removeClass('highlighted');
+
+                // remove remote peer's temporary cable from object
+                delete temporaryCables.peers[peerID]
+
+            break;
+
         }
-    }
-    */
 
+    } 
+
+    function addModule(module, position, children) {
+        
+        const parentNode = new ParentNode(module, position, children);
+
+        // parentNode.getModule('oscillator')
+        const { parentNode: parentNodeData, childrenNodes } = parentNode.getNodeStructure();
+    
+        // Add nodes to Cytoscape
+        cy.add(parentNodeData);
+        cy.add(childrenNodes);
+    
+        // Update Automerge document
+        handle.change((doc) => {
+            doc.elements.push(parentNodeData);
+            doc.elements.push(...childrenNodes);
+
+        },{
+            message: `add ${parentNodeData.data.id}` // Set a custom change message here
+        }
+    );
+    }
     
 
+    function updateSliderBoundaries(parentNode){
+        // Update the position constraints for all slider handles that are children of this parent node
+        cy.nodes(`node[parent="${parentNode.data().id}"]`).forEach((childNode) => {
+            if (childNode.hasClass('sliderHandle')) {
+                const trackLength = childNode.data('length') || 100; // Assuming track length is stored in data
+                const newTrackStartX = parentNode.position().x - trackLength / 2;
+                const newTrackEndX = parentNode.position().x + trackLength / 2;
+                const fixedY = parentNode.position().y; // Update if necessary based on your layout logic
+
+                // Update data attributes for the handle to use when dragging
+                childNode.data('trackStartX', newTrackStartX);
+                childNode.data('trackEndX', newTrackEndX);
+                childNode.data('fixedY', fixedY);
+            }
+        });
+    }
+
+    function displayPeerPointers(peer, position){
+        if(!peers.remote[peer]){
+            peers.remote[peer] = {
+                mousePointer: cy.add({
+                    group: 'nodes',
+                    data: { id: peer, label: peer, colour: randomColor()}, // Add a default color if needed },
+                    position: position,
+                    grabbable: false, // Prevents dragging
+                    selectable: false, // Prevents selection
+                    classes: 'peerPointer'
+
+                })
+            }
+        }else {
+            peers.remote[peer].mousePointer.position(position)
+
+        }
+    }
+
+
+    //*
+    //*
+    //* UTILITY FUNCTIONS
+    //* reusable helper functions and utility code for debugging, logging, etc.
+    //*
+
+    // Helper function to detect if the click is near an endpoint of an edge
+    function isNearEndpoint(mousePos, endpointPos, threshold = 50) {
+        const dx = mousePos.x - endpointPos.x;
+        const dy = mousePos.y - endpointPos.y;
+        return Math.sqrt(dx * dx + dy * dy) <= threshold;
+    }
+
+    // Helper function to find elements at a specific point
+    function getElementsAtPoint(cy, x, y) {
+        return cy.elements().filter((ele) => {
+            const bb = ele.boundingBox();
+            return (
+                x >= bb.x1 &&
+                x <= bb.x2 &&
+                y >= bb.y1 &&
+                y <= bb.y2
+            );
+        });
+    }
 });
 
 
