@@ -708,6 +708,36 @@ document.addEventListener("DOMContentLoaded", function () {
 
         })
     
+
+        async function loadVersion(targetHash) {
+            // Initialize an empty document state
+            const initialDoc = automergeInit();
+            const forkedHandle = repo.create(initialDoc); // Create a handle in repo
+        
+            await forkedHandle.whenReady(); // Ensure handle is ready
+        
+            // Find the target index in history based on the hash
+            const targetIndex = historyNodes.findIndex(node => node.data.id === targetHash);
+            if (targetIndex === -1) {
+                console.error("Target hash not found in document history.");
+                return;
+            }
+        
+            // Use repo's built-in patch functionality to get a patch to this hash
+            const patch = await forkedHandle.patch(targetHash);
+        
+            // Apply the patch to our document
+            forkedHandle.change(doc => {
+                Automerge.applyPatch(doc, patch);
+            });
+        
+            console.log(`Document successfully loaded to state at hash ${targetHash}`);
+            // return forkedHandle;
+            updateCytoscapeFromDocument(forkedHandle);
+
+        }
+
+        /*
         async function loadVersion(targetHash) {
             // Set a batch size based on your performance tolerance
             const BATCH_SIZE = 100; // Adjust as needed
@@ -749,7 +779,6 @@ document.addEventListener("DOMContentLoaded", function () {
         
                 // Apply changes in the batch if it reaches the batch size or if it's the last batch
                 if (batch.length >= BATCH_SIZE || i === orderedHistory.length -1) {
-                    console.log('snared')
                     try {
                         forkedDoc = applyNewChanges(forkedDoc, batch);
                         forkedDoc = getClone(forkedDoc); // Clone only after applying the batch
@@ -768,7 +797,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // Usage: assuming `cy` is your Cytoscape instance and `forkedDoc` holds the document state
             updateCytoscapeFromDocument(forkedHandle);
         }
-
+        */
         // cmd + scroll = scroll vertically through history graph
         document.addEventListener('wheel', function(event) {
             if(allowPan){
