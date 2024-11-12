@@ -16,6 +16,8 @@ let Automerge;
 let amDoc = null
 let docID = null
 let saveInterval = 2000; // how frequently to store the automerge document in indexedDB
+
+
 // * old automerge-repo stuff
 // todo: phase out
 
@@ -361,7 +363,6 @@ document.addEventListener("DOMContentLoaded", function () {
     
         // todo: if we set a different string as docId and pass it into await loadDocument(), it will return a new document for the user
         docID = 'forkingPathsDoc2'; // Unique identifier for the document
-
         // Load the document from IndexedDB or create a new one if it doesn't exist
         amDoc = await loadDocument(docID);
         if (!amDoc) {
@@ -382,7 +383,6 @@ document.addEventListener("DOMContentLoaded", function () {
         // Function to update the document and save changes
         async function updateAndSaveDocument(changeCallback) {
             amDoc = Automerge.change(amDoc, changeCallback);
-            await saveDocument(docID, Automerge.save(amDoc)); // Save updated doc state to IndexedDB
         }
     
         // Example usage of updateAndSaveDocument to modify the document
