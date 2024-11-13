@@ -984,6 +984,21 @@ document.addEventListener("DOMContentLoaded", function () {
                         // delete the cable
                         cy.remove(edge);
                         // also remove the cable from automerge!
+
+                        // * automerge version:      
+                        let changeMessage =`disconnect ${edge.data().source} from ${edge.data().target}`
+                        amDoc = applyChange(amDoc, (amDoc) => {
+                            // Find the index of the object that matches the condition
+                            const index = amDoc.elements.findIndex(el => el.id === edge.data().id);
+
+                            // If a match is found, remove the object from the array
+                            if (index !== -1) {
+                                amDoc.elements.splice(index, 1);
+                            }
+                        }, onChange, changeMessage);
+
+
+                        //* old -repo version
                         handle.change((newDoc) => {
                             // Assuming the array is `doc.elements` and you have an object `targetObj` to match and remove
                             
@@ -1019,6 +1034,21 @@ document.addEventListener("DOMContentLoaded", function () {
                         cy.remove(edge);
 
                         // also remove the cable from automerge!
+
+                        // * automerge version:      
+                        let changeMessage =`disconnect ${edge.data().target} from ${edge.data().source}`
+                        amDoc = applyChange(amDoc, (amDoc) => {
+                            // Find the index of the object that matches the condition
+                            const index = amDoc.elements.findIndex(el => el.id === edge.data().id);
+
+                            // If a match is found, remove the object from the array
+                            if (index !== -1) {
+                                amDoc.elements.splice(index, 1);
+                            }
+                        }, onChange, changeMessage);
+
+
+                        //* old -repo version
                         handle.change((newDoc) => {
                             // Assuming the array is `doc.elements` and you have an object `targetObj` to match and remove
                             
