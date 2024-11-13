@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../node_modules/@automerge/automerge-repo/dist/entrypoints/fullfat.js"],
+  "sourcesContent": ["export * from \"../index.js\";\n// The following import triggers the various mechanisms in @automerge/automerge\n// which attempt to figure out what kind of environment we are in and\n// initialize the wasm blob correspondingly. Note that we have a custom eslint\n// rule which would complain about the non-slim import here which we have to\n// disable\n//\n// eslint-disable-next-line automerge-slimport/enforce-automerge-slim-import\nimport { next as Am } from \"@automerge/automerge\";\nAm.init();\n"],
+  "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AASA,kBAAG,KAAK;",
+  "names": []
+}

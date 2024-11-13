@@ -119,7 +119,8 @@ document.addEventListener("DOMContentLoaded", function () {
             name: 'preset', // Preset layout allows manual positioning
             
         },
-
+        fit: false,
+        resize: false,
         style: [
             {
                 selector: 'node',
@@ -243,8 +244,8 @@ document.addEventListener("DOMContentLoaded", function () {
                         'text-margin-x': 70,
                         'text-opacity': 1, // Ensure no text is shown
                         'outline-width': 0, // Remove focus outline
-                        'user-select': 'none', // Prevent text selection
-                        'pointer-events': 'none' // Disable pointer events on the track
+                        // 'user-select': 'none', // Prevent text selection
+                        // 'pointer-events': 'none' // Disable pointer events on the track
                 }
             },
             {
@@ -257,8 +258,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     'label': '', // Remove label for handle
                     'text-opacity': 0, // Ensure no text is shown
                     'outline-width': 0, // Remove focus outline
-                    'user-select': 'none', // Prevent text selection
-                    'pointer-events': 'auto' // Enable pointer events for handle
+                    // 'user-select': 'none', // Prevent text selection
+                    // 'pointer-events': 'auto' // Enable pointer events for handle
                 }
             },
             {
@@ -273,7 +274,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     'text-margin-x': -60, // Adjust the margin to position the label above the slider
                     'text-margin-y': -10, // Adjust the margin to position the label above the slider
                     'font-weight': 'bold', // Make the label stand out
-                    'pointer-events': 'none', // Prevent interaction with the label
+                    // 'pointer-events': 'none', // Prevent interaction with the label
                     'text-background-opacity': 1, // Background for readability (set to 0 if not needed)
                     'text-background-color': '#FFFFFF', // Light background for better visibility
                     'text-background-padding': 2, // Add slight padding to the background
@@ -379,11 +380,15 @@ document.addEventListener("DOMContentLoaded", function () {
             // set the document title in the editor pane
             document.getElementById('documentName').textContent = `Loaded Document:\n${amDoc.title}`;
 
+            updateHistory()
+
             await saveDocument(docID, Automerge.save(amDoc));
         } else {
             // If loaded, convert saved document state back to Automerge document
             amDoc = Automerge.load(amDoc);
             
+            updateHistory()
+
             // set the document title in the editor pane
             document.getElementById('documentName').textContent = `Loaded Document:\n${amDoc.title}`;
         }
@@ -399,7 +404,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Custom function to handle document changes and call a callback
     function applyChange(doc, changeCallback, onChangeCallback, changeMessage) {
-        console.log(changeMessage)
+        
         // Apply the change using Automerge.change
         const newDoc = Automerge.change(doc, { message: changeMessage }, changeCallback);
 
@@ -418,8 +423,104 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // set docUpdated so that indexedDB will save it
         docUpdated = true
+
     };
     
+
+
+    function addToHistoryGraph(elements, historyLength){
+        // Add elements to Cytoscape
+        historyCy.add(elements);
+        historyCy.layout({ name: 'dagre', rankDir: 'BT' }).run();
+        previousHistoryLength = historyLength
+    }
+
+    function updateHistory(){
+        // Extract the history from the document using the latest Automerge
+        // history = retrieveHistory(handle.docSync());
+        history = Automerge.getHistory(amDoc)
+        // get only the latest changes     
+        let arrayLengthDifference = history.length - previousHistoryLength
+        let historyUpdates = history.slice(-arrayLengthDifference)
+        // temporary array to store nodes and edges that we'll add to cytoscape instance
+        const elements = [];
+
+        // Track existing node IDs, including those already in the full history
+        const nodeIds = new Set(history.map(entry => entry.change.hash));
+
+        // Create nodes for each change in the history updates
+        historyUpdates.forEach((entry) => {
+
+            //! note that this stuff here might not be necessary 
+            // Serialize the change data and store it in the node's data object
+            // let serializedChange;
+            // try {
+            //     let change = entry.change.bytes || entry.change.raw || Automerge.automergeEncodeChange(entry.change);
+            //     serializedChange = new Uint8Array(change); // Explicitly ensure Uint8Array format
+            // } catch (error) {
+            //     console.error(`Error serializing change at index:`, error);
+            //     return; // Skip this change if it can't be serialized
+            // }
+            
+            const nodeId = entry.change.hash;
+            nodeIds.add(nodeId);
+            let bgColour = "#ccc"
+            if(entry.change.message){
+                bgColour = docHistoryGraphStyling.nodeColours[entry.change.message.split(' ')[0]]
+            }
+            elements.push({
+                data: {
+                    id: nodeId,
+                    label: entry.change.message || 'new document',
+                    actor: entry.change.actor,
+                    color: bgColour,
+                    // serializedChange: serializedChange
+                },
+                classes: 'node'
+            });
+
+            historyNodes.push({
+                data: {
+                    id: nodeId,
+                    label: entry.change.message || 'new document',
+                    actor: entry.change.actor,
+                    color: bgColour,
+                    // serializedChange: serializedChange
+                },
+                classes: 'node'
+            })
+        });
+        
+        // Create edges based on dependencies between changes
+        historyUpdates.forEach(entry => {                
+            entry.change.deps.forEach(dep => {
+                if (entry.change.hash && dep && nodeIds.has(dep) && nodeIds.has(dep)) {
+                    elements.push({
+                        data: {
+                            id: `${entry.change.hash}-${dep}`,
+                            source: dep,
+                            target: entry.change.hash
+                        },
+                        classes: 'edge'
+                    });
+                } else {
+                    console.warn(`Skipping edge creation: ${entry.change.hash}-${dep} because one or both nodes do not exist`);
+                }
+            });
+        });
+        
+        // Add elements to Cytoscape
+        addToHistoryGraph(elements, history.length)
+    }
+
+
+
+
+
+
+
+
+
 
 
     //TODO OLD AUTOMERGE-REPO IMPLEMENTATION, PHASE IT OUT EVENTUALLY
@@ -539,6 +640,11 @@ document.addEventListener("DOMContentLoaded", function () {
             }
     
             // Extract the history from the document using the latest Automerge
+            // * automerge version
+            //! note that i moved it to the automerge init asyc function
+
+            // * -repo version
+            /*
             history = getHistory(currentDoc);
             if (!history || history.length === 0) {
                 console.error('No history available for the document.');
@@ -615,6 +721,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 addToHistoryGraph(elements, history.length)
             }
+
+            */
         } catch (error) {
             console.error('Error extracting or visualizing history:', error);
         }
@@ -668,42 +776,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Function to update Cytoscape with the state from forkedDoc
     function updateCytoscapeFromDocument(forkedDoc) {
-
-        console.log("History Nodes:", historyNodes.map((node, index) => ({
-            index,
-            hash: node.data.id,
-            message: node.data.label,
-            change: node.data.serializedChange
-        })));
-
-        console.log('forkedDoc.doc.elements',forkedDoc.doc())
-        // 1. Extract nodes and edges from `forkedDoc`
-        const elements = forkedDoc.elements || [];
+        let elements = forkedDoc.elements
         console.log(elements)
-        // Separate nodes and edges
-        const nodes = elements.filter(el => el.type === 'node').map(node => ({
-            data: {
-                id: node.data.id,
-                label: node.data.label,
-                ...node.data // any additional node properties
-            },
-            position: node.position || { x: 0, y: 0 } // default position if not set
-        }));
-
-        const edges = elements.filter(el => el.type === 'edge').map(edge => ({
-            data: {
-                id: edge.data.id,
-                source: edge.data.source,
-                target: edge.data.target,
-                ...edge.data // any additional edge properties
-            }
-        }));
-        console.log(nodes)
         // 2. Clear existing elements from Cytoscape instance
         cy.elements().remove();
-        console.log(cy.elements())
+        
+        for(let i = 0; i < elements.length; i++){
+            if(elements[i].classes === ':parent'){
+                console.log(elements[i])
+            }
+            
+        }
         // 3. Add new elements to Cytoscape
-        cy.add([...nodes, ...edges]);
+        cy.add(elements)
 
         // Optional: Run layout
         cy.layout({ name: 'preset' }).run(); // `preset` uses the position data directly
@@ -715,117 +800,100 @@ document.addEventListener("DOMContentLoaded", function () {
         DOCUMENT HISTORY CYTOSCAPE
     */
 
-        function addToHistoryGraph(elements, historyLength){
-            // Add elements to Cytoscape
-            historyCy.add(elements);
-            historyCy.layout({ name: 'dagre', rankDir: 'BT' }).run();
-            previousHistoryLength = historyLength
-        }
+        // function addToHistoryGraph(elements, historyLength){
+        //     // Add elements to Cytoscape
+        //     historyCy.add(elements);
+        //     historyCy.layout({ name: 'dagre', rankDir: 'BT' }).run();
+        //     previousHistoryLength = historyLength
+        // }
 
-        function updateHistory(){
-            // Extract the history from the document using the latest Automerge
-            history = retrieveHistory(handle.docSync());
-            // get only the latest changes     
-            let arrayLengthDifference = history.length - previousHistoryLength
-            let historyUpdates = history.slice(-arrayLengthDifference)
-            // temporary array to store nodes and edges that we'll add to cytoscape instance
-            const elements = [];
+        // function updateHistory(){
+        //     // Extract the history from the document using the latest Automerge
+        //     history = retrieveHistory(handle.docSync());
+        //     // get only the latest changes     
+        //     let arrayLengthDifference = history.length - previousHistoryLength
+        //     let historyUpdates = history.slice(-arrayLengthDifference)
+        //     // temporary array to store nodes and edges that we'll add to cytoscape instance
+        //     const elements = [];
 
-            // Track existing node IDs, including those already in the full history
-            const nodeIds = new Set(history.map(entry => entry.change.hash));
+        //     // Track existing node IDs, including those already in the full history
+        //     const nodeIds = new Set(history.map(entry => entry.change.hash));
 
-            // Create nodes for each change in the history updates
-            historyUpdates.forEach((entry) => {
+        //     // Create nodes for each change in the history updates
+        //     historyUpdates.forEach((entry) => {
 
-                // Serialize the change data and store it in the node's data object
-                let serializedChange;
-                try {
-                    let change = entry.change.bytes || entry.change.raw || automergeEncodeChange(entry.change);
-                    serializedChange = new Uint8Array(change); // Explicitly ensure Uint8Array format
-                } catch (error) {
-                    console.error(`Error serializing change at index:`, error);
-                    return; // Skip this change if it can't be serialized
-                }
+        //         // Serialize the change data and store it in the node's data object
+        //         let serializedChange;
+        //         try {
+        //             let change = entry.change.bytes || entry.change.raw || automergeEncodeChange(entry.change);
+        //             serializedChange = new Uint8Array(change); // Explicitly ensure Uint8Array format
+        //         } catch (error) {
+        //             console.error(`Error serializing change at index:`, error);
+        //             return; // Skip this change if it can't be serialized
+        //         }
                 
-                const nodeId = entry.change.hash;
-                nodeIds.add(nodeId);
-                let bgColour = "#ccc"
-                if(entry.change.message){
-                    bgColour = docHistoryGraphStyling.nodeColours[entry.change.message.split(' ')[0]]
-                }
-                elements.push({
-                    data: {
-                        id: nodeId,
-                        label: entry.change.message || 'new document',
-                        actor: entry.change.actor,
-                        color: bgColour,
-                        serializedChange: serializedChange
-                    },
-                    classes: 'node'
-                });
+        //         const nodeId = entry.change.hash;
+        //         nodeIds.add(nodeId);
+        //         let bgColour = "#ccc"
+        //         if(entry.change.message){
+        //             bgColour = docHistoryGraphStyling.nodeColours[entry.change.message.split(' ')[0]]
+        //         }
+        //         elements.push({
+        //             data: {
+        //                 id: nodeId,
+        //                 label: entry.change.message || 'new document',
+        //                 actor: entry.change.actor,
+        //                 color: bgColour,
+        //                 serializedChange: serializedChange
+        //             },
+        //             classes: 'node'
+        //         });
 
-                historyNodes.push({
-                    data: {
-                        id: nodeId,
-                        label: entry.change.message || 'new document',
-                        actor: entry.change.actor,
-                        color: bgColour,
-                        serializedChange: serializedChange
-                    },
-                    classes: 'node'
-                })
-            });
+        //         historyNodes.push({
+        //             data: {
+        //                 id: nodeId,
+        //                 label: entry.change.message || 'new document',
+        //                 actor: entry.change.actor,
+        //                 color: bgColour,
+        //                 serializedChange: serializedChange
+        //             },
+        //             classes: 'node'
+        //         })
+        //     });
             
-            // Create edges based on dependencies between changes
-            historyUpdates.forEach(entry => {                
-                entry.change.deps.forEach(dep => {
-                    if (entry.change.hash && dep && nodeIds.has(dep) && nodeIds.has(dep)) {
-                        elements.push({
-                            data: {
-                                id: `${entry.change.hash}-${dep}`,
-                                source: dep,
-                                target: entry.change.hash
-                            },
-                            classes: 'edge'
-                        });
-                    } else {
-                        console.warn(`Skipping edge creation: ${entry.change.hash}-${dep} because one or both nodes do not exist`);
-                    }
-                });
-            });
+        //     // Create edges based on dependencies between changes
+        //     historyUpdates.forEach(entry => {                
+        //         entry.change.deps.forEach(dep => {
+        //             if (entry.change.hash && dep && nodeIds.has(dep) && nodeIds.has(dep)) {
+        //                 elements.push({
+        //                     data: {
+        //                         id: `${entry.change.hash}-${dep}`,
+        //                         source: dep,
+        //                         target: entry.change.hash
+        //                     },
+        //                     classes: 'edge'
+        //                 });
+        //             } else {
+        //                 console.warn(`Skipping edge creation: ${entry.change.hash}-${dep} because one or both nodes do not exist`);
+        //             }
+        //         });
+        //     });
             
-            // Add elements to Cytoscape
-            addToHistoryGraph(elements, history.length)
-        }
-
-
+        //     // Add elements to Cytoscape
+        //     addToHistoryGraph(elements, history.length)
+        // }
     
-
+        // WOOHOO this is working!!!
         async function loadVersion(targetHash) {
-            // Initialize an empty document state
-            const initialDoc = automergeInit();
-            const forkedHandle = repo.create(initialDoc); // Create a handle in repo
-        
-            await forkedHandle.whenReady(); // Ensure handle is ready
-        
-            // Find the target index in history based on the hash
-            const targetIndex = historyNodes.findIndex(node => node.data.id === targetHash);
-            if (targetIndex === -1) {
-                console.error("Target hash not found in document history.");
-                return;
-            }
-        
-            // Use repo's built-in patch functionality to get a patch to this hash
-            const patch = await forkedHandle.patch(targetHash);
-        
-            // Apply the patch to our document
-            forkedHandle.change(doc => {
-                Automerge.applyPatch(doc, patch);
-            });
-        
-            console.log(`Document successfully loaded to state at hash ${targetHash}`);
-            // return forkedHandle;
-            updateCytoscapeFromDocument(forkedHandle);
+            
+            // Get the hash of a specific change in the document
+            const allHeads = Automerge.getHeads(amDoc); // Get current heads (hashes) for this document state
+            // targetHash = allHeads[0]; // Example: Use the first head (you could use another specific hash here)
+            
+            // Use `Automerge.view()` to view the state at this specific point in history
+            const historicalView = Automerge.view(amDoc, [targetHash]);
+
+            updateCytoscapeFromDocument(historicalView);
 
         }
 
@@ -1293,8 +1361,17 @@ document.addEventListener("DOMContentLoaded", function () {
                 const elementIndex = amDoc.elements.findIndex(el => el.data.id === heldModule.data().id);
                 if (elementIndex !== -1) {
                     // update the position
-                    amDoc.elements[elementIndex].position.x = heldModule.position().x;
-                    amDoc.elements[elementIndex].position.y = heldModule.position().y;
+                    amDoc.elements[elementIndex].position = {
+                        x: heldModule.position().x,
+                        y: heldModule.position().y
+                    };
+                    // console.log("Position object:", JSON.stringify(amDoc.elements[elementIndex].position));
+                    // console.log(heldModule.position().x)
+                    // amDoc.elements[elementIndex].position.x = heldModule.position().x;
+                    // amDoc.elements[elementIndex].position.y = heldModule.position().y;
+                    console.log(elementIndex)
+                    console.log(amDoc.elements,  "Position object:", JSON.stringify(amDoc.elements[elementIndex].position));
+
                 }
     
             }, onChange, `move ${heldModule.data().label}`);
@@ -1305,6 +1382,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 const elementIndex = newDoc.elements.findIndex(el => el.data.id === heldModule.data().id);
                 if (elementIndex !== -1) {
                     // update the position
+                    
                     newDoc.elements[elementIndex].position.x = heldModule.position().x;
                     newDoc.elements[elementIndex].position.y = heldModule.position().y;
                 }

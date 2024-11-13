@@ -1,0 +1,64 @@
+{
+  "hash": "87766dc2",
+  "configHash": "fe11929c",
+  "lockfileHash": "164ff687",
+  "browserHash": "4e0d8fff",
+  "optimized": {
+    "randomcolor": {
+      "src": "../../node_modules/randomcolor/randomColor.js",
+      "file": "randomcolor.js",
+      "fileHash": "5501238b",
+      "needsInterop": true
+    },
+    "cytoscape-dagre": {
+      "src": "../../node_modules/cytoscape-dagre/cytoscape-dagre.js",
+      "file": "cytoscape-dagre.js",
+      "fileHash": "66f1dd0a",
+      "needsInterop": true
+    },
+    "@automerge/automerge-repo": {
+      "src": "../../node_modules/@automerge/automerge-repo/dist/entrypoints/fullfat.js",
+      "file": "@automerge_automerge-repo.js",
+      "fileHash": "aac11aaa",
+      "needsInterop": false
+    },
+    "@automerge/automerge-repo-network-websocket": {
+      "src": "../../node_modules/@automerge/automerge-repo-network-websocket/dist/index.js",
+      "file": "@automerge_automerge-repo-network-websocket.js",
+      "fileHash": "f403a1cb",
+      "needsInterop": false
+    },
+    "@automerge/automerge-repo-storage-indexeddb": {
+      "src": "../../node_modules/@automerge/automerge-repo-storage-indexeddb/dist/index.js",
+      "file": "@automerge_automerge-repo-storage-indexeddb.js",
+      "fileHash": "af968659",
+      "needsInterop": false
+    },
+    "@automerge/automerge": {
+      "src": "../../node_modules/@automerge/automerge/dist/mjs/entrypoints/fullfat_bundler.js",
+      "file": "@automerge_automerge.js",
+      "fileHash": "aa4e6da5",
+      "needsInterop": false
+    },
+    "uuidv7": {
+      "src": "../../node_modules/uuidv7/dist/index.js",
+      "file": "uuidv7.js",
+      "fileHash": "1a8903f9",
+      "needsInterop": false
+    }
+  },
+  "chunks": {
+    "chunk-TZKWBPGU": {
+      "file": "chunk-TZKWBPGU.js"
+    },
+    "chunk-34IDGSEW": {
+      "file": "chunk-34IDGSEW.js"
+    },
+    "chunk-MXFFLMHY": {
+      "file": "chunk-MXFFLMHY.js"
+    },
+    "chunk-SNAQBZPT": {
+      "file": "chunk-SNAQBZPT.js"
+    }
+  }
+}
