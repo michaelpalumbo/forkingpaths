@@ -985,8 +985,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         cy.remove(edge);
                         // also remove the cable from automerge!
 
-                        // * automerge version:      
-                        let changeMessage =`disconnect ${edge.data().source} from ${edge.data().target}`
+                        // * automerge version: 
                         amDoc = applyChange(amDoc, (amDoc) => {
                             // Find the index of the object that matches the condition
                             const index = amDoc.elements.findIndex(el => el.id === edge.data().id);
@@ -995,7 +994,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             if (index !== -1) {
                                 amDoc.elements.splice(index, 1);
                             }
-                        }, onChange, changeMessage);
+                        }, onChange, `disconnect ${edge.data().source} from ${edge.data().target}`);
 
 
                         //* old -repo version
@@ -1036,7 +1035,6 @@ document.addEventListener("DOMContentLoaded", function () {
                         // also remove the cable from automerge!
 
                         // * automerge version:      
-                        let changeMessage =`disconnect ${edge.data().target} from ${edge.data().source}`
                         amDoc = applyChange(amDoc, (amDoc) => {
                             // Find the index of the object that matches the condition
                             const index = amDoc.elements.findIndex(el => el.id === edge.data().id);
@@ -1045,7 +1043,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             if (index !== -1) {
                                 amDoc.elements.splice(index, 1);
                             }
-                        }, onChange, changeMessage);
+                        }, onChange, `disconnect ${edge.data().target} from ${edge.data().source}`);
 
 
                         //* old -repo version
@@ -1249,16 +1247,14 @@ document.addEventListener("DOMContentLoaded", function () {
                     data: { id: edgeId, source: temporaryCables.local.source.id(), target: temporaryCables.local.targetNode.id(), kind: 'cable' },
                     classes: 'edge'
                 });
-                // * automerge version:
-                let changeMessage = `connect ${temporaryCables.local.source.id()} to ${temporaryCables.local.targetNode.id()}`
-                
+                // * automerge version:                
                 amDoc = applyChange(amDoc, (amDoc) => {
                     amDoc.elements.push({
                         type: 'edge',
                         id: edgeId,
                         data: { id: edgeId, source: temporaryCables.local.source.id(), target: temporaryCables.local.targetNode.id(), kind: 'cable' }
                     });
-                }, onChange, changeMessage);
+                }, onChange,  `connect ${temporaryCables.local.source.id()} to ${temporaryCables.local.targetNode.id()}`);
 
 
                 //* old -repo version
@@ -1296,7 +1292,19 @@ document.addEventListener("DOMContentLoaded", function () {
             temporaryCables.local.targetNode = null;
             temporaryCables.local.ghostNode = null;
         } else if (heldModule){
+            // * automerge version: 
             
+            amDoc = applyChange(amDoc, (amDoc) => {
+                const elementIndex = amDoc.elements.findIndex(el => el.data.id === heldModule.data().id);
+                if (elementIndex !== -1) {
+                    // update the position
+                    amDoc.elements[elementIndex].position.x = heldModule.position().x;
+                    amDoc.elements[elementIndex].position.y = heldModule.position().y;
+                }
+    
+            }, onChange, `move ${heldModule.data().label}`);
+
+            //* old -repo version
             handle.change((newDoc) => {                
                 
                 const elementIndex = newDoc.elements.findIndex(el => el.data.id === heldModule.data().id);
@@ -1400,8 +1408,51 @@ document.addEventListener("DOMContentLoaded", function () {
                 cy.remove(highlightedNode); // Remove the node from the Cytoscape instance
                 highlightedNode = null; // Clear the reference after deletion
 
-
                 // Update the Automerge document to reflect the deletion
+
+                // * automerge version:
+                
+                amDoc = applyChange(amDoc, (amDoc) => {
+
+                    const elementIndex = amDoc.elements.findIndex(el => el.data.id === nodeId);
+                    // IMPORTANT: here we need to remove elements in this order:
+                    // 1. connected edges
+                    // 2. children belonging to the parentNode
+                    // 3. the parentNode
+                    // any other order, and cytoscape throws an error because it attempts to draw the descendents
+
+                    // Collect IDs of child nodes to remove edges connected to them
+                    const childNodeIds = [];
+                    for (let i = amDoc.elements.length - 1; i >= 0; i--) {
+                        if (amDoc.elements[i].data.parent === nodeId) {
+                            childNodeIds.push(amDoc.elements[i].data.id); // Collect the child node ID
+                        }
+                    }
+
+                    // Remove edges connected to the child nodes
+                    for (let i = amDoc.elements.length - 1; i >= 0; i--) {
+                        const element = amDoc.elements[i];
+                        if (element.type === 'edge' &&
+                            (childNodeIds.includes(element.data.source) || childNodeIds.includes(element.data.target))) {
+                                amDoc.elements.splice(i, 1); // Remove the edge
+                        }
+                    }
+
+                    // Iterate through the array to remove child nodes
+                    for (let i = amDoc.elements.length - 1; i >= 0; i--) {
+                        if (amDoc.elements[i].data.parent === nodeId) {
+                            amDoc.elements.splice(i, 1);
+                        }
+                    }
+                    
+                    if (elementIndex !== -1) {
+                        amDoc.elements.splice(elementIndex, 1); // Remove the node from the Automerge document
+                    }
+                }, onChange, `remove ${nodeId}`);
+
+
+
+                //* old -repo version
                 handle.change((doc) => {
                     const elementIndex = doc.elements.findIndex(el => el.data.id === nodeId);
                     // IMPORTANT: here we need to remove elements in this order:
@@ -1613,14 +1664,12 @@ document.addEventListener("DOMContentLoaded", function () {
         cy.add(parentNodeData);
         cy.add(childrenNodes);
     
-        // * automerge version:
-        let changeMessage = `add ${parentNodeData.data.id}`
-        
+        // * automerge version:        
         amDoc = applyChange(amDoc, (amDoc) => {
             amDoc.elements.push(parentNodeData);
             amDoc.elements.push(...childrenNodes);
-        }, onChange, changeMessage);
-        console.log(amDoc)
+        }, onChange, `add ${parentNodeData.data.id}`);
+        
 
         // todo: remove the -repo version once AM is working
         // Update Automerge-repo document
