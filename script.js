@@ -20,6 +20,9 @@ let docID = null
 let saveInterval = 2000; // how frequently to store the automerge document in indexedDB
 let onChange; // my custom automerge callback for changes made to the doc
 let docUpdated = false // set this to true whenever doc has changed so that indexedDB will store it. after set it back to false
+let clones = {}
+
+let historyHighlightedNode = null
 // * old automerge-repo stuff
 // todo: phase out
 
@@ -347,7 +350,14 @@ document.addEventListener("DOMContentLoaded", function () {
                     'curve-style': 'bezier' // Use a Bezier curve to help arrows render more clearly
 
                 }
-            }
+            },
+            {
+                selector: 'node.highlighted',
+                style: {
+                    'border-color': '#228B22', // Highlight color
+                    'border-width': 10
+                }
+            },
         ]
     });
 
@@ -893,6 +903,9 @@ document.addEventListener("DOMContentLoaded", function () {
             // Use `Automerge.view()` to view the state at this specific point in history
             const historicalView = Automerge.view(amDoc, [targetHash]);
 
+
+            clones['current'] = Automerge.clone(historicalView)
+            console.log(clones)
             updateCytoscapeFromDocument(historicalView);
 
         }
@@ -981,6 +994,16 @@ document.addEventListener("DOMContentLoaded", function () {
     historyCy.on('mousedown', (event) => {
                 
         loadVersion(event.target.data().id)
+        if(historyHighlightedNode){
+            historyHighlightedNode.removeClass('highlighted');
+            historyHighlightedNode = event.target
+            event.target.addClass('highlighted');
+        }
+        else {
+            historyHighlightedNode = event.target;
+            event.target.addClass('highlighted');
+        }
+        console.log(historyHighlightedNode.data())
 
     })
 
