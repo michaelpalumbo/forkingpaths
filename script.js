@@ -10,14 +10,16 @@ import dagre from 'cytoscape-dagre';
 import { openDB } from 'idb'; // indexedDB
 import { saveDocument, loadDocument, deleteDocument } from './indexedDB.js';
 
+// TODO: look for comments with this: //* old -repo version 
+// TODO: when new automerge implementation is working, remove their related code sections
 
 // * new automerge implementation
 let Automerge;
 let amDoc = null
 let docID = null
 let saveInterval = 2000; // how frequently to store the automerge document in indexedDB
-
-
+let onChange; // my custom automerge callback for changes made to the doc
+let docUpdated = false // set this to true whenever doc has changed so that indexedDB will store it. after set it back to false
 // * old automerge-repo stuff
 // todo: phase out
 
@@ -367,6 +369,15 @@ document.addEventListener("DOMContentLoaded", function () {
         amDoc = await loadDocument(docID);
         if (!amDoc) {
             amDoc = Automerge.init();
+
+
+
+
+            // Example of applying a change and calling the onChange callback
+            // amDoc = applyChange(amDoc, (amDoc) => {
+            //     amDoc.title = 'New Title';
+            // }, onChange);
+            
             // Apply initial changes to the new document
             amDoc = Automerge.change(amDoc, (amDoc) => {
                 amDoc.title = "ForkingPaths New Document";
@@ -385,10 +396,36 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Set an interval to periodically save the document to IndexedDB
     setInterval(async () => {
-        if(amDoc){
+        if(amDoc && docUpdated){
             await saveDocument(docID, Automerge.save(amDoc));
+            docUpdated = false
         }
     }, saveInterval);
+
+    // Custom function to handle document changes and call a callback
+    function applyChange(doc, changeCallback, onChangeCallback, changeMessage) {
+        console.log(changeMessage)
+        // Apply the change using Automerge.change
+        const newDoc = Automerge.change(doc, { message: changeMessage }, changeCallback);
+
+        // If there was a change, call the onChangeCallback
+        if (newDoc !== doc && typeof onChangeCallback === 'function') {
+            onChangeCallback(newDoc);
+        }
+
+        return newDoc;
+    }
+
+    // define the onChange Callback
+    onChange = (updatedDoc) => {
+        console.log('PLO Document changed:', updatedDoc);
+        // You can add any additional logic here, such as saving to IndexedDB
+
+        // set docUpdated so that indexedDB will save it
+        docUpdated = true
+    };
+    
+
 
     //TODO OLD AUTOMERGE-REPO IMPLEMENTATION, PHASE IT OUT EVENTUALLY
     // Import dependencies dynamically
@@ -1182,6 +1219,19 @@ document.addEventListener("DOMContentLoaded", function () {
                     data: { id: edgeId, source: temporaryCables.local.source.id(), target: temporaryCables.local.targetNode.id(), kind: 'cable' },
                     classes: 'edge'
                 });
+                // * automerge version:
+                let changeMessage = `connect ${temporaryCables.local.source.id()} to ${temporaryCables.local.targetNode.id()}`
+                
+                amDoc = applyChange(amDoc, (amDoc) => {
+                    amDoc.elements.push({
+                        type: 'edge',
+                        id: edgeId,
+                        data: { id: edgeId, source: temporaryCables.local.source.id(), target: temporaryCables.local.targetNode.id(), kind: 'cable' }
+                    });
+                }, onChange, changeMessage);
+
+
+                //* old -repo version
                 // todo: then push new cable to automerge and make sure it adds it in remote instances
                 handle.change((doc) => {
                     doc.elements.push({
@@ -1533,14 +1583,13 @@ document.addEventListener("DOMContentLoaded", function () {
         cy.add(parentNodeData);
         cy.add(childrenNodes);
     
-
         // * automerge version:
-        amDoc = Automerge.change(amDoc, (amDoc) => {
-            
+        let changeMessage = `add ${parentNodeData.data.id}`
+        
+        amDoc = applyChange(amDoc, (amDoc) => {
             amDoc.elements.push(parentNodeData);
             amDoc.elements.push(...childrenNodes);
-        });
-
+        }, onChange, changeMessage);
         console.log(amDoc)
 
         // todo: remove the -repo version once AM is working
