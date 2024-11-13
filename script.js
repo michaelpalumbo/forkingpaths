@@ -369,29 +369,24 @@ document.addEventListener("DOMContentLoaded", function () {
         amDoc = await loadDocument(docID);
         if (!amDoc) {
             amDoc = Automerge.init();
-
-
-
-
-            // Example of applying a change and calling the onChange callback
-            // amDoc = applyChange(amDoc, (amDoc) => {
-            //     amDoc.title = 'New Title';
-            // }, onChange);
             
             // Apply initial changes to the new document
             amDoc = Automerge.change(amDoc, (amDoc) => {
-                amDoc.title = "ForkingPaths New Document";
+                amDoc.title = "ForkingPaths_test";
                 amDoc.elements = [];
             });
-            console.log("Created new document:", amDoc);
+
+            // set the document title in the editor pane
+            document.getElementById('documentName').textContent = `Loaded Document:\n${amDoc.title}`;
+
             await saveDocument(docID, Automerge.save(amDoc));
         } else {
             // If loaded, convert saved document state back to Automerge document
             amDoc = Automerge.load(amDoc);
-            console.log("Loaded document from IndexedDB:", amDoc);
+            
+            // set the document title in the editor pane
+            document.getElementById('documentName').textContent = `Loaded Document:\n${amDoc.title}`;
         }
-    
-        console.log("Updated document state:", amDoc);
     })();
 
     // Set an interval to periodically save the document to IndexedDB
@@ -1503,6 +1498,13 @@ document.addEventListener("DOMContentLoaded", function () {
     // Add an event listener to the button for the 'click' event
     button.addEventListener('click', function() {
         cy.elements().remove()
+
+        // * automerge version: 
+        amDoc = applyChange(amDoc, (amDoc) => {
+            amDoc.elements = [ ]
+        }, onChange, `clear`);
+
+        //* old -repo version
         handle.change((doc) => {
             doc.elements = []
         },{
