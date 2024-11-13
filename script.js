@@ -20,7 +20,12 @@ let docID = null
 let saveInterval = 2000; // how frequently to store the automerge document in indexedDB
 let onChange; // my custom automerge callback for changes made to the doc
 let docUpdated = false // set this to true whenever doc has changed so that indexedDB will store it. after set it back to false
-let clones = {}
+let clones = {
+    current: {
+        doc: null,
+        hash: null
+    }
+}
 
 let historyHighlightedNode = null
 // * old automerge-repo stuff
@@ -355,7 +360,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 selector: 'node.highlighted',
                 style: {
                     'border-color': '#228B22', // Highlight color
-                    'border-width': 10
+                    'border-width': 15,
+                    'shape': 'rectangle'
                 }
             },
         ]
@@ -787,16 +793,9 @@ document.addEventListener("DOMContentLoaded", function () {
     // Function to update Cytoscape with the state from forkedDoc
     function updateCytoscapeFromDocument(forkedDoc) {
         let elements = forkedDoc.elements
-        console.log(elements)
         // 2. Clear existing elements from Cytoscape instance
         cy.elements().remove();
         
-        for(let i = 0; i < elements.length; i++){
-            if(elements[i].classes === ':parent'){
-                console.log(elements[i])
-            }
-            
-        }
         // 3. Add new elements to Cytoscape
         cy.add(elements)
 
@@ -895,17 +894,22 @@ document.addEventListener("DOMContentLoaded", function () {
     
         // WOOHOO this is working!!!
         async function loadVersion(targetHash) {
-            
-            // Get the hash of a specific change in the document
-            const allHeads = Automerge.getHeads(amDoc); // Get current heads (hashes) for this document state
-            // targetHash = allHeads[0]; // Example: Use the first head (you could use another specific hash here)
-            
-            // Use `Automerge.view()` to view the state at this specific point in history
+             // Use `Automerge.view()` to view the state at this specific point in history
             const historicalView = Automerge.view(amDoc, [targetHash]);
 
-
-            clones['current'] = Automerge.clone(historicalView)
-            console.log(clones)
+            // if targetHash = current doc's head, clear the current clone (so we don't trigger opening a new branch with changes made to HEAD)
+            if (Automerge.getHeads(historicalView)[0] === Automerge.getHeads(amDoc)[0]){
+                clones.current = {
+                    doc: null,
+                    hash: null
+                }
+            } else {
+                // user has selected an earlier hash, so clone that view in case they make updates
+                clones.current = {
+                    doc: Automerge.clone(historicalView),
+                    hash: [Automerge.getHeads(historicalView)[0]]
+                }
+            }
             updateCytoscapeFromDocument(historicalView);
 
         }
@@ -991,8 +995,8 @@ document.addEventListener("DOMContentLoaded", function () {
 //* Functions that directly handle UI interactions and update elements in cytoscape
 //*
 
-    historyCy.on('mousedown', (event) => {
-                
+    historyCy.on('tap', 'node', (event) => {
+        
         loadVersion(event.target.data().id)
         if(historyHighlightedNode){
             historyHighlightedNode.removeClass('highlighted');
@@ -1003,7 +1007,7 @@ document.addEventListener("DOMContentLoaded", function () {
             historyHighlightedNode = event.target;
             event.target.addClass('highlighted');
         }
-        console.log(historyHighlightedNode.data())
+        
 
     })
 
@@ -1392,9 +1396,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     // console.log(heldModule.position().x)
                     // amDoc.elements[elementIndex].position.x = heldModule.position().x;
                     // amDoc.elements[elementIndex].position.y = heldModule.position().y;
-                    console.log(elementIndex)
-                    console.log(amDoc.elements,  "Position object:", JSON.stringify(amDoc.elements[elementIndex].position));
-
+             
                 }
     
             }, onChange, `move ${heldModule.data().label}`);
