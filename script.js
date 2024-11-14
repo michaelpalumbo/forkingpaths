@@ -477,11 +477,11 @@ document.addEventListener("DOMContentLoaded", function () {
     
 
 
-    function addToHistoryGraph(elements, historyLength){
+    function addToHistoryGraph(elements){
         // Add elements to Cytoscape
         historyCy.add(elements);
         historyCy.layout(graphLayouts[graphStyle]).run();
-        previousHistoryLength = historyLength
+        previousHistoryLength = history.length
     }
 
     function updateHistory(){
@@ -499,17 +499,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Create nodes for each change in the history updates
         historyUpdates.forEach((entry) => {
-
-            //! note that this stuff here might not be necessary 
-            // Serialize the change data and store it in the node's data object
-            // let serializedChange;
-            // try {
-            //     let change = entry.change.bytes || entry.change.raw || Automerge.automergeEncodeChange(entry.change);
-            //     serializedChange = new Uint8Array(change); // Explicitly ensure Uint8Array format
-            // } catch (error) {
-            //     console.error(`Error serializing change at index:`, error);
-            //     return; // Skip this change if it can't be serialized
-            // }
             
             const nodeId = entry.change.hash;
             nodeIds.add(nodeId);
@@ -559,7 +548,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
         
         // Add elements to Cytoscape
-        addToHistoryGraph(elements, history.length)
+        addToHistoryGraph(elements)
     }
 
 
@@ -768,7 +757,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 // historyCy.layout({ name: 'dagre', rankDir: 'BT' }).run();
                 // previousHistoryLength = history.length
 
-                addToHistoryGraph(elements, history.length)
+
             }
 
             */
@@ -841,89 +830,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         DOCUMENT HISTORY CYTOSCAPE
     */
-
-        // function addToHistoryGraph(elements, historyLength){
-        //     // Add elements to Cytoscape
-        //     historyCy.add(elements);
-        //     historyCy.layout({ name: 'dagre', rankDir: 'BT' }).run();
-        //     previousHistoryLength = historyLength
-        // }
-
-        // function updateHistory(){
-        //     // Extract the history from the document using the latest Automerge
-        //     history = retrieveHistory(handle.docSync());
-        //     // get only the latest changes     
-        //     let arrayLengthDifference = history.length - previousHistoryLength
-        //     let historyUpdates = history.slice(-arrayLengthDifference)
-        //     // temporary array to store nodes and edges that we'll add to cytoscape instance
-        //     const elements = [];
-
-        //     // Track existing node IDs, including those already in the full history
-        //     const nodeIds = new Set(history.map(entry => entry.change.hash));
-
-        //     // Create nodes for each change in the history updates
-        //     historyUpdates.forEach((entry) => {
-
-        //         // Serialize the change data and store it in the node's data object
-        //         let serializedChange;
-        //         try {
-        //             let change = entry.change.bytes || entry.change.raw || automergeEncodeChange(entry.change);
-        //             serializedChange = new Uint8Array(change); // Explicitly ensure Uint8Array format
-        //         } catch (error) {
-        //             console.error(`Error serializing change at index:`, error);
-        //             return; // Skip this change if it can't be serialized
-        //         }
-                
-        //         const nodeId = entry.change.hash;
-        //         nodeIds.add(nodeId);
-        //         let bgColour = "#ccc"
-        //         if(entry.change.message){
-        //             bgColour = docHistoryGraphStyling.nodeColours[entry.change.message.split(' ')[0]]
-        //         }
-        //         elements.push({
-        //             data: {
-        //                 id: nodeId,
-        //                 label: entry.change.message || 'new document',
-        //                 actor: entry.change.actor,
-        //                 color: bgColour,
-        //                 serializedChange: serializedChange
-        //             },
-        //             classes: 'node'
-        //         });
-
-        //         historyNodes.push({
-        //             data: {
-        //                 id: nodeId,
-        //                 label: entry.change.message || 'new document',
-        //                 actor: entry.change.actor,
-        //                 color: bgColour,
-        //                 serializedChange: serializedChange
-        //             },
-        //             classes: 'node'
-        //         })
-        //     });
-            
-        //     // Create edges based on dependencies between changes
-        //     historyUpdates.forEach(entry => {                
-        //         entry.change.deps.forEach(dep => {
-        //             if (entry.change.hash && dep && nodeIds.has(dep) && nodeIds.has(dep)) {
-        //                 elements.push({
-        //                     data: {
-        //                         id: `${entry.change.hash}-${dep}`,
-        //                         source: dep,
-        //                         target: entry.change.hash
-        //                     },
-        //                     classes: 'edge'
-        //                 });
-        //             } else {
-        //                 console.warn(`Skipping edge creation: ${entry.change.hash}-${dep} because one or both nodes do not exist`);
-        //             }
-        //         });
-        //     });
-            
-        //     // Add elements to Cytoscape
-        //     addToHistoryGraph(elements, history.length)
-        // }
     
         // WOOHOO this is working!!!
         async function loadVersion(targetHash, targetNode) {
