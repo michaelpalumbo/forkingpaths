@@ -27,6 +27,44 @@ let clones = {
     }
 }
 
+// let graphStyle = 'DAG'
+let graphStyle = 'DAG'
+let graphLayouts = {
+    DAG: {
+        name: 'dagre',
+        rankDir: 'BT', // Set the graph direction to top-to-bottom
+        nodeSep: 300, // Optional: adjust node separation
+        edgeSep: 100, // Optional: adjust edge separation
+        rankSep: 50, // Optional: adjust rank separation for vertical spacing,
+        fit: true,
+        padding: 30
+    },
+    breadthfirst: {
+        name: 'breadthfirst',
+
+        fit: true, // whether to fit the viewport to the graph
+        directed: true, // whether the tree is directed downwards (or edges can point in any direction if false)
+        padding: 30, // padding on fit
+        circle: false, // put depths in concentric circles if true, put depths top down if false
+        grid: false, // whether to create an even grid into which the DAG is placed (circle:false only)
+        spacingFactor: 1.75, // positive spacing factor, larger => more space between nodes (N.B. n/a if causes overlap)
+        boundingBox: undefined, // constrain layout bounds; { x1, y1, x2, y2 } or { x1, y1, w, h }
+        avoidOverlap: true, // prevents node overlap, may overflow boundingBox if not enough space
+        nodeDimensionsIncludeLabels: false, // Excludes the label when calculating node bounding boxes for the layout algorithm
+        roots: undefined, // the roots of the trees
+        depthSort: undefined, // a sorting function to order nodes at equal depth. e.g. function(a, b){ return a.data('weight') - b.data('weight') }
+        animate: false, // whether to transition the node positions
+        animationDuration: 500, // duration of animation in ms if enabled
+        animationEasing: undefined, // easing of animation if enabled,
+        animateFilter: function ( node, i ){ return true; }, // a function that determines whether the node should be animated.  All nodes animated by default on animate enabled.  Non-animated nodes are positioned immediately when the layout starts
+        ready: undefined, // callback on layoutready
+        stop: undefined, // callback on layoutstop
+        transform: function (node, position ){ return position; } // transform a given node position. Useful for changing flow direction in discrete layouts
+
+    }
+
+
+}
 let historyHighlightedNode = null
 // * old automerge-repo stuff
 // todo: phase out
@@ -321,13 +359,7 @@ document.addEventListener("DOMContentLoaded", function () {
         //     zoom: parseFloat(localStorage.getItem('docHistoryCy_Zoom')) || 1.
         // },
         zoomingEnabled: false,
-        layout: {
-            name: 'dagre',
-            rankDir: 'BT', // Set the graph direction to top-to-bottom
-            nodeSep: 50, // Optional: adjust node separation
-            edgeSep: 10, // Optional: adjust edge separation
-            rankSep: 50, // Optional: adjust rank separation for vertical spacing
-        },  
+        layout: graphLayouts[graphStyle],  
         style: [
             {
                 selector: 'node',
@@ -339,7 +371,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     'color': '#000',            // Label text color
                     'text-valign': 'center',    // Vertically center the label
                     'text-halign': 'right',      // Horizontally align label to the left of the node
-                    'text-margin-x': 10, // Optional: Move the label slightly up if desired
+                    'text-margin-x': 10, // 
+                    // 'text-margin-y': 15, // move the label down a little to make space for branch edges
                     // 'shape': 'data(shape)' // set this for accessibility (colour blindness)
                 }
             
@@ -447,7 +480,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function addToHistoryGraph(elements, historyLength){
         // Add elements to Cytoscape
         historyCy.add(elements);
-        historyCy.layout({ name: 'dagre', rankDir: 'BT' }).run();
+        historyCy.layout(graphLayouts[graphStyle]).run();
         previousHistoryLength = historyLength
     }
 
@@ -919,26 +952,29 @@ document.addEventListener("DOMContentLoaded", function () {
                 let targetPosition = targetNode.position()
                 let targetMessage = targetChange.change.message
                 // position the new node to the right of the clickedNode's text label
-                let xOffset = getCytoscapeTextWidth(targetMessage, targetNode) + 50
+                // let xOffset = getCytoscapeTextWidth(targetMessage, targetNode) + 100
                 const branchId = `branch_${clones.current.hash[0]}`;  // unique ID based on the hash
                 historyCy.add({
                     group: 'nodes',
                     data: { id: branchId, label: `Clone from ${targetHash.slice(0, 6)}`, color: docHistoryGraphStyling.nodeColours[targetMessage.split(' ')[0]] },
                     // docHistoryGraphStyling.nodeColours[targetNode.data().color.change.message.split(' ')[0]] },
                     classes: "node",
-                    position: {
-                        x: targetPosition.x + xOffset,
-                        y: targetPosition.y - 30
-                    }
+                    // position: {
+                    //     x: targetPosition.x + xOffset,
+                    //     y: targetPosition.y - 30
+                    // }
                 });
 
                 // Step 4: Connect this node to the main document node to show a branch
-                const mainNodeId = `node_${targetHash}`;  // ID of the original node
+                const mainNodeId = targetHash;  // ID of the original node
                 historyCy.add({
                     group: 'edges',
                     data: { source: mainNodeId, target: branchId, color: '#ccc'},
                     classes: "edge"
                 });
+
+                historyCy.layout(graphLayouts[graphStyle]).run();
+
             }
             updateCytoscapeFromDocument(historicalView);
 
@@ -1902,11 +1938,6 @@ document.addEventListener("DOMContentLoaded", function () {
     
         return width;
     }
-    
-    // Usage example
-    // const textWidth = getCytoscapeTextWidth(historyCy, 'Hello, world!');
-    // return textWidth
-
 });
 
 
