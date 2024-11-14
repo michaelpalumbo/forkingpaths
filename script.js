@@ -918,13 +918,18 @@ document.addEventListener("DOMContentLoaded", function () {
                 let targetColor = targetNode.data().color
                 let targetPosition = targetNode.position()
                 let targetMessage = targetChange.change.message
-                
+                // position the new node to the right of the clickedNode's text label
+                let xOffset = getCytoscapeTextWidth(targetMessage, targetNode) + 50
                 const branchId = `branch_${clones.current.hash[0]}`;  // unique ID based on the hash
                 historyCy.add({
                     group: 'nodes',
                     data: { id: branchId, label: `Clone from ${targetHash.slice(0, 6)}`, color: docHistoryGraphStyling.nodeColours[targetMessage.split(' ')[0]] },
                     // docHistoryGraphStyling.nodeColours[targetNode.data().color.change.message.split(' ')[0]] },
-                    classes: "node"
+                    classes: "node",
+                    position: {
+                        x: targetPosition.x + xOffset,
+                        y: targetPosition.y - 30
+                    }
                 });
 
                 // Step 4: Connect this node to the main document node to show a branch
@@ -1877,6 +1882,31 @@ document.addEventListener("DOMContentLoaded", function () {
             );
         });
     }
+
+    function getCytoscapeTextWidth(text, node) {
+        // Create a temporary element
+        const tempDiv = document.createElement('div');
+        tempDiv.style.position = 'absolute';
+        tempDiv.style.visibility = 'hidden';
+        tempDiv.style.whiteSpace = 'nowrap'; // Prevents text wrapping
+        tempDiv.style.fontSize = node.style('font-size'); // Retrieve font size from Cytoscape style
+        tempDiv.style.fontFamily = node.style('font-family') // Retrieve font family
+    
+        // Set the text
+        tempDiv.innerText = text;
+    
+        // Append to the body to get dimensions
+        document.body.appendChild(tempDiv);
+        const width = tempDiv.offsetWidth; // Measure width in pixels
+        document.body.removeChild(tempDiv); // Clean up
+    
+        return width;
+    }
+    
+    // Usage example
+    // const textWidth = getCytoscapeTextWidth(historyCy, 'Hello, world!');
+    // return textWidth
+
 });
 
 
