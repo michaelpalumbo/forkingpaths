@@ -893,11 +893,14 @@ document.addEventListener("DOMContentLoaded", function () {
         // }
     
         // WOOHOO this is working!!!
-        async function loadVersion(targetHash) {
+        async function loadVersion(targetHash, targetNode) {
+            // the clicked-on change in the automerge history
+            const targetChange = history.find(obj => obj.change.hash === targetHash)
+
              // Use `Automerge.view()` to view the state at this specific point in history
             const historicalView = Automerge.view(amDoc, [targetHash]);
 
-            // if targetHash = current doc's head, clear the current clone (so we don't trigger opening a new branch with changes made to HEAD)
+            // Check if we're on the HEAD; reset clone if true (so we don't trigger opening a new branch with changes made to HEAD)
             if (Automerge.getHeads(historicalView)[0] === Automerge.getHeads(amDoc)[0]){
                 clones.current = {
                     doc: null,
@@ -909,6 +912,28 @@ document.addEventListener("DOMContentLoaded", function () {
                     doc: Automerge.clone(historicalView),
                     hash: [Automerge.getHeads(historicalView)[0]]
                 }
+
+                // Step 3: Add node in Cytoscape for this clone point
+                // get info about targetNode (what was clicked by user)
+                let targetColor = targetNode.data().color
+                let targetPosition = targetNode.position()
+                let targetMessage = targetChange.change.message
+                
+                const branchId = `branch_${clones.current.hash[0]}`;  // unique ID based on the hash
+                historyCy.add({
+                    group: 'nodes',
+                    data: { id: branchId, label: `Clone from ${targetHash.slice(0, 6)}`, color: docHistoryGraphStyling.nodeColours[targetMessage.split(' ')[0]] },
+                    // docHistoryGraphStyling.nodeColours[targetNode.data().color.change.message.split(' ')[0]] },
+                    classes: "node"
+                });
+
+                // Step 4: Connect this node to the main document node to show a branch
+                const mainNodeId = `node_${targetHash}`;  // ID of the original node
+                historyCy.add({
+                    group: 'edges',
+                    data: { source: mainNodeId, target: branchId, color: '#ccc'},
+                    classes: "edge"
+                });
             }
             updateCytoscapeFromDocument(historicalView);
 
@@ -997,7 +1022,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     historyCy.on('tap', 'node', (event) => {
         
-        loadVersion(event.target.data().id)
+        loadVersion(event.target.data().id, event.target)
         if(historyHighlightedNode){
             historyHighlightedNode.removeClass('highlighted');
             historyHighlightedNode = event.target
