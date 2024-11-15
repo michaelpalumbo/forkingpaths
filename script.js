@@ -20,13 +20,23 @@ let docID = null
 let saveInterval = 2000; // how frequently to store the automerge document in indexedDB
 let onChange; // my custom automerge callback for changes made to the doc
 let docUpdated = false // set this to true whenever doc has changed so that indexedDB will store it. after set it back to false
-let clones = {
+let automergeDocuments = {
+    newClone: false,
     current: {
         doc: null,
         hash: null
+    },
+    otherDocs: {
+
     }
 }
-
+// store the heads of all branches
+// todo: decide if we should store this in the automerge doc? (consideration: for now it's mostly likely just needed for the history graph)
+let branchHeads = {
+    current: null,
+    // then store all of them here
+    // i.e. 'hash': { dependencies: [], mergeHash: null }
+}
 // let graphStyle = 'DAG'
 let graphStyle = 'DAG'
 let graphLayouts = {
@@ -422,11 +432,11 @@ document.addEventListener("DOMContentLoaded", function () {
             
             // Apply initial changes to the new document
             amDoc = Automerge.change(amDoc, (amDoc) => {
-                amDoc.title = "ForkingPaths_test";
+                amDoc.title = "ForkingPaths_initial";
                 amDoc.elements = [];
             });
 
-            // set the document title in the editor pane
+            // set the document branch (aka title) in the editor pane
             document.getElementById('documentName').textContent = `Loaded Document:\n${amDoc.title}`;
 
             updateHistory()
@@ -438,7 +448,7 @@ document.addEventListener("DOMContentLoaded", function () {
             
             updateHistory()
 
-            // set the document title in the editor pane
+            // set the document branch (aka title)  in the editor pane
             document.getElementById('documentName').textContent = `Loaded Document:\n${amDoc.title}`;
         }
     })();
@@ -454,15 +464,45 @@ document.addEventListener("DOMContentLoaded", function () {
     // Custom function to handle document changes and call a callback
     function applyChange(doc, changeCallback, onChangeCallback, changeMessage) {
         
-        // Apply the change using Automerge.change
-        const newDoc = Automerge.change(doc, { message: changeMessage }, changeCallback);
+        // check if we are working from a newly cloned doc or if branch is in HEAD position
+        if(automergeDocuments.newClone === false ){
+            // we are working from a HEAD
+            // Apply the change using Automerge.change
+            const newDoc = Automerge.change(amDoc, { message: changeMessage }, changeCallback);
+            console.log(automergeDocuments)
+            // If there was a change, call the onChangeCallback
+            if (newDoc !== doc && typeof onChangeCallback === 'function') {
+                onChangeCallback(newDoc);
+            }
 
-        // If there was a change, call the onChangeCallback
-        if (newDoc !== doc && typeof onChangeCallback === 'function') {
-            onChangeCallback(newDoc);
+            return newDoc;
+        } else {
+            // player has made changes to an earlier version, so create a branch and set amDoc to new clone
+
+            // store previous amDoc in automergeDocuments, and its property is the hash of its HEAD
+            automergeDocuments.otherDocs[amDoc.title] = amDoc
+            
+            // set amDoc to current cloned doc
+            amDoc = Automerge.from(automergeDocuments.current.doc)
+
+            console.log(automergeDocuments)
+
+            console.log('\ncurrent amdoc:', amDoc)
+            // Apply the change using Automerge.change
+            const newDoc = Automerge.change(amDoc, { message: changeMessage }, changeCallback);
+
+            // If there was a change, call the onChangeCallback
+            if (newDoc !== doc && typeof onChangeCallback === 'function') {
+
+                console.log(amDoc)
+                onChangeCallback(newDoc);
+                automergeDocuments.newClone = false
+            }
+
+
         }
 
-        return newDoc;
+
     }
 
     // define the onChange Callback
@@ -473,15 +513,25 @@ document.addEventListener("DOMContentLoaded", function () {
         // set docUpdated so that indexedDB will save it
         docUpdated = true
 
+        // store the current hash (used by historyCy)
+        branchHeads.current = Automerge.getHeads(amDoc)[0]
+        console.log(branchHeads)
     };
     
 
 
     function addToHistoryGraph(elements){
-        // Add elements to Cytoscape
-        historyCy.add(elements);
-        historyCy.layout(graphLayouts[graphStyle]).run();
-        previousHistoryLength = history.length
+        // is the document in an earlier point in history?
+        if(automergeDocuments.current.hash){
+            // 
+        } else {
+            // Add elements to Cytoscape
+            historyCy.add(elements);
+            
+            historyCy.layout(graphLayouts[graphStyle]).run();
+            previousHistoryLength = history.length
+        }
+
     }
 
     function updateHistory(){
@@ -551,7 +601,98 @@ document.addEventListener("DOMContentLoaded", function () {
         addToHistoryGraph(elements)
     }
 
+    // Function to update Cytoscape with the state from forkedDoc
+    function updateCytoscapeFromDocument(forkedDoc) {
+        let elements = forkedDoc.elements
+        // 2. Clear existing elements from Cytoscape instance
+        cy.elements().remove();
+        
+        // 3. Add new elements to Cytoscape
+        cy.add(elements)
 
+        // Optional: Run layout
+        cy.layout({ name: 'preset' }).run(); // `preset` uses the position data directly
+        
+    }
+
+    /*
+
+        DOCUMENT HISTORY CYTOSCAPE
+    */
+
+    //
+
+    async function makeBranch(targetNode, targetHash){
+
+        // the clicked-on change in the automerge history
+        const targetChange = history.find(obj => obj.change.hash === targetHash)
+        
+        let targetColor = targetNode.data().color
+            let targetPosition = targetNode.position()
+            let targetMessage = targetChange.change.message
+            // position the new node to the right of the clickedNode's text label
+            // let xOffset = getCytoscapeTextWidth(targetMessage, targetNode) + 100
+            const branchId = `branch_${automergeDocuments.current.hash[0]}`;  // unique ID based on the hash
+            historyCy.add({
+                group: 'nodes',
+                data: { id: branchId, label: `Clone from ${targetHash.slice(0, 6)}`, color: docHistoryGraphStyling.nodeColours[targetMessage.split(' ')[0]] },
+                // docHistoryGraphStyling.nodeColours[targetNode.data().color.change.message.split(' ')[0]] },
+                classes: "node",
+                // position: {
+                //     x: targetPosition.x + xOffset,
+                //     y: targetPosition.y - 30
+                // }
+            });
+
+            // Step 4: Connect this node to the main document node to show a branch
+            const mainNodeId = targetHash;  // ID of the original node
+            historyCy.add({
+                group: 'edges',
+                data: { source: mainNodeId, target: branchId, color: '#ccc'},
+                classes: "edge"
+            });
+
+            historyCy.layout(graphLayouts[graphStyle]).run();
+
+    }
+    // WOOHOO this is working!!!
+    async function loadVersion(targetHash, targetNode) {
+
+
+        // Use `Automerge.view()` to view the state at this specific point in history
+        const historicalView = Automerge.view(amDoc, [targetHash]);
+
+        // Check if we're on the HEAD; reset clone if true (so we don't trigger opening a new branch with changes made to HEAD)
+        if (Automerge.getHeads(historicalView)[0] === Automerge.getHeads(amDoc)[0]){
+            automergeDocuments.newClone = false
+            console.log('at head state')
+            return
+        } else {
+            // user has selected an earlier hash, so clone that view in case they make updates
+            let clonedDoc = Automerge.clone(historicalView)
+            // update the doc's branch name (title)
+            clonedDoc = Automerge.change(clonedDoc, (clonedDoc) => {
+                clonedDoc.title = `ForkingPaths_${"headless"}`;
+            });
+            automergeDocuments.current = {
+                doc: clonedDoc,
+                hash: [Automerge.getHeads(historicalView)[0]]
+            }
+            // set newClone to true
+            automergeDocuments.newClone = true
+            // store previous HEAD in heads obj
+            branchHeads[branchHeads.current] = {}
+            // update current HEAD to this hash
+            branchHeads.current = Automerge.getHeads(historicalView)[0]
+            // Step 3: Add node in Cytoscape for this clone point
+            // get info about targetNode (what was clicked by user)
+            
+            console.log(automergeDocuments.current.doc)
+            updateCytoscapeFromDocument(historicalView);
+        }
+
+
+    }
 
 
 
@@ -812,79 +953,7 @@ document.addEventListener("DOMContentLoaded", function () {
         
     }
 
-    // Function to update Cytoscape with the state from forkedDoc
-    function updateCytoscapeFromDocument(forkedDoc) {
-        let elements = forkedDoc.elements
-        // 2. Clear existing elements from Cytoscape instance
-        cy.elements().remove();
-        
-        // 3. Add new elements to Cytoscape
-        cy.add(elements)
-
-        // Optional: Run layout
-        cy.layout({ name: 'preset' }).run(); // `preset` uses the position data directly
-        
-    }
-
-    /*
-
-        DOCUMENT HISTORY CYTOSCAPE
-    */
     
-        // WOOHOO this is working!!!
-        async function loadVersion(targetHash, targetNode) {
-            // the clicked-on change in the automerge history
-            const targetChange = history.find(obj => obj.change.hash === targetHash)
-
-             // Use `Automerge.view()` to view the state at this specific point in history
-            const historicalView = Automerge.view(amDoc, [targetHash]);
-
-            // Check if we're on the HEAD; reset clone if true (so we don't trigger opening a new branch with changes made to HEAD)
-            if (Automerge.getHeads(historicalView)[0] === Automerge.getHeads(amDoc)[0]){
-                clones.current = {
-                    doc: null,
-                    hash: null
-                }
-            } else {
-                // user has selected an earlier hash, so clone that view in case they make updates
-                clones.current = {
-                    doc: Automerge.clone(historicalView),
-                    hash: [Automerge.getHeads(historicalView)[0]]
-                }
-
-                // Step 3: Add node in Cytoscape for this clone point
-                // get info about targetNode (what was clicked by user)
-                let targetColor = targetNode.data().color
-                let targetPosition = targetNode.position()
-                let targetMessage = targetChange.change.message
-                // position the new node to the right of the clickedNode's text label
-                // let xOffset = getCytoscapeTextWidth(targetMessage, targetNode) + 100
-                const branchId = `branch_${clones.current.hash[0]}`;  // unique ID based on the hash
-                historyCy.add({
-                    group: 'nodes',
-                    data: { id: branchId, label: `Clone from ${targetHash.slice(0, 6)}`, color: docHistoryGraphStyling.nodeColours[targetMessage.split(' ')[0]] },
-                    // docHistoryGraphStyling.nodeColours[targetNode.data().color.change.message.split(' ')[0]] },
-                    classes: "node",
-                    // position: {
-                    //     x: targetPosition.x + xOffset,
-                    //     y: targetPosition.y - 30
-                    // }
-                });
-
-                // Step 4: Connect this node to the main document node to show a branch
-                const mainNodeId = targetHash;  // ID of the original node
-                historyCy.add({
-                    group: 'edges',
-                    data: { source: mainNodeId, target: branchId, color: '#ccc'},
-                    classes: "edge"
-                });
-
-                historyCy.layout(graphLayouts[graphStyle]).run();
-
-            }
-            updateCytoscapeFromDocument(historicalView);
-
-        }
 
         /*
         async function loadVersion(targetHash) {
