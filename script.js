@@ -484,7 +484,7 @@ document.addEventListener("DOMContentLoaded", function () {
             automergeDocuments.otherDocs[amDoc.title] = amDoc
             
             // set amDoc to current cloned doc
-            amDoc = Automerge.load(automergeDocuments.current.doc)
+            amDoc = Automerge.from(automergeDocuments.current.doc)
 
             console.log(amDoc)
 
@@ -498,7 +498,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 onChangeCallback(newDoc);
                 automergeDocuments.newClone = false
             }
-
+            return newDoc;
 
         }
 
@@ -1835,7 +1835,6 @@ document.addEventListener("DOMContentLoaded", function () {
         cy.add(parentNodeData);
         cy.add(childrenNodes);
     
-        console.log(amDoc)
         // * automerge version:        
         amDoc = applyChange(amDoc, (amDoc) => {
             amDoc.elements.push(parentNodeData);
