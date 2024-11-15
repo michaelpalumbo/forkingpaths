@@ -516,6 +516,9 @@ document.addEventListener("DOMContentLoaded", function () {
         // store the current hash (used by historyCy)
         branchHeads.current = Automerge.getHeads(amDoc)[0]
         console.log(branchHeads)
+
+        // update the historyGraph
+        updateHistory()
     };
     
 
@@ -704,119 +707,119 @@ document.addEventListener("DOMContentLoaded", function () {
 
     //TODO OLD AUTOMERGE-REPO IMPLEMENTATION, PHASE IT OUT EVENTUALLY
     // Import dependencies dynamically
-    (async () => {
-        const { DocHandle, Repo, isValidAutomergeUrl, DocumentId, Document } = await import('@automerge/automerge-repo');
-        const { BrowserWebSocketClientAdapter } = await import('@automerge/automerge-repo-network-websocket');
-        const { IndexedDBStorageAdapter } = await import("@automerge/automerge-repo-storage-indexeddb");
+    // (async () => {
+    //     const { DocHandle, Repo, isValidAutomergeUrl, DocumentId, Document } = await import('@automerge/automerge-repo');
+    //     const { BrowserWebSocketClientAdapter } = await import('@automerge/automerge-repo-network-websocket');
+    //     const { IndexedDBStorageAdapter } = await import("@automerge/automerge-repo-storage-indexeddb");
         
-        const storage = new IndexedDBStorageAdapter("automerge");
-        // Initialize the Automerge repository with WebSocket adapter
-        repo = new Repo({
-            network: [new BrowserWebSocketClientAdapter('ws://localhost:3030')],
-            // storage: LocalForageStorageAdapter, // Optional: use a storage adapter if needed
-            storage: storage, // Optional: use a storage adapter if needed
-        });
+    //     const storage = new IndexedDBStorageAdapter("automerge");
+    //     // Initialize the Automerge repository with WebSocket adapter
+    //     repo = new Repo({
+    //         network: [new BrowserWebSocketClientAdapter('ws://localhost:3030')],
+    //         // storage: LocalForageStorageAdapter, // Optional: use a storage adapter if needed
+    //         storage: storage, // Optional: use a storage adapter if needed
+    //     });
 
-        automergeDocument = Document
+    //     automergeDocument = Document
 
-        // Create or load the document
-        // Initialize or load the document with a unique ID
-        // Check for a document URL in the fragment
-        let docUrl = decodeURIComponent(window.location.hash.substring(1));
+    //     // Create or load the document
+    //     // Initialize or load the document with a unique ID
+    //     // Check for a document URL in the fragment
+    //     let docUrl = decodeURIComponent(window.location.hash.substring(1));
         
 
 
-        try {
-            if (docUrl && isValidAutomergeUrl(docUrl)) {
-                // Attempt to find the document with the provided URL
-                handle = repo.find(docUrl);
-            } else {
-                throw new Error("No document URL found in fragment.");
-            }
-        } catch (error) {
-            // If document is not found or an error occurs, create a new document
-            handle = repo.create({
-                elements: []
-            }, {
-                message: 'set array: elements'
-            });
-            docUrl = handle.url;
+    //     try {
+    //         if (docUrl && isValidAutomergeUrl(docUrl)) {
+    //             // Attempt to find the document with the provided URL
+    //             handle = repo.find(docUrl);
+    //         } else {
+    //             throw new Error("No document URL found in fragment.");
+    //         }
+    //     } catch (error) {
+    //         // If document is not found or an error occurs, create a new document
+    //         handle = repo.create({
+    //             elements: []
+    //         }, {
+    //             message: 'set array: elements'
+    //         });
+    //         docUrl = handle.url;
 
-            // Update the window location to include the new document URL
-            window.location.href = `${window.location.origin}/#${encodeURIComponent(docUrl)}`;
-        }
+    //         // Update the window location to include the new document URL
+    //         window.location.href = `${window.location.origin}/#${encodeURIComponent(docUrl)}`;
+    //     }
 
-        window.location.href = `${window.location.origin}/#${encodeURIComponent(handle.url)}`;
-        // Wait until the document handle is ready
-        await handle.whenReady();
+    //     window.location.href = `${window.location.origin}/#${encodeURIComponent(handle.url)}`;
+    //     // Wait until the document handle is ready
+    //     await handle.whenReady();
 
-        // Check if a peer ID is already stored in sessionStorage
-        peers.local.id = sessionStorage.getItem('localPeerID');
+    //     // Check if a peer ID is already stored in sessionStorage
+    //     peers.local.id = sessionStorage.getItem('localPeerID');
 
-        if (!peers.local.id) {
-            // Generate or retrieve the peer ID from the Automerge-Repo instance
-            peers.local.id = repo.networkSubsystem.peerId;
+    //     if (!peers.local.id) {
+    //         // Generate or retrieve the peer ID from the Automerge-Repo instance
+    //         peers.local.id = repo.networkSubsystem.peerId;
 
-            // Store the peer ID in sessionStorage for the current tab session
-            sessionStorage.setItem('localPeerID', peers.local.id);
-        } else { }
+    //         // Store the peer ID in sessionStorage for the current tab session
+    //         sessionStorage.setItem('localPeerID', peers.local.id);
+    //     } else { }
         
-        handle.docSync().elements
-        // Populate Cytoscape with elements from the document if it exists
-        if (handle.docSync().elements && handle.docSync().elements.length > 0) {
-            let currentGraph = handle.docSync().elements
-            for(let i = 0; i< currentGraph.length; i++){
-                cy.add(currentGraph[i]);
-            }
+    //     handle.docSync().elements
+    //     // Populate Cytoscape with elements from the document if it exists
+    //     if (handle.docSync().elements && handle.docSync().elements.length > 0) {
+    //         let currentGraph = handle.docSync().elements
+    //         for(let i = 0; i< currentGraph.length; i++){
+    //             cy.add(currentGraph[i]);
+    //         }
             
-            cy.layout({ name: 'preset' }).run(); // Run the layout to position the elements
-        }
-        cy.layout({ name: 'preset' }).run();
+    //         cy.layout({ name: 'preset' }).run(); // Run the layout to position the elements
+    //     }
+    //     cy.layout({ name: 'preset' }).run();
 
-        handle.on('change', (newDoc) => {
-            // Compare `newDoc.elements` with current `cy` state and update `cy` accordingly
-            const newElements = newDoc.doc.elements;
+    //     handle.on('change', (newDoc) => {
+    //         // Compare `newDoc.elements` with current `cy` state and update `cy` accordingly
+    //         const newElements = newDoc.doc.elements;
             
-            // Add or update elements
-            newElements.forEach((newEl) => {
-                if (!cy.getElementById(newEl.data.id).length) {
-                    // Add new element if it doesn't exist
-                    cy.add(newEl);
-                }
-            });
+    //         // Add or update elements
+    //         newElements.forEach((newEl) => {
+    //             if (!cy.getElementById(newEl.data.id).length) {
+    //                 // Add new element if it doesn't exist
+    //                 cy.add(newEl);
+    //             }
+    //         });
             
-            // Remove elements that are no longer in `newDoc`
-            cy.elements().forEach((currentEl) => {
-                if (!newElements.find(el => el.data.id === currentEl.id())) {
+    //         // Remove elements that are no longer in `newDoc`
+    //         cy.elements().forEach((currentEl) => {
+    //             if (!newElements.find(el => el.data.id === currentEl.id())) {
                     
-                    cy.remove(currentEl);
-                }
-            });
+    //                 cy.remove(currentEl);
+    //             }
+    //         });
 
-            // update the focumentHistory graph:
-            updateHistory()
-            // Optionally, re-run the layout if needed
+    //         // update the focumentHistory graph:
+    //         updateHistory()
+    //         // Optionally, re-run the layout if needed
             
             
-        })
+    //     })
 
 
 
  
 
-        // get document history
-        const { getHistory, applyChanges, init, encodeChange, clone } = await import ('@automerge/automerge');
-        retrieveHistory = getHistory; // assign method to global variable
-        applyNewChanges = applyChanges
-        automergeInit = init
-        automergeEncodeChange = encodeChange
-        getClone = clone
-        try {
-            const currentDoc = handle.docSync();
-            if (!currentDoc) {
-                console.error('Document not properly loaded.');
-                return;
-            }
+        // // get document history
+        // const { getHistory, applyChanges, init, encodeChange, clone } = await import ('@automerge/automerge');
+        // retrieveHistory = getHistory; // assign method to global variable
+        // applyNewChanges = applyChanges
+        // automergeInit = init
+        // automergeEncodeChange = encodeChange
+        // getClone = clone
+        // try {
+        //     const currentDoc = handle.docSync();
+        //     if (!currentDoc) {
+        //         console.error('Document not properly loaded.');
+        //         return;
+        //     }
     
             // Extract the history from the document using the latest Automerge
             // * automerge version
@@ -902,9 +905,9 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             */
-        } catch (error) {
-            console.error('Error extracting or visualizing history:', error);
-        }
+        // } catch (error) {
+        //     console.error('Error extracting or visualizing history:', error);
+        // }
                 
 
     //*
@@ -912,46 +915,50 @@ document.addEventListener("DOMContentLoaded", function () {
     //* SYNCHRONIZATION
     //* Functions related to custom network and sync handling.
     //*
-        handle.on("ephemeral-message", (message) => {
-
-            let msg = message.message
-            switch (msg.msg){
-
-                case 'moveModule':
-                    cy.getElementById(msg.module).position(msg.position);
-
-                    // also update the module internal boundaries for params
-                    updateSliderBoundaries(cy.getElementById(msg.module))
-                break
-
-                case 'startRemoteGhostCable':
-                case 'updateRemoteGhostCable':
-                case 'finishRemoteGhostCable':    
-
-                    handleRemoteCables(msg.msg, msg.data.peer, msg.data.sourceNodeID, msg.data.position)
-
-                break
-
-                case 'peerMousePosition':
-                    displayPeerPointers(msg.data.peer, msg.data.position)
-                break
 
 
+        // !
+        // todo: update this with automerge version when either p2p or websocket server is working
+        // handle.on("ephemeral-message", (message) => {
 
-                default: console.log("got an ephemeral message: ", message)
-            }
+        //     let msg = message.message
+        //     switch (msg.msg){
+
+        //         case 'moveModule':
+        //             cy.getElementById(msg.module).position(msg.position);
+
+        //             // also update the module internal boundaries for params
+        //             updateSliderBoundaries(cy.getElementById(msg.module))
+        //         break
+
+        //         case 'startRemoteGhostCable':
+        //         case 'updateRemoteGhostCable':
+        //         case 'finishRemoteGhostCable':    
+
+        //             handleRemoteCables(msg.msg, msg.data.peer, msg.data.sourceNodeID, msg.data.position)
+
+        //         break
+
+        //         case 'peerMousePosition':
+        //             displayPeerPointers(msg.data.peer, msg.data.position)
+        //         break
+
+
+
+        //         default: console.log("got an ephemeral message: ", message)
+        //     }
             
-        })
+        // })
 
-    })();
+    // })();
 
-    function sendEphemeralData (msg){
-        // only send once doc is ready
-        if(handle){
-            handle.broadcast(msg);
-        }
+    // function sendEphemeralData (msg){
+    //     // only send once doc is ready
+    //     if(handle){
+    //         handle.broadcast(msg);
+    //     }
         
-    }
+    // }
 
     
 
@@ -1016,15 +1023,7 @@ document.addEventListener("DOMContentLoaded", function () {
             updateCytoscapeFromDocument(forkedHandle);
         }
         */
-        // cmd + scroll = scroll vertically through history graph
-        document.addEventListener('wheel', function(event) {
-            if(allowPan){
-                historyCy.panBy({
-                    x: 0,
-                    y: event.deltaY 
-                  });
-            }
-        });
+
 
 
 
@@ -1035,7 +1034,15 @@ document.addEventListener("DOMContentLoaded", function () {
 //* UI UPDATES & EVENT HANDLERS
 //* Functions that directly handle UI interactions and update elements in cytoscape
 //*
-
+    // cmd + scroll = scroll vertically through history graph
+    document.addEventListener('wheel', function(event) {
+        if(allowPan){
+            historyCy.panBy({
+                x: 0,
+                y: event.deltaY 
+                });
+        }
+    });
     historyCy.on('tap', 'node', (event) => {
         
         loadVersion(event.target.data().id, event.target)
@@ -1085,14 +1092,16 @@ document.addEventListener("DOMContentLoaded", function () {
                     let p = event.position
                     startCable(e, p)
 
-                    sendEphemeralData({
-                        msg: 'startRemoteGhostCable',
-                        data: {
-                            sourceNodeID: e.data().id,
-                            position: p,
-                            peer: peers.local.id
-                        }
-                    })
+                    // !
+                    // todo: update this with automerge version when either p2p or websocket server is working
+                    // sendEphemeralData({
+                    //     msg: 'startRemoteGhostCable',
+                    //     data: {
+                    //         sourceNodeID: e.data().id,
+                    //         position: p,
+                    //         peer: peers.local.id
+                    //     }
+                    // })
                 } else if (event.target.isParent()){
                     
                     heldModule = event.target
@@ -1129,20 +1138,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
                         //* old -repo version
-                        handle.change((newDoc) => {
-                            // Assuming the array is `doc.elements` and you have an object `targetObj` to match and remove
+                        // handle.change((newDoc) => {
+                        //     // Assuming the array is `doc.elements` and you have an object `targetObj` to match and remove
                             
-                            // Find the index of the object that matches the condition
-                            const index = newDoc.elements.findIndex(el => el.id === edge.data().id);
+                        //     // Find the index of the object that matches the condition
+                        //     const index = newDoc.elements.findIndex(el => el.id === edge.data().id);
                         
-                            // If a match is found, remove the object from the array
-                            if (index !== -1) {
+                        //     // If a match is found, remove the object from the array
+                        //     if (index !== -1) {
                             
-                                newDoc.elements.splice(index, 1);
-                            }
-                        }, {
-                            message: 'disconnect' // Set a custom change message here
-                        });
+                        //         newDoc.elements.splice(index, 1);
+                        //     }
+                        // }, {
+                        //     message: 'disconnect' // Set a custom change message here
+                        // });
 
                         // create a new ghost cable starting from targetPos (opposite of clicked endpoint), call startCable()
                         // we have to assign these to temp variables, as otherwise cy acts kinda funky when passing them to helper functions
@@ -1150,14 +1159,16 @@ document.addEventListener("DOMContentLoaded", function () {
                         let p = targetPos
                         startCable(e, p)
                         // tell remotes to create a new ghost cable
-                        sendEphemeralData({
-                            msg: 'startRemoteGhostCable',
-                            data: {
-                                sourceNodeID: e.data().id,
-                                position: p,
-                                peer: peers.local.id
-                            }
-                        })
+                        // !
+                        // todo: update this with automerge version when either p2p or websocket server is working
+                        // sendEphemeralData({
+                        //     msg: 'startRemoteGhostCable',
+                        //     data: {
+                        //         sourceNodeID: e.data().id,
+                        //         position: p,
+                        //         peer: peers.local.id
+                        //     }
+                        // })
 
                     } else if (isNearEndpoint(mousePos, targetPos)) {
                         // delete the cable
@@ -1178,34 +1189,37 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
                         //* old -repo version
-                        handle.change((newDoc) => {
-                            // Assuming the array is `doc.elements` and you have an object `targetObj` to match and remove
+                        // handle.change((newDoc) => {
+                        //     // Assuming the array is `doc.elements` and you have an object `targetObj` to match and remove
                             
-                            // Find the index of the object that matches the condition
-                            const index = newDoc.elements.findIndex(el => el.id === edge.data().id);
+                        //     // Find the index of the object that matches the condition
+                        //     const index = newDoc.elements.findIndex(el => el.id === edge.data().id);
                         
-                            // If a match is found, remove the object from the array
-                            if (index !== -1) {
+                        //     // If a match is found, remove the object from the array
+                        //     if (index !== -1) {
                                 
-                                newDoc.elements.splice(index, 1);
-                            }
-                        }, {
-                            message: 'disconnect' // Set a custom change message here
-                        });
+                        //         newDoc.elements.splice(index, 1);
+                        //     }
+                        // }, {
+                        //     message: 'disconnect' // Set a custom change message here
+                        // });
                         // create a new ghost cable starting from sourcePos (opposite of clicked endpoint), call startCable()
                         // we have to assign these to temp variables, as otherwise cy acts kinda funky when passing them to helper functions
                         let e = sourceNode
                         let p = sourcePos
                         startCable(e, p)
                         // tell remotes to create a new ghost cable
-                        sendEphemeralData({
-                            msg: 'startRemoteGhostCable',
-                            data: {
-                                sourceNodeID: e.data().id,
-                                position: p,
-                                peer: peers.local.id
-                            }
-                        })
+
+                        // !
+                        // todo: update this with automerge version when either p2p or websocket server is working
+                        // sendEphemeralData({
+                        //     msg: 'startRemoteGhostCable',
+                        //     data: {
+                        //         sourceNodeID: e.data().id,
+                        //         position: p,
+                        //         peer: peers.local.id
+                        //     }
+                        // })
 
                     } else {
                         // Remove highlight from any previously highlighted edge
@@ -1297,14 +1311,16 @@ document.addEventListener("DOMContentLoaded", function () {
             const mousePos = event.position;
             temporaryCables.local.ghostNode.position(mousePos); // Update ghost node position
             // send the localGhostNode position to all connected peers
-            sendEphemeralData({
-                msg: 'updateRemoteGhostCable',
-                data: {
-                    sourceNodeID: temporaryCables.local.ghostNode.data().id,
-                    position: mousePos,
-                    peer: peers.local.id
-                }
-            })
+            // !
+            // todo: update this with automerge version when either p2p or websocket server is working
+            // sendEphemeralData({
+            //     msg: 'updateRemoteGhostCable',
+            //     data: {
+            //         sourceNodeID: temporaryCables.local.ghostNode.data().id,
+            //         position: mousePos,
+            //         peer: peers.local.id
+            //     }
+            // })
             // Reset temporaryCables.local.targetNode before checking for intersections
             temporaryCables.local.targetNode = null;
 
@@ -1339,24 +1355,29 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             });
         } else if (heldModule){
-            handle.broadcast({
-                msg: "moveModule",
-                module: heldModule.data().id,
-                position: event.position
-            });
+
+            // !
+            // todo: update this with automerge version when either p2p or websocket server is working
+            // handle.broadcast({
+            //     msg: "moveModule",
+            //     module: heldModule.data().id,
+            //     position: event.position
+            // });
             heldModulePos = event.position
 
   
             
         }
         // Send the data with the relative position
-        sendEphemeralData({
-            msg: 'peerMousePosition',
-            data: {
-                position: event.position,
-                peer: peers.local.id
-            }
-        });
+        // !
+        // todo: update this with automerge version when either p2p or websocket server is working
+        // sendEphemeralData({
+        //     msg: 'peerMousePosition',
+        //     data: {
+        //         position: event.position,
+        //         peer: peers.local.id
+        //     }
+        // });
     });
 
     // Step 3: Finalize edge on mouseup
@@ -1389,16 +1410,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
                 //* old -repo version
-                // todo: then push new cable to automerge and make sure it adds it in remote instances
-                handle.change((doc) => {
-                    doc.elements.push({
-                        type: 'edge',
-                        id: edgeId,
-                        data: { id: edgeId, source: temporaryCables.local.source.id(), target: temporaryCables.local.targetNode.id(), kind: 'cable' }
-                    });
-                }, {
-                    message: `connect ${temporaryCables.local.source.id()} to ${temporaryCables.local.targetNode.id()}` // Set a custom change message here
-                });
+                // // todo: then push new cable to automerge and make sure it adds it in remote instances
+                // handle.change((doc) => {
+                //     doc.elements.push({
+                //         type: 'edge',
+                //         id: edgeId,
+                //         data: { id: edgeId, source: temporaryCables.local.source.id(), target: temporaryCables.local.targetNode.id(), kind: 'cable' }
+                //     });
+                // }, {
+                //     message: `connect ${temporaryCables.local.source.id()} to ${temporaryCables.local.targetNode.id()}` // Set a custom change message here
+                // });
             } else {
                 // If no target node, remove the temporary edge
                 cy.remove(temporaryCables.local.tempEdge);
@@ -1406,12 +1427,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // update the remote peers:
             // tell remote to remove the temporary cable from cy instance
-            sendEphemeralData({
-                msg: 'finishRemoteGhostCable',
-                data: {
-                    peer: peers.local.id
-                }
-            })
+            // !
+            // todo: update this with automerge version when either p2p or websocket server is working
+            // sendEphemeralData({
+            //     msg: 'finishRemoteGhostCable',
+            //     data: {
+            //         peer: peers.local.id
+            //     }
+            // })
 
             // Clean up by removing ghost node and highlights
             cy.remove(temporaryCables.local.ghostNode);
@@ -1443,19 +1466,19 @@ document.addEventListener("DOMContentLoaded", function () {
             }, onChange, `move ${heldModule.data().label}`);
 
             //* old -repo version
-            handle.change((newDoc) => {                
+            // handle.change((newDoc) => {                
                 
-                const elementIndex = newDoc.elements.findIndex(el => el.data.id === heldModule.data().id);
-                if (elementIndex !== -1) {
-                    // update the position
+            //     const elementIndex = newDoc.elements.findIndex(el => el.data.id === heldModule.data().id);
+            //     if (elementIndex !== -1) {
+            //         // update the position
                     
-                    newDoc.elements[elementIndex].position.x = heldModule.position().x;
-                    newDoc.elements[elementIndex].position.y = heldModule.position().y;
-                }
+            //         newDoc.elements[elementIndex].position.x = heldModule.position().x;
+            //         newDoc.elements[elementIndex].position.y = heldModule.position().y;
+            //     }
 
-            }, {
-                message: `move ${heldModule.data().label}` // Set a custom change message here
-            });
+            // }, {
+            //     message: `move ${heldModule.data().label}` // Set a custom change message here
+            // });
 
             // if module has any param UI, need to update the internal positioning 
             // toDO: also pass this to automerge handle, and then write a handle.on('change'...) for grabbing this value and passing it to this same function below:
@@ -1592,46 +1615,47 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
                 //* old -repo version
-                handle.change((doc) => {
-                    const elementIndex = doc.elements.findIndex(el => el.data.id === nodeId);
-                    // IMPORTANT: here we need to remove elements in this order:
-                    // 1. connected edges
-                    // 2. children belonging to the parentNode
-                    // 3. the parentNode
-                    // any other order, and cytoscape throws an error because it attempts to draw the descendents
 
-                    // Collect IDs of child nodes to remove edges connected to them
-                    const childNodeIds = [];
-                    for (let i = doc.elements.length - 1; i >= 0; i--) {
-                        if (doc.elements[i].data.parent === nodeId) {
-                            childNodeIds.push(doc.elements[i].data.id); // Collect the child node ID
-                        }
-                    }
+                // handle.change((doc) => {
+                //     const elementIndex = doc.elements.findIndex(el => el.data.id === nodeId);
+                //     // IMPORTANT: here we need to remove elements in this order:
+                //     // 1. connected edges
+                //     // 2. children belonging to the parentNode
+                //     // 3. the parentNode
+                //     // any other order, and cytoscape throws an error because it attempts to draw the descendents
 
-                    // Remove edges connected to the child nodes
-                    for (let i = doc.elements.length - 1; i >= 0; i--) {
-                        const element = doc.elements[i];
-                        if (element.type === 'edge' &&
-                            (childNodeIds.includes(element.data.source) || childNodeIds.includes(element.data.target))) {
-                            doc.elements.splice(i, 1); // Remove the edge
-                        }
-                    }
+                //     // Collect IDs of child nodes to remove edges connected to them
+                //     const childNodeIds = [];
+                //     for (let i = doc.elements.length - 1; i >= 0; i--) {
+                //         if (doc.elements[i].data.parent === nodeId) {
+                //             childNodeIds.push(doc.elements[i].data.id); // Collect the child node ID
+                //         }
+                //     }
 
-                    // Iterate through the array to remove child nodes
-                    for (let i = doc.elements.length - 1; i >= 0; i--) {
-                        if (doc.elements[i].data.parent === nodeId) {
-                            doc.elements.splice(i, 1);
-                        }
-                    }
+                //     // Remove edges connected to the child nodes
+                //     for (let i = doc.elements.length - 1; i >= 0; i--) {
+                //         const element = doc.elements[i];
+                //         if (element.type === 'edge' &&
+                //             (childNodeIds.includes(element.data.source) || childNodeIds.includes(element.data.target))) {
+                //             doc.elements.splice(i, 1); // Remove the edge
+                //         }
+                //     }
+
+                //     // Iterate through the array to remove child nodes
+                //     for (let i = doc.elements.length - 1; i >= 0; i--) {
+                //         if (doc.elements[i].data.parent === nodeId) {
+                //             doc.elements.splice(i, 1);
+                //         }
+                //     }
                     
-                    if (elementIndex !== -1) {
-                        doc.elements.splice(elementIndex, 1); // Remove the node from the Automerge document
-                    }
+                //     if (elementIndex !== -1) {
+                //         doc.elements.splice(elementIndex, 1); // Remove the node from the Automerge document
+                //     }
 
 
-                },{
-                    message: `remove ${nodeId}` // Set a custom change message here
-                });
+                // },{
+                //     message: `remove ${nodeId}` // Set a custom change message here
+                // });
             }
         }
     });
@@ -1649,11 +1673,11 @@ document.addEventListener("DOMContentLoaded", function () {
         }, onChange, `clear`);
 
         //* old -repo version
-        handle.change((doc) => {
-            doc.elements = []
-        },{
-            message: `clear` // Set a custom change message here
-        });
+        // handle.change((doc) => {
+        //     doc.elements = []
+        // },{
+        //     message: `clear` // Set a custom change message here
+        // });
     });
 
     // Select the button element by its ID
@@ -1663,8 +1687,9 @@ document.addEventListener("DOMContentLoaded", function () {
     newSession.addEventListener('click', function() {
         // deletes the document in the indexedDB instance
         deleteDocument(docID)
+        
         // Reload the page with the new URL
-        window.location.href = window.location.origin
+        // window.location.href = window.location.origin
     });
 
     
@@ -1819,15 +1844,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // todo: remove the -repo version once AM is working
         // Update Automerge-repo document
-        handle.change((doc) => {
-            doc.elements.push(parentNodeData);
-            doc.elements.push(...childrenNodes);
+    //     handle.change((doc) => {
+    //         doc.elements.push(parentNodeData);
+    //         doc.elements.push(...childrenNodes);
 
-        },{
-            message: `add ${parentNodeData.data.id}` // Set a custom change message here
-        }
-
-    );
+    //     },{
+    //         message: `add ${parentNodeData.data.id}` // Set a custom change message here
+    //     });
     }
     
 

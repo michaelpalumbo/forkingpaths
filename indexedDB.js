@@ -28,6 +28,7 @@ export async function deleteDocument(docId) {
         // Ensure the transaction completes
         await tx.done;
         console.log(`Document with ID ${docId} successfully deleted.`);
+
     } catch (error) {
         console.error(`Failed to delete document with ID ${docId}:`, error);
     }
