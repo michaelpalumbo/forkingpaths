@@ -34,6 +34,7 @@ let automergeDocuments = {
 // todo: decide if we should store this in the automerge doc? (consideration: for now it's mostly likely just needed for the history graph)
 let branchHeads = {
     current: null,
+    previous: null
     // then store all of them here
     // i.e. 'hash': { dependencies: [], mergeHash: null }
 }
@@ -132,7 +133,8 @@ let docHistoryGraphStyling = {
         remove: "#b8000f",
         move: "#b89000",
         paramUpdate: "#6b00b8",
-        clear: "#000000"
+        clear: "#000000",
+        blank_patch: "#ccc"
     }
 }
 // temporary cables
@@ -429,9 +431,9 @@ document.addEventListener("DOMContentLoaded", function () {
         amDoc = await loadDocument(docID);
         if (!amDoc) {
             amDoc = Automerge.init();
-            
+            let amMsg = makeChangeMessage('ForkingPaths_initial_branch', 'blank_patch')
             // Apply initial changes to the new document
-            amDoc = Automerge.change(amDoc, (amDoc) => {
+            amDoc = Automerge.change(amDoc, amMsg, (amDoc) => {
                 amDoc.title = "ForkingPaths_initial_branch";
                 amDoc.elements = [];
             });
@@ -466,7 +468,6 @@ document.addEventListener("DOMContentLoaded", function () {
         
         // check if we are working from a newly cloned doc or if branch is in HEAD position
         if(automergeDocuments.newClone === false ){
-            console.log(amDoc)
             // we are working from a HEAD
             // Apply the change using Automerge.change
             const newDoc = Automerge.change(amDoc, { message: changeMessage }, changeCallback);
@@ -486,18 +487,19 @@ document.addEventListener("DOMContentLoaded", function () {
             // set amDoc to current cloned doc
             amDoc = Automerge.from(automergeDocuments.current.doc)
 
-            console.log(amDoc)
 
             // Apply the change using Automerge.change
             const newDoc = Automerge.change(amDoc, { message: changeMessage }, changeCallback);
 
             // If there was a change, call the onChangeCallback
             if (newDoc !== doc && typeof onChangeCallback === 'function') {
-
-                console.log(amDoc)
+                
+                
+                makeBranch(changeMessage, Automerge.getHeads(amDoc)[0])
                 onChangeCallback(newDoc);
                 automergeDocuments.newClone = false
             }
+            
             return newDoc;
 
         }
@@ -508,7 +510,6 @@ document.addEventListener("DOMContentLoaded", function () {
     // define the onChange Callback
     onChange = (updatedDoc) => {
         console.log('PLO Document changed:', updatedDoc.title);
-        console.log('elements:', updatedDoc.elements);
         // You can add any additional logic here, such as saving to IndexedDB
 
         // set docUpdated so that indexedDB will save it
@@ -553,16 +554,18 @@ document.addEventListener("DOMContentLoaded", function () {
         // Create nodes for each change in the history updates
         historyUpdates.forEach((entry) => {
             
+            let changeMsg = getChangeMessage(entry.change.message)[1]
+            let branch = getChangeMessage(entry.change.message)[0]
             const nodeId = entry.change.hash;
             nodeIds.add(nodeId);
             let bgColour = "#ccc"
             if(entry.change.message){
-                bgColour = docHistoryGraphStyling.nodeColours[entry.change.message.split(' ')[0]]
+                bgColour = docHistoryGraphStyling.nodeColours[changeMsg.split(' ')[0]]
             }
             elements.push({
                 data: {
                     id: nodeId,
-                    label: entry.change.message || 'new document',
+                    label: changeMsg || 'new document',
                     actor: entry.change.actor,
                     color: bgColour,
                     // serializedChange: serializedChange
@@ -573,9 +576,10 @@ document.addEventListener("DOMContentLoaded", function () {
             historyNodes.push({
                 data: {
                     id: nodeId,
-                    label: entry.change.message || 'new document',
+                    label: changeMsg || 'new document',
                     actor: entry.change.actor,
                     color: bgColour,
+                    branch: branch
                     // serializedChange: serializedChange
                 },
                 classes: 'node'
@@ -625,20 +629,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
     //
 
-    async function makeBranch(targetNode, targetHash){
-
-        // the clicked-on change in the automerge history
-        const targetChange = history.find(obj => obj.change.hash === targetHash)
+    async function makeBranch(newNodeMessage, newHash){
+        console.log(newNodeMessage, newHash)
         
-        let targetColor = targetNode.data().color
-            let targetPosition = targetNode.position()
-            let targetMessage = targetChange.change.message
+        // the clicked-on change in the automerge history
+        const targetChange = history.find(obj => obj.change.hash === newHash)
+
+            // let targetPosition = targetNode.position()
+            // let targetMessage = targetChange.change.message
             // position the new node to the right of the clickedNode's text label
             // let xOffset = getCytoscapeTextWidth(targetMessage, targetNode) + 100
-            const branchId = `branch_${automergeDocuments.current.hash[0]}`;  // unique ID based on the hash
+            const branchId = `branch_${newHash}`;  // unique ID based on the hash
             historyCy.add({
                 group: 'nodes',
-                data: { id: branchId, label: `Clone from ${targetHash.slice(0, 6)}`, color: docHistoryGraphStyling.nodeColours[targetMessage.split(' ')[0]] },
+                data: { id: newHash, label: `Clone from ${newHash.slice(0, 6)}`, color: docHistoryGraphStyling.nodeColours[newNodeMessage.split(' ')[0]] },
                 // docHistoryGraphStyling.nodeColours[targetNode.data().color.change.message.split(' ')[0]] },
                 classes: "node",
                 // position: {
@@ -648,20 +652,22 @@ document.addEventListener("DOMContentLoaded", function () {
             });
 
             // Step 4: Connect this node to the main document node to show a branch
-            const mainNodeId = targetHash;  // ID of the original node
+            const mainNodeId = newHash;  // ID of the original node
             historyCy.add({
                 group: 'edges',
-                data: { source: mainNodeId, target: branchId, color: '#ccc'},
+                data: { source: branchHeads.previous, target: newHash, color: '#ccc'},
                 classes: "edge"
             });
 
             historyCy.layout(graphLayouts[graphStyle]).run();
 
+            
+
     }
     // WOOHOO this is working!!!
     async function loadVersion(targetHash, targetNode) {
-        console.log('loadVersion fired')
 
+        console.log(targetNode.data())
         // Use `Automerge.view()` to view the state at this specific point in history
         const historicalView = Automerge.view(amDoc, [targetHash]);
 
@@ -683,14 +689,16 @@ document.addEventListener("DOMContentLoaded", function () {
             }
             // set newClone to true
             automergeDocuments.newClone = true
+        
             // store previous HEAD in heads obj
             branchHeads[branchHeads.current] = {}
             // update current HEAD to this hash
             branchHeads.current = Automerge.getHeads(historicalView)[0]
             // Step 3: Add node in Cytoscape for this clone point
             // get info about targetNode (what was clicked by user)
-            
-            console.log(automergeDocuments.current.doc)
+            branchHeads.previous = Automerge.getHeads(amDoc)[0]
+
+            console.log(branchHeads.previous)
             updateCytoscapeFromDocument(historicalView);
         }
 
@@ -1935,6 +1943,19 @@ document.addEventListener("DOMContentLoaded", function () {
         document.body.removeChild(tempDiv); // Clean up
     
         return width;
+    }
+
+    function makeChangeMessage(branchName, msg){
+        let amMsg = JSON.stringify({
+            branch: branchName,
+            msg: msg
+        })
+
+        return amMsg
+    }
+
+    function getChangeMessage(msg){
+        return [ JSON.parse(msg).branch, JSON.parse(msg).msg ] 
     }
 });
 
