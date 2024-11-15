@@ -432,12 +432,12 @@ document.addEventListener("DOMContentLoaded", function () {
             
             // Apply initial changes to the new document
             amDoc = Automerge.change(amDoc, (amDoc) => {
-                amDoc.title = "ForkingPaths_initial";
+                amDoc.title = "ForkingPaths_initial_branch";
                 amDoc.elements = [];
             });
 
             // set the document branch (aka title) in the editor pane
-            document.getElementById('documentName').textContent = `Loaded Document:\n${amDoc.title}`;
+            document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
 
             updateHistory()
 
@@ -449,7 +449,7 @@ document.addEventListener("DOMContentLoaded", function () {
             updateHistory()
 
             // set the document branch (aka title)  in the editor pane
-            document.getElementById('documentName').textContent = `Loaded Document:\n${amDoc.title}`;
+            document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
         }
     })();
 
@@ -466,10 +466,11 @@ document.addEventListener("DOMContentLoaded", function () {
         
         // check if we are working from a newly cloned doc or if branch is in HEAD position
         if(automergeDocuments.newClone === false ){
+            console.log(amDoc)
             // we are working from a HEAD
             // Apply the change using Automerge.change
             const newDoc = Automerge.change(amDoc, { message: changeMessage }, changeCallback);
-            console.log(automergeDocuments)
+            
             // If there was a change, call the onChangeCallback
             if (newDoc !== doc && typeof onChangeCallback === 'function') {
                 onChangeCallback(newDoc);
@@ -483,11 +484,10 @@ document.addEventListener("DOMContentLoaded", function () {
             automergeDocuments.otherDocs[amDoc.title] = amDoc
             
             // set amDoc to current cloned doc
-            amDoc = Automerge.from(automergeDocuments.current.doc)
+            amDoc = Automerge.load(automergeDocuments.current.doc)
 
-            console.log(automergeDocuments)
+            console.log(amDoc)
 
-            console.log('\ncurrent amdoc:', amDoc)
             // Apply the change using Automerge.change
             const newDoc = Automerge.change(amDoc, { message: changeMessage }, changeCallback);
 
@@ -507,7 +507,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // define the onChange Callback
     onChange = (updatedDoc) => {
-        console.log('PLO Document changed:', updatedDoc);
+        console.log('PLO Document changed:', updatedDoc.title);
+        console.log('elements:', updatedDoc.elements);
         // You can add any additional logic here, such as saving to IndexedDB
 
         // set docUpdated so that indexedDB will save it
@@ -515,7 +516,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // store the current hash (used by historyCy)
         branchHeads.current = Automerge.getHeads(amDoc)[0]
-        console.log(branchHeads)
 
         // update the historyGraph
         updateHistory()
@@ -660,7 +660,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     // WOOHOO this is working!!!
     async function loadVersion(targetHash, targetNode) {
-
+        console.log('loadVersion fired')
 
         // Use `Automerge.view()` to view the state at this specific point in history
         const historicalView = Automerge.view(amDoc, [targetHash]);
@@ -1689,7 +1689,7 @@ document.addEventListener("DOMContentLoaded", function () {
         deleteDocument(docID)
         
         // Reload the page with the new URL
-        // window.location.href = window.location.origin
+        window.location.href = window.location.origin
     });
 
     
@@ -1835,6 +1835,7 @@ document.addEventListener("DOMContentLoaded", function () {
         cy.add(parentNodeData);
         cy.add(childrenNodes);
     
+        console.log(amDoc)
         // * automerge version:        
         amDoc = applyChange(amDoc, (amDoc) => {
             amDoc.elements.push(parentNodeData);
