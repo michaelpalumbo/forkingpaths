@@ -465,12 +465,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Custom function to handle document changes and call a callback
     function applyChange(doc, changeCallback, onChangeCallback, changeMessage) {
-        
+        let amMsg = makeChangeMessage(amDoc.title, changeMessage)
         // check if we are working from a newly cloned doc or if branch is in HEAD position
         if(automergeDocuments.newClone === false ){
             // we are working from a HEAD
             // Apply the change using Automerge.change
-            const newDoc = Automerge.change(amDoc, { message: changeMessage }, changeCallback);
+            const newDoc = Automerge.change(amDoc, amMsg, changeCallback);
             
             // If there was a change, call the onChangeCallback
             if (newDoc !== doc && typeof onChangeCallback === 'function') {
