@@ -472,6 +472,10 @@ document.addEventListener("DOMContentLoaded", function () {
             // Apply the change using Automerge.change
             const newDoc = Automerge.change(amDoc, amMsg, changeCallback);
             
+            const setTitle = Automerge.change(newDoc, 'changeTitle', () => {
+                newDoc.title = `branch_${Automerge.getHeads(newDoc)[0]}`
+            });
+            
             // If there was a change, call the onChangeCallback
             if (newDoc !== doc && typeof onChangeCallback === 'function') {
                 onChangeCallback(newDoc);
