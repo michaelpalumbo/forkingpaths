@@ -441,12 +441,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 meta.title = "Forking Paths System";
                 meta.branches = {};
             });
-            console.log('init')
+            
             await saveDocument('branches', Automerge.save(meta));
         } else {
             // If loaded, convert saved document state back to Automerge document
             meta = Automerge.load(meta);
-            console.log(meta.branches)
+
             // ensure the branches obj exists
             if (!meta.branches){
                 meta = Automerge.change(meta, (meta) => {
@@ -476,7 +476,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 head: Automerge.getHeads(amDoc)[0],
                 root: Automerge.getHeads(amDoc)[0]
             }
-            console.log(meta)
             
             meta = Automerge.change(meta, (meta) => {
                 meta.branches[amDoc.title] = {
@@ -540,8 +539,7 @@ document.addEventListener("DOMContentLoaded", function () {
             amDoc = Automerge.from(automergeDocuments.current.doc)
             // use the new branch title
             let amMsg = makeChangeMessage(amDoc.title, changeMessage)
-            console.log('\new amDoc', amDoc)
-            console.log('\namMsg 2', amMsg)
+
             // Apply the change using Automerge.change
             const newDoc = Automerge.change(amDoc, amMsg, changeCallback);
 
@@ -549,8 +547,7 @@ document.addEventListener("DOMContentLoaded", function () {
             //     newDoc.title = `branch_${Automerge.getHeads(newDoc)[0]}`
             // });
             // If there was a change, call the onChangeCallback
-            if (newDoc !== doc && typeof onChangeCallback === 'function') {
-                
+            if (newDoc !== doc && typeof onChangeCallback === 'function') {   
                 
                 // makeBranch(changeMessage, Automerge.getHeads(newDoc)[0])
                 onChangeCallback(newDoc);
@@ -627,7 +624,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
             }
             else {
-
                 
                 let msg = JSON.parse(item.change.message).msg
                 let branch = JSON.parse(item.change.message).branch
