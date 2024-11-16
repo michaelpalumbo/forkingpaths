@@ -578,21 +578,28 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log(meta.branches)
         // update the historyGraph
         updateHistory()
+        addToHistoryGraph()
     };
     
 
 
-    function addToHistoryGraph(elements){
-        // is the document in an earlier point in history?
-        if(automergeDocuments.current.hash){
-            // 
-        } else {
-            // Add elements to Cytoscape
-            historyCy.add(elements);
+    function addToHistoryGraph(){
+            const { nodes, edges } = generateFullDAGFromBranches(meta.branches)
+            console.log(nodes, edges)
+            historyCy.add([ ...nodes, ...edges]);
             
             historyCy.layout(graphLayouts[graphStyle]).run();
-            previousHistoryLength = history.length
-        }
+
+        // // is the document in an earlier point in history?
+        // if(automergeDocuments.current.hash){
+        //     // 
+        // } else {
+        //     // Add elements to Cytoscape
+        //     historyCy.add(elements);
+            
+        //     historyCy.layout(graphLayouts[graphStyle]).run();
+        //     previousHistoryLength = history.length
+        // }
 
     }
 
@@ -819,7 +826,83 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
+    function generateFullDAGFromBranches(branches) {
+    const nodes = [];
+    const edges = [];
 
+    // Iterate over each branch
+    Object.entries(branches).forEach(([branchName, branch]) => {
+        const branchDoc = branch.doc;
+        const branchHead = branch.head;
+        const branchParent = branch.parent;
+
+        // Add a node for the branch HEAD
+        nodes.push({
+        data: {
+            id: branchHead,
+            label: `${branchName}: ${branchHead ? branchHead.slice(0, 6) : "N/A"}`,
+            branch: branchName,
+            isHead: true
+        }
+        });
+
+        // Add an edge to the parent if it exists
+        if (branchParent) {
+        edges.push({
+            data: {
+            id: `${branchParent}-${branchHead}`,
+            source: branchParent,
+            target: branchHead,
+            label: "branch"
+            }
+        });
+        }
+
+        // Extract the history for this branch
+        const history = Automerge.getHistory(meta);
+
+        // Add nodes for each change in the history
+        history.forEach((entry) => {
+        const changeHash = entry.change.hash;
+
+        nodes.push({
+            data: {
+            id: changeHash,
+            label: `${branchName}: ${changeHash.slice(0, 6)}`,
+            branch: branchName,
+            message: entry.change.message
+            }
+        });
+
+        // Add edges for dependencies
+        entry.change.deps.forEach((dep) => {
+            edges.push({
+            data: {
+                id: `${dep}-${changeHash}`,
+                source: dep,
+                target: changeHash,
+                label: "dependency"
+            }
+            });
+        });
+        });
+
+        // Connect the HEAD to the latest change in the branch history
+        if (history.length > 0) {
+        const latestChangeHash = history[history.length - 1].change.hash;
+        edges.push({
+            data: {
+            id: `${latestChangeHash}-${branchHead}`,
+            source: latestChangeHash,
+            target: branchHead,
+            label: "HEAD"
+            }
+        });
+        }
+    });
+
+    return { nodes, edges };
+    }
 
 
 
