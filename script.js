@@ -93,7 +93,7 @@ let repo;
 let getClone;
 
 let historyNodes = []
-let previousHistoryLength;
+let previousHistoryLength = 0;
 
 let isDraggingEnabled = false;
 let moduleDragState = false;
@@ -556,6 +556,31 @@ document.addEventListener("DOMContentLoaded", function () {
         // Track existing node IDs, including those already in the full history
         const nodeIds = new Set(history.map(entry => entry.change.hash));
 
+        const list = document.getElementById("itemList");
+
+        // Clear the list
+        list.innerHTML = "";
+        let count = 1
+        // Populate the list with array elements
+        history.forEach(item => {
+            let msg = JSON.parse(item.change.message).msg
+            let branch = JSON.parse(item.change.message).branch
+            console.log(item.change)
+            const listItem = document.createElement("li");
+            listItem.textContent = `${count} - ${branch}_${msg}`; // Use the `name` property
+
+                // Embed data using data attributes
+            listItem.setAttribute("data-hash", item.change.hash);
+            listItem.setAttribute("data-branch", branch);
+            listItem.setAttribute("data-msg", msg);
+            
+            list.appendChild(listItem);
+            count++
+        });
+        /*
+        }
+
+        
         // Create nodes for each change in the history updates
         historyUpdates.forEach((entry) => {
 
@@ -615,6 +640,8 @@ document.addEventListener("DOMContentLoaded", function () {
         
         // Add elements to Cytoscape
         addToHistoryGraph(elements)
+
+        */
     }
 
     // Function to update Cytoscape with the state from forkedDoc
@@ -676,7 +703,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // WOOHOO this is working!!!
     async function loadVersion(targetHash, targetNode) {
 
-        console.log(targetNode.data())
+        // console.log(targetNode.data())
         // Use `Automerge.view()` to view the state at this specific point in history
         const historicalView = Automerge.view(amDoc, [targetHash]);
 
@@ -1721,6 +1748,32 @@ document.addEventListener("DOMContentLoaded", function () {
         localStorage.setItem('sliderValue', CPDslider.value);
 
     });
+
+    const list = document.getElementById("itemList");
+
+    list.addEventListener("click", (event) => {
+        // Ensure the click is on a list item
+        if (event.target.tagName === "LI") {
+            const hash = event.target.getAttribute("data-hash");
+            const msg = event.target.getAttribute("data-msg");
+            const branch = event.target.getAttribute("data-branch");
+            console.log(`${hash}`);
+            loadVersion(hash)
+
+
+            // Remove highlight from any previously selected item
+            const currentlyHighlighted = list.querySelector(".highlighted");
+            if (currentlyHighlighted) {
+                currentlyHighlighted.classList.remove("highlighted");
+            }
+    
+            // Highlight the clicked item
+            event.target.classList.add("highlighted");
+        }
+        
+      
+    });
+
 
     // Retrieve the saved slider value from localStorage and set it
     const savedValue = localStorage.getItem('sliderValue');

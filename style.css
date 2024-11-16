@@ -48,3 +48,8 @@
   /* left: 100%; */
   /* transform: translateX(-50%); Centers the button horizontally */
 }
+
+.highlighted {
+  background-color: yellow; /* Highlight color */
+  font-weight: bold;
+}
