@@ -471,11 +471,8 @@ document.addEventListener("DOMContentLoaded", function () {
             // we are working from a HEAD
             // Apply the change using Automerge.change
             const newDoc = Automerge.change(amDoc, amMsg, changeCallback);
-            
-            const setTitle = Automerge.change(newDoc, 'changeTitle', () => {
-                newDoc.title = `branch_${Automerge.getHeads(newDoc)[0]}`
-            });
-            
+        
+            console.log('steady')
             // If there was a change, call the onChangeCallback
             if (newDoc !== doc && typeof onChangeCallback === 'function') {
                 onChangeCallback(newDoc);
@@ -493,18 +490,21 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
             // Apply the change using Automerge.change
-            const newDoc = Automerge.change(amDoc, { message: changeMessage }, changeCallback);
+            const newDoc = Automerge.change(amDoc, amMsg, changeCallback);
 
+            const setTitle = Automerge.change(newDoc, makeChangeMessage('headless', 'changeTitle'), () => {
+                newDoc.title = `branch_${Automerge.getHeads(newDoc)[0]}`
+            });
             // If there was a change, call the onChangeCallback
-            if (newDoc !== doc && typeof onChangeCallback === 'function') {
+            if (setTitle !== doc && typeof onChangeCallback === 'function') {
                 
                 
-                makeBranch(changeMessage, Automerge.getHeads(amDoc)[0])
+                makeBranch(changeMessage, Automerge.getHeads(newDoc)[0])
                 onChangeCallback(newDoc);
                 automergeDocuments.newClone = false
             }
             
-            return newDoc;
+            return setTitle;
 
         }
 
@@ -549,6 +549,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // get only the latest changes     
         let arrayLengthDifference = history.length - previousHistoryLength
         let historyUpdates = history.slice(-arrayLengthDifference)
+
         // temporary array to store nodes and edges that we'll add to cytoscape instance
         const elements = [];
 
@@ -557,7 +558,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Create nodes for each change in the history updates
         historyUpdates.forEach((entry) => {
-            
+
+            console.log(entry, entry.change.message)
             let changeMsg = getChangeMessage(entry.change.message)[1]
             let branch = getChangeMessage(entry.change.message)[0]
             const nodeId = entry.change.hash;
@@ -572,6 +574,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     label: changeMsg || 'new document',
                     actor: entry.change.actor,
                     color: bgColour,
+                    branch: branch
                     // serializedChange: serializedChange
                 },
                 classes: 'node'
@@ -588,6 +591,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 },
                 classes: 'node'
             })
+            
+            
         });
         
         // Create edges based on dependencies between changes
@@ -684,7 +689,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // user has selected an earlier hash, so clone that view in case they make updates
             let clonedDoc = Automerge.clone(historicalView)
             // update the doc's branch name (title)
-            clonedDoc = Automerge.change(clonedDoc, (clonedDoc) => {
+            clonedDoc = Automerge.change(clonedDoc, makeChangeMessage(`ForkingPaths_${"headless"}`, 'setBranchToHeadless'), (clonedDoc) => {
                 clonedDoc.title = `ForkingPaths_${"headless"}`;
             });
             automergeDocuments.current = {
@@ -702,7 +707,6 @@ document.addEventListener("DOMContentLoaded", function () {
             // get info about targetNode (what was clicked by user)
             branchHeads.previous = Automerge.getHeads(amDoc)[0]
 
-            console.log(branchHeads.previous)
             updateCytoscapeFromDocument(historicalView);
         }
 
@@ -1255,7 +1259,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     if (currentTime - lastClickTime < doubleClickDelay) {
                         // Double-click detected
                         addModule(`oscillator`, { x: event.position.x, y: event.position.y }, [    ]);
-                        console.log("Double-clicked on the background\nLow priority ToDo: background clicks open module library");
+                        // console.log("Double-clicked on the background\nLow priority ToDo: background clicks open module library");
                     }
                     lastClickTime = currentTime; // Update the last click time
                 }
@@ -1954,7 +1958,6 @@ document.addEventListener("DOMContentLoaded", function () {
             branch: branchName,
             msg: msg
         })
-
         return amMsg
     }
 
