@@ -565,7 +565,6 @@ document.addEventListener("DOMContentLoaded", function () {
         history.forEach(item => {
             let msg = JSON.parse(item.change.message).msg
             let branch = JSON.parse(item.change.message).branch
-            console.log(item.change)
             const listItem = document.createElement("li");
             listItem.textContent = `${count} - ${branch}_${msg}`; // Use the `name` property
 
@@ -701,9 +700,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     }
     // WOOHOO this is working!!!
-    async function loadVersion(targetHash, targetNode) {
+    async function loadVersion(targetHash) {
 
-        // console.log(targetNode.data())
+        
         // Use `Automerge.view()` to view the state at this specific point in history
         const historicalView = Automerge.view(amDoc, [targetHash]);
 
@@ -711,14 +710,15 @@ document.addEventListener("DOMContentLoaded", function () {
         if (Automerge.getHeads(historicalView)[0] === Automerge.getHeads(amDoc)[0]){
             automergeDocuments.newClone = false
             console.log('at head state')
+            updateCytoscapeFromDocument(historicalView);
             return
         } else {
             // user has selected an earlier hash, so clone that view in case they make updates
             let clonedDoc = Automerge.clone(historicalView)
-            // update the doc's branch name (title)
-            clonedDoc = Automerge.change(clonedDoc, makeChangeMessage(`ForkingPaths_${"headless"}`, 'setBranchToHeadless'), (clonedDoc) => {
-                clonedDoc.title = `ForkingPaths_${"headless"}`;
-            });
+            // // update the doc's branch name (title)
+            // clonedDoc = Automerge.change(clonedDoc, makeChangeMessage(`ForkingPaths_${"headless"}`, 'setBranchToHeadless'), (clonedDoc) => {
+            //     clonedDoc.title = `ForkingPaths_${"headless"}`;
+            // });
             automergeDocuments.current = {
                 doc: clonedDoc,
                 hash: [Automerge.getHeads(historicalView)[0]]
@@ -1757,7 +1757,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const hash = event.target.getAttribute("data-hash");
             const msg = event.target.getAttribute("data-msg");
             const branch = event.target.getAttribute("data-branch");
-            console.log(`${hash}`);
+            
             loadVersion(hash)
 
 
