@@ -30,9 +30,10 @@ let automergeDocuments = {
 
     }
 }
+let meta;
 let branches = {
     // branchName: {
-        // HEAD: hash
+        // head: hash
         // root: hash (the node that it started from)
     //}
 }
@@ -430,8 +431,35 @@ document.addEventListener("DOMContentLoaded", function () {
     (async () => {
         // Load Automerge asynchronously and assign it to the global variable
         Automerge = await import('@automerge/automerge');
-    
-        // todo: if we set a different string as docId and pass it into await loadDocument(), it will return a new document for the user
+
+        // branches document
+        meta = await loadDocument('branches10');
+        if (!meta) {
+            meta = Automerge.init();
+            
+            meta = Automerge.change(meta, (meta) => {
+                meta.title = "Forking Paths System";
+                meta.branches = {};
+            });
+            console.log('init')
+            await saveDocument('branches', Automerge.save(meta));
+        } else {
+            // If loaded, convert saved document state back to Automerge document
+            meta = Automerge.load(meta);
+            console.log(meta.branches)
+            // ensure the branches obj exists
+            if (!meta.branches){
+                meta = Automerge.change(meta, (meta) => {
+                meta.branches[amDoc.title] = {
+                    head: Automerge.getHeads(amDoc)[0],
+                    root: 'thisIsTheRoot',
+                    doc: amDoc 
+                }
+            });
+            }
+        }
+
+        // * synth changes document
         docID = 'forkingPathsDoc'; // Unique identifier for the document
         // Load the document from IndexedDB or create a new one if it doesn't exist
         amDoc = await loadDocument(docID);
@@ -445,9 +473,19 @@ document.addEventListener("DOMContentLoaded", function () {
             });
             
             branches[amDoc.title] = {
-                HEAD: Automerge.getHeads(amDoc)[0],
+                head: Automerge.getHeads(amDoc)[0],
                 root: Automerge.getHeads(amDoc)[0]
             }
+            console.log(meta)
+            
+            meta = Automerge.change(meta, (meta) => {
+                meta.branches[amDoc.title] = {
+                    head: Automerge.getHeads(amDoc)[0],
+                    root: 'thisIsTheRoot',
+                    doc: amDoc 
+                }
+            });
+            
             // set the document branch (aka title) in the editor pane
             document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
 
@@ -469,18 +507,20 @@ document.addEventListener("DOMContentLoaded", function () {
     setInterval(async () => {
         if(amDoc && docUpdated){
             await saveDocument(docID, Automerge.save(amDoc));
+            await saveDocument('branches', Automerge.save(meta));
             docUpdated = false
         }
+
     }, saveInterval);
 
     // Custom function to handle document changes and call a callback
     function applyChange(doc, changeCallback, onChangeCallback, changeMessage) {
         
         
-        // check if we are working from a newly cloned doc or if branch is in HEAD position
+        // check if we are working from a newly cloned doc or if branch is in head position
         if(automergeDocuments.newClone === false ){
             let amMsg = makeChangeMessage(amDoc.title, changeMessage)
-            // we are working from a HEAD
+            // we are working from a head
             // Apply the change using Automerge.change
             const newDoc = Automerge.change(amDoc, amMsg, changeCallback);
             
@@ -493,7 +533,7 @@ document.addEventListener("DOMContentLoaded", function () {
         } else {
             // player has made changes to an earlier version, so create a branch and set amDoc to new clone
 
-            // store previous amDoc in automergeDocuments, and its property is the hash of its HEAD
+            // store previous amDoc in automergeDocuments, and its property is the hash of its head
             automergeDocuments.otherDocs[amDoc.title] = amDoc
             
             // set amDoc to current cloned doc
@@ -525,18 +565,20 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // define the onChange Callback
-    onChange = (updatedDoc) => {
-        console.log('PLO Document changed:', updatedDoc.title);
+    onChange = () => {
+        console.log('PLO Document changed:', amDoc.title);
         // You can add any additional logic here, such as saving to IndexedDB
 
         // set docUpdated so that indexedDB will save it
         docUpdated = true
-
+        console.log(meta.branches, amDoc.title)
         // store the current hash (used by historyCy)
+        meta = Automerge.change(meta, (meta) => {
+            meta.branches[amDoc.title].head = Automerge.getHeads(amDoc)[0]
+        });
         branchHeads.current = Automerge.getHeads(amDoc)[0]
 
-        branches[updatedDoc.title].HEAD = Automerge.getHeads(updatedDoc)[0]
-        console.log(branches)
+        console.log(meta.branches)
         // update the historyGraph
         updateHistory()
     };
@@ -562,7 +604,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // history = retrieveHistory(handle.docSync());
         
         history = Automerge.getHistory(amDoc)
-        console.log(history)
+        
         // get only the latest changes     
         let arrayLengthDifference = history.length - previousHistoryLength
         let historyUpdates = history.slice(-arrayLengthDifference)
@@ -732,7 +774,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // Use `Automerge.view()` to view the state at this specific point in history
         const historicalView = Automerge.view(amDoc, [targetHash]);
 
-        // Check if we're on the HEAD; reset clone if true (so we don't trigger opening a new branch with changes made to HEAD)
+        // Check if we're on the head; reset clone if true (so we don't trigger opening a new branch with changes made to head)
         if (Automerge.getHeads(historicalView)[0] === Automerge.getHeads(amDoc)[0]){
             automergeDocuments.newClone = false
             console.log('at head state')
@@ -744,12 +786,20 @@ document.addEventListener("DOMContentLoaded", function () {
             // // update the doc's branch name (title)
 
 
-            clonedDoc.title = `ForkingPaths_Branch_${uuidv7()}`;
+            clonedDoc.title = uuidv7();
             branches[clonedDoc.title] = {
-                HEAD: null,
+                head: null,
                 root: targetHash
             }
 
+            meta = Automerge.change(meta, (meta) => {
+                meta.branches[clonedDoc.title] ={
+                    head: null,
+                    parent: targetHash,
+                    doc: clonedDoc
+                }
+            });
+            console.log(meta.branches)
             automergeDocuments.current = {
                 doc: clonedDoc,
                 hash: [Automerge.getHeads(clonedDoc)[0]]
@@ -757,9 +807,9 @@ document.addEventListener("DOMContentLoaded", function () {
             // set newClone to true
             automergeDocuments.newClone = true
         
-            // store previous HEAD in heads obj
+            // store previous head in heads obj
             branchHeads[branchHeads.current] = {}
-            // update current HEAD to this hash
+            // update current head to this hash
             branchHeads.current = Automerge.getHeads(historicalView)[0]
             // Step 3: Add node in Cytoscape for this clone point
             // get info about targetNode (what was clicked by user)
