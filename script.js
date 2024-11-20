@@ -30,6 +30,8 @@ let automergeDocuments = {
 
     }
 }
+
+let firstBranchName = 'main'
 let previousHash;
 let meta;
 let branches = {
@@ -38,6 +40,8 @@ let branches = {
         // root: hash (the node that it started from)
     //}
 }
+
+let exitstingHistoryNodeIDs = [];
 // store the heads of all branches
 // todo: decide if we should store this in the automerge doc? (consideration: for now it's mostly likely just needed for the history graph)
 let branchHeads = {
@@ -451,7 +455,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // ensure the branches obj exists
             if (!meta.branches){
                     meta = Automerge.change(meta, (meta) => {
-                    meta.branches['main'] = {
+                    meta.branches[firstBranchName] = {
                         head: Automerge.getHeads(amDoc)[0],
                         root: null,
                         parent: null,
@@ -468,10 +472,10 @@ document.addEventListener("DOMContentLoaded", function () {
         amDoc = await loadDocument(docID);
         if (!amDoc) {
             amDoc = Automerge.init();
-            let amMsg = makeChangeMessage('main', 'blank_patch')
+            let amMsg = makeChangeMessage(firstBranchName, 'blank_patch')
             // Apply initial changes to the new document
             amDoc = Automerge.change(amDoc, amMsg, (amDoc) => {
-                amDoc.title = "main";
+                amDoc.title = firstBranchName;
                 amDoc.elements = [];
             });
             let hash = Automerge.getHeads(amDoc)[0]
@@ -498,7 +502,7 @@ document.addEventListener("DOMContentLoaded", function () {
             document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
 
             updateHistory()
-            updateHistoryGraph()
+            reDrawHistoryGraph()
 
             await saveDocument(docID, Automerge.save(amDoc));
         } else {
@@ -506,7 +510,7 @@ document.addEventListener("DOMContentLoaded", function () {
             amDoc = Automerge.load(amDoc);
             previousHash = Automerge.getHeads(amDoc)[0]
             updateHistory()
-            updateHistoryGraph()
+            reDrawHistoryGraph()
 
             // set the document branch (aka title)  in the editor pane
             document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
@@ -636,90 +640,100 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log(meta.branches)
 
         updateHistory()
-        updateHistoryGraph()
+        reDrawHistoryGraph()
     };
     
 
 
-    function updateHistoryGraph(){
-        // 2. Clear existing elements from Cytoscape instance
-        historyCy.elements().remove();
+    function reDrawHistoryGraph(){
+
+        if (exitstingHistoryNodeIDs.length === 0){
+            exitstingHistoryNodeIDs = new Set(cy.nodes().map(node => node.id()));
+        }
+
+        console.log(meta.branches)
+
         // Create nodes and edges for each branch
         Object.keys(meta.branches).forEach(branchKey => {
             const branch = meta.branches[branchKey];
 
-            // Create nodes for each history item
+            // iterate over each history item in the branch
             branch.history.forEach((item, index) => {
                 const nodeId = item.hash
-                historyCy.add({
-                    group: 'nodes',
-                    data: { id: nodeId, label: item.msg }
-                });
-            });
-
-            // // Create node for the head
-            // const headNodeId = `${branchKey}_head`;
-            // historyCy.add({
-            //     group: 'nodes',
-            //     data: { id: headNodeId, label: branch.head }
-            // });
-
-            // // Create edges for history chain
-            branch.history.forEach((item, index) => {
-                if (index > 0) {
-                    const sourceNodeId = item.parent
-                    const targetNodeId = item.hash
+                // 4. Check if the node already exists in the history graph
+                if (!exitstingHistoryNodeIDs.has(nodeId)) {
+                    
+                    // add node to the history graph
                     historyCy.add({
-                        group: 'edges',
-                        data: { id: `${sourceNodeId}_to_${targetNodeId}`, source: sourceNodeId, target: targetNodeId }
+                        group: 'nodes',
+                        data: { id: nodeId, label: item.msg, color: docHistoryGraphStyling.nodeColours[item.msg.split(' ')[0]] }
                     });
+
+                    // Get all nodes in the Cytoscape instance
+                    let nodes = historyCy.nodes();
+
+                    // Iterate over the nodes and print their IDs
+                    nodes.forEach(node => {
+                        console.log(node.id());
+                    });
+                     // If the history item has a parent, add an edge to connect the parent
+                    if (item.parent) {
+                        // Make sure the parent node also exists before adding the edge
+                        if (exitstingHistoryNodeIDs.has(item.parent)) {
+                            historyCy.add({
+                                group: 'edges',
+                                data: {
+                                    id: `${item.parent}_to_${nodeId}`,
+                                    source: item.parent,
+                                    target: nodeId
+                                }
+                            });
+                        }
+                    }
+
+                    // Add the newly added node's ID to the set to track it
+                    exitstingHistoryNodeIDs.add(nodeId);
+
                 }
             });
 
-            // // Connect the last history item to the head
-            // if (branch.history.length > 0) {
-            //     const lastHistoryNodeId = `${branchKey}_history_${branch.history.length - 1}`;
-            //     historyCy.add({
-            //         group: 'edges',
-            //         data: { id: `${lastHistoryNodeId}_to_${headNodeId}`, source: lastHistoryNodeId, target: headNodeId }
+            // // Create edges for history chain
+            // branch.history.forEach((item, index) => {
+            //     console.log(index)
+            //     if (index > 0) {
+                    
+            //         cy.add({
+            //             group: 'edges',
+            //             data: { id: `${item.parent}_to_${item.hash}`, source: item.parent, target: item.hash, }
+            //         });
+            //     }
+            // });
+
+            // we only want to create edges between new branches
+            // console.log(branchKey, firstBranchName)
+            // if(branchKey != firstBranchName){
+            //     // Create edge from parent to first history item if parent exists
+            //     branch.history.forEach((item, index) => {
+            //         console.log(item.parent)
+            //         if (index === 0 && item.parent) {
+            //             console.log('asdf')
+            //             cy.add({
+            //                 group: 'edges',
+            //                 data: { id: `${item.parent}_to_${item.hash}`, source: item.parent, target: item.hash }
+            //             });
+            //         }
             //     });
             // }
 
-            // // Create edge from parent to first history item if parent exists
-            // if (branch.parent) {
-            //     const parentNodeId = Object.keys(meta.branches).find(key =>
-            //         meta.branches[key].history.some(historyItem => historyItem.hash === branch.parent)
-            //     );
-            //     if (parentNodeId) {
-            //         const targetNodeId = `${branchKey}_history_0`;
-            //         historyCy.add({
-            //             group: 'edges',
-            //             data: { id: `${branch.parent}_to_${targetNodeId}`, source: branch.parent, target: targetNodeId }
-            //         });
-            //     }
-            // }
+            
+            
         });
 
+        
         // Refresh graph layout
         historyCy.layout(graphLayouts[graphStyle]).run();
-
-            // const { nodes, edges } = generateFullDAGFromBranches(meta.branches)
-            
-            // historyCy.add([ ...nodes, ...edges]);
-            
-            // historyCy.layout(graphLayouts[graphStyle]).run();
-
-        // // is the document in an earlier point in history?
-        // if(automergeDocuments.current.hash){
-        //     // 
-        // } else {
-        //     // Add elements to Cytoscape
-        //     historyCy.add(elements);
-            
-        //     historyCy.layout(graphLayouts[graphStyle]).run();
-        //     previousHistoryLength = history.length
-        // }
-
+        // update the current history node ids for the next time we run this function
+        // exitstingHistoryNodeIDs = new Set(cy.nodes().map(node => node.id()));
     }
 
     function updateHistory(){
@@ -827,7 +841,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
         
         // Add elements to Cytoscape
-        updateHistoryGraph(elements)
+        reDrawHistoryGraph(elements)
 
         */
     }
@@ -1372,7 +1386,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
     historyCy.on('tap', 'node', (event) => {
-        
+        console.log(event.target.data())
         loadVersion(event.target.data().id, event.target)
         if(historyHighlightedNode){
             historyHighlightedNode.removeClass('highlighted');
