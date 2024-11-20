@@ -4,7 +4,7 @@
 //* Set up dependencies, initialize core variables
 //*
 import { ParentNode } from './parentNode.js';
-import { uuidv7 } from "https://unpkg.com/uuidv7@^1";
+import { uuidv7 } from "uuidv7";
 import randomColor from 'randomcolor';
 import dagre from 'cytoscape-dagre';
 import { openDB } from 'idb'; // indexedDB
@@ -433,7 +433,7 @@ document.addEventListener("DOMContentLoaded", function () {
         Automerge = await import('@automerge/automerge');
 
         // branches document
-        meta = await loadDocument('branches10');
+        meta = await loadDocument('branches11');
         if (!meta) {
             meta = Automerge.init();
             
@@ -449,13 +449,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // ensure the branches obj exists
             if (!meta.branches){
-                meta = Automerge.change(meta, (meta) => {
-                meta.branches[amDoc.title] = {
-                    head: Automerge.getHeads(amDoc)[0],
-                    root: 'thisIsTheRoot',
-                    doc: amDoc 
-                }
-            });
+                    meta = Automerge.change(meta, (meta) => {
+                    meta.branches['main'] = {
+                        head: Automerge.getHeads(amDoc)[0],
+                        root: null,
+                        // doc: amDoc,
+                        history: []
+                    }
+                });
             }
         }
 
@@ -465,26 +466,30 @@ document.addEventListener("DOMContentLoaded", function () {
         amDoc = await loadDocument(docID);
         if (!amDoc) {
             amDoc = Automerge.init();
-            let amMsg = makeChangeMessage('ForkingPaths_initial_branch', 'blank_patch')
+            let amMsg = makeChangeMessage('main', 'blank_patch')
             // Apply initial changes to the new document
             amDoc = Automerge.change(amDoc, amMsg, (amDoc) => {
-                amDoc.title = "ForkingPaths_initial_branch";
+                amDoc.title = "main";
                 amDoc.elements = [];
             });
-            
+            let hash = Automerge.getHeads(amDoc)[0]
             branches[amDoc.title] = {
-                head: Automerge.getHeads(amDoc)[0],
-                root: Automerge.getHeads(amDoc)[0]
+                head: hash,
+                root: hash
             }
-            
+            // console.log(branches)
             meta = Automerge.change(meta, (meta) => {
                 meta.branches[amDoc.title] = {
-                    head: Automerge.getHeads(amDoc)[0],
-                    root: 'thisIsTheRoot',
-                    doc: amDoc 
+                    head: hash,
+                    root: null,
+                    // doc: amDoc,
+                    history: [ {hash: hash, msg: 'blank_patch'} ] 
                 }
             });
+
+
             
+            console.log(meta.branches)
             // set the document branch (aka title) in the editor pane
             document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
 
@@ -518,6 +523,7 @@ document.addEventListener("DOMContentLoaded", function () {
         
         // check if we are working from a newly cloned doc or if branch is in head position
         if(automergeDocuments.newClone === false ){
+            
             let amMsg = makeChangeMessage(amDoc.title, changeMessage)
             // we are working from a head
             // Apply the change using Automerge.change
@@ -534,21 +540,38 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // store previous amDoc in automergeDocuments, and its property is the hash of its head
             automergeDocuments.otherDocs[amDoc.title] = amDoc
-            
+            console.log(automergeDocuments.current)
             // set amDoc to current cloned doc
-            amDoc = Automerge.from(automergeDocuments.current.doc)
+            amDoc = Automerge.clone(automergeDocuments.current.doc)
             // use the new branch title
             let amMsg = makeChangeMessage(amDoc.title, changeMessage)
 
             // Apply the change using Automerge.change
             const newDoc = Automerge.change(amDoc, amMsg, changeCallback);
-
+            let hash = Automerge.getHeads(newDoc)[0]
             // const setTitle = Automerge.change(newDoc, makeChangeMessage('headless', 'changeTitle'), () => {
             //     newDoc.title = `branch_${Automerge.getHeads(newDoc)[0]}`
             // });
             // If there was a change, call the onChangeCallback
             if (newDoc !== doc && typeof onChangeCallback === 'function') {   
-                
+                meta = Automerge.change(meta, (meta) => {
+
+                    // Initialize the branch metadata if it doesn't already exist
+                    if (!meta.branches[amDoc.title]) {
+                        meta.branches[amDoc.title] = { head: null, history: [] };
+                    }
+                    // Update the head property
+                    meta.branches[amDoc.title].head = hash;
+
+                    // Push the new history entry into the existing array
+                    meta.branches[amDoc.title].history.push({
+                        hash: hash,
+                        msg: changeMessage
+                    });
+                    // meta.branches[amDoc.title].head = hash
+                    // meta.branches[amDoc.title].history = meta.branches[amDoc.title].history.concat({ hash: hash, msg: changeMessage }) // Creates a new array
+                });
+
                 // makeBranch(changeMessage, Automerge.getHeads(newDoc)[0])
                 onChangeCallback(newDoc);
                 automergeDocuments.newClone = false
@@ -568,14 +591,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // set docUpdated so that indexedDB will save it
         docUpdated = true
-        console.log(meta.branches, amDoc.title)
         // store the current hash (used by historyCy)
-        meta = Automerge.change(meta, (meta) => {
-            meta.branches[amDoc.title].head = Automerge.getHeads(amDoc)[0]
-        });
+
         branchHeads.current = Automerge.getHeads(amDoc)[0]
 
-        console.log(meta.branches)
+        // console.log(meta.branches)
         // update the historyGraph
         updateHistory()
         addToHistoryGraph()
@@ -585,7 +605,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function addToHistoryGraph(){
             const { nodes, edges } = generateFullDAGFromBranches(meta.branches)
-            console.log(nodes, edges)
+            
             historyCy.add([ ...nodes, ...edges]);
             
             historyCy.layout(graphLayouts[graphStyle]).run();
@@ -799,13 +819,18 @@ document.addEventListener("DOMContentLoaded", function () {
                 meta.branches[clonedDoc.title] ={
                     head: null,
                     parent: targetHash,
-                    doc: clonedDoc
+                    // doc: clonedDoc,
+                    history: []
                 }
             });
-            console.log(meta.branches)
+
+
             automergeDocuments.current = {
                 doc: clonedDoc,
-                hash: [Automerge.getHeads(clonedDoc)[0]]
+                hash: [Automerge.getHeads(clonedDoc)[0]],
+                history: getHistoryProps(amDoc)
+
+                
             }
             // set newClone to true
             automergeDocuments.newClone = true
@@ -832,6 +857,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Iterate over each branch
     Object.entries(branches).forEach(([branchName, branch]) => {
+        
         const branchDoc = branch.doc;
         const branchHead = branch.head;
         const branchParent = branch.parent;
@@ -1714,6 +1740,8 @@ document.addEventListener("DOMContentLoaded", function () {
     // removing modules
     // Click event to highlight a parent node
     cy.on('click', 'node:parent', (event) => {
+
+
         // Remove highlight class from any previously highlighted node
         if (highlightedNode) {
             highlightedNode.removeClass('highlighted');
@@ -2176,6 +2204,21 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function getChangeMessage(msg){
         return [ JSON.parse(msg).branch, JSON.parse(msg).msg ] 
+    }
+
+    function getHistoryProps(doc){
+        const historyProps = Automerge.getHistory(doc).map(entry => {
+            return {
+              actor: entry.change.actor,
+              hash: entry.change.hash,
+              seq: entry.change.seq,
+              startOp: entry.change.startOp,
+              time: entry.change.time,
+              message: entry.change.message,
+              deps: entry.change.deps
+            };
+        });
+        return historyProps
     }
 });
 
