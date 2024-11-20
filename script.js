@@ -494,6 +494,7 @@ document.addEventListener("DOMContentLoaded", function () {
             document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
 
             updateHistory()
+            updateHistoryGraph()
 
             await saveDocument(docID, Automerge.save(amDoc));
         } else {
@@ -501,6 +502,7 @@ document.addEventListener("DOMContentLoaded", function () {
             amDoc = Automerge.load(amDoc);
             
             updateHistory()
+            updateHistoryGraph()
 
             // set the document branch (aka title)  in the editor pane
             document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
@@ -619,17 +621,77 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log(meta.branches)
 
         updateHistory()
-        // addToHistoryGraph()
+        updateHistoryGraph()
     };
     
 
 
-    function addToHistoryGraph(){
-            const { nodes, edges } = generateFullDAGFromBranches(meta.branches)
+    function updateHistoryGraph(){
+
+        // Create nodes and edges for each branch
+        Object.keys(meta.branches).forEach(branchKey => {
+            const branch = meta.branches[branchKey];
+
+            // Create nodes for each history item
+            branch.history.forEach((item, index) => {
+                const nodeId = item.hash
+                historyCy.add({
+                    group: 'nodes',
+                    data: { id: nodeId, label: item.msg }
+                });
+            });
+
+            // // Create node for the head
+            // const headNodeId = `${branchKey}_head`;
+            // historyCy.add({
+            //     group: 'nodes',
+            //     data: { id: headNodeId, label: branch.head }
+            // });
+
+            // Create edges for history chain
+            branch.history.forEach((item, index) => {
+                if (index > 0) {
+                    const sourceNodeId = `${branchKey}_history_${index - 1}`;
+                    const targetNodeId = `${branchKey}_history_${index}`;
+                    historyCy.add({
+                        group: 'edges',
+                        data: { id: `${sourceNodeId}_to_${targetNodeId}`, source: sourceNodeId, target: targetNodeId }
+                    });
+                }
+            });
+
+            // // Connect the last history item to the head
+            // if (branch.history.length > 0) {
+            //     const lastHistoryNodeId = `${branchKey}_history_${branch.history.length - 1}`;
+            //     historyCy.add({
+            //         group: 'edges',
+            //         data: { id: `${lastHistoryNodeId}_to_${headNodeId}`, source: lastHistoryNodeId, target: headNodeId }
+            //     });
+            // }
+
+            // // Create edge from parent to first history item if parent exists
+            // if (branch.parent) {
+            //     const parentNodeId = Object.keys(meta.branches).find(key =>
+            //         meta.branches[key].history.some(historyItem => historyItem.hash === branch.parent)
+            //     );
+            //     if (parentNodeId) {
+            //         const targetNodeId = `${branchKey}_history_0`;
+            //         historyCy.add({
+            //             group: 'edges',
+            //             data: { id: `${branch.parent}_to_${targetNodeId}`, source: branch.parent, target: targetNodeId }
+            //         });
+            //     }
+            // }
+        });
+
+        // Refresh graph layout
+        historyCy.layout(graphLayouts[graphStyle]).run();
+
+            // const { nodes, edges } = generateFullDAGFromBranches(meta.branches)
             
-            historyCy.add([ ...nodes, ...edges]);
+            // historyCy.add([ ...nodes, ...edges]);
             
-            historyCy.layout(graphLayouts[graphStyle]).run();
+            // historyCy.layout(graphLayouts[graphStyle]).run();
 
         // // is the document in an earlier point in history?
         // if(automergeDocuments.current.hash){
@@ -749,7 +811,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
         
         // Add elements to Cytoscape
-        addToHistoryGraph(elements)
+        updateHistoryGraph(elements)
 
         */
     }
