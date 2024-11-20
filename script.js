@@ -30,6 +30,7 @@ let automergeDocuments = {
 
     }
 }
+let previousHash;
 let meta;
 let branches = {
     // branchName: {
@@ -453,6 +454,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     meta.branches['main'] = {
                         head: Automerge.getHeads(amDoc)[0],
                         root: null,
+                        parent: null,
                         // doc: amDoc,
                         history: []
                     }
@@ -473,6 +475,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 amDoc.elements = [];
             });
             let hash = Automerge.getHeads(amDoc)[0]
+            previousHash = hash
             branches[amDoc.title] = {
                 head: hash,
                 root: hash
@@ -482,8 +485,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 meta.branches[amDoc.title] = {
                     head: hash,
                     root: null,
+                    parent: null,
                     // doc: amDoc,
-                    history: [ {hash: hash, msg: 'blank_patch'} ] 
+                    history: [ {hash: hash, parent: null, msg: 'blank_patch'} ] 
                 }
             });
 
@@ -500,7 +504,7 @@ document.addEventListener("DOMContentLoaded", function () {
         } else {
             // If loaded, convert saved document state back to Automerge document
             amDoc = Automerge.load(amDoc);
-            
+            previousHash = Automerge.getHeads(amDoc)[0]
             updateHistory()
             updateHistoryGraph()
 
@@ -528,12 +532,17 @@ document.addEventListener("DOMContentLoaded", function () {
             
             let amMsg = makeChangeMessage(amDoc.title, changeMessage)
             // we are working from a head
+
+            // grab the current hash before making the new change:
+            previousHash = Automerge.getHeads(amDoc)[0]
+            
             // Apply the change using Automerge.change
             const newDoc = Automerge.change(amDoc, amMsg, changeCallback);
             
             // If there was a change, call the onChangeCallback
             if (newDoc !== doc && typeof onChangeCallback === 'function') {
                 let hash = Automerge.getHeads(newDoc)[0]
+                
                 meta = Automerge.change(meta, (meta) => {
 
                     // Initialize the branch metadata if it doesn't already exist
@@ -546,7 +555,9 @@ document.addEventListener("DOMContentLoaded", function () {
                     // Push the new history entry into the existing array
                     meta.branches[amDoc.title].history.push({
                         hash: hash,
+                        parent: previousHash,
                         msg: changeMessage
+
                     });
                     // meta.branches[amDoc.title].head = hash
                     // meta.branches[amDoc.title].history = meta.branches[amDoc.title].history.concat({ hash: hash, msg: changeMessage }) // Creates a new array
@@ -566,9 +577,12 @@ document.addEventListener("DOMContentLoaded", function () {
             // use the new branch title
             let amMsg = makeChangeMessage(amDoc.title, changeMessage)
 
+            // grab the current hash before making the new change:
+            previousHash = Automerge.getHeads(amDoc)[0]
             // Apply the change using Automerge.change
             const newDoc = Automerge.change(amDoc, amMsg, changeCallback);
             let hash = Automerge.getHeads(newDoc)[0]
+            
             // const setTitle = Automerge.change(newDoc, makeChangeMessage('headless', 'changeTitle'), () => {
             //     newDoc.title = `branch_${Automerge.getHeads(newDoc)[0]}`
             // });
@@ -578,7 +592,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     // Initialize the branch metadata if it doesn't already exist
                     if (!meta.branches[amDoc.title]) {
-                        meta.branches[amDoc.title] = { head: null, history: [] };
+                        meta.branches[amDoc.title] = { head: null, parent: null, history: [] };
                     }
                     // Update the head property
                     meta.branches[amDoc.title].head = hash;
@@ -586,7 +600,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     // Push the new history entry into the existing array
                     meta.branches[amDoc.title].history.push({
                         hash: hash,
-                        msg: changeMessage
+                        msg: changeMessage,
+                        parent: previousHash
                     });
                     // meta.branches[amDoc.title].head = hash
                     // meta.branches[amDoc.title].history = meta.branches[amDoc.title].history.concat({ hash: hash, msg: changeMessage }) // Creates a new array
@@ -627,7 +642,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     function updateHistoryGraph(){
-
+        // 2. Clear existing elements from Cytoscape instance
+        historyCy.elements().remove();
         // Create nodes and edges for each branch
         Object.keys(meta.branches).forEach(branchKey => {
             const branch = meta.branches[branchKey];
@@ -648,11 +664,11 @@ document.addEventListener("DOMContentLoaded", function () {
             //     data: { id: headNodeId, label: branch.head }
             // });
 
-            // Create edges for history chain
+            // // Create edges for history chain
             branch.history.forEach((item, index) => {
                 if (index > 0) {
-                    const sourceNodeId = `${branchKey}_history_${index - 1}`;
-                    const targetNodeId = `${branchKey}_history_${index}`;
+                    const sourceNodeId = item.parent
+                    const targetNodeId = item.hash
                     historyCy.add({
                         group: 'edges',
                         data: { id: `${sourceNodeId}_to_${targetNodeId}`, source: sourceNodeId, target: targetNodeId }
