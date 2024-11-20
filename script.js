@@ -59,13 +59,13 @@ let graphLayouts = {
         nodeSep: 300, // Optional: adjust node separation
         edgeSep: 100, // Optional: adjust edge separation
         rankSep: 50, // Optional: adjust rank separation for vertical spacing,
-        fit: true,
+        fit: false,
         padding: 30
     },
     breadthfirst: {
         name: 'breadthfirst',
 
-        fit: true, // whether to fit the viewport to the graph
+        fit: false, // whether to fit the viewport to the graph
         directed: true, // whether the tree is directed downwards (or edges can point in any direction if false)
         padding: 30, // padding on fit
         circle: false, // put depths in concentric circles if true, put depths top down if false
@@ -851,7 +851,7 @@ document.addEventListener("DOMContentLoaded", function () {
         cy.add(elements)
 
         // Optional: Run layout
-        cy.layout({ name: 'preset' }).run(); // `preset` uses the position data directly
+        cy.layout({ name: 'preset', fit: false }).run(); // `preset` uses the position data directly
         
     }
 
