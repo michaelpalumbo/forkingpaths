@@ -637,7 +637,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // console.log(meta.branches)
         // update the historyGraph
 
-        console.log(meta.branches)
+    
 
         updateHistory()
         reDrawHistoryGraph()
@@ -650,9 +650,6 @@ document.addEventListener("DOMContentLoaded", function () {
         if (exitstingHistoryNodeIDs.length === 0){
             exitstingHistoryNodeIDs = new Set(cy.nodes().map(node => node.id()));
         }
-
-        console.log(meta.branches)
-
         // Create nodes and edges for each branch
         Object.keys(meta.branches).forEach(branchKey => {
             const branch = meta.branches[branchKey];
@@ -669,14 +666,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         data: { id: nodeId, label: item.msg, color: docHistoryGraphStyling.nodeColours[item.msg.split(' ')[0]] }
                     });
 
-                    // Get all nodes in the Cytoscape instance
-                    let nodes = historyCy.nodes();
-
-                    // Iterate over the nodes and print their IDs
-                    nodes.forEach(node => {
-                        console.log(node.id());
-                    });
-                     // If the history item has a parent, add an edge to connect the parent
+                    // If the history item has a parent, add an edge to connect the parent
                     if (item.parent) {
                         // Make sure the parent node also exists before adding the edge
                         if (exitstingHistoryNodeIDs.has(item.parent)) {
@@ -696,6 +686,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 }
             });
+
+            
 
             // // Create edges for history chain
             // branch.history.forEach((item, index) => {
@@ -732,6 +724,9 @@ document.addEventListener("DOMContentLoaded", function () {
         
         // Refresh graph layout
         historyCy.layout(graphLayouts[graphStyle]).run();
+
+        // console.log(historyCy.nodes())        
+        highlightNode(historyCy.nodes().last())
         // update the current history node ids for the next time we run this function
         // exitstingHistoryNodeIDs = new Set(cy.nodes().map(node => node.id()));
     }
@@ -1388,15 +1383,7 @@ document.addEventListener("DOMContentLoaded", function () {
     historyCy.on('tap', 'node', (event) => {
         console.log(event.target.data())
         loadVersion(event.target.data().id, event.target)
-        if(historyHighlightedNode){
-            historyHighlightedNode.removeClass('highlighted');
-            historyHighlightedNode = event.target
-            event.target.addClass('highlighted');
-        }
-        else {
-            historyHighlightedNode = event.target;
-            event.target.addClass('highlighted');
-        }
+        highlightNode(event.target)
         
 
     })
@@ -2332,6 +2319,19 @@ document.addEventListener("DOMContentLoaded", function () {
             };
         });
         return historyProps
+    }
+
+    function highlightNode(target){
+
+        if(historyHighlightedNode){
+            historyHighlightedNode.removeClass('highlighted');
+            historyHighlightedNode = target
+            target.addClass('highlighted');
+        }
+        else {
+            historyHighlightedNode = target;
+            target.addClass('highlighted');
+        }
     }
 });
 
