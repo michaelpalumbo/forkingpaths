@@ -489,7 +489,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
             
-            console.log(meta.branches)
+            
             // set the document branch (aka title) in the editor pane
             document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
 
@@ -531,6 +531,25 @@ document.addEventListener("DOMContentLoaded", function () {
             
             // If there was a change, call the onChangeCallback
             if (newDoc !== doc && typeof onChangeCallback === 'function') {
+                let hash = Automerge.getHeads(newDoc)[0]
+                meta = Automerge.change(meta, (meta) => {
+
+                    // Initialize the branch metadata if it doesn't already exist
+                    if (!meta.branches[amDoc.title]) {
+                        meta.branches[amDoc.title] = { head: null, history: [] };
+                    }
+                    // Update the head property
+                    meta.branches[amDoc.title].head = hash;
+
+                    // Push the new history entry into the existing array
+                    meta.branches[amDoc.title].history.push({
+                        hash: hash,
+                        msg: changeMessage
+                    });
+                    // meta.branches[amDoc.title].head = hash
+                    // meta.branches[amDoc.title].history = meta.branches[amDoc.title].history.concat({ hash: hash, msg: changeMessage }) // Creates a new array
+                });
+
                 onChangeCallback(newDoc);
             }
 
@@ -540,7 +559,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // store previous amDoc in automergeDocuments, and its property is the hash of its head
             automergeDocuments.otherDocs[amDoc.title] = amDoc
-            console.log(automergeDocuments.current)
             // set amDoc to current cloned doc
             amDoc = Automerge.clone(automergeDocuments.current.doc)
             // use the new branch title
@@ -597,8 +615,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // console.log(meta.branches)
         // update the historyGraph
+
+        console.log(meta.branches)
+
         updateHistory()
-        addToHistoryGraph()
+        // addToHistoryGraph()
     };
     
 
