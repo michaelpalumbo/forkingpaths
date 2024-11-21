@@ -448,6 +448,7 @@ document.addEventListener("DOMContentLoaded", function () {
             meta = Automerge.change(meta, (meta) => {
                 meta.title = "Forking Paths System";
                 meta.branches = {};
+                meta.branchOrder = []
                 meta.docs = {}
                 meta.head = {
                     hash: null,
@@ -498,6 +499,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 meta.docs[amDoc.title] = Automerge.save(amDoc)
                 meta.head.branch = firstBranchName
                 meta.head.hash = hash 
+                meta.branchOrder.push(amDoc.title)
                 
             });
             // set the document branch (aka title) in the editor pane
@@ -511,7 +513,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // meta does contain at least one document, so grab whichever is the one that was last looked at
             
             amDoc = Automerge.load(meta.docs[meta.head.branch]);
-            console.log(amDoc)
+            console.log(meta.branches)
             // // store previous head in heads obj
             // branchHeads[branchHeads.current] = {}
             // // update current head to this hash
@@ -588,6 +590,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     // store the HEAD info
                     meta.head.hash = hash
                     meta.head.branch = amDoc.title
+                    
                 });
                 
                 onChangeCallback(amDoc);
@@ -616,9 +619,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 meta = Automerge.change(meta, (meta) => {
 
                     // Initialize the branch metadata if it doesn't already exist
-                    if (!meta.branches[amDoc.title]) {
-                        meta.branches[amDoc.title] = { head: null, parent: null, history: [] };
-                    }
+                    // if (!meta.branches[amDoc.title]) {
+                    //     meta.branches[amDoc.title] = { head: null, parent: null, history: [] };
+                        
+                    // }
                     // Update the head property
                     meta.branches[amDoc.title].head = hash;
 
@@ -634,8 +638,11 @@ document.addEventListener("DOMContentLoaded", function () {
                     // store the HEAD info
                     meta.head.hash = hash
                     meta.head.branch = amDoc.title
-                });
 
+                    // store the branch name so that we can ensure its ordering later on
+                    meta.branchOrder.push(amDoc.title)
+                });
+                console.log(meta.branchOrder)
                 // makeBranch(changeMessage, Automerge.getHeads(newDoc)[0])
                 onChangeCallback(amDoc);
                 automergeDocuments.newClone = false
@@ -657,23 +664,22 @@ document.addEventListener("DOMContentLoaded", function () {
         // store the current hash (used by historyCy)
 
         branchHeads.current = Automerge.getHeads(amDoc)[0]
-
+        console.log(meta.branches)
         // update the historyGraph
         updateHistory()
         reDrawHistoryGraph()
-
-        console.log(amDoc.elements.length)
     };
     
 
 
-    function reDrawHistoryGraph(refresh){
-        console.log(meta)
+    function reDrawHistoryGraph(){
+        
         if (exitstingHistoryNodeIDs.length === 0){
             exitstingHistoryNodeIDs = new Set(cy.nodes().map(node => node.id()));
         }
         // Create nodes and edges for each branch
         Object.keys(meta.branches).forEach(branchKey => {
+            
             const branch = meta.branches[branchKey];
 
             // iterate over each history item in the branch
