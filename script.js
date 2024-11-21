@@ -677,10 +677,16 @@ document.addEventListener("DOMContentLoaded", function () {
         if (exitstingHistoryNodeIDs.length === 0){
             exitstingHistoryNodeIDs = new Set(cy.nodes().map(node => node.id()));
         }
-        // Create nodes and edges for each branch
-        Object.keys(meta.branches).forEach(branchKey => {
+
+        // Accessing branches in order
+        meta.branchOrder.forEach((branchName) => {
+            console.log(branchName, meta.branches[branchName]);
+        // });
             
-            const branch = meta.branches[branchKey];
+        // // Create nodes and edges for each branch
+        // Object.keys(meta.branches).forEach(branchKey => {
+            
+            const branch = meta.branches[branchName];
 
             // iterate over each history item in the branch
             branch.history.forEach((item, index) => {
@@ -691,7 +697,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     // add node to the history graph
                     historyCy.add({
                         group: 'nodes',
-                        data: { id: nodeId, label: item.msg, color: docHistoryGraphStyling.nodeColours[item.msg.split(' ')[0]], branch: branchKey }
+                        data: { id: nodeId, label: item.msg, color: docHistoryGraphStyling.nodeColours[item.msg.split(' ')[0]], branch: branchName }
                     });
 
                     // If the history item has a parent, add an edge to connect the parent
