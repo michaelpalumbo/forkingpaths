@@ -54,6 +54,7 @@ let branchHeads = {
 // let graphStyle = 'DAG'
 let graphStyle = 'DAG'
 let graphLayouts = {
+    // https://github.com/dagrejs/dagre/wiki#configuring-the-layout
     DAG: {
         name: 'dagre',
         rankDir: 'BT', // Set the graph direction to top-to-bottom
@@ -443,18 +444,34 @@ document.addEventListener("DOMContentLoaded", function () {
         // will probably eventually contain user preferences, etc. 
         meta = await loadDocument('meta');
         if (!meta) {
-            meta = Automerge.init();
-            
-            meta = Automerge.change(meta, (meta) => {
-                meta.title = "Forking Paths System";
-                meta.branches = {};
-                meta.branchOrder = []
-                meta.docs = {}
-                meta.head = {
+            meta = Automerge.from({
+                title: "Forking Paths System",
+                branches: {},
+                branchOrder: [],
+                docs: {},
+                head: {
                     hash: null,
                     branch: null
+                },
+                
+                userSettings: {
+                    focusNewBranch:false 
                 }
-            });
+
+            })
+            
+            // meta = Automerge.change(meta, (meta) => {
+            //     meta.title = "Forking Paths System";
+            //     meta.branches = {};
+            //     meta.branchOrder = []
+            //     meta.docs = {}
+            //     meta.head = {
+            //         hash: null,
+            //         branch: null
+            //     },
+                
+            //     meta.userSettings.focusNewBranch = false
+            // });
             
             await saveDocument('meta', Automerge.save(meta));
 
@@ -513,7 +530,6 @@ document.addEventListener("DOMContentLoaded", function () {
             // meta does contain at least one document, so grab whichever is the one that was last looked at
             
             amDoc = Automerge.load(meta.docs[meta.head.branch]);
-            console.log(meta.branches)
             // // store previous head in heads obj
             // branchHeads[branchHeads.current] = {}
             // // update current head to this hash
@@ -642,10 +658,11 @@ document.addEventListener("DOMContentLoaded", function () {
                     // store the branch name so that we can ensure its ordering later on
                     meta.branchOrder.push(amDoc.title)
                 });
-                console.log(meta.branchOrder)
+               
                 // makeBranch(changeMessage, Automerge.getHeads(newDoc)[0])
                 onChangeCallback(amDoc);
                 automergeDocuments.newClone = false
+                panToBranch(historyCy.getElementById(hash))
             }
             
             return amDoc;
@@ -664,7 +681,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // store the current hash (used by historyCy)
 
         branchHeads.current = Automerge.getHeads(amDoc)[0]
-        console.log(meta.branches)
+       
         // update the historyGraph
         updateHistory()
         reDrawHistoryGraph()
@@ -678,14 +695,8 @@ document.addEventListener("DOMContentLoaded", function () {
             exitstingHistoryNodeIDs = new Set(cy.nodes().map(node => node.id()));
         }
 
-        // Accessing branches in order
-        meta.branchOrder.forEach((branchName) => {
-            console.log(branchName, meta.branches[branchName]);
-        // });
-            
-        // // Create nodes and edges for each branch
-        // Object.keys(meta.branches).forEach(branchKey => {
-            
+        // Accessing branches in order, create nodes and edges for each branch
+        meta.branchOrder.forEach((branchName) => {            
             const branch = meta.branches[branchName];
 
             // iterate over each history item in the branch
@@ -926,6 +937,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
             updateCytoscapeFromDocument(historicalView);
         }
+
+
+        
         
 
     }
@@ -2225,15 +2239,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // pan to new/selected branch
     function panToBranch(node) {
+        if(!meta.userSettings.focusNewBranch){
+            return
+        }
         // const node = y.getElementById(nodeId); // Select the node by its ID
 
         if (node && node.length > 0) { // Check if the node exists
             const position = node.position(); // Get the node's position
 
             // Pan to the node
-            cy.pan({
-                x: -position.x + historyCy.width() / 2, // Adjust for viewport center
-                y: -position.y + historyCy.height() / 2
+            historyCy.pan({
+                x: -position.x + historyCy.width(), // Adjust for viewport center
+                // y: -position.y + historyCy.height() / 1.5
             });
         } else {
             // console.log(`Node with ID ${nodeId} not found`);
