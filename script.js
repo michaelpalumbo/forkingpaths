@@ -31,6 +31,8 @@ let automergeDocuments = {
     }
 }
 
+let historyGraphRender = true
+
 let firstBranchName = 'main'
 let previousHash;
 let meta;
@@ -455,30 +457,26 @@ document.addEventListener("DOMContentLoaded", function () {
                 },
                 
                 userSettings: {
-                    focusNewBranch:false 
+                    historyGraph: {
+                        focusNewBranch:false,
+                        render: true
+                    }
+                    
+                    
                 }
 
             })
             
-            // meta = Automerge.change(meta, (meta) => {
-            //     meta.title = "Forking Paths System";
-            //     meta.branches = {};
-            //     meta.branchOrder = []
-            //     meta.docs = {}
-            //     meta.head = {
-            //         hash: null,
-            //         branch: null
-            //     },
-                
-            //     meta.userSettings.focusNewBranch = false
-            // });
-            
             await saveDocument('meta', Automerge.save(meta));
-
+            setHistoryGraphRendering('ON')
         } else {
             // If loaded, convert saved document state back to Automerge document
             meta = Automerge.load(meta);
-            
+            if(meta.userSettings.historyGraph.render){
+                setHistoryGraphRendering('ON')
+            } else {
+                setHistoryGraphRendering('OFF')
+            }
         }
 
         // * synth changes document
@@ -522,7 +520,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // set the document branch (aka title) in the editor pane
             document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
 
-            updateHistory()
+            // updateHistory()
             reDrawHistoryGraph()
 
             await saveDocument('meta', Automerge.save(meta));
@@ -542,8 +540,8 @@ document.addEventListener("DOMContentLoaded", function () {
             
             previousHash = meta.docs[meta.head.hash]
             
-            updateHistory()
-            reDrawHistoryGraph()
+            // updateHistory()
+            updateHistoryGraph()
 
             // ion this case we want the highlighted node to be on the current branch
             highlightNode(historyCy.getElementById(meta.head.hash))
@@ -683,14 +681,67 @@ document.addEventListener("DOMContentLoaded", function () {
         branchHeads.current = Automerge.getHeads(amDoc)[0]
        
         // update the historyGraph
-        updateHistory()
-        reDrawHistoryGraph()
+        // updateHistory()
+        updateHistoryGraph()
     };
     
-
-
+    // this fully redraws it from blank
+    // ! we don't want to call this often, only in special cases like turning the history graph renderer on
     function reDrawHistoryGraph(){
+        historyCy.elements().remove()
+            // Accessing branches in order, create nodes and edges for each branch
+            meta.branchOrder.forEach((branchName) => {            
+                const branch = meta.branches[branchName];
+    
+                // iterate over each history item in the branch
+                branch.history.forEach((item, index) => {
+                    const nodeId = item.hash
+                        
+                        // add node to the history graph
+                        historyCy.add({
+                            group: 'nodes',
+                            data: { id: nodeId, label: item.msg, color: docHistoryGraphStyling.nodeColours[item.msg.split(' ')[0]], branch: branchName }
+                        });
+    
+                        // If the history item has a parent, add an edge to connect the parent
+                        if (item.parent) {
+                            // Make sure the parent node also exists before adding the edge
+                            // if (exitstingHistoryNodeIDs.has(item.parent)) {
+                                historyCy.add({
+                                    group: 'edges',
+                                    data: {
+                                        id: `${item.parent}_to_${nodeId}`,
+                                        source: item.parent,
+                                        target: nodeId
+                                    }
+                                });
+                            // }
+                        }
+    
+                        // Add the newly added node's ID to the set to track it
+                        // exitstingHistoryNodeIDs.add(nodeId);
+    
+                    })
+            })
+                // });            
+            // });
+    
+            
+            // Refresh graph layout
+            historyCy.layout(graphLayouts[graphStyle]).run();
         
+            highlightNode(historyCy.nodes().last())
+            // update the current history node ids for the next time we run this function
+            // exitstingHistoryNodeIDs = new Set(cy.nodes().map(node => node.id()));
+        
+    }
+
+    function updateHistoryGraph(){
+        if(!meta.userSettings.historyGraph.render){
+            return
+        }
+
+        // return
         if (exitstingHistoryNodeIDs.length === 0){
             exitstingHistoryNodeIDs = new Set(cy.nodes().map(node => node.id()));
         }
@@ -742,7 +793,9 @@ document.addEventListener("DOMContentLoaded", function () {
         // exitstingHistoryNodeIDs = new Set(cy.nodes().map(node => node.id()));
     }
 
+    /*
     function updateHistory(){
+        // return
         // Extract the history from the document using the latest Automerge
         // history = retrieveHistory(handle.docSync());
         
@@ -786,6 +839,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     }
+    */
 
     // Function to update Cytoscape with the state from forkedDoc
     function updateCytoscapeFromDocument(forkedDoc) {
@@ -793,7 +847,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // 2. Clear existing elements from Cytoscape instance
         cy.elements().remove();
         
-        console.log(elements)
+       
         // 3. Add new elements to Cytoscape
         cy.add(elements)
 
@@ -1037,7 +1091,7 @@ document.addEventListener("DOMContentLoaded", function () {
     //         });
 
     //         // update the focumentHistory graph:
-    //         updateHistory()
+    //         // updateHistory()
     //         // Optionally, re-run the layout if needed
             
             
@@ -1517,10 +1571,20 @@ document.addEventListener("DOMContentLoaded", function () {
                         // Update the node's data and write to Automerge only if the value has changed
                         currentHandleNode.data('value', scaledValue);
                         
+
+                        console.log(currentHandleNode.data().id)
                         // Find the label node and update its displayed text
                         const labelNode = cy.getElementById(`${currentHandleNode.data('trackID')}-label`);
                         labelNode.data('label', scaledValue.toFixed(2)); // Display the value with 2 decimal places
                         
+
+                        // update in automerge
+                        const elementIndex = amDoc.elements.findIndex(el => el.data.id === currentHandleNode.data().id);
+                        
+                        amDoc = applyChange(amDoc, (amDoc) => {
+                            amDoc.elements[elementIndex].data.value = scaledValue
+                        }, onChange,  `paramUpdate `);
+        
                         // Optionally, trigger an Automerge update here if necessary
                         // handle.change((doc) => {
                         //     // Update the document with the new value
@@ -1690,7 +1754,7 @@ document.addEventListener("DOMContentLoaded", function () {
     
             }, onChange, `move ${heldModule.data().label}`);
             
-            console.log(amDoc.elements[elementIndex])
+            
             //* old -repo version
             // handle.change((newDoc) => {                
                 
@@ -1947,32 +2011,44 @@ document.addEventListener("DOMContentLoaded", function () {
 
     });
 
-    const list = document.getElementById("itemList");
 
-    list.addEventListener("click", (event) => {
-        // Ensure the click is on a list item
-        if (event.target.tagName === "LI") {
-            const hash = event.target.getAttribute("data-hash");
-            const msg = event.target.getAttribute("data-msg");
-            const branch = event.target.getAttribute("data-branch");
-            
-            loadVersion(hash)
+    // enable/disable history graph rendering
+    const toggleHistoryGraph = document.getElementById('toggleHistoryGraph');
 
+    // Add an event listener
+    toggleHistoryGraph.addEventListener('click', () => {
+        // Toggle the "active" class
+        toggleHistoryGraph.classList.toggle('active');
 
-            // Remove highlight from any previously selected item
-            const currentlyHighlighted = list.querySelector(".highlighted");
-            if (currentlyHighlighted) {
-                currentlyHighlighted.classList.remove("highlighted");
-            }
-    
-            // Highlight the clicked item
-            event.target.classList.add("highlighted");
+        // Update the button text based on its state
+        if (toggleHistoryGraph.classList.contains('active')) {
+            setHistoryGraphRendering('ON')
+        } else {
+            setHistoryGraphRendering('OFF')
         }
-        
-      
     });
 
+    function setHistoryGraphRendering(state){
+        if(state === 'ON'){
+            toggleHistoryGraph.textContent = 'ON';
+            toggleHistoryGraph.classList.add('active')
+            historyGraphRender = true
 
+            meta = Automerge.change(meta, (meta) => {
+                meta.userSettings.historyGraph.render = true
+            });
+            // updateHistory()
+            reDrawHistoryGraph()
+        } else {
+            toggleHistoryGraph.textContent = 'OFF';
+            toggleHistoryGraph.classList.remove('active')
+            historyGraphRender = false
+            meta = Automerge.change(meta, (meta) => {
+                meta.userSettings.historyGraph.render = false
+            });
+            historyCy.elements().remove()
+        }
+    }
     // Retrieve the saved slider value from localStorage and set it
     const savedValue = localStorage.getItem('sliderValue');
     if (savedValue !== null) {
@@ -2246,7 +2322,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // pan to new/selected branch
     function panToBranch(node) {
-        if(!meta.userSettings.focusNewBranch){
+        if(!meta.userSettings.historyGraph.focusNewBranch){
             return
         }
         // const node = y.getElementById(nodeId); // Select the node by its ID
