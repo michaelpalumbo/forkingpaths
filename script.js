@@ -793,6 +793,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // 2. Clear existing elements from Cytoscape instance
         cy.elements().remove();
         
+        console.log(elements)
         // 3. Add new elements to Cytoscape
         cy.add(elements)
 
@@ -934,7 +935,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // Step 3: Add node in Cytoscape for this clone point
             // get info about targetNode (what was clicked by user)
             branchHeads.previous = Automerge.getHeads(amDoc)[0]
-
+          
             updateCytoscapeFromDocument(historicalView);
         }
 
@@ -1678,24 +1679,18 @@ document.addEventListener("DOMContentLoaded", function () {
             temporaryCables.local.ghostNode = null;
         } else if (heldModule){
             // * automerge version: 
-            
+            const elementIndex = amDoc.elements.findIndex(el => el.data.id === heldModule.data().id);
             amDoc = applyChange(amDoc, (amDoc) => {
-                const elementIndex = amDoc.elements.findIndex(el => el.data.id === heldModule.data().id);
+                
                 if (elementIndex !== -1) {
                     // update the position
-                    amDoc.elements[elementIndex].position = {
-                        x: heldModule.position().x,
-                        y: heldModule.position().y
-                    };
-                    // console.log("Position object:", JSON.stringify(amDoc.elements[elementIndex].position));
-                    // console.log(heldModule.position().x)
-                    // amDoc.elements[elementIndex].position.x = heldModule.position().x;
-                    // amDoc.elements[elementIndex].position.y = heldModule.position().y;
-             
+                    amDoc.elements[elementIndex].position.x = heldModule.position().x
+                    amDoc.elements[elementIndex].position.y = heldModule.position().y          
                 }
     
             }, onChange, `move ${heldModule.data().label}`);
-
+            
+            console.log(amDoc.elements[elementIndex])
             //* old -repo version
             // handle.change((newDoc) => {                
                 
