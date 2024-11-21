@@ -17,7 +17,7 @@ import { saveDocument, loadDocument, deleteDocument } from './indexedDB.js';
 let Automerge;
 let amDoc = null
 let docID = null
-let saveInterval = 2000; // how frequently to store the automerge document in indexedDB
+let saveInterval = 1000; // how frequently to store the automerge document in indexedDB
 let onChange; // my custom automerge callback for changes made to the doc
 let docUpdated = false // set this to true whenever doc has changed so that indexedDB will store it. after set it back to false
 let automergeDocuments = {
@@ -465,9 +465,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // * synth changes document
         docID = 'forkingPathsDoc'; // Unique identifier for the document
-        // Load the document from IndexedDB or create a new one if it doesn't exist
-        amDoc = await loadDocument(docID);
-        if (!amDoc) {
+        // Load the document from meta's store in IndexedDB or create a new one if it doesn't exist
+
+        
+        // amDoc = await loadDocument(docID);
+        // if meta doesn't contain a document, create a new one
+        if (!meta.docs[meta.HEAD.branch]) {
             amDoc = Automerge.init();
             let amMsg = makeChangeMessage(firstBranchName, 'blank_patch')
             // Apply initial changes to the new document
@@ -503,9 +506,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
             await saveDocument(docID, Automerge.save(amDoc));
         } else {
-            // If loaded, convert saved document state back to Automerge document
-            amDoc = Automerge.load(amDoc);
-            previousHash = Automerge.getHeads(amDoc)[0]
+            // meta does contain at least one document, so grab whichever is the one that was last looked at
+           
+            amDoc = Automerge.load(meta.docs[meta.HEAD.branch]);
+            previousHash = meta.docs[meta.HEAD.hash]
             updateHistory()
             reDrawHistoryGraph()
 
@@ -846,7 +850,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     history: []
                 }
                 meta.docs[clonedDoc.title] = {}
-                // store the HEAD info
+                // store the HEAD info (the most recent HEAD and branch that were viewed or operated on)
                 meta.HEAD.hash = targetHash
                 meta.HEAD.branch = amDoc.title
             });
