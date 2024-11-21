@@ -460,7 +460,7 @@ document.addEventListener("DOMContentLoaded", function () {
         } else {
             // If loaded, convert saved document state back to Automerge document
             meta = Automerge.load(meta);
-            console.log(meta)
+            
         }
 
         // * synth changes document
@@ -496,6 +496,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 
                 // encode the doc as a binary object for efficiency
                 meta.docs[amDoc.title] = Automerge.save(amDoc)
+                meta.HEAD.branch = firstBranchName
+                meta.HEAD.hash = hash 
                 
             });
             // set the document branch (aka title) in the editor pane
@@ -504,12 +506,24 @@ document.addEventListener("DOMContentLoaded", function () {
             updateHistory()
             reDrawHistoryGraph()
 
-            await saveDocument(docID, Automerge.save(amDoc));
+            await saveDocument('meta', Automerge.save(meta));
         } else {
             // meta does contain at least one document, so grab whichever is the one that was last looked at
-           
+            
             amDoc = Automerge.load(meta.docs[meta.HEAD.branch]);
+            console.log(amDoc)
+            // // store previous head in heads obj
+            // branchHeads[branchHeads.current] = {}
+            // // update current head to this hash
+            // branchHeads.current = meta.HEAD.hash
+            // // Step 3: Add node in Cytoscape for this clone point
+            // // get info about targetNode (what was clicked by user)
+            // branchHeads.previous = Automerge.getHeads(amDoc)[0]
+
+            updateCytoscapeFromDocument(amDoc);
+            
             previousHash = meta.docs[meta.HEAD.hash]
+            
             updateHistory()
             reDrawHistoryGraph()
 
@@ -518,10 +532,10 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     })();
 
-    // Set an interval to periodically save the document to IndexedDB
+    // Set an interval to periodically save meta to IndexedDB
     setInterval(async () => {
         if(amDoc && docUpdated){
-            await saveDocument(docID, Automerge.save(amDoc));
+            // await saveDocument(docID, Automerge.save(amDoc));
             await saveDocument('meta', Automerge.save(meta));
             docUpdated = false
         }
@@ -644,6 +658,8 @@ document.addEventListener("DOMContentLoaded", function () {
         // update the historyGraph
         updateHistory()
         reDrawHistoryGraph()
+
+        console.log(amDoc.elements.length)
     };
     
 
@@ -776,6 +792,13 @@ document.addEventListener("DOMContentLoaded", function () {
         if (Automerge.getHeads(historicalView)[0] === Automerge.getHeads(amDoc)[0]){
             automergeDocuments.newClone = false
             updateCytoscapeFromDocument(historicalView);
+
+            meta = Automerge.change(meta, (meta) => {
+                // store the HEAD info (the most recent HEAD and branch that were viewed or operated on)
+                meta.HEAD.hash = targetHash
+                meta.HEAD.branch = branch
+            });
+
             return
         } 
         // if the head of a branch was clicked, we need to load that branch's full history (which traces all the way back to the blank_patch node (root))
@@ -791,6 +814,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 
             }
+
+            meta = Automerge.change(meta, (meta) => {
+                // store the HEAD info (the most recent HEAD and branch that were viewed or operated on)
+                meta.HEAD.hash = targetHash
+                meta.HEAD.branch = branch
+            });
+
             // set newClone to true
             automergeDocuments.newClone = true
 
@@ -818,6 +848,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 
             }
+
+            meta = Automerge.change(meta, (meta) => {
+                // store the HEAD info (the most recent HEAD and branch that were viewed or operated on)
+                meta.HEAD.hash = targetHash
+                meta.HEAD.branch = branch
+            });
             // set newClone to true
             automergeDocuments.newClone = true
         
@@ -852,7 +888,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 meta.docs[clonedDoc.title] = {}
                 // store the HEAD info (the most recent HEAD and branch that were viewed or operated on)
                 meta.HEAD.hash = targetHash
-                meta.HEAD.branch = amDoc.title
+                meta.HEAD.branch = branch
             });
 
             automergeDocuments.current = {
@@ -875,7 +911,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             updateCytoscapeFromDocument(historicalView);
         }
-
+        
 
     }
 
