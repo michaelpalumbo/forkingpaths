@@ -449,7 +449,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 meta.title = "Forking Paths System";
                 meta.branches = {};
                 meta.docs = {}
-                meta.HEAD = {
+                meta.head = {
                     hash: null,
                     branch: null
                 }
@@ -470,7 +470,7 @@ document.addEventListener("DOMContentLoaded", function () {
         
         // amDoc = await loadDocument(docID);
         // if meta doesn't contain a document, create a new one
-        if (!meta.docs[meta.HEAD.branch]) {
+        if (!meta.docs[meta.head.branch]) {
             amDoc = Automerge.init();
             let amMsg = makeChangeMessage(firstBranchName, 'blank_patch')
             // Apply initial changes to the new document
@@ -496,8 +496,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 
                 // encode the doc as a binary object for efficiency
                 meta.docs[amDoc.title] = Automerge.save(amDoc)
-                meta.HEAD.branch = firstBranchName
-                meta.HEAD.hash = hash 
+                meta.head.branch = firstBranchName
+                meta.head.hash = hash 
                 
             });
             // set the document branch (aka title) in the editor pane
@@ -510,22 +510,25 @@ document.addEventListener("DOMContentLoaded", function () {
         } else {
             // meta does contain at least one document, so grab whichever is the one that was last looked at
             
-            amDoc = Automerge.load(meta.docs[meta.HEAD.branch]);
+            amDoc = Automerge.load(meta.docs[meta.head.branch]);
             console.log(amDoc)
             // // store previous head in heads obj
             // branchHeads[branchHeads.current] = {}
             // // update current head to this hash
-            // branchHeads.current = meta.HEAD.hash
+            // branchHeads.current = meta.head.hash
             // // Step 3: Add node in Cytoscape for this clone point
             // // get info about targetNode (what was clicked by user)
             // branchHeads.previous = Automerge.getHeads(amDoc)[0]
 
             updateCytoscapeFromDocument(amDoc);
             
-            previousHash = meta.docs[meta.HEAD.hash]
+            previousHash = meta.docs[meta.head.hash]
             
             updateHistory()
             reDrawHistoryGraph()
+
+            // ion this case we want the highlighted node to be on the current branch
+            highlightNode(historyCy.getElementById(meta.head.hash))
 
             // set the document branch (aka title)  in the editor pane
             document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
@@ -583,8 +586,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     // encode the doc as a binary object for efficiency
                     meta.docs[amDoc.title] = Automerge.save(amDoc)
                     // store the HEAD info
-                    meta.HEAD.hash = hash
-                    meta.HEAD.branch = amDoc.title
+                    meta.head.hash = hash
+                    meta.head.branch = amDoc.title
                 });
                 
                 onChangeCallback(amDoc);
@@ -629,8 +632,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     meta.docs[amDoc.title] = Automerge.save(amDoc)
                     
                     // store the HEAD info
-                    meta.HEAD.hash = hash
-                    meta.HEAD.branch = amDoc.title
+                    meta.head.hash = hash
+                    meta.head.branch = amDoc.title
                 });
 
                 // makeBranch(changeMessage, Automerge.getHeads(newDoc)[0])
@@ -795,8 +798,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
             meta = Automerge.change(meta, (meta) => {
                 // store the HEAD info (the most recent HEAD and branch that were viewed or operated on)
-                meta.HEAD.hash = targetHash
-                meta.HEAD.branch = branch
+                meta.head.hash = targetHash
+                meta.head.branch = branch
             });
 
             return
@@ -817,8 +820,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
             meta = Automerge.change(meta, (meta) => {
                 // store the HEAD info (the most recent HEAD and branch that were viewed or operated on)
-                meta.HEAD.hash = targetHash
-                meta.HEAD.branch = branch
+                meta.head.hash = targetHash
+                meta.head.branch = branch
             });
 
             // set newClone to true
@@ -851,8 +854,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
             meta = Automerge.change(meta, (meta) => {
                 // store the HEAD info (the most recent HEAD and branch that were viewed or operated on)
-                meta.HEAD.hash = targetHash
-                meta.HEAD.branch = branch
+                meta.head.hash = targetHash
+                meta.head.branch = branch
             });
             // set newClone to true
             automergeDocuments.newClone = true
@@ -887,8 +890,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
                 meta.docs[clonedDoc.title] = {}
                 // store the HEAD info (the most recent HEAD and branch that were viewed or operated on)
-                meta.HEAD.hash = targetHash
-                meta.HEAD.branch = branch
+                meta.head.hash = targetHash
+                meta.head.branch = branch
             });
 
             automergeDocuments.current = {
