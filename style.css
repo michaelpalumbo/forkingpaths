@@ -53,17 +53,3 @@
   background-color: yellow; /* Highlight color */
   font-weight: bold;
 }
-
-#toggleHistoryGraph {
-  padding: 10px 20px;
-  font-size: 16px;
-  cursor: pointer;
-  background-color: #007BFF;
-  color: white;
-  border: none;
-  border-radius: 5px;
-}
-
-#toggleHistoryGraph.active {
-  background-color: #28A745;
-}
