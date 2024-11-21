@@ -41,6 +41,7 @@ let branches = {
     //}
 }
 
+
 let exitstingHistoryNodeIDs = [];
 // store the heads of all branches
 // todo: decide if we should store this in the automerge doc? (consideration: for now it's mostly likely just needed for the history graph)
@@ -445,9 +446,11 @@ document.addEventListener("DOMContentLoaded", function () {
             meta = Automerge.change(meta, (meta) => {
                 meta.title = "Forking Paths System";
                 meta.branches = {};
+                meta.docs = {}
             });
             
             await saveDocument('branches', Automerge.save(meta));
+
         } else {
             // If loaded, convert saved document state back to Automerge document
             meta = Automerge.load(meta);
@@ -462,7 +465,10 @@ document.addEventListener("DOMContentLoaded", function () {
                         // doc: amDoc,
                         history: []
                     }
+                    meta.docs[firstBranchName] = { }
+
                 });
+
             }
         }
 
@@ -493,11 +499,11 @@ document.addEventListener("DOMContentLoaded", function () {
                     // doc: amDoc,
                     history: [ {hash: hash, parent: null, msg: 'blank_patch'} ] 
                 }
+                
+                // encode the doc as a binary object for efficiency
+                meta.docs[amDoc.title] = Automerge.save(amDoc)
+                
             });
-
-
-            
-            
             // set the document branch (aka title) in the editor pane
             document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
 
@@ -541,11 +547,12 @@ document.addEventListener("DOMContentLoaded", function () {
             previousHash = Automerge.getHeads(amDoc)[0]
             
             // Apply the change using Automerge.change
-            const newDoc = Automerge.change(amDoc, amMsg, changeCallback);
+            amDoc = Automerge.change(amDoc, amMsg, changeCallback);
             
             // If there was a change, call the onChangeCallback
-            if (newDoc !== doc && typeof onChangeCallback === 'function') {
-                let hash = Automerge.getHeads(newDoc)[0]
+            if (amDoc !== doc && typeof onChangeCallback === 'function') {
+                
+                let hash = Automerge.getHeads(amDoc)[0]
                 
                 meta = Automerge.change(meta, (meta) => {
 
@@ -563,14 +570,17 @@ document.addEventListener("DOMContentLoaded", function () {
                         msg: changeMessage
 
                     });
+                    
+                    // encode the doc as a binary object for efficiency
+                    meta.docs[amDoc.title] = Automerge.save(amDoc)
                     // meta.branches[amDoc.title].head = hash
                     // meta.branches[amDoc.title].history = meta.branches[amDoc.title].history.concat({ hash: hash, msg: changeMessage }) // Creates a new array
                 });
-
-                onChangeCallback(newDoc);
+                
+                onChangeCallback(amDoc);
             }
 
-            return newDoc;
+            return amDoc;
         } else {
             // player has made changes to an earlier version, so create a branch and set amDoc to new clone
 
@@ -584,14 +594,15 @@ document.addEventListener("DOMContentLoaded", function () {
             // grab the current hash before making the new change:
             previousHash = Automerge.getHeads(amDoc)[0]
             // Apply the change using Automerge.change
-            const newDoc = Automerge.change(amDoc, amMsg, changeCallback);
-            let hash = Automerge.getHeads(newDoc)[0]
+            amDoc = Automerge.change(amDoc, amMsg, changeCallback);
+            let hash = Automerge.getHeads(amDoc)[0]
             
             // const setTitle = Automerge.change(newDoc, makeChangeMessage('headless', 'changeTitle'), () => {
             //     newDoc.title = `branch_${Automerge.getHeads(newDoc)[0]}`
             // });
             // If there was a change, call the onChangeCallback
-            if (newDoc !== doc && typeof onChangeCallback === 'function') {   
+            if (amDoc !== doc && typeof onChangeCallback === 'function') {   
+                
                 meta = Automerge.change(meta, (meta) => {
 
                     // Initialize the branch metadata if it doesn't already exist
@@ -607,16 +618,19 @@ document.addEventListener("DOMContentLoaded", function () {
                         msg: changeMessage,
                         parent: previousHash
                     });
+                    // store current doc
+                    meta.docs[amDoc.title] = Automerge.save(amDoc)
+                    
                     // meta.branches[amDoc.title].head = hash
                     // meta.branches[amDoc.title].history = meta.branches[amDoc.title].history.concat({ hash: hash, msg: changeMessage }) // Creates a new array
                 });
 
                 // makeBranch(changeMessage, Automerge.getHeads(newDoc)[0])
-                onChangeCallback(newDoc);
+                onChangeCallback(amDoc);
                 automergeDocuments.newClone = false
             }
             
-            return newDoc;
+            return amDoc;
 
         }
 
@@ -636,9 +650,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // console.log(meta.branches)
         // update the historyGraph
-
-    
-
         updateHistory()
         reDrawHistoryGraph()
     };
@@ -663,7 +674,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     // add node to the history graph
                     historyCy.add({
                         group: 'nodes',
-                        data: { id: nodeId, label: item.msg, color: docHistoryGraphStyling.nodeColours[item.msg.split(' ')[0]] }
+                        data: { id: nodeId, label: item.msg, color: docHistoryGraphStyling.nodeColours[item.msg.split(' ')[0]], branch: branchKey }
                     });
 
                     // If the history item has a parent, add an edge to connect the parent
@@ -853,6 +864,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // Optional: Run layout
         cy.layout({ name: 'preset', fit: false }).run(); // `preset` uses the position data directly
         
+        
     }
 
     /*
@@ -860,58 +872,62 @@ document.addEventListener("DOMContentLoaded", function () {
         DOCUMENT HISTORY CYTOSCAPE
     */
 
-    //
-    /*
-    async function makeBranch(newNodeMessage, newHash){
-        console.log(newNodeMessage, newHash)
-        
-        // the clicked-on change in the automerge history
-        const targetChange = history.find(obj => obj.change.hash === newHash)
-
-            // let targetPosition = targetNode.position()
-            // let targetMessage = targetChange.change.message
-            // position the new node to the right of the clickedNode's text label
-            // let xOffset = getCytoscapeTextWidth(targetMessage, targetNode) + 100
-            // const branchId = `branch_${newHash}`;  // unique ID based on the hash
-            historyCy.add({
-                group: 'nodes',
-                data: { id: newHash, label: `Clone from ${newHash.slice(0, 6)}`, color: docHistoryGraphStyling.nodeColours[newNodeMessage.split(' ')[0]] },
-                // docHistoryGraphStyling.nodeColours[targetNode.data().color.change.message.split(' ')[0]] },
-                classes: "node",
-                // position: {
-                //     x: targetPosition.x + xOffset,
-                //     y: targetPosition.y - 30
-                // }
-            });
-
-            // Step 4: Connect this node to the main document node to show a branch
-            const mainNodeId = newHash;  // ID of the original node
-            historyCy.add({
-                group: 'edges',
-                data: { source: branchHeads.previous, target: newHash, color: '#ccc'},
-                classes: "edge"
-            });
-
-            historyCy.layout(graphLayouts[graphStyle]).run();
-
-            
-
-    }
-    */
     // WOOHOO this is working!!!
-    async function loadVersion(targetHash) {
-
+    async function loadVersion(targetHash, branch) {
         
+        // get the head from this branch
+        let head = meta.branches[branch].head
+
         // Use `Automerge.view()` to view the state at this specific point in history
         const historicalView = Automerge.view(amDoc, [targetHash]);
 
         // Check if we're on the head; reset clone if true (so we don't trigger opening a new branch with changes made to head)
         if (Automerge.getHeads(historicalView)[0] === Automerge.getHeads(amDoc)[0]){
             automergeDocuments.newClone = false
-            console.log('at head state')
             updateCytoscapeFromDocument(historicalView);
             return
-        } else {
+        } 
+        // if the head of a branch was clicked, we need to load that branch's full history (which traces all the way back to the blank_patch node (root))
+        else if (targetHash === head){
+            let branchDoc = loadAutomergeDoc(branch)
+
+            
+            let clonedDoc = Automerge.clone(branchDoc)
+
+            // meta = Automerge.change(meta, (meta) => {
+            //     meta.branches[branches] = {
+            //         head: null,
+            //         parent: targetHash,
+            //         // doc: clonedDoc,
+            //         history: []
+            //     }
+            //     meta.docs[clonedDoc.title] = {}
+            // });
+
+
+            automergeDocuments.current = {
+                doc: clonedDoc,
+                hash: [targetHash],
+                history: getHistoryProps(clonedDoc)
+
+                
+            }
+            // set newClone to true
+            automergeDocuments.newClone = true
+
+            // update current head to this hash
+            branchHeads.current = targetHash
+            // Step 3: Add node in Cytoscape for this clone point
+            // get info about targetNode (what was clicked by user)
+            branchHeads.previous = Automerge.getHeads(amDoc)[0]
+
+            updateCytoscapeFromDocument(branchDoc);
+        }
+        else {
+
+            //
+
+
             // user has selected an earlier hash, so clone that view in case they make updates
             let clonedDoc = Automerge.clone(historicalView)
             // // update the doc's branch name (title)
@@ -930,6 +946,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     // doc: clonedDoc,
                     history: []
                 }
+                meta.docs[clonedDoc.title] = {}
             });
 
 
@@ -956,91 +973,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     }
-
-
-
-    function generateFullDAGFromBranches(branches) {
-    const nodes = [];
-    const edges = [];
-
-    // Iterate over each branch
-    Object.entries(branches).forEach(([branchName, branch]) => {
-        
-        const branchDoc = branch.doc;
-        const branchHead = branch.head;
-        const branchParent = branch.parent;
-
-        // Add a node for the branch HEAD
-        nodes.push({
-        data: {
-            id: branchHead,
-            label: `${branchName}: ${branchHead ? branchHead.slice(0, 6) : "N/A"}`,
-            branch: branchName,
-            isHead: true
-        }
-        });
-
-        // Add an edge to the parent if it exists
-        if (branchParent) {
-        edges.push({
-            data: {
-            id: `${branchParent}-${branchHead}`,
-            source: branchParent,
-            target: branchHead,
-            label: "branch"
-            }
-        });
-        }
-
-        // Extract the history for this branch
-        const history = Automerge.getHistory(meta);
-
-        // Add nodes for each change in the history
-        history.forEach((entry) => {
-        const changeHash = entry.change.hash;
-
-        nodes.push({
-            data: {
-            id: changeHash,
-            label: `${branchName}: ${changeHash.slice(0, 6)}`,
-            branch: branchName,
-            message: entry.change.message
-            }
-        });
-
-        // Add edges for dependencies
-        entry.change.deps.forEach((dep) => {
-            edges.push({
-            data: {
-                id: `${dep}-${changeHash}`,
-                source: dep,
-                target: changeHash,
-                label: "dependency"
-            }
-            });
-        });
-        });
-
-        // Connect the HEAD to the latest change in the branch history
-        if (history.length > 0) {
-        const latestChangeHash = history[history.length - 1].change.hash;
-        edges.push({
-            data: {
-            id: `${latestChangeHash}-${branchHead}`,
-            source: latestChangeHash,
-            target: branchHead,
-            label: "HEAD"
-            }
-        });
-        }
-    });
-
-    return { nodes, edges };
-    }
-
-
-
-
 
     //TODO OLD AUTOMERGE-REPO IMPLEMENTATION, PHASE IT OUT EVENTUALLY
     // Import dependencies dynamically
@@ -1381,8 +1313,8 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
     historyCy.on('tap', 'node', (event) => {
-        console.log(event.target.data())
-        loadVersion(event.target.data().id, event.target)
+        
+        loadVersion(event.target.data().id, event.target.data().branch)
         highlightNode(event.target)
         
 
@@ -2332,6 +2264,28 @@ document.addEventListener("DOMContentLoaded", function () {
             historyHighlightedNode = target;
             target.addClass('highlighted');
         }
+    }
+
+    // pan to new/selected branch
+    function panToBranch(node) {
+        // const node = y.getElementById(nodeId); // Select the node by its ID
+
+        if (node && node.length > 0) { // Check if the node exists
+            const position = node.position(); // Get the node's position
+
+            // Pan to the node
+            cy.pan({
+                x: -position.x + historyCy.width() / 2, // Adjust for viewport center
+                y: -position.y + historyCy.height() / 2
+            });
+        } else {
+            // console.log(`Node with ID ${nodeId} not found`);
+        }
+    }
+    
+    function loadAutomergeDoc(branch){
+        if (!meta.docs[branch]) throw new Error(`Branchname ${branch} not found`);
+        return Automerge.load(meta.docs[branch]); // Load the document
     }
 });
 
