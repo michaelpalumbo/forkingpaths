@@ -439,7 +439,7 @@ document.addEventListener("DOMContentLoaded", function () {
         Automerge = await import('@automerge/automerge');
 
         // branches document
-        meta = await loadDocument('branches11');
+        meta = await loadDocument('meta');
         if (!meta) {
             meta = Automerge.init();
             
@@ -447,29 +447,33 @@ document.addEventListener("DOMContentLoaded", function () {
                 meta.title = "Forking Paths System";
                 meta.branches = {};
                 meta.docs = {}
+                meta.HEAD = {
+                    hash: null,
+                    branch: null
+                }
             });
             
-            await saveDocument('branches', Automerge.save(meta));
+            await saveDocument('meta', Automerge.save(meta));
 
         } else {
             // If loaded, convert saved document state back to Automerge document
             meta = Automerge.load(meta);
 
-            // ensure the branches obj exists
-            if (!meta.branches){
-                    meta = Automerge.change(meta, (meta) => {
-                    meta.branches[firstBranchName] = {
-                        head: Automerge.getHeads(amDoc)[0],
-                        root: null,
-                        parent: null,
-                        // doc: amDoc,
-                        history: []
-                    }
-                    meta.docs[firstBranchName] = { }
+            // // ensure the branches obj exists
+            // if (!meta.branches){
+            //         meta = Automerge.change(meta, (meta) => {
+            //         meta.branches[firstBranchName] = {
+            //             head: Automerge.getHeads(amDoc)[0],
+            //             root: null,
+            //             parent: null,
+            //             // doc: amDoc,
+            //             history: []
+            //         }
+            //         meta.docs[firstBranchName] = { }
 
-                });
+            //     });
 
-            }
+            // }
         }
 
         // * synth changes document
@@ -527,7 +531,7 @@ document.addEventListener("DOMContentLoaded", function () {
     setInterval(async () => {
         if(amDoc && docUpdated){
             await saveDocument(docID, Automerge.save(amDoc));
-            await saveDocument('branches', Automerge.save(meta));
+            await saveDocument('meta', Automerge.save(meta));
             docUpdated = false
         }
 
@@ -649,8 +653,8 @@ document.addEventListener("DOMContentLoaded", function () {
     
 
 
-    function reDrawHistoryGraph(){
-
+    function reDrawHistoryGraph(refresh){
+        console.log(meta)
         if (exitstingHistoryNodeIDs.length === 0){
             exitstingHistoryNodeIDs = new Set(cy.nodes().map(node => node.id()));
         }
@@ -1853,6 +1857,7 @@ document.addEventListener("DOMContentLoaded", function () {
     newSession.addEventListener('click', function() {
         // deletes the document in the indexedDB instance
         deleteDocument(docID)
+        deleteDocument('meta')
         
         // Reload the page with the new URL
         window.location.href = window.location.origin
