@@ -10,6 +10,7 @@ import dagre from 'cytoscape-dagre';
 import { openDB } from 'idb'; // indexedDB
 import { saveDocument, loadDocument, deleteDocument } from './indexedDB.js';
 
+const worker = new Worker("compareDocs.js");
 // TODO: look for comments with this: //* old -repo version 
 // TODO: when new automerge implementation is working, remove their related code sections
 
@@ -745,16 +746,61 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Function to update Cytoscape with the state from forkedDoc
     function updateCytoscapeFromDocument(forkedDoc) {
+
+
         let elements = forkedDoc.elements
+        // let cytoscapeElements = cy.elements()
+        let automergeElements = elements
+
+        const cytoscapeElements = getSerializableElements();
+
+        // Send data to the worker
+        worker.postMessage({ cytoscapeElements, automergeElements });
+
+
+                // Listen for messages from the worker
+        worker.addEventListener("message", (event) => {
+            const { array1, array2, array3 } = event.data;
+
+            // add elements from automerge that don't exist yet in cytoscape
+            array1.forEach(element => {
+                // pseudocode:
+                // for element.data.kind == node
+                // call addModule(), pass in element.data, element.position
+                // for element.data.kind == edge
+                // add the edge, pass in element.data, anything else?
+            })
+            // remove all elements from cytoscape that don't exist in the current automerge doc
+            array2.forEach(element => {
+                //todo: not yet working!
+                let e = cy.getElementById(element.id)
+                e.remove()
+            })
+
+            // update properties in cytoscape given the associated properties in automerge doc
+            array3.forEach(element => {
+                // pseudocode:
+                // 
+            })
+            
+            // if there are elements 
+            console.log("Array1 (in Automerge but not in Cytoscape):", array1);
+            console.log("Array2 (in Cytoscape but not in Automerge):", array2);
+            console.log("Array3 (IDs match, but properties differ):", array3);
+
+            cy.layout({ name: 'preset', fit: false }).run(); // `preset` uses the position data directly
+
+
+        });
         // 2. Clear existing elements from Cytoscape instance
-        cy.elements().remove();
+        // cy.elements().remove();
         
        
-        // 3. Add new elements to Cytoscape
-        cy.add(elements)
+        // // 3. Add new elements to Cytoscape
+        // cy.add(elements)
 
-        // Optional: Run layout
-        cy.layout({ name: 'preset', fit: false }).run(); // `preset` uses the position data directly
+        // // Optional: Run layout
+        // cy.layout({ name: 'preset', fit: false }).run(); // `preset` uses the position data directly
     }
 
     /*
@@ -2208,6 +2254,25 @@ document.addEventListener("DOMContentLoaded", function () {
     function loadAutomergeDoc(branch){
         if (!meta.docs[branch]) throw new Error(`Branchname ${branch} not found`);
         return Automerge.load(meta.docs[branch]); // Load the document
+    }
+
+
+
+    // Serialize the Cytoscape Elements for the Worker Thread
+    function getSerializableElements() {
+        return cy.elements().map((ele) => {
+            // Extract serializable data
+            const serializedElement = {
+                data: ele.data(),
+            };
+    
+            // Include position only for nodes
+            if (ele.isNode()) {
+                serializedElement.position = ele.position();
+            }
+    
+            return serializedElement;
+        });
     }
 });
 
