@@ -1795,6 +1795,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
         if (highlightedEdge && (event.key === 'Backspace' || event.key === 'Delete')) {
+            
+
+            amDoc = applyChange(amDoc, (amDoc) => {
+                // Find the index of the object that matches the condition
+                const index = amDoc.elements.findIndex(el => el.id === highlightedEdge.data().id);
+
+                // If a match is found, remove the object from the array
+                if (index !== -1) {
+                    amDoc.elements.splice(index, 1);
+                }
+            }, onChange, `disconnect ${highlightedEdge.data().target} from ${highlightedEdge.data().source}`);
+
             cy.remove(highlightedEdge)
             highlightedEdge = null; // Clear the reference after deletion
         } else if (highlightedNode && (event.key === 'Backspace' || event.key === 'Delete')){
