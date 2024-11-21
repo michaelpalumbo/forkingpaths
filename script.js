@@ -922,6 +922,51 @@ document.addEventListener("DOMContentLoaded", function () {
             branchHeads.previous = Automerge.getHeads(amDoc)[0]
 
             updateCytoscapeFromDocument(branchDoc);
+        } else if (branch != amDoc.title) {
+            console.log('snared')
+
+            // load this branch's doc
+            let branchDoc = loadAutomergeDoc(branch)
+
+            // and then point it at target hash's poisiton in history
+            const historicalView = Automerge.view(branchDoc, [targetHash]);
+            // clonedDoc.title = uuidv7();
+            // branches[clonedDoc.title] = {
+            //     head: null,
+            //     root: targetHash
+            // }
+
+            // meta = Automerge.change(meta, (meta) => {
+            //     meta.branches[clonedDoc.title] ={
+            //         head: null,
+            //         parent: targetHash,
+            //         // doc: clonedDoc,
+            //         history: []
+            //     }
+            //     meta.docs[clonedDoc.title] = {}
+            // });
+
+
+            automergeDocuments.current = {
+                doc: branchDoc,
+                hash: [targetHash],
+                history: getHistoryProps(amDoc)
+
+                
+            }
+            // set newClone to true
+            automergeDocuments.newClone = true
+        
+            // store previous head in heads obj
+            branchHeads[branchHeads.current] = {}
+            // update current head to this hash
+            branchHeads.current = targetHash
+            // Step 3: Add node in Cytoscape for this clone point
+            // get info about targetNode (what was clicked by user)
+            branchHeads.previous = Automerge.getHeads(amDoc)[0]
+
+            updateCytoscapeFromDocument(historicalView);
+
         }
         else {
 
