@@ -438,7 +438,9 @@ document.addEventListener("DOMContentLoaded", function () {
         // Load Automerge asynchronously and assign it to the global variable
         Automerge = await import('@automerge/automerge');
 
-        // branches document
+        // Forking Paths meta document:
+        // contains all branches and branch history
+        // will probably eventually contain user preferences, etc. 
         meta = await loadDocument('meta');
         if (!meta) {
             meta = Automerge.init();
@@ -458,22 +460,7 @@ document.addEventListener("DOMContentLoaded", function () {
         } else {
             // If loaded, convert saved document state back to Automerge document
             meta = Automerge.load(meta);
-
-            // // ensure the branches obj exists
-            // if (!meta.branches){
-            //         meta = Automerge.change(meta, (meta) => {
-            //         meta.branches[firstBranchName] = {
-            //             head: Automerge.getHeads(amDoc)[0],
-            //             root: null,
-            //             parent: null,
-            //             // doc: amDoc,
-            //             history: []
-            //         }
-            //         meta.docs[firstBranchName] = { }
-
-            //     });
-
-            // }
+            console.log(meta)
         }
 
         // * synth changes document
@@ -577,6 +564,9 @@ document.addEventListener("DOMContentLoaded", function () {
                     
                     // encode the doc as a binary object for efficiency
                     meta.docs[amDoc.title] = Automerge.save(amDoc)
+                    // store the HEAD info
+                    meta.HEAD.hash = hash
+                    meta.HEAD.branch = amDoc.title
                 });
                 
                 onChangeCallback(amDoc);
@@ -620,8 +610,9 @@ document.addEventListener("DOMContentLoaded", function () {
                     // store current doc
                     meta.docs[amDoc.title] = Automerge.save(amDoc)
                     
-                    // meta.branches[amDoc.title].head = hash
-                    // meta.branches[amDoc.title].history = meta.branches[amDoc.title].history.concat({ hash: hash, msg: changeMessage }) // Creates a new array
+                    // store the HEAD info
+                    meta.HEAD.hash = hash
+                    meta.HEAD.branch = amDoc.title
                 });
 
                 // makeBranch(changeMessage, Automerge.getHeads(newDoc)[0])
@@ -855,6 +846,9 @@ document.addEventListener("DOMContentLoaded", function () {
                     history: []
                 }
                 meta.docs[clonedDoc.title] = {}
+                // store the HEAD info
+                meta.HEAD.hash = targetHash
+                meta.HEAD.branch = amDoc.title
             });
 
             automergeDocuments.current = {
