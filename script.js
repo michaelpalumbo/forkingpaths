@@ -44,7 +44,7 @@ let branches = {
 }
 
 
-let exitstingHistoryNodeIDs = [];
+let existingHistoryNodeIDs
 // store the heads of all branches
 // todo: decide if we should store this in the automerge doc? (consideration: for now it's mostly likely just needed for the history graph)
 let branchHeads = {
@@ -691,11 +691,37 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     function reDrawHistoryGraph(){
-        
-        if (exitstingHistoryNodeIDs.length === 0){
-            exitstingHistoryNodeIDs = new Set(cy.nodes().map(node => node.id()));
+        if (!existingHistoryNodeIDs || existingHistoryNodeIDs.size === 0){
+            existingHistoryNodeIDs = new Set(cy.nodes().map(node => node.id()));
         }
+        
+        historyGraphWorker.onmessage = (event) => {
+            const { nodes, edges, historyNodes } = event.data;
+            
+            nodes.forEach((node)=>{
+                // add node to the history graph
+                historyCy.add(node);
+            })
+            edges.forEach((edge)=>{
+                historyCy.add(edge);
+            })   
+            
+            existingHistoryNodeIDs = historyNodes
 
+            // Refresh graph layout
+            historyCy.layout(graphLayouts[graphStyle]).run();
+        
+            highlightNode(historyCy.nodes().last())
+            // update the current history node ids for the next time we run this function
+            // existingHistoryNodeIDs = new Set(cy.nodes().map(node => node.id()));
+        };
+        
+        // Send data to the worker to get any position or parameter updates
+        historyGraphWorker.postMessage({ meta, existingHistoryNodeIDs, docHistoryGraphStyling });      
+
+
+
+        /*
         // Accessing branches in order, create nodes and edges for each branch
         meta.branchOrder.forEach((branchName) => {            
             const branch = meta.branches[branchName];
@@ -704,7 +730,7 @@ document.addEventListener("DOMContentLoaded", function () {
             branch.history.forEach((item, index) => {
                 const nodeId = item.hash
                 // 4. Check if the node already exists in the history graph
-                if (!exitstingHistoryNodeIDs.has(nodeId)) {
+                if (!existingHistoryNodeIDs.has(nodeId)) {
                     
                     // add node to the history graph
                     historyCy.add({
@@ -715,7 +741,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     // If the history item has a parent, add an edge to connect the parent
                     if (item.parent) {
                         // Make sure the parent node also exists before adding the edge
-                        if (exitstingHistoryNodeIDs.has(item.parent)) {
+                        if (existingHistoryNodeIDs.has(item.parent)) {
                             historyCy.add({
                                 group: 'edges',
                                 data: {
@@ -728,19 +754,20 @@ document.addEventListener("DOMContentLoaded", function () {
                     }
 
                     // Add the newly added node's ID to the set to track it
-                    exitstingHistoryNodeIDs.add(nodeId);
+                    existingHistoryNodeIDs.add(nodeId);
 
                 }
             });            
         });
-
+        
         
         // Refresh graph layout
         historyCy.layout(graphLayouts[graphStyle]).run();
     
         highlightNode(historyCy.nodes().last())
         // update the current history node ids for the next time we run this function
-        // exitstingHistoryNodeIDs = new Set(cy.nodes().map(node => node.id()));
+        // existingHistoryNodeIDs = new Set(cy.nodes().map(node => node.id()));
+        */
     }
 
     
