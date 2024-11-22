@@ -386,6 +386,8 @@ document.addEventListener("DOMContentLoaded", function () {
         // viewport: {
         //     zoom: parseFloat(localStorage.getItem('docHistoryCy_Zoom')) || 1.
         // },
+        boxSelectionEnabled: true,
+        selectionType: "additive",
         zoomingEnabled: false,
         layout: graphLayouts[graphStyle],  
         style: [
@@ -423,6 +425,20 @@ document.addEventListener("DOMContentLoaded", function () {
                     'border-color': '#228B22', // Highlight color
                     'border-width': 15,
                     'shape': 'rectangle'
+                }
+            },
+            {
+                selector: '.sequencerSelectionBox',
+                style: {
+                    'border-color': 'blue', // Highlight color
+                    'border-width': 2,
+                    'shape': 'rectangle',
+                    'background-color': 'white',
+                    "background-opacity": 0,
+                    "width": 'data(width)',
+                    "height": 'data(height)',
+                    "label": 'sequencer'
+
                 }
             },
         ]
@@ -775,11 +791,23 @@ document.addEventListener("DOMContentLoaded", function () {
            
         let elements = forkedDoc.elements
 
+        // Clear existing elements from Cytoscape instance
+        cy.elements().remove();
+
+
+        // 3. Add new elements to Cytoscape
+        cy.add(elements)
+        
+        // Finally, run layout
+        cy.layout({ name: 'preset', fit: false }).run(); // `preset` uses the position data directly
+        
+        /*
         // let cytoscapeElements = cy.elements()
         let automergeElements = elements
 
         const cytoscapeElements = getSerializableElements();
 
+        
         worker.onmessage = (event) => {
             const { array3 } = event.data;
             
@@ -802,7 +830,8 @@ document.addEventListener("DOMContentLoaded", function () {
         };
         
         // Send data to the worker to get any position or parameter updates
-        worker.postMessage({ cytoscapeElements, automergeElements });        
+        worker.postMessage({ cytoscapeElements, automergeElements });    
+        */    
     }
 
     /*
@@ -1526,14 +1555,14 @@ document.addEventListener("DOMContentLoaded", function () {
                         // cyHandleNode.data('value', scaledValue.toFixed(2) )
                         // update in automerge
                         const elementIndex = amDoc.elements.findIndex(el => el.data.id === currentHandleNode.data().id);
-                        
+                        console.log(currentHandleNode.data())
                         amDoc = applyChange(amDoc, (amDoc) => {
                             amDoc.elements[elementIndex].data.value = scaledValue
                             amDoc.elements[elementIndex].position = {
                                 x: currentHandleNode.position().x,
                                 y: currentHandleNode.position().y
                             }
-                        }, onChange,  `paramUpdate `);
+                        }, onChange,  `paramUpdate ${currentHandleNode.data().label}`);
         
                         // Optionally, trigger an Automerge update here if necessary
                         // handle.change((doc) => {
@@ -1794,6 +1823,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         if (event.key === 'Meta' || event.key === 'Control') {
             allowMultiSelect = false
+            historyBoxSelect = true
             historyCy.userZoomingEnabled(true)
         }
         if (event.key === 'z') {
@@ -2149,6 +2179,45 @@ document.addEventListener("DOMContentLoaded", function () {
 
         }
     }
+
+
+    // Listen for the select event on nodes
+    let historyBoxSelect = true // this is necessary because this event listener fires many times otherwise
+    historyCy.on("boxselect", "node", () => {
+        if(historyBoxSelect){
+            const selectedNodes = historyCy.$("node:selected"); // Get all selected nodes
+            console.log("Selected nodes:", selectedNodes.map((n) => n.id())); // Log selected node IDs
+        
+            historyBoxSelect = false
+
+            // Calculate bounding box of selected nodes
+            const boundingBox = selectedNodes.boundingBox();
+
+            // Add a rectangle node (or visual indicator) to the graph
+            const rectangleId = "selection-box";
+
+            // Remove any existing rectangle first
+            const existingRectangle = historyCy.$(`#${rectangleId}`);
+            if (existingRectangle) {
+                existingRectangle.remove();
+            }
+
+            // Add a new rectangle node as a parent
+            historyCy.add({
+                group: "nodes",
+                data: { id: rectangleId, width: boundingBox.w + 20, height: boundingBox.h + 20,  },
+                position: {
+                    x: (boundingBox.x1 + boundingBox.x2) / 2, // Center X
+                    y: (boundingBox.y1 + boundingBox.y2) / 2, // Center Y
+                },
+
+                classes: 'sequencerSelectionBox',
+                selectable: false, // Prevent interaction with the rectangle
+            });
+
+        }
+    });
+
 
 
     //*
