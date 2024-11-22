@@ -768,9 +768,9 @@ document.addEventListener("DOMContentLoaded", function () {
             array3.forEach(element => {
                 // pseudocode:
                 // 
-                console.log(element.id, element.value)
+                console.log(element.id, element.position)
             })
-
+            console.log(cy.elements()[7].position())
             // Finally, run layout
             cy.layout({ name: 'preset', fit: false }).run(); // `preset` uses the position data directly
         };
@@ -1503,6 +1503,10 @@ document.addEventListener("DOMContentLoaded", function () {
                         
                         amDoc = applyChange(amDoc, (amDoc) => {
                             amDoc.elements[elementIndex].data.value = scaledValue
+                            amDoc.elements[elementIndex].position = {
+                                x: currentHandleNode.position().x,
+                                y: currentHandleNode.position().y
+                            }
                         }, onChange,  `paramUpdate `);
         
                         // Optionally, trigger an Automerge update here if necessary

@@ -71,6 +71,7 @@ self.addEventListener("message", (event) => {
             element: element,
             kind: "slider",
             value: element.data.value,
+            position: element.position
         };
     });
     
