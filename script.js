@@ -743,48 +743,53 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     
-
+    let count = 0
     // Function to update Cytoscape with the state from forkedDoc
     function updateCytoscapeFromDocument(forkedDoc) {
+        console.log(count)
+        count++
 
-
+        // Clear existing elements from Cytoscape instance
+        cy.elements().remove();
+        
         let elements = forkedDoc.elements
+        // 3. Add new elements to Cytoscape
+        cy.add(elements)
+
+
         // let cytoscapeElements = cy.elements()
         let automergeElements = elements
 
         const cytoscapeElements = getSerializableElements();
 
-        // Send data to the worker
+
+        // Send data to the worker to get any position or parameter updates
         worker.postMessage({ cytoscapeElements, automergeElements });
 
 
-                // Listen for messages from the worker
+        // Listen for messages from the worker
         worker.addEventListener("message", (event) => {
             const { array1, array2, array3 } = event.data;
 
             // add elements from automerge that don't exist yet in cytoscape
-            array1.forEach(element => {
-                
-                if(element.type && element.type === 'edge'){
-                    cy.add(element);
-                } else {
-                    cy.add(element);
+            // array1.forEach(element => {
+                // we are no longer using this as it's easier to just redraw the visual synth graph each update
+                // if(element.type && element.type === 'edge'){
+                //     cy.add(element);
+                // } else {
+                //     cy.add(element);
 
-                }
-
-                console.log(element)
-                // pseudocode:
-                // for element.data.kind == node
-                // call addModule(), pass in element.data, element.position
-                // for element.data.kind == edge
-                // add the edge, pass in element.data, anything else?
-            })
+                // }
+            // })
             // remove all elements from cytoscape that don't exist in the current automerge doc
-            array2.forEach(element => {
-                //todo: not yet working!
-                let e = cy.getElementById(element.id)
-                e.remove()
-            })
+            // array2.forEach(element => {
+                // we are no longer using this as it's easier to just redraw the visual synth graph each update
+                // if(element.classes && element.classes[0] == ':parent'){
+                       // also this doesn't quite cut it, because while it sucessfully removes the element from the cytoscape, it's still in the cytoscape memory. so when we pull in another version that includes this element, cytoscape throws an error because it can't accept a node with an id that matches another node with the same id in memory. 
+                //     cy.remove(element.data.id)
+                // }
+
+            // })
 
             // update properties in cytoscape given the associated properties in automerge doc
             array3.forEach(element => {
@@ -793,23 +798,16 @@ document.addEventListener("DOMContentLoaded", function () {
             })
             
             // if there are elements 
-            console.log("Array1 (in Automerge but not in Cytoscape):", array1);
-            console.log("Array2 (in Cytoscape but not in Automerge):", array2);
+            // console.log("Array1 (in Automerge but not in Cytoscape):", array1);
+            // console.log("Array2 (in Cytoscape but not in Automerge):", array2);
             console.log("Array3 (IDs match, but properties differ):", array3);
 
-            cy.layout({ name: 'preset', fit: false }).run(); // `preset` uses the position data directly
 
 
         });
-        // 2. Clear existing elements from Cytoscape instance
-        // cy.elements().remove();
-        
-       
-        // // 3. Add new elements to Cytoscape
-        // cy.add(elements)
 
-        // // Optional: Run layout
-        // cy.layout({ name: 'preset', fit: false }).run(); // `preset` uses the position data directly
+        // Finally, run layout
+        cy.layout({ name: 'preset', fit: false }).run(); // `preset` uses the position data directly
     }
 
     /*

@@ -32,7 +32,7 @@ self.addEventListener("message", (event) => {
         }
         return false;
     });
-    console.log(array1, array2, array3)
+    // console.log(array1, array2, array3)  
     // Send results back to the main thread
     self.postMessage({ array1, array2, array3 });
 });
