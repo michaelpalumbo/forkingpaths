@@ -692,20 +692,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function reDrawHistoryGraph(){
         if (!existingHistoryNodeIDs || existingHistoryNodeIDs.size === 0){
-            existingHistoryNodeIDs = new Set(cy.nodes().map(node => node.id()));
+            existingHistoryNodeIDs = new Set(historyCy.nodes().map(node => node.id()));
         }
         
         historyGraphWorker.onmessage = (event) => {
             const { nodes, edges, historyNodes } = event.data;
             
-            nodes.forEach((node)=>{
-                // add node to the history graph
-                historyCy.add(node);
-            })
-            edges.forEach((edge)=>{
-                historyCy.add(edge);
-            })   
-            
+            if(nodes.length > 0){
+                historyCy.add(nodes);
+            }
+            if(edges.length > 0){
+                historyCy.add(edges);
+
+            }
             existingHistoryNodeIDs = historyNodes
 
             // Refresh graph layout

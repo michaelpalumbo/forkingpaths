@@ -1,10 +1,9 @@
 
 // Listen for messages from the main thread
 self.addEventListener("message", (event) => {
-    console.log('test')
     const { meta, existingHistoryNodeIDs, docHistoryGraphStyling } = event.data;
 
-
+    
     let nodes = []
     let edges = []
     // Accessing branches in order, create nodes and edges for each branch
@@ -44,8 +43,6 @@ self.addEventListener("message", (event) => {
             }
         });            
     });
-
-    console.log(nodes, existingHistoryNodeIDs)
 
     self.postMessage({ nodes, edges, existingHistoryNodeIDs });
 });
