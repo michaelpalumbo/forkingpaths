@@ -7,11 +7,11 @@ import { ParentNode } from './parentNode.js';
 import { uuidv7 } from "uuidv7";
 import randomColor from 'randomcolor';
 import dagre from 'cytoscape-dagre';
-import { openDB } from 'idb'; // indexedDB
 import { saveDocument, loadDocument, deleteDocument } from './indexedDB.js';
 
 
 const worker = new Worker("compareDocs.js");
+const historyGraphWorker = new Worker("historyGraphWorker.js");
 // TODO: look for comments with this: //* old -repo version 
 // TODO: when new automerge implementation is working, remove their related code sections
 
@@ -770,7 +770,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 // 
                 console.log(element.id, element.position)
             })
-            console.log(cy.elements()[7].position())
+            
             // Finally, run layout
             cy.layout({ name: 'preset', fit: false }).run(); // `preset` uses the position data directly
         };
@@ -1672,8 +1672,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 
                 if (elementIndex !== -1) {
                     // update the position
-                    amDoc.elements[elementIndex].position.x = heldModule.position().x
-                    amDoc.elements[elementIndex].position.y = heldModule.position().y          
+                    amDoc.elements[elementIndex].position = {
+                        x: heldModule.position().x,
+                        y: heldModule.position().y
+                    }        
                 }
     
             }, onChange, `move ${heldModule.data().label}`);
