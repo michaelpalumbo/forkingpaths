@@ -764,6 +764,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // add elements from automerge that don't exist yet in cytoscape
             array1.forEach(element => {
+                
+                if(element.type && element.type === 'edge'){
+                    cy.add(element);
+                } else {
+                    cy.add(element);
+
+                }
+
+                console.log(element)
                 // pseudocode:
                 // for element.data.kind == node
                 // call addModule(), pass in element.data, element.position
@@ -2269,6 +2278,14 @@ document.addEventListener("DOMContentLoaded", function () {
             // Include position only for nodes
             if (ele.isNode()) {
                 serializedElement.position = ele.position();
+            }
+
+            if(ele.classes()){
+                serializedElement.classes = ele.classes()
+            }
+
+            if(ele.group()){
+                serializedElement.group = ele.group()
             }
     
             return serializedElement;
