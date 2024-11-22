@@ -10,6 +10,7 @@ import dagre from 'cytoscape-dagre';
 import { openDB } from 'idb'; // indexedDB
 import { saveDocument, loadDocument, deleteDocument } from './indexedDB.js';
 
+
 const worker = new Worker("compareDocs.js");
 // TODO: look for comments with this: //* old -repo version 
 // TODO: when new automerge implementation is working, remove their related code sections
@@ -743,78 +744,46 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     
-    let count = 0
     // Function to update Cytoscape with the state from forkedDoc
     function updateCytoscapeFromDocument(forkedDoc) {
-        console.log(count)
-        count++
-
-        // Clear existing elements from Cytoscape instance
-        cy.elements().remove();
-        
+           
         let elements = forkedDoc.elements
-        // 3. Add new elements to Cytoscape
-        cy.add(elements)
-
 
         // let cytoscapeElements = cy.elements()
         let automergeElements = elements
 
         const cytoscapeElements = getSerializableElements();
 
+        worker.onmessage = (event) => {
+            const { array3 } = event.data;
+            
+            // Clear existing elements from Cytoscape instance
+            cy.elements().remove();
 
-        // Send data to the worker to get any position or parameter updates
-        worker.postMessage({ cytoscapeElements, automergeElements });
 
-
-        // Listen for messages from the worker
-        worker.addEventListener("message", (event) => {
-            const { array1, array2, array3 } = event.data;
-
-            // add elements from automerge that don't exist yet in cytoscape
-            // array1.forEach(element => {
-                // we are no longer using this as it's easier to just redraw the visual synth graph each update
-                // if(element.type && element.type === 'edge'){
-                //     cy.add(element);
-                // } else {
-                //     cy.add(element);
-
-                // }
-            // })
-            // remove all elements from cytoscape that don't exist in the current automerge doc
-            // array2.forEach(element => {
-                // we are no longer using this as it's easier to just redraw the visual synth graph each update
-                // if(element.classes && element.classes[0] == ':parent'){
-                       // also this doesn't quite cut it, because while it sucessfully removes the element from the cytoscape, it's still in the cytoscape memory. so when we pull in another version that includes this element, cytoscape throws an error because it can't accept a node with an id that matches another node with the same id in memory. 
-                //     cy.remove(element.data.id)
-                // }
-
-            // })
+            // 3. Add new elements to Cytoscape
+            cy.add(elements)
 
             // update properties in cytoscape given the associated properties in automerge doc
             array3.forEach(element => {
                 // pseudocode:
                 // 
+                console.log(element.id, element.value)
             })
-            
-            // if there are elements 
-            // console.log("Array1 (in Automerge but not in Cytoscape):", array1);
-            // console.log("Array2 (in Cytoscape but not in Automerge):", array2);
-            console.log("Array3 (IDs match, but properties differ):", array3);
 
-
-
-        });
-
-        // Finally, run layout
-        cy.layout({ name: 'preset', fit: false }).run(); // `preset` uses the position data directly
+            // Finally, run layout
+            cy.layout({ name: 'preset', fit: false }).run(); // `preset` uses the position data directly
+        };
+        
+        // Send data to the worker to get any position or parameter updates
+        worker.postMessage({ cytoscapeElements, automergeElements });        
     }
 
     /*
 
         DOCUMENT HISTORY CYTOSCAPE
     */
-
+ 
     // WOOHOO this is working!!!
     async function loadVersion(targetHash, branch) {
         
@@ -823,7 +792,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Use `Automerge.view()` to view the state at this specific point in history
         const historicalView = Automerge.view(amDoc, [targetHash]);
-
         // Check if we're on the head; reset clone if true (so we don't trigger opening a new branch with changes made to head)
         if (Automerge.getHeads(historicalView)[0] === Automerge.getHeads(amDoc)[0]){
             automergeDocuments.newClone = false
@@ -1524,13 +1492,12 @@ document.addEventListener("DOMContentLoaded", function () {
                         // Update the node's data and write to Automerge only if the value has changed
                         currentHandleNode.data('value', scaledValue);
                         
-
-                        console.log(currentHandleNode.data().id)
                         // Find the label node and update its displayed text
                         const labelNode = cy.getElementById(`${currentHandleNode.data('trackID')}-label`);
                         labelNode.data('label', scaledValue.toFixed(2)); // Display the value with 2 decimal places
-                        
-
+                        // console.log(currentHandleNode.data())
+                        // const cyHandleNode = cy.getElementById(`${currentHandleNode.data('id')}`)
+                        // cyHandleNode.data('value', scaledValue.toFixed(2) )
                         // update in automerge
                         const elementIndex = amDoc.elements.findIndex(el => el.data.id === currentHandleNode.data().id);
                         

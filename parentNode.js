@@ -22,6 +22,7 @@ export class ParentNode {
         this.inputs = modules[module].inputs
         this.outputs = modules[module].outputs
         this.params = modules[module].params
+        
         for (let i = 0; i<this.inputs.length; i++){
             this.children.push(this.inputs[i])
         }
@@ -50,7 +51,7 @@ export class ParentNode {
         const offsetY = index * 60; // Each child node is 60px below the previous one
         const offsetX = 0; // Keep the X position the same for a vertical arrangement
             if(child.kind === 'slider'){
-                const sliderId = `${this.moduleName}-slider${index + 1}`
+                const sliderId = `${this.moduleName}-slider-${child.label}`
                 const defaultOptions = {
                     length: 127, // Length of the slider track in pixels
                     minValue: 0, // Minimum slider value
@@ -60,7 +61,6 @@ export class ParentNode {
                 };
   
                 const config = { ...defaultOptions };
-
                     // Define the track and handle nodes for the slider
                 const sliderTrackId = `${sliderId}-track`;
                 const sliderHandleId = `${sliderId}-handle`;
@@ -105,7 +105,8 @@ export class ParentNode {
                         data: {
                             id: sliderHandleId,
                             parent: this.moduleName,
-                            label: child.label || `${this.moduleName}-${sliderHandleId}${index + 1}`,
+                            label: child.label || `${this.moduleName}-${sliderHandleId}${child.label}`,
+                            nameSpace: `${sliderHandleId}.${child.label}`,
                             kind: child.kind,
                             sliderComponent: 'handle',
                             shape: 'ellipse',
