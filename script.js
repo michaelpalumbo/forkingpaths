@@ -8,7 +8,7 @@ import { uuidv7 } from "uuidv7";
 import randomColor from 'randomcolor';
 import dagre from 'cytoscape-dagre';
 import { saveDocument, loadDocument, deleteDocument } from './indexedDB.js';
-
+import { marked } from 'marked'
 
 const worker = new Worker("compareDocs.js");
 const historyGraphWorker = new Worker("historyGraphWorker.js");
@@ -183,7 +183,37 @@ let temporaryCables = {
 
 document.addEventListener("DOMContentLoaded", function () {
 
-    
+    document.getElementById('viewReadme').addEventListener('click', () => {
+        fetch('./README.md') // Fetch the README file
+            .then(response => response.text())
+            .then(markdown => {
+                const html = marked(markdown); // Convert Markdown to HTML
+                const newTab = window.open(); // Open a new tab
+                newTab.document.write(`
+                    <!DOCTYPE html>
+                    <html lang="en">
+                    <head>
+                        <meta charset="UTF-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                        <title>README</title>
+                        <style>
+                            body { font-family: Arial, sans-serif; line-height: 1.6; margin: 20px; }
+                            pre { background: #f4f4f4; padding: 10px; border-radius: 5px; overflow: auto; }
+                            code { background: #f4f4f4; padding: 2px 4px; border-radius: 3px; }
+                            h1, h2, h3, h4, h5, h6 { margin-top: 1.5em; }
+                            a { color: #0366d6; text-decoration: none; }
+                            a:hover { text-decoration: underline; }
+                        </style>
+                    </head>
+                    <body>
+                        ${html}
+                    </body>
+                    </html>
+                `);
+                newTab.document.close();
+            })
+            .catch(err => console.error('Error fetching README:', err));
+    });
 
 
     //*
@@ -1398,7 +1428,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
     historyCy.on('tap', 'node', (event) => {
-        console.log(hid.key.shift)
         if(hid.key.shift){
             
             historySequencerController('addSteps', event.target)
@@ -1904,7 +1933,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Track when the 'e' key is pressed and released
     window.addEventListener('keydown', (event) => {
-        console.log(event)
+        
         if (event.key === 'e') {
             isDraggingEnabled = true;
         }
@@ -2315,6 +2344,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             if (selected.length > 1) {
                 // Find edges connecting selected nodes
+                /* 
                 const connectingEdges = selected.connectedEdges().filter(edge => {
                     const source = edge.source();
                     const target = edge.target();
@@ -2323,6 +2353,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 
                 // Apply a custom style to these edges
                 connectingEdges.addClass("sequencerEdge");
+                */
                 selected.addClass("sequencerNode");
                 // Update selectedHistoryNodes to match the current selection   
                 selectedHistoryNodes.length = 0
@@ -2331,7 +2362,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     let n = {
                         data: node.data(),
                         cyNode: node,
-                        id: data.data().id
+                        id: node.data().id
                     }
                     selectedHistoryNodes.push(n)
                 });

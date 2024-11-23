@@ -23,6 +23,7 @@
     "cytoscape-canvas": "^3.0.1",
     "cytoscape-dagre": "^2.5.0",
     "idb": "^8.0.0",
+    "marked": "^15.0.2",
     "randomcolor": "^0.6.2",
     "uuidv7": "^1.0.2",
     "ws": "^8.18.0"
