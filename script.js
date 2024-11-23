@@ -390,6 +390,7 @@ document.addEventListener("DOMContentLoaded", function () {
         boxSelectionEnabled: true,
         selectionType: "additive",
         zoomingEnabled: false,
+       
         layout: graphLayouts[graphStyle],  
         style: [
             {
@@ -402,7 +403,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     'color': '#000',            // Label text color
                     'text-valign': 'center',    // Vertically center the label
                     'text-halign': 'right',      // Horizontally align label to the left of the node
-                    'text-margin-x': 10, // 
+                    'text-margin-x': 15, // 
                     // 'text-margin-y': 15, // move the label down a little to make space for branch edges
                     // 'shape': 'data(shape)' // set this for accessibility (colour blindness)
                 }
@@ -432,13 +433,13 @@ document.addEventListener("DOMContentLoaded", function () {
                 selector: '.sequencerSelectionBox',
                 style: {
                     'border-color': 'blue', // Highlight color
-                    'border-width': 2,
+                    'border-width': 4,
                     'shape': 'rectangle',
                     'background-color': 'white',
                     "background-opacity": 0,
-                    "width": 'data(width)',
+                    "width": 50,
                     "height": 'data(height)',
-                    "label": 'sequencer',
+                    "label": '',
                     "z-index": -1
 
                 }
@@ -744,7 +745,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // Refresh graph layout
             historyCy.layout(graphLayouts[graphStyle]).run();
-        
+            
             highlightNode(historyCy.nodes().last())
             // update the current history node ids for the next time we run this function
             // existingHistoryNodeIDs = new Set(cy.nodes().map(node => node.id()));
@@ -1323,6 +1324,10 @@ document.addEventListener("DOMContentLoaded", function () {
 //* UI UPDATES & EVENT HANDLERS
 //* Functions that directly handle UI interactions and update elements in cytoscape
 //*
+    
+    // do this once:
+    historyCy.panBy({x: 25, y: 0 })
+
     // cmd + scroll = scroll vertically through history graph
     document.addEventListener('wheel', function(event) {
         if(allowPan){
@@ -1693,6 +1698,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     data: { id: edgeId, source: temporaryCables.local.source.id(), target: temporaryCables.local.targetNode.id(), kind: 'cable' },
                     classes: 'edge'
                 });
+                
                 // * automerge version:                
                 amDoc = applyChange(amDoc, (amDoc) => {
                     amDoc.elements.push({
@@ -1700,7 +1706,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         id: edgeId,
                         data: { id: edgeId, source: temporaryCables.local.source.id(), target: temporaryCables.local.targetNode.id(), kind: 'cable' }
                     });
-                }, onChange,  `connect ${temporaryCables.local.source.id()} to ${temporaryCables.local.targetNode.id()}`);
+                }, onChange,  `connect ${temporaryCables.local.source.data().label} to ${temporaryCables.local.targetNode.data().label}`);
 
 
                 //* old -repo version
@@ -2219,9 +2225,12 @@ document.addEventListener("DOMContentLoaded", function () {
             });
             
             historyBoxSelect = false
-
+            const width = 40
             // Calculate bounding box of selected nodes
             historyBoundingBox = selected.boundingBox();
+            const xLeft = Math.min(...selected.map((node) => node.position("x"))) -23 ;
+            const centerX = (xLeft + width) / 2; // Center for Cytoscape positioning
+
 
             // Remove any existing rectangle and handles
             historyCy.$("#selection-box, #top-handle, #bottom-handle").remove();
@@ -2240,9 +2249,9 @@ document.addEventListener("DOMContentLoaded", function () {
             // Add a new rectangle node as a parent
             historyCy.add({
                 group: "nodes",
-                data: { id: rectangleId, width: historyBoundingBox.w + 20, height: historyBoundingBox.h + 20,  },
+                data: { id: rectangleId, height: historyBoundingBox.h + 20,  },
                 position: {
-                    x: (historyBoundingBox.x1 + historyBoundingBox.x2) / 2, // Center X
+                    x: centerX, // Center X
                     y: (historyBoundingBox.y1 + historyBoundingBox.y2) / 2, // Center Y
                 },
 
@@ -2426,33 +2435,6 @@ document.addEventListener("DOMContentLoaded", function () {
         return Automerge.load(meta.docs[branch]); // Load the document
     }
 
-
-
-    // Serialize the Cytoscape Elements for the Worker Thread
-    function getSerializableElements() {
-        return cy.elements().map((ele) => {
-            // Extract serializable data
-            const serializedElement = {
-                data: ele.data(),
-            };
-    
-            // Include position only for nodes
-            if (ele.isNode()) {
-                serializedElement.position = ele.position();
-            }
-
-            if(ele.classes()){
-                serializedElement.classes = ele.classes()
-            }
-
-            if(ele.group()){
-                serializedElement.group = ele.group()
-            }
-    
-            return serializedElement;
-        });
-    }
-
     const bpm = 120; // Beats per minute
     let currentIndex = 0;
 
@@ -2471,13 +2453,13 @@ document.addEventListener("DOMContentLoaded", function () {
             // console.log(nodeId)
             // Get the node by ID
             // const node = historyCy.getElementById(nodeId);
-            console.log(node)
+            
             if (node) {
                 // console.log(node.data())
                 // Programmatically select and trigger the tap event
                 loadVersion(node.data.id, node.data.branch)
                 highlightNode(node.cyNode)
-                console.log(`Node triggered: ${node}`);
+                
             } else {
                 console.warn(`Node with ID ${node} not found`);
             }
@@ -2493,20 +2475,8 @@ document.addEventListener("DOMContentLoaded", function () {
     //     console.log("Sequencer stopped");
     // }, 30000); // Stop after 30 seconds
 
-    function getNodesInBoundingBox(boundingBox) {
-        const { x1, y1, x2, y2 } = boundingBox; // Destructure bounding box coordinates
-    
-        // Filter nodes based on their positions
-        const nodesInBoundingBox = historyCy.nodes().filter((node) => {
-            const position = node.position();
-            return (
-                position.x >= x1 && position.x <= x2 && // Check horizontal bounds
-                position.y >= y1 && position.y <= y2    // Check vertical bounds
-            );
-        });
-    
-        return nodesInBoundingBox;
-    }
+
+  
 });
 
 
