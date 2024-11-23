@@ -1014,6 +1014,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
     }
 
+
+    // history sequencer
+    function historySequencerController(cmd){
+        switch(cmd){
+            case 'clear':
+                selectedHistoryNodes.length = 0
+                historyCy.edges().removeClass("sequencerEdge");
+            break
+
+        }
+    }
     //TODO OLD AUTOMERGE-REPO IMPLEMENTATION, PHASE IT OUT EVENTUALLY
     // Import dependencies dynamically
     // (async () => {
@@ -1356,6 +1367,8 @@ document.addEventListener("DOMContentLoaded", function () {
     });
     historyCy.on('tap', 'node', (event) => {
         
+        historySequencerController('clear')
+
         loadVersion(event.target.data().id, event.target.data().branch)
         highlightNode(event.target)
         
@@ -2270,130 +2283,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
             }
 
-            // if (selected.length === 0) {
-            //     // If no nodes are selected, clear the selection box
-            //     historyCy.$("#selection-box").remove();
-            //     selectedHistoryNodes.length = 0; // Clear selection array
-            //     historyBoxSelect = true; // Reset flag
-            //     return;
-            // } else {
-            //     // Update selectedHistoryNodes to match the current selection   
-            //     selectedHistoryNodes.length = 0
-
-            //     selected.forEach((node) => {
-            //         let n = {
-            //             data: node.data(),
-            //             cyNode: node
-            //         }
-            //         selectedHistoryNodes.push(n)
-            //     });
-            //     const width = 40
-
-            //     // Calculate bounding box of selected nodes
-            //     historyBoundingBox = selected.boundingBox();
-            //     const xLeft = Math.min(...selected.map((node) => node.position("x"))) -23 ;
-            //     const centerX = (xLeft + width) / 2; // Center for Cytoscape positioning
-
-
-  
-            //     // const topHandleId = "top-handle";
-            //     // const bottomHandleId = "bottom-handle";
-                
-
-            //     // Remove any existing rectangle first
-            //     const existingRectangle = historyCy.$(`#${'selection-box'}`);
-            //     if (existingRectangle) {
-            //         existingRectangle.remove();
-            //     }
-
-            //     //               // Remove any existing rectangle and handles
-            //     // historyCy.$("#selection-box").remove();
-
-            //     const rectangleId = "selection-box";
-            //     // Add a new rectangle node as a parent
-            //     historyCy.add({
-            //         group: "nodes",
-            //         data: { id: rectangleId, height: historyBoundingBox.h + 20,  },
-            //         position: {
-            //             x: centerX, // Center X
-            //             y: (historyBoundingBox.y1 + historyBoundingBox.y2) / 2, // Center Y
-            //         },
-
-            //         classes: 'sequencerSelectionBox',
-            //         selectable: false, // Prevent interaction with the rectangle
-            //     });
-
-
-  
-
-            // }
             // Reset the historyBoxSelect flag after a short delay
             setTimeout(() => {
                 historyCy.$('node:selected').unselect();
                 historyBoxSelect = true;
             }, 50); // Adjust the delay as needed to debounce the event
-            
-            // * leave this here for now. if we want to resize the selection, this might get us there, but it's clunky and requires a lot more things before its ready
-            /*
-            // Add top and bottom handles
-            historyCy.add([
-                {
-                    group: "nodes",
-                    data: { id: topHandleId },
-                    position: {
-                        x: (boundingBox.x1 + boundingBox.x2) / 2,
-                        y: boundingBox.y1 - 10, // Slightly above the top edge
-                    },
-                    classes: 'sequencerSelectionBox-handle'
-                },
-                {
-                    group: "nodes",
-                    data: { id: bottomHandleId },
-                    position: {
-                        x: (boundingBox.x1 + boundingBox.x2) / 2,
-                        y: boundingBox.y2 + 10, // Slightly below the bottom edge
-                    },
-                    classes: 'sequencerSelectionBox-handle'
-                },
-            ]);
-
-            // Handle dragging for the top handle
-            historyCy.on("drag", `#${topHandleId}`, (event) => {
-                console.log()
-                const handle = event.target;
-                const rectangle = cy.$(`#${rectangleId}`);
-
-                // Calculate new height and position
-                const topY = handle.position("y");
-                const bottomY = rectangle.position("y") + rectangle.style("height") / 2;
-
-                const newHeight = bottomY - topY;
-                const newCenterY = topY + newHeight / 2;
-
-                // Update rectangle dimensions
-                rectangle.style("height", newHeight);
-                rectangle.position({ x: rectangle.position("x"), y: newCenterY });
-            });
-
-            // Handle dragging for the bottom handle
-            historyCy.on("drag", `#${bottomHandleId}`, (event) => {
-                const handle = event.target;
-                const rectangle = cy.$(`#${rectangleId}`);
-
-                // Calculate new height and position
-                const topY = rectangle.position("y") - rectangle.style("height") / 2;
-                const bottomY = handle.position("y");
-
-                const newHeight = bottomY - topY;
-                const newCenterY = topY + newHeight / 2;
-
-                // Update rectangle dimensions
-                rectangle.style("height", newHeight);
-                rectangle.position({ x: rectangle.position("x"), y: newCenterY });
-            });
-            */
         }
-        // historyBoxSelect = true
     });
 
 
