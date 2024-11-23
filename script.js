@@ -1038,11 +1038,22 @@ document.addEventListener("DOMContentLoaded", function () {
             //
                 selectedHistoryNodes.push({
                     data: data.data(),
-                    cyNode: data
+                    cyNode: data,
+                    id: data.data().id
                 })
                 data.addClass("sequencerNode");
-                console.log(selectedHistoryNodes)
             break
+
+            case 'removeSteps':
+                //
+                selectedHistoryNodes = removeLastInstanceById(selectedHistoryNodes, data.data().id)
+                // if node no longer is in sequence, remove its border
+                if (!selectedHistoryNodes.some(item => item.id === data.data().id)){
+                    data.removeClass("sequencerNode");
+                }
+                
+            break
+    
 
         }
     }
@@ -2115,6 +2126,17 @@ document.addEventListener("DOMContentLoaded", function () {
         .update();
     }
 
+    // right-click tap
+    historyCy.on('cxttap', 'node', (event) => {
+        const node = event.target; // The node that was right-clicked
+        if(hid.key.shift){
+            historySequencerController('removeSteps', event.target)
+            console.log('Right-clicked on node:', node.data());
+        }
+        
+    });
+
+
     //*
     //* PATCHING
     //*
@@ -2308,7 +2330,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 selected.forEach((node) => {
                     let n = {
                         data: node.data(),
-                        cyNode: node
+                        cyNode: node,
+                        id: data.data().id
                     }
                     selectedHistoryNodes.push(n)
                 });
@@ -2477,7 +2500,13 @@ document.addEventListener("DOMContentLoaded", function () {
     //     console.log("Sequencer stopped");
     // }, 30000); // Stop after 30 seconds
 
-
+    function removeLastInstanceById(array, id) {
+        const index = array.map(item => item.id).lastIndexOf(id); // Find the last occurrence of the id
+        if (index !== -1) {
+            array.splice(index, 1); // Remove the object at the found index
+        }
+        return array; // Return the modified array
+    }
   
 });
 
