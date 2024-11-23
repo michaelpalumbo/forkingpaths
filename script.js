@@ -1087,6 +1087,33 @@ document.addEventListener("DOMContentLoaded", function () {
 
         }
     }
+
+    function saveAutomergeDocument(fileName) {
+        // Generate the binary format of the Automerge document
+        const binaryData = Automerge.save(meta);
+
+        // Create a Blob object for the binary data
+        const blob = new Blob([binaryData], { type: 'application/octet-stream' });
+
+        // Create a URL for the Blob
+        const url = URL.createObjectURL(blob);
+
+        // Create a download link
+        const downloadLink = document.createElement('a');
+        downloadLink.href = url;
+        downloadLink.download = fileName;
+
+        // Optionally, add the link to the DOM and simulate a click
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+
+        // Clean up
+        document.body.removeChild(downloadLink);
+        URL.revokeObjectURL(url); // Release memory
+    }
+
+
+
     //TODO OLD AUTOMERGE-REPO IMPLEMENTATION, PHASE IT OUT EVENTUALLY
     // Import dependencies dynamically
     // (async () => {
@@ -1417,6 +1444,63 @@ document.addEventListener("DOMContentLoaded", function () {
     
     // do this once:
     historyCy.panBy({x: 25, y: 0 })
+
+
+    // saving the forking paths 'meta' doc
+    // document.getElementById('saveButton').addEventListener('click', () => {
+    //     let 
+    //     saveAutomergeDocument('Forking Paths Session');
+    // });
+
+    async function saveFile(suggestedFilename) {
+        // Show the file save dialog
+        const fileName = await window.showSaveFilePicker({
+            suggestedName: suggestedFilename,
+            types: [
+                {
+                    description: "Forking Paths CRDT Files",
+                    accept: { "application/x-fpsynth": [".fpsynth"] }
+                },
+            ],
+        });
+        
+        // Create a Blob object for the binary data
+        const blob = new Blob([Automerge.save(meta)], { type: 'application/octet-stream' });
+
+        // Create a URL for the Blob
+        const url = URL.createObjectURL(blob);
+
+        // Create a download link
+        const downloadLink = document.createElement('a');
+        downloadLink.href = url;
+        downloadLink.download = fileName.name;
+
+        // Optionally, add the link to the DOM and simulate a click
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+
+        // Clean up
+        document.body.removeChild(downloadLink);
+        URL.revokeObjectURL(url); // Release memory
+
+        // // Write the content to the file
+        // const writable = await fileHandle.createWritable();
+        // await writable.write(Automerge.save(meta));
+        // await writable.close();
+    }
+    
+    // Example usage:
+    document.getElementById("saveButton").addEventListener("click", () => {
+        // check if browser supports the File System Access API
+        if(!!window.showSaveFilePicker){
+            
+            saveFile("filename.fpsynth");
+        } else {
+            saveAutomergeDocument('session.fpsynth');
+        }
+        
+    });
+
 
     // cmd + scroll = scroll vertically through history graph
     document.addEventListener('wheel', function(event) {
