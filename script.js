@@ -7,11 +7,11 @@ import { ParentNode } from './parentNode.js';
 import { uuidv7 } from "uuidv7";
 import randomColor from 'randomcolor';
 import dagre from 'cytoscape-dagre';
-import { saveDocument, loadDocument, deleteDocument } from './indexedDB.js';
+import { saveDocument, loadDocument, deleteDocument } from './utilities/indexedDB.js';
 import { marked } from 'marked'
 
-const worker = new Worker("compareDocs.js");
-const historyGraphWorker = new Worker("historyGraphWorker.js");
+// const worker = new Worker("./workers/compareDocs.js");
+const historyGraphWorker = new Worker("./workers/historyGraphWorker.js");
 // TODO: look for comments with this: //* old -repo version 
 // TODO: when new automerge implementation is working, remove their related code sections
 
