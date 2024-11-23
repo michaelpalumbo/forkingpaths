@@ -2210,7 +2210,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 console.log("Node ID:", node.id());
                 console.log("Node data:", node.data());
                 console.log("Node position:", node.position());
-                selectedHistoryNodes.push(node.data())
+
+                let n = {
+                    data: node.data(),
+                    cyNode: node
+                }
+                selectedHistoryNodes.push(n)
             });
             
             historyBoxSelect = false
@@ -2470,8 +2475,8 @@ document.addEventListener("DOMContentLoaded", function () {
             if (node) {
                 // console.log(node.data())
                 // Programmatically select and trigger the tap event
-                loadVersion(node.id, node.branch)
-                // highlightNode(node)
+                loadVersion(node.data.id, node.data.branch)
+                highlightNode(node.cyNode)
                 console.log(`Node triggered: ${node}`);
             } else {
                 console.warn(`Node with ID ${node} not found`);

@@ -29,6 +29,7 @@ dist-ssr
 .amrg
 
 # media files
+demo_videos
 .mov
 .wav
 .mp3
