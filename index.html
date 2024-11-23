@@ -12,33 +12,31 @@
 <body>
     <div id="container">
         <div id="instructions">
-            <button id="viewReadme">View README</button>
-            <h3>Controls:</h3>
-            <p><b>Add Module: </b>Double-click anywhere in the grey background </p>
-            <p><b>Modify Module Layout: </b>Hold down 'e' key + drag any module element i.e. input, slider, etc to reposition it. <i>Coming soon: changing the module layout will save in user's settings</i></p>
-            <p><b>Drag multiple modules: </b>cmd/ctrl + click + drag to select multiple elements; then drag any module to drag all at once</p>
-            
+            <button id="viewReadme">View INSTRUCTIONS</button>
+                        
 
-            <label for="controlPointDistance">Cable Control Point Distance:</label>
-            <input type="range" id="controlPointDistance" min="0" max="200" step="1" value="20">
-            <p></p>
-            <p><h3>History Graph Controls</h3></p>
-            <p><b>Scroll: </b>cmd/ctrl + scroll</p>
-            <p><b>Zoom: </b>z + scroll</p>
+
 
             <hr>
-            <h3>NEW AM STUFF</h3>
-            <div id="documentName"></div>
-            <button id="saveButton">Save Session</button>
-            <br>Load Session
-            <input type="file" id="fileInput" accept=".fpsynth" />
+            <h3>File System</h3>
             <hr>
             <button id="newSession">New Session</button> 
+            <p>
+            <button id="saveButton">Save Session</button>
+            <p>
+            <input type="file" id="fileInput" accept=".fpsynth" />
+            <!-- Custom button -->
+            <label for="fileInput" class="custom-file-button">Load Session</label>
             <br>
             <br>
             <button id="clearGraph">Clear Synth</button>
+            <hr>
+            <div id="documentName"></div>
 
-
+            <hr>
+            <p></p>
+            <label for="controlPointDistance">Cable Control Point Distance:</label>
+            <input type="range" id="controlPointDistance" min="0" max="200" step="1" value="20">
         </div>
 
         <div id="cy"></div>

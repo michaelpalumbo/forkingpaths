@@ -18,10 +18,10 @@ Inputs are orange triangles, outputs are blue squares. Click and drag from eithe
 ## History Graph
 
 **Scroll:**  
-Cmd/Ctrl + scroll.
+`cmd`/`Ctrl` + `scroll`.
 
 **Zoom:**  
-Press `z` + scroll
+Press `z` + `scroll`
 
 **Recall Synth State**
 Click any node to recall that point in the history. If you make any changes to the synth while in this earlier state, the history will spawn a new history path.
@@ -29,17 +29,20 @@ Click any node to recall that point in the history. If you make any changes to t
 ## History Sequencing
 
 **Add node as a step**
-Hold *shift* then *click* one or more nodes. You can add the same node multiple times and at different points in the sequence. 
+Hold `shift` then `click` one or more nodes. You can add the same node multiple times and at different points in the sequence. 
 
 **Pause sequencer (momentary)**
-Hold *shift*. release to resume sequence. 
+Hold `shift`. release to resume sequence. 
 
 **Remove node step**
-Hold *shift* and then *right-click* a node. Note that this only removes the last-added instance of this node. Keep right-clicking to remove all instances of this node in the sequence. 
+Hold `shift` and then `right-click` a node. Note that this only removes the last-added instance of this node. Keep right-clicking to remove all instances of this node in the sequence. 
 
 
+## About
 
 Created by Michael Palumbo, 2024. 
+
+[My website](www.palumbomichael.com) // [Instagram](https://instagram.com/michaelpalumbo_)
 
 This work is part of my PhD dissertation. Previous related work includes:
 
