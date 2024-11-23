@@ -93,6 +93,12 @@ let graphLayouts = {
 
 
 }
+
+let hid = {
+    key: {
+        cmd: 'false'
+    }
+}
 let historyHighlightedNode = null
 // * old automerge-repo stuff
 // todo: phase out
@@ -1345,6 +1351,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
     })
 
+    historyCy.on('tap', (event) => {
+        
+        if(hid.key.cmd){
+            // clear the bounding box
+        }
+        
+
+    })
+
     // get mousedown events from cytoscape
     cy.on('mousedown', (event) => {
         // handle slider events
@@ -1579,7 +1594,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         // cyHandleNode.data('value', scaledValue.toFixed(2) )
                         // update in automerge
                         const elementIndex = amDoc.elements.findIndex(el => el.data.id === currentHandleNode.data().id);
-                        console.log(currentHandleNode.data())
+                        
                         amDoc = applyChange(amDoc, (amDoc) => {
                             amDoc.elements[elementIndex].data.value = scaledValue
                             amDoc.elements[elementIndex].position = {
@@ -1839,6 +1854,8 @@ document.addEventListener("DOMContentLoaded", function () {
             allowMultiSelect = false
             allowPan = true
             historyCy.userZoomingEnabled(false)
+            hid.key.cmd = true
+
         }
     });
 
@@ -1850,6 +1867,9 @@ document.addEventListener("DOMContentLoaded", function () {
             allowMultiSelect = false
             historyBoxSelect = true
             historyCy.userZoomingEnabled(true)
+            hid.key.cmd = false
+            // Hide a node by setting display to none
+
         }
         if (event.key === 'z') {
             historyCy.zoomingEnabled(false)
@@ -2210,56 +2230,72 @@ document.addEventListener("DOMContentLoaded", function () {
     let historyBoxSelect = true // this is necessary because this event listener fires many times otherwise
     historyCy.on("boxselect", "node", () => {
         if(historyBoxSelect){
-            let selected = historyCy.$("node:selected"); // Get all selected nodes
-            selectedHistoryNodes.length = 0
-            selected.forEach((node) => {
-                console.log("Node ID:", node.id());
-                console.log("Node data:", node.data());
-                console.log("Node position:", node.position());
-
-                let n = {
-                    data: node.data(),
-                    cyNode: node
-                }
-                selectedHistoryNodes.push(n)
-            });
-            
             historyBoxSelect = false
-            const width = 40
-            // Calculate bounding box of selected nodes
-            historyBoundingBox = selected.boundingBox();
-            const xLeft = Math.min(...selected.map((node) => node.position("x"))) -23 ;
-            const centerX = (xLeft + width) / 2; // Center for Cytoscape positioning
+
+            let selected = historyCy.$("node:selected"); // Get all selected nodes
+
+            if (selected.length === 0) {
+                // If no nodes are selected, clear the selection box
+                historyCy.$("#selection-box").remove();
+                selectedHistoryNodes.length = 0; // Clear selection array
+                historyBoxSelect = true; // Reset flag
+                return;
+            } else {
+                // Update selectedHistoryNodes to match the current selection   
+                selectedHistoryNodes.length = 0
+
+                selected.forEach((node) => {
+                    let n = {
+                        data: node.data(),
+                        cyNode: node
+                    }
+                    selectedHistoryNodes.push(n)
+                });
+                const width = 40
+
+                // Calculate bounding box of selected nodes
+                historyBoundingBox = selected.boundingBox();
+                const xLeft = Math.min(...selected.map((node) => node.position("x"))) -23 ;
+                const centerX = (xLeft + width) / 2; // Center for Cytoscape positioning
 
 
-            // Remove any existing rectangle and handles
-            historyCy.$("#selection-box, #top-handle, #bottom-handle").remove();
+  
+                // const topHandleId = "top-handle";
+                // const bottomHandleId = "bottom-handle";
+                
 
-            const rectangleId = "selection-box";
-            const topHandleId = "top-handle";
-            const bottomHandleId = "bottom-handle";
-            
+                // Remove any existing rectangle first
+                const existingRectangle = historyCy.$(`#${'selection-box'}`);
+                if (existingRectangle) {
+                    existingRectangle.remove();
+                }
 
-            // Remove any existing rectangle first
-            const existingRectangle = historyCy.$(`#${rectangleId}`);
-            if (existingRectangle) {
-                existingRectangle.remove();
+                //               // Remove any existing rectangle and handles
+                // historyCy.$("#selection-box").remove();
+
+                const rectangleId = "selection-box";
+                // Add a new rectangle node as a parent
+                historyCy.add({
+                    group: "nodes",
+                    data: { id: rectangleId, height: historyBoundingBox.h + 20,  },
+                    position: {
+                        x: centerX, // Center X
+                        y: (historyBoundingBox.y1 + historyBoundingBox.y2) / 2, // Center Y
+                    },
+
+                    classes: 'sequencerSelectionBox',
+                    selectable: false, // Prevent interaction with the rectangle
+                });
+
+
+
             }
-
-            // Add a new rectangle node as a parent
-            historyCy.add({
-                group: "nodes",
-                data: { id: rectangleId, height: historyBoundingBox.h + 20,  },
-                position: {
-                    x: centerX, // Center X
-                    y: (historyBoundingBox.y1 + historyBoundingBox.y2) / 2, // Center Y
-                },
-
-                classes: 'sequencerSelectionBox',
-                selectable: false, // Prevent interaction with the rectangle
-            });
-
-
+            // Reset the historyBoxSelect flag after a short delay
+            setTimeout(() => {
+                historyCy.$('node:selected').unselect();
+                historyBoxSelect = true;
+            }, 50); // Adjust the delay as needed to debounce the event
+            
             // * leave this here for now. if we want to resize the selection, this might get us there, but it's clunky and requires a lot more things before its ready
             /*
             // Add top and bottom handles
@@ -2320,6 +2356,7 @@ document.addEventListener("DOMContentLoaded", function () {
             });
             */
         }
+        // historyBoxSelect = true
     });
 
 
