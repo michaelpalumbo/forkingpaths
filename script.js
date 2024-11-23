@@ -465,6 +465,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 }
             },
+            {
+                selector: '.sequencerEdge',
+                style: {
+                    // 'border-color': 'blue', // Highlight color
+                    'line-color': 'blue',
+                    "width": '10',
+                    'target-arrow-color': 'blue'
+
+
+                }
+            },
         ]
     });
 
@@ -2233,14 +2244,19 @@ document.addEventListener("DOMContentLoaded", function () {
             historyBoxSelect = false
 
             let selected = historyCy.$("node:selected"); // Get all selected nodes
+            historyCy.edges().removeClass("sequencerEdge");
 
-            if (selected.length === 0) {
-                // If no nodes are selected, clear the selection box
-                historyCy.$("#selection-box").remove();
-                selectedHistoryNodes.length = 0; // Clear selection array
-                historyBoxSelect = true; // Reset flag
-                return;
-            } else {
+            if (selected.length > 1) {
+                // Find edges connecting selected nodes
+                const connectingEdges = selected.connectedEdges().filter(edge => {
+                    const source = edge.source();
+                    const target = edge.target();
+                    return selected.includes(source) && selected.includes(target);
+                });
+
+                // Apply a custom style to these edges
+                connectingEdges.addClass("sequencerEdge");
+
                 // Update selectedHistoryNodes to match the current selection   
                 selectedHistoryNodes.length = 0
 
@@ -2251,45 +2267,66 @@ document.addEventListener("DOMContentLoaded", function () {
                     }
                     selectedHistoryNodes.push(n)
                 });
-                const width = 40
 
-                // Calculate bounding box of selected nodes
-                historyBoundingBox = selected.boundingBox();
-                const xLeft = Math.min(...selected.map((node) => node.position("x"))) -23 ;
-                const centerX = (xLeft + width) / 2; // Center for Cytoscape positioning
+            }
+
+            // if (selected.length === 0) {
+            //     // If no nodes are selected, clear the selection box
+            //     historyCy.$("#selection-box").remove();
+            //     selectedHistoryNodes.length = 0; // Clear selection array
+            //     historyBoxSelect = true; // Reset flag
+            //     return;
+            // } else {
+            //     // Update selectedHistoryNodes to match the current selection   
+            //     selectedHistoryNodes.length = 0
+
+            //     selected.forEach((node) => {
+            //         let n = {
+            //             data: node.data(),
+            //             cyNode: node
+            //         }
+            //         selectedHistoryNodes.push(n)
+            //     });
+            //     const width = 40
+
+            //     // Calculate bounding box of selected nodes
+            //     historyBoundingBox = selected.boundingBox();
+            //     const xLeft = Math.min(...selected.map((node) => node.position("x"))) -23 ;
+            //     const centerX = (xLeft + width) / 2; // Center for Cytoscape positioning
 
 
   
-                // const topHandleId = "top-handle";
-                // const bottomHandleId = "bottom-handle";
+            //     // const topHandleId = "top-handle";
+            //     // const bottomHandleId = "bottom-handle";
                 
 
-                // Remove any existing rectangle first
-                const existingRectangle = historyCy.$(`#${'selection-box'}`);
-                if (existingRectangle) {
-                    existingRectangle.remove();
-                }
+            //     // Remove any existing rectangle first
+            //     const existingRectangle = historyCy.$(`#${'selection-box'}`);
+            //     if (existingRectangle) {
+            //         existingRectangle.remove();
+            //     }
 
-                //               // Remove any existing rectangle and handles
-                // historyCy.$("#selection-box").remove();
+            //     //               // Remove any existing rectangle and handles
+            //     // historyCy.$("#selection-box").remove();
 
-                const rectangleId = "selection-box";
-                // Add a new rectangle node as a parent
-                historyCy.add({
-                    group: "nodes",
-                    data: { id: rectangleId, height: historyBoundingBox.h + 20,  },
-                    position: {
-                        x: centerX, // Center X
-                        y: (historyBoundingBox.y1 + historyBoundingBox.y2) / 2, // Center Y
-                    },
+            //     const rectangleId = "selection-box";
+            //     // Add a new rectangle node as a parent
+            //     historyCy.add({
+            //         group: "nodes",
+            //         data: { id: rectangleId, height: historyBoundingBox.h + 20,  },
+            //         position: {
+            //             x: centerX, // Center X
+            //             y: (historyBoundingBox.y1 + historyBoundingBox.y2) / 2, // Center Y
+            //         },
 
-                    classes: 'sequencerSelectionBox',
-                    selectable: false, // Prevent interaction with the rectangle
-                });
+            //         classes: 'sequencerSelectionBox',
+            //         selectable: false, // Prevent interaction with the rectangle
+            //     });
 
 
+  
 
-            }
+            // }
             // Reset the historyBoxSelect flag after a short delay
             setTimeout(() => {
                 historyCy.$('node:selected').unselect();
