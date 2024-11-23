@@ -634,7 +634,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             updateCytoscapeFromDocument(amDoc);
             
-            previousHash = meta.docs[meta.head.hash]
+            previousHash = meta.head.hash
             
 
             reDrawHistoryGraph()
@@ -1112,6 +1112,58 @@ document.addEventListener("DOMContentLoaded", function () {
         URL.revokeObjectURL(url); // Release memory
     }
 
+    document.getElementById('fileInput').addEventListener('change', async (event) => {
+        const file = event.target.files[0];
+    
+        if (!file) {
+            alert('No file selected');
+            return;
+        }
+    
+        // Ensure the file is a valid Automerge binary (based on extension or type)
+        if (!file.name.endsWith('.fpsynth')) {
+            alert('Invalid file type. Please select a .fpsynth file.');
+            return;
+        }
+    
+        const reader = new FileReader();
+    
+        // Read the file as an ArrayBuffer
+        reader.onload = function (e) {
+            const binaryData = new Uint8Array(e.target.result); // Convert to Uint8Array
+            try {
+                // Load the Automerge document
+                meta = Automerge.load(binaryData);
+                amDoc = Automerge.load(meta.docs.main)
+
+                updateCytoscapeFromDocument(amDoc);
+            
+                previousHash = meta.head.hash
+                
+                historyCy.elements().remove()
+                reDrawHistoryGraph()
+    
+                // ion this case we want the highlighted node to be on the current branch
+                highlightNode(historyCy.getElementById(meta.head.hash))
+    
+                // set the document branch (aka title)  in the editor pane
+                document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
+
+                saveDocument('meta', Automerge.save(meta));
+            } catch (err) {
+                console.error('Failed to load Automerge document:', err);
+                alert('Failed to load Automerge document. The file may be corrupted.');
+            }
+        };
+    
+        // Handle file reading errors
+        reader.onerror = function () {
+            console.error('Error reading file:', reader.error);
+            alert('Failed to read the file.');
+        };
+    
+        reader.readAsArrayBuffer(file); // Start reading the file
+    });
 
 
     //TODO OLD AUTOMERGE-REPO IMPLEMENTATION, PHASE IT OUT EVENTUALLY
