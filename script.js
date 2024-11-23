@@ -96,7 +96,8 @@ let graphLayouts = {
 
 let hid = {
     key: {
-        cmd: 'false'
+        cmd: false,
+        shift: false
     }
 }
 let historyHighlightedNode = null
@@ -462,6 +463,16 @@ document.addEventListener("DOMContentLoaded", function () {
                     "height": '10',
                     "label": '',
                     "z-index": 10
+
+                }
+            },
+            {
+                selector: '.sequencerNode',
+                style: {
+                    'border-color': '#000000',  // Change to your desired color
+                    'border-width': '8px',
+                    'border-style': 'solid'
+
 
                 }
             },
@@ -1016,11 +1027,21 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     // history sequencer
-    function historySequencerController(cmd){
+    function historySequencerController(cmd, data){
         switch(cmd){
             case 'clear':
                 selectedHistoryNodes.length = 0
                 historyCy.edges().removeClass("sequencerEdge");
+            break
+
+            case 'addSteps':
+            //
+                selectedHistoryNodes.push({
+                    data: data.data(),
+                    cyNode: data
+                })
+                data.addClass("sequencerNode");
+                console.log(selectedHistoryNodes)
             break
 
         }
@@ -1366,12 +1387,16 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
     historyCy.on('tap', 'node', (event) => {
-        
-        historySequencerController('clear')
+        console.log(hid.key.shift)
+        if(hid.key.shift){
+            
+            historySequencerController('addSteps', event.target)
+        } else {
+            historySequencerController('clear')
 
-        loadVersion(event.target.data().id, event.target.data().branch)
-        highlightNode(event.target)
-        
+            loadVersion(event.target.data().id, event.target.data().branch)
+            highlightNode(event.target)
+        }
 
     })
 
@@ -1868,6 +1893,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Track when the 'e' key is pressed and released
     window.addEventListener('keydown', (event) => {
+        console.log(event)
         if (event.key === 'e') {
             isDraggingEnabled = true;
         }
@@ -1880,6 +1906,9 @@ document.addEventListener("DOMContentLoaded", function () {
             historyCy.userZoomingEnabled(false)
             hid.key.cmd = true
 
+        }
+        if (event.key === 'Shift') {
+            hid.key.shift = true
         }
     });
 
@@ -1897,6 +1926,9 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         if (event.key === 'z') {
             historyCy.zoomingEnabled(false)
+        }
+        if (event.key === 'Shift') {
+            hid.key.shift = false
         }
     });
 
@@ -2266,10 +2298,10 @@ document.addEventListener("DOMContentLoaded", function () {
                     const target = edge.target();
                     return selected.includes(source) && selected.includes(target);
                 });
-
+                
                 // Apply a custom style to these edges
                 connectingEdges.addClass("sequencerEdge");
-
+                selected.addClass("sequencerNode");
                 // Update selectedHistoryNodes to match the current selection   
                 selectedHistoryNodes.length = 0
 
@@ -2412,7 +2444,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Function to loop through the array
     const sequencer = setInterval(() => {
-        if(selectedHistoryNodes.length > 0){
+        // holding down the shift key pauses the sequencer and allows for selecting additional nodes
+        if(!hid.key.shift && selectedHistoryNodes.length > 0){
 
             // let nodes = getNodesInBoundingBox(historyBoundingBox)
             // console.log(nodes)
