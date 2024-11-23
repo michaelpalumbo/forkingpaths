@@ -42,8 +42,9 @@ let branches = {
         // root: hash (the node that it started from)
     //}
 }
-
-
+let historyBoundingBox;
+let selectedHistoryNodes = []
+let historySelectionBoxStatus = false
 let existingHistoryNodeIDs
 // store the heads of all branches
 // todo: decide if we should store this in the automerge doc? (consideration: for now it's mostly likely just needed for the history graph)
@@ -437,7 +438,23 @@ document.addEventListener("DOMContentLoaded", function () {
                     "background-opacity": 0,
                     "width": 'data(width)',
                     "height": 'data(height)',
-                    "label": 'sequencer'
+                    "label": 'sequencer',
+                    "z-index": -1
+
+                }
+            },
+            {
+                selector: '.sequencerSelectionBox-handle',
+                style: {
+                    // 'border-color': 'blue', // Highlight color
+                    'border-width': 0,
+                    'shape': 'ellipse',
+                    'background-color': 'blue',
+                    // "background-opacity": 0,
+                    "width": '10',
+                    "height": '10',
+                    "label": '',
+                    "z-index": 10
 
                 }
             },
@@ -707,6 +724,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     function reDrawHistoryGraph(){
+
+
         if (!existingHistoryNodeIDs || existingHistoryNodeIDs.size === 0){
             existingHistoryNodeIDs = new Set(historyCy.nodes().map(node => node.id()));
         }
@@ -2185,16 +2204,27 @@ document.addEventListener("DOMContentLoaded", function () {
     let historyBoxSelect = true // this is necessary because this event listener fires many times otherwise
     historyCy.on("boxselect", "node", () => {
         if(historyBoxSelect){
-            const selectedNodes = historyCy.$("node:selected"); // Get all selected nodes
-            console.log("Selected nodes:", selectedNodes.map((n) => n.id())); // Log selected node IDs
-        
+            let selected = historyCy.$("node:selected"); // Get all selected nodes
+            selectedHistoryNodes.length = 0
+            selected.forEach((node) => {
+                console.log("Node ID:", node.id());
+                console.log("Node data:", node.data());
+                console.log("Node position:", node.position());
+                selectedHistoryNodes.push(node.data())
+            });
+            
             historyBoxSelect = false
 
             // Calculate bounding box of selected nodes
-            const boundingBox = selectedNodes.boundingBox();
+            historyBoundingBox = selected.boundingBox();
 
-            // Add a rectangle node (or visual indicator) to the graph
+            // Remove any existing rectangle and handles
+            historyCy.$("#selection-box, #top-handle, #bottom-handle").remove();
+
             const rectangleId = "selection-box";
+            const topHandleId = "top-handle";
+            const bottomHandleId = "bottom-handle";
+            
 
             // Remove any existing rectangle first
             const existingRectangle = historyCy.$(`#${rectangleId}`);
@@ -2205,16 +2235,76 @@ document.addEventListener("DOMContentLoaded", function () {
             // Add a new rectangle node as a parent
             historyCy.add({
                 group: "nodes",
-                data: { id: rectangleId, width: boundingBox.w + 20, height: boundingBox.h + 20,  },
+                data: { id: rectangleId, width: historyBoundingBox.w + 20, height: historyBoundingBox.h + 20,  },
                 position: {
-                    x: (boundingBox.x1 + boundingBox.x2) / 2, // Center X
-                    y: (boundingBox.y1 + boundingBox.y2) / 2, // Center Y
+                    x: (historyBoundingBox.x1 + historyBoundingBox.x2) / 2, // Center X
+                    y: (historyBoundingBox.y1 + historyBoundingBox.y2) / 2, // Center Y
                 },
 
                 classes: 'sequencerSelectionBox',
                 selectable: false, // Prevent interaction with the rectangle
             });
 
+
+            // * leave this here for now. if we want to resize the selection, this might get us there, but it's clunky and requires a lot more things before its ready
+            /*
+            // Add top and bottom handles
+            historyCy.add([
+                {
+                    group: "nodes",
+                    data: { id: topHandleId },
+                    position: {
+                        x: (boundingBox.x1 + boundingBox.x2) / 2,
+                        y: boundingBox.y1 - 10, // Slightly above the top edge
+                    },
+                    classes: 'sequencerSelectionBox-handle'
+                },
+                {
+                    group: "nodes",
+                    data: { id: bottomHandleId },
+                    position: {
+                        x: (boundingBox.x1 + boundingBox.x2) / 2,
+                        y: boundingBox.y2 + 10, // Slightly below the bottom edge
+                    },
+                    classes: 'sequencerSelectionBox-handle'
+                },
+            ]);
+
+            // Handle dragging for the top handle
+            historyCy.on("drag", `#${topHandleId}`, (event) => {
+                console.log()
+                const handle = event.target;
+                const rectangle = cy.$(`#${rectangleId}`);
+
+                // Calculate new height and position
+                const topY = handle.position("y");
+                const bottomY = rectangle.position("y") + rectangle.style("height") / 2;
+
+                const newHeight = bottomY - topY;
+                const newCenterY = topY + newHeight / 2;
+
+                // Update rectangle dimensions
+                rectangle.style("height", newHeight);
+                rectangle.position({ x: rectangle.position("x"), y: newCenterY });
+            });
+
+            // Handle dragging for the bottom handle
+            historyCy.on("drag", `#${bottomHandleId}`, (event) => {
+                const handle = event.target;
+                const rectangle = cy.$(`#${rectangleId}`);
+
+                // Calculate new height and position
+                const topY = rectangle.position("y") - rectangle.style("height") / 2;
+                const bottomY = handle.position("y");
+
+                const newHeight = bottomY - topY;
+                const newCenterY = topY + newHeight / 2;
+
+                // Update rectangle dimensions
+                rectangle.style("height", newHeight);
+                rectangle.position({ x: rectangle.position("x"), y: newCenterY });
+            });
+            */
         }
     });
 
@@ -2356,6 +2446,61 @@ document.addEventListener("DOMContentLoaded", function () {
     
             return serializedElement;
         });
+    }
+
+    const bpm = 120; // Beats per minute
+    let currentIndex = 0;
+
+    // Calculate interval in milliseconds per step
+    const intervalMs = (60 / bpm) * 1000;
+
+    // Function to loop through the array
+    const sequencer = setInterval(() => {
+        if(selectedHistoryNodes.length > 0){
+
+            // let nodes = getNodesInBoundingBox(historyBoundingBox)
+            // console.log(nodes)
+            const node = selectedHistoryNodes[currentIndex];
+
+            // const nodeId = nodes[currentIndex];
+            // console.log(nodeId)
+            // Get the node by ID
+            // const node = historyCy.getElementById(nodeId);
+            console.log(node)
+            if (node) {
+                // console.log(node.data())
+                // Programmatically select and trigger the tap event
+                loadVersion(node.id, node.branch)
+                // highlightNode(node)
+                console.log(`Node triggered: ${node}`);
+            } else {
+                console.warn(`Node with ID ${node} not found`);
+            }
+
+            // Move to the next step
+            currentIndex = (currentIndex + 1) % selectedHistoryNodes.length; // Loop back to the beginning
+        }
+    }, intervalMs);
+
+    // // Stop the sequencer after a while (optional)
+    // setTimeout(() => {
+    //     clearInterval(sequencer);
+    //     console.log("Sequencer stopped");
+    // }, 30000); // Stop after 30 seconds
+
+    function getNodesInBoundingBox(boundingBox) {
+        const { x1, y1, x2, y2 } = boundingBox; // Destructure bounding box coordinates
+    
+        // Filter nodes based on their positions
+        const nodesInBoundingBox = historyCy.nodes().filter((node) => {
+            const position = node.position();
+            return (
+                position.x >= x1 && position.x <= x2 && // Check horizontal bounds
+                position.y >= y1 && position.y <= y2    // Check vertical bounds
+            );
+        });
+    
+        return nodesInBoundingBox;
     }
 });
 
