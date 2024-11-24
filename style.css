@@ -32,9 +32,25 @@
   background-color: #f0f0f0; /* Optional for visibility */
 }
 
-#historySequencer {
+
+/* Container for the row with historySequencer and thirdDiv */
+#rowContainer {
   flex: 4; /* 40% of vertical space */
+  display: grid;
+  grid-template-columns: 70% 30%; /* 70% for historySequencer, 30% for selectedHistory,  */
+  height: 100%; /* Full height of this row */
+}
+
+/* HistorySequencer styling */
+#historySequencer {
   background-color: #e0e0e0; /* Optional for visibility */
+  width: 100%; /* Takes 70% width defined by grid */
+}
+
+/* selectedHistory styling */
+#selectedHistory {
+  background-color: #d0d0d0; /* Optional for visibility */
+  width: 100%; /* Takes 30% width defined by grid */
 }
 
 /* Right column (docHistoryPanel) */
