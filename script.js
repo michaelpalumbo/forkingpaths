@@ -1150,6 +1150,7 @@ document.addEventListener("DOMContentLoaded", function () {
             
                     // Check if an edge already exists between these two nodes
                     const existingEdge = historySequencerCy.edges().filter(edge =>
+                        edge.visible() && // Only consider visible edges
                         (edge.source().id() === nodeA.id() && edge.target().id() === nodeB.id()) ||
                         (edge.source().id() === nodeB.id() && edge.target().id() === nodeA.id())
                     );
@@ -1173,7 +1174,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 historySequencerCy.remove(data)
                 // now close the circle
-
+                historySequencerCy.edges().forEach(edge => {
+                    if (!edge.source().visible() || !edge.target().visible()) {
+                        edge.remove(); // Remove edges connected to hidden nodes
+                    }
+                });
 
                 // if node no longer is in sequence, remove its border
                 if (!selectedHistoryNodes.some(item => item.id === historyCyHash)){
@@ -2771,7 +2776,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // Add the new node
         historySequencerCy.add({
             group: 'nodes',
-            data: { id: nodeId , label: node.data().label.split('_')[0], color: docHistoryGraphStyling.nodeColours[node.data().label.split(' ')[0]]}
+            data: { id: nodeId , label: node.data().label.split('_')[0], color: docHistoryGraphStyling.nodeColours[node.data().label.split(' ')[0]], historyNode: node}
         });
 
         // If there's a previous node, connect it to the new node
@@ -2859,12 +2864,12 @@ document.addEventListener("DOMContentLoaded", function () {
     // Schedule the sequencer loop
     transport.scheduleRepeat((time) => {
         if (meta && !hid.key.shift && selectedHistoryNodes.length > 0) {
-            const node = selectedHistoryNodes[currentIndex];
+            const node = historySequencerCy.nodes().eq(currentIndex)
 
             if (node) {
                 // synth.triggerAttackRelease("C4", "8n", time); // Example note
-                loadVersion(node.data.id, node.data.branch); // Your custom logic
-                highlightNode(node.cyNode); // Your custom logic
+                loadVersion(node.data().historyNode.data().id, node.data().historyNode.data().branch); // Your custom logic
+                highlightNode(node.data().historyNode); // Your custom logic
                 highlightSequencerNode(historySequencerCy.nodes().eq(currentIndex))
             }
 
