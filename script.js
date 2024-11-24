@@ -530,8 +530,8 @@ document.addEventListener("DOMContentLoaded", function () {
             {
                 selector: 'node',
                 style: {
-                    'background-color': '#666',
-                    'label': 'data(id)',
+                    'background-color': 'data(color)',
+                    'label': 'data(label)',
                     'text-valign': 'center',
                     'text-halign': 'center',
                     'color': '#fff'
@@ -1104,6 +1104,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     id: data.data().id
                 })
                 data.addClass("sequencerNode");
+
+                modifyHistorySequencerCy(data)
             break
 
             case 'removeSteps':
@@ -2714,14 +2716,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     // Function to add a new node
-    function modifyHistorySequencerCy() {
-        const nodeId = `node${historySequencerCy.nodes().length + 1}`; // Generate a unique node ID
+    function modifyHistorySequencerCy(node) {
+        console.log(node.data())
+        const nodeId = `${node.data().id} ${uuidv7()}`// first string is the history hash, 2nd, is just for our sequencer
         const nodes = historySequencerCy.nodes();
 
         // Add the new node
         historySequencerCy.add({
             group: 'nodes',
-            data: { id: nodeId }
+            data: { id: nodeId , label: node.data().label.split('_')[0], color: docHistoryGraphStyling.nodeColours[node.data().label.split(' ')[0]]}
         });
 
         // If there's a previous node, connect it to the new node
@@ -2761,13 +2764,7 @@ document.addEventListener("DOMContentLoaded", function () {
         historySequencerCy.layout({ name: 'circle' }).run();
     }
 
-    // Add a button for testing
-    const addNodeButton = document.createElement('button');
-    addNodeButton.textContent = 'Add Node';
-    addNodeButton.style.margin = '10px';
-    document.body.appendChild(addNodeButton);
 
-    addNodeButton.addEventListener('click', addNode);
   
 });
 
