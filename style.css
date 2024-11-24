@@ -48,7 +48,7 @@
 }
 
 /* selectedHistory styling */
-#selectedHistory {
+#historySequencerCy {
   background-color: #d0d0d0; /* Optional for visibility */
   width: 100%; /* Takes 30% width defined by grid */
 }

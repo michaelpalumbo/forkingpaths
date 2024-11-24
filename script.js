@@ -521,6 +521,36 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 
+    /*
+        SELECTED HISTORY CYTOSCAPE INSTANCE
+    */
+        const historySequencerCy = cytoscape({
+        container: document.getElementById('historySequencerCy'), // Your container element
+        style: [
+            {
+                selector: 'node',
+                style: {
+                    'background-color': '#666',
+                    'label': 'data(id)',
+                    'text-valign': 'center',
+                    'text-halign': 'center',
+                    'color': '#fff'
+                }
+            },
+            {
+                selector: 'edge',
+                style: {
+                    'width': 2,
+                    'line-color': '#ccc',
+                    'target-arrow-color': '#ccc',
+                    'target-arrow-shape': 'triangle'
+                }
+            }
+        ],
+        layout: {
+            name: 'circle'
+        }
+    });
     //*
     //*
     //* DOCUMENT & HISTORY MANAGEMENT 
