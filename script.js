@@ -541,9 +541,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 selector: 'edge',
                 style: {
                     'width': 2,
-                    'line-color': '#ccc',
-                    'target-arrow-color': '#ccc',
-                    'target-arrow-shape': 'triangle'
+                    'line-color': '#000000',
+                    'target-arrow-color': '#000000',
+                    'target-arrow-shape': 'triangle',
+                    'curve-style': 'bezier' // Optional: Makes edges curved for better visualization
+
                 }
             }
         ],
@@ -2706,6 +2708,66 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         return array; // Return the modified array
     }
+
+
+
+
+
+    // Function to add a new node
+    function modifyHistorySequencerCy() {
+        const nodeId = `node${historySequencerCy.nodes().length + 1}`; // Generate a unique node ID
+        const nodes = historySequencerCy.nodes();
+
+        // Add the new node
+        historySequencerCy.add({
+            group: 'nodes',
+            data: { id: nodeId }
+        });
+
+        // If there's a previous node, connect it to the new node
+        if (nodes.length > 0) {
+            const lastNode = nodes[nodes.length - 1];
+            historySequencerCy.add({
+                group: 'edges',
+                data: {
+                    id: `${lastNode.id()}-to-${nodeId}`,
+                    source: lastNode.id(),
+                    target: nodeId
+                }
+            });
+        }
+
+        // Remove any existing connection to the first node
+        if (nodes.length >= 2) {
+            const firstNode = nodes[0];
+            historySequencerCy.edges().forEach(edge => {
+                if (edge.data('target') === firstNode.id()) {
+                    edge.remove();
+                }
+            });
+
+            // Add a new connection from the last node to the first node
+            historySequencerCy.add({
+                group: 'edges',
+                data: {
+                    id: `${nodeId}-to-${firstNode.id()}`,
+                    source: nodeId,
+                    target: firstNode.id()
+                }
+            });
+        }
+
+        // Reapply the circle layout
+        historySequencerCy.layout({ name: 'circle' }).run();
+    }
+
+    // Add a button for testing
+    const addNodeButton = document.createElement('button');
+    addNodeButton.textContent = 'Add Node';
+    addNodeButton.style.margin = '10px';
+    document.body.appendChild(addNodeButton);
+
+    addNodeButton.addEventListener('click', addNode);
   
 });
 
