@@ -22,9 +22,13 @@
     "concurrently": "^9.1.0",
     "cytoscape-canvas": "^3.0.1",
     "cytoscape-dagre": "^2.5.0",
+    "cytoscape-popper": "^4.0.1",
     "idb": "^8.0.0",
     "marked": "^15.0.2",
     "randomcolor": "^0.6.2",
+    "tippy": "^0.0.0",
+    "tippy.js": "^6.3.7",
+    "tone": "^15.0.4",
     "uuidv7": "^1.0.2",
     "ws": "^8.18.0"
   }

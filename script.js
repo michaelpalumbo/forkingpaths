@@ -9,11 +9,16 @@ import randomColor from 'randomcolor';
 import dagre from 'cytoscape-dagre';
 import { saveDocument, loadDocument, deleteDocument } from './utilities/indexedDB.js';
 import { marked } from 'marked'
+import * as Tone from "tone";
 
 // const worker = new Worker("./workers/compareDocs.js");
 const historyGraphWorker = new Worker("./workers/historyGraphWorker.js");
 // TODO: look for comments with this: //* old -repo version 
 // TODO: when new automerge implementation is working, remove their related code sections
+
+
+const transport = Tone.getTransport();
+
 
 // * new automerge implementation
 let Automerge;
@@ -46,6 +51,8 @@ let historyBoundingBox;
 let selectedHistoryNodes = []
 let historySelectionBoxStatus = false
 let existingHistoryNodeIDs
+
+let currentIndex = 0;
 // store the heads of all branches
 // todo: decide if we should store this in the automerge doc? (consideration: for now it's mostly likely just needed for the history graph)
 let branchHeads = {
@@ -540,9 +547,9 @@ document.addEventListener("DOMContentLoaded", function () {
             {
                 selector: 'edge',
                 style: {
-                    'width': 2,
-                    'line-color': '#000000',
-                    'target-arrow-color': '#000000',
+                    'width': 6,
+                    'line-color': '#ffffff',
+                    'target-arrow-color': '#ffffff',
                     'target-arrow-shape': 'triangle',
                     'curve-style': 'bezier' // Optional: Makes edges curved for better visualization
 
@@ -582,6 +589,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 
                 userSettings: {
                     focusNewBranch:false 
+                },
+                sequencer: {
+                    bpm: 120,
+                    ms: 500
                 }
 
             })
@@ -604,6 +615,15 @@ document.addEventListener("DOMContentLoaded", function () {
         } else {
             // If loaded, convert saved document state back to Automerge document
             meta = Automerge.load(meta);
+
+            if(!meta.sequencer){
+
+                meta = Automerge.change(meta, (meta) => {
+                    meta.sequencer = {
+                        bpm: 120
+                    }
+                });
+            }
             
         }
 
@@ -2662,40 +2682,7 @@ document.addEventListener("DOMContentLoaded", function () {
         return Automerge.load(meta.docs[branch]); // Load the document
     }
 
-    const bpm = 120; // Beats per minute
-    let currentIndex = 0;
 
-    // Calculate interval in milliseconds per step
-    const intervalMs = (60 / bpm) * 1000;
-
-    // Function to loop through the array
-    const sequencer = setInterval(() => {
-        // holding down the shift key pauses the sequencer and allows for selecting additional nodes
-        if(!hid.key.shift && selectedHistoryNodes.length > 0){
-
-            // let nodes = getNodesInBoundingBox(historyBoundingBox)
-            // console.log(nodes)
-            const node = selectedHistoryNodes[currentIndex];
-
-            // const nodeId = nodes[currentIndex];
-            // console.log(nodeId)
-            // Get the node by ID
-            // const node = historyCy.getElementById(nodeId);
-            
-            if (node) {
-                // console.log(node.data())
-                // Programmatically select and trigger the tap event
-                loadVersion(node.data.id, node.data.branch)
-                highlightNode(node.cyNode)
-                
-            } else {
-                console.warn(`Node with ID ${node} not found`);
-            }
-
-            // Move to the next step
-            currentIndex = (currentIndex + 1) % selectedHistoryNodes.length; // Loop back to the beginning
-        }
-    }, intervalMs);
 
     // // Stop the sequencer after a while (optional)
     // setTimeout(() => {
@@ -2717,7 +2704,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Function to add a new node
     function modifyHistorySequencerCy(node) {
-        console.log(node.data())
         const nodeId = `${node.data().id} ${uuidv7()}`// first string is the history hash, 2nd, is just for our sequencer
         const nodes = historySequencerCy.nodes();
 
@@ -2765,7 +2751,98 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
 
-  
+    // const bpm = 120; // Beats per minute
+    // let currentIndex = 0;
+
+    // // Calculate interval in milliseconds per step
+    // let intervalMS = 120
+
+    // // Function to loop through the array
+    // const sequencer = setInterval(() => {
+    //     if(meta){ // wait until meta doc has loaded
+    //         intervalMS = (60 / meta.sequencer.bpm) * 1000;
+    //         // holding down the shift key pauses the sequencer and allows for selecting additional nodes
+    //         if(!hid.key.shift && selectedHistoryNodes.length > 0){
+
+    //             // let nodes = getNodesInBoundingBox(historyBoundingBox)
+    //             // console.log(nodes)
+    //             const node = selectedHistoryNodes[currentIndex];
+
+    //             // const nodeId = nodes[currentIndex];
+    //             // console.log(nodeId)
+    //             // Get the node by ID
+    //             // const node = historyCy.getElementById(nodeId);
+                
+    //             if (node) {
+    //                 // console.log(node.data())
+    //                 // Programmatically select and trigger the tap event
+    //                 loadVersion(node.data.id, node.data.branch)
+    //                 highlightNode(node.cyNode)
+                    
+    //             } else {
+    //                 console.warn(`Node with ID ${node} not found`);
+    //             }
+
+    //             // Move to the next step
+    //             currentIndex = (currentIndex + 1) % selectedHistoryNodes.length; // Loop back to the beginning
+    //         }
+    //     }
+        
+    // }, intervalMS);
+
+
+
+    // Set the initial BPM
+    transport.bpm.value = 120;
+
+    // Schedule the sequencer loop
+    transport.scheduleRepeat((time) => {
+        if (meta && !hid.key.shift && selectedHistoryNodes.length > 0) {
+            const node = selectedHistoryNodes[currentIndex];
+
+            if (node) {
+                console.log(`Playing node: ${node.data.id}`);
+                // synth.triggerAttackRelease("C4", "8n", time); // Example note
+                loadVersion(node.data.id, node.data.branch); // Your custom logic
+                highlightNode(node.cyNode); // Your custom logic
+            }
+
+            // Move to the next step
+            currentIndex = (currentIndex + 1) % selectedHistoryNodes.length;
+        }
+    }, "8n"); // Repeat every eighth note
+
+    // BPM Slider Control
+    const bpmSlider = document.getElementById("bpmSlider");
+    // Listen for slider changes
+    bpmSlider.addEventListener('input', (event) => {
+        let bpm = parseInt(event.target.value, 10)
+        meta = Automerge.change(meta, (meta) => {
+            meta.sequencer.bpm = bpm
+        });
+
+        bpmValue.textContent = bpm; // Display the current BPM
+        transport.bpm.value =bpm; // Dynamically update the BPM
+
+    });
+
+    // Start/Stop Control
+    const startStopButton = document.getElementById("startStopButton");
+    let isPlaying = false;
+
+    startStopButton.addEventListener("click", async () => {
+        if (isPlaying) {
+            transport.stop();
+            startStopButton.textContent = "Start Sequencer";
+        } else {
+            await Tone.start(); // Required to start audio in modern browsers
+            transport.start();
+            startStopButton.textContent = "Stop Sequencer";
+        }
+        isPlaying = !isPlaying;
+    });
+
+
 });
 
 

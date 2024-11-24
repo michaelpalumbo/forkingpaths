@@ -37,7 +37,7 @@
 #rowContainer {
   flex: 4; /* 40% of vertical space */
   display: grid;
-  grid-template-columns: 70% 30%; /* 70% for historySequencer, 30% for selectedHistory,  */
+  grid-template-columns: 50% 50%; /* 70% for historySequencer, 30% for selectedHistory,  */
   height: 100%; /* Full height of this row */
 }
 
@@ -49,7 +49,7 @@
 
 /* selectedHistory styling */
 #historySequencerCy {
-  background-color: #d0d0d0; /* Optional for visibility */
+  background-color: #000000; /* Optional for visibility */
   width: 100%; /* Takes 30% width defined by grid */
 }
 

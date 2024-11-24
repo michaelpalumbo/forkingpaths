@@ -43,8 +43,20 @@
             <div id="cy"></div>
             <div id="rowContainer">
                 
-                <div id="historySequencer"></div>
-                <div id="historySequencerCy">                </div>
+                <div id="historySequencer">
+                    <input
+                    type="range"
+                    id="bpmSlider"
+                    min="30"
+                    max="240"
+                    step="1"
+                    value="120"
+                    />
+                    <span id="bpmValue">120</span>
+                    <!-- Start/Stop Button -->
+                    <button id="startStopButton">Start Sequencer</button>
+                </div>
+                <div id="historySequencerCy"></div>
             </div>
            
         </div>
