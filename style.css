@@ -38,12 +38,21 @@
 }
 
 /* Right column (docHistoryPanel) */
-#docHistoryPanel {
+#docHistoryCy {
   grid-column: 3; /* Right column */
   grid-row: 1; /* Full height */
   padding: 10px;
   background-color: #f8f8f8; /* Optional for visibility */
+  height: 100%; /* Full height */
+  width: 100%;  /* Full width */
 }
+#docHistoryPanel {
+  display: flex;
+  width: 22%;
+  flex-direction: column;
+  height: 100%; /* Adjust this if needed */
+}
+
 
 
 /* file input button */

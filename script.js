@@ -2476,6 +2476,8 @@ document.addEventListener("DOMContentLoaded", function () {
             historyBoxSelect = false
 
             let selected = historyCy.$("node:selected"); // Get all selected nodes
+            console.log(selected.toArray())
+            
             historyCy.edges().removeClass("sequencerEdge");
 
             if (selected.length > 1) {
