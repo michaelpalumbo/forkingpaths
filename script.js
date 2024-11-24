@@ -1143,12 +1143,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 let historyCyHash = data.data().id.split(' ')[0]
                 // selectedHistoryNodes = removeLastInstanceById(selectedHistoryNodes, historyCyHash)
                 selectedHistoryNodes.splice(nodeIndex, 1);
-                console.log()
                 let connectedNodes = data.connectedEdges().connectedNodes().difference(data);
                 // remove node from historySequencerCy
-                
-
-
                 if (connectedNodes.length === 2) {
                     const [nodeB, nodeA] = connectedNodes;
             
@@ -1178,10 +1174,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 historySequencerCy.remove(data)
                 // now close the circle
 
-                console.log(historyCyHash, selectedHistoryNodes)
+
                 // if node no longer is in sequence, remove its border
                 if (!selectedHistoryNodes.some(item => item.id === historyCyHash)){
-                    data.removeClass("sequencerNode");
+                    let historyCyNode = historyCy.getElementById(historyCyHash)
+                    historyCyNode.removeClass("sequencerNode");
                 }
                 
             break
