@@ -108,6 +108,7 @@ let hid = {
     }
 }
 let historyHighlightedNode = null
+let historySequencerHighlightedNode = null
 // * old automerge-repo stuff
 // todo: phase out
 
@@ -554,7 +555,15 @@ document.addEventListener("DOMContentLoaded", function () {
                     'curve-style': 'bezier' // Optional: Makes edges curved for better visualization
 
                 }
-            }
+            },
+            {
+                selector: 'node.highlighted',
+                style: {
+                    'border-color': '#228B22', // Highlight color
+                    'border-width': 15,
+                    'shape': 'rectangle'
+                }
+            },
         ],
         layout: {
             name: 'circle'
@@ -1130,9 +1139,48 @@ document.addEventListener("DOMContentLoaded", function () {
 
             case 'removeSteps':
                 //
-                selectedHistoryNodes = removeLastInstanceById(selectedHistoryNodes, data.data().id)
+                let nodeIndex = historySequencerCy.nodes().indexOf(data);
+                let historyCyHash = data.data().id.split(' ')[0]
+                // selectedHistoryNodes = removeLastInstanceById(selectedHistoryNodes, historyCyHash)
+                selectedHistoryNodes.splice(nodeIndex, 1);
+                console.log()
+                let connectedNodes = data.connectedEdges().connectedNodes().difference(data);
+                // remove node from historySequencerCy
+                
+
+
+                if (connectedNodes.length === 2) {
+                    const [nodeB, nodeA] = connectedNodes;
+            
+                    // Check if an edge already exists between these two nodes
+                    const existingEdge = historySequencerCy.edges().filter(edge =>
+                        (edge.source().id() === nodeA.id() && edge.target().id() === nodeB.id()) ||
+                        (edge.source().id() === nodeB.id() && edge.target().id() === nodeA.id())
+                    );
+            
+                    if (existingEdge.empty()) {
+                        // Add a new edge connecting the two nodes
+                        historySequencerCy.add({
+                            group: 'edges',
+                            data: {
+                                id: `edge-${nodeA.id()}-${nodeB.id()}`,
+                                source: nodeA.id(),
+                                target: nodeB.id()
+                            }
+                        });
+                    } else {
+                        console.log(`An edge already exists between ${nodeA.id()} and ${nodeB.id()}`);
+                    }
+                } else {
+                    console.log('The clicked node does not have exactly 2 connected nodes.');
+                }
+
+                historySequencerCy.remove(data)
+                // now close the circle
+
+                console.log(historyCyHash, selectedHistoryNodes)
                 // if node no longer is in sequence, remove its border
-                if (!selectedHistoryNodes.some(item => item.id === data.data().id)){
+                if (!selectedHistoryNodes.some(item => item.id === historyCyHash)){
                     data.removeClass("sequencerNode");
                 }
                 
@@ -2278,10 +2326,10 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     // Select the button element by its ID
-    const button = document.getElementById('clearGraph');
+    const clearGraphButton = document.getElementById('clearGraph');
 
     // Add an event listener to the button for the 'click' event
-    button.addEventListener('click', function() {
+    clearGraphButton.addEventListener('click', function() {
         cy.elements().remove()
 
         // * automerge version: 
@@ -2350,12 +2398,16 @@ document.addEventListener("DOMContentLoaded", function () {
         const node = event.target; // The node that was right-clicked
         if(hid.key.shift){
             historySequencerController('removeSteps', event.target)
-            console.log('Right-clicked on node:', node.data());
         }
         
     });
 
-
+    // right-click tap
+    historySequencerCy.on('cxttap', 'node', (event) => {
+        const node = event.target; // The node that was right-clicked
+        historySequencerController('removeSteps', event.target)
+        
+    });
     //*
     //* PATCHING
     //*
@@ -2657,6 +2709,18 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    function highlightSequencerNode(target){
+
+        if(historySequencerHighlightedNode){
+            historySequencerHighlightedNode.removeClass('highlighted');
+            historySequencerHighlightedNode = target
+            target.addClass('highlighted');
+        }
+        else {
+            historySequencerHighlightedNode = target;
+            target.addClass('highlighted');
+        }
+    }
     // pan to new/selected branch
     function panToBranch(node) {
         if(!meta.userSettings.focusNewBranch){
@@ -2801,10 +2865,10 @@ document.addEventListener("DOMContentLoaded", function () {
             const node = selectedHistoryNodes[currentIndex];
 
             if (node) {
-                console.log(`Playing node: ${node.data.id}`);
                 // synth.triggerAttackRelease("C4", "8n", time); // Example note
                 loadVersion(node.data.id, node.data.branch); // Your custom logic
                 highlightNode(node.cyNode); // Your custom logic
+                highlightSequencerNode(historySequencerCy.nodes().eq(currentIndex))
             }
 
             // Move to the next step
@@ -2822,7 +2886,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
         bpmValue.textContent = bpm; // Display the current BPM
-        transport.bpm.value =bpm; // Dynamically update the BPM
+        transport.bpm.value = bpm; // Dynamically update the BPM
 
     });
 
