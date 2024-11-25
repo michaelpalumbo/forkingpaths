@@ -1,7 +1,6 @@
 
 // Listen for messages from the main thread
 self.addEventListener("message", (event) => {
-    console.log('test')
     const { cytoscapeElements, automergeElements } = event.data;
 
     // Helper function to create a map of elements by ID

@@ -1,5 +1,7 @@
 import modules from './modules.json' assert { type: 'json'}
 import {uuidv7} from 'uuidv7'
+const loadDevices = new Worker(new URL('./workers/loadDevices.js', import.meta.url), { type: 'module' });
+
 
 
 
@@ -7,6 +9,15 @@ import {uuidv7} from 'uuidv7'
 
 export class ParentNode {
     constructor(module, position, children) {
+        loadDevices.onmessage = (event) => {
+
+            console.log('from woiker', event.data)
+        };
+        
+        // Send data to the worker to get any position or parameter updates
+        console.log('from parentNode', module)
+        loadDevices.postMessage(module);      
+
 
         const hash = uuidv7().split('-').pop()        
         this.moduleName = `${module}_${hash.split('-')[0]}`
@@ -14,7 +25,7 @@ export class ParentNode {
         this.position = position;
         this.children = children;
         this.isDraggingEnabled = false; // Flag to track if dragging is enabled
-        this.module;
+        this.module = module;
         // Set up drag control for child nodes based on the 'e' key
         // this.setupDragControl();
 
@@ -40,7 +51,7 @@ export class ParentNode {
 
         // Returns the structure of the parent node and its children
         const parentNode = {
-            data: { id: this.moduleName, label: this.moduleName, kind: 'module',  },
+            data: { id: this.moduleName, label: this.moduleName, kind: 'module', rnboName: this.module },
             position: this.position,
             classes: ':parent',
         };

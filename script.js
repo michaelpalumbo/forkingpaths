@@ -11,7 +11,6 @@ import { saveDocument, loadDocument, deleteDocument } from './utilities/indexedD
 import { marked } from 'marked'
 import * as Tone from "tone";
 
-// const worker = new Worker("./workers/compareDocs.js");
 const historyGraphWorker = new Worker("./workers/historyGraphWorker.js");
 // TODO: look for comments with this: //* old -repo version 
 // TODO: when new automerge implementation is working, remove their related code sections
@@ -19,6 +18,12 @@ const historyGraphWorker = new Worker("./workers/historyGraphWorker.js");
 
 const transport = Tone.getTransport();
 
+// * Audio 
+const rnboDeviceCache = new Map(); // Cache device definitions by module type
+
+
+// * History Sequencer
+let currentIndex = 0;
 
 // * new automerge implementation
 let Automerge;
@@ -51,8 +56,22 @@ let historyBoundingBox;
 let selectedHistoryNodes = []
 let historySelectionBoxStatus = false
 let existingHistoryNodeIDs
+let historyHighlightedNode = null
+let historySequencerHighlightedNode = null
+let isDraggingEnabled = false;
+let moduleDragState = false;
 
-let currentIndex = 0;
+let highlightedNode = null
+let heldModule = null
+let heldModulePos = { x: null, y: null }
+
+let allowMultiSelect = false;
+let allowPan = false;
+
+let isSliderDragging = false;
+let currentHandleNode;
+
+
 // store the heads of all branches
 // todo: decide if we should store this in the automerge doc? (consideration: for now it's mostly likely just needed for the history graph)
 let branchHeads = {
@@ -61,7 +80,13 @@ let branchHeads = {
     // then store all of them here
     // i.e. 'hash': { dependencies: [], mergeHash: null }
 }
-// let graphStyle = 'DAG'
+
+// * CYTOSCAPE
+
+// double-clicking
+let lastClickTime = 0;
+const doubleClickDelay = 300; // Delay in milliseconds to register a double-click
+
 let graphStyle = 'DAG'
 let graphLayouts = {
     // https://github.com/dagrejs/dagre/wiki#configuring-the-layout
@@ -101,14 +126,15 @@ let graphLayouts = {
 
 }
 
+// * INPUTS
+
 let hid = {
     key: {
         cmd: false,
         shift: false
     }
 }
-let historyHighlightedNode = null
-let historySequencerHighlightedNode = null
+
 // * old automerge-repo stuff
 // todo: phase out
 
@@ -127,22 +153,9 @@ let getClone;
 let historyNodes = []
 let previousHistoryLength = 0;
 
-let isDraggingEnabled = false;
-let moduleDragState = false;
 
-let highlightedNode = null
-let heldModule = null
-let heldModulePos = { x: null, y: null }
 
-let allowMultiSelect = false;
-let allowPan = false;
 
-let isSliderDragging = false;
-let currentHandleNode;
-
-// double-clicking
-let lastClickTime = 0;
-const doubleClickDelay = 300; // Delay in milliseconds to register a double-click
 
 let peers = {
     local: {
@@ -188,6 +201,13 @@ let temporaryCables = {
         }*/
     }
 }
+
+
+// *
+// *
+// *    APP
+// *
+// *
 
 document.addEventListener("DOMContentLoaded", function () {
 
@@ -594,7 +614,7 @@ document.addEventListener("DOMContentLoaded", function () {
     (async () => {
         // Load Automerge asynchronously and assign it to the global variable
         Automerge = await import('@automerge/automerge');
-
+        
         // Forking Paths meta document:
         // contains all branches and branch history
         // will probably eventually contain user preferences, etc. 
@@ -617,7 +637,10 @@ document.addEventListener("DOMContentLoaded", function () {
                     bpm: 120,
                     ms: 500,
                     traversalMode: 'Sequential'
-                }
+                },
+                synth: {
+                    rnboDeviceCache: null
+                },
 
             })
             
@@ -844,6 +867,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // define the onChange Callback
     onChange = () => {
+        // update synth audio graph
+        loadSynthGraph()
         // You can add any additional logic here, such as saving to IndexedDB
 
         // set docUpdated so that indexedDB will save it
@@ -852,7 +877,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         branchHeads.current = Automerge.getHeads(amDoc)[0]
        
-        console.log(cy.nodes().toArray(), cy.edges().toArray(), )
         // update the historyGraph
         reDrawHistoryGraph()
     };
@@ -939,39 +963,7 @@ document.addEventListener("DOMContentLoaded", function () {
         cy.add(elements)
         
         // Finally, run layout
-        cy.layout({ name: 'preset', fit: false }).run(); // `preset` uses the position data directly
-        
-        /*
-        // let cytoscapeElements = cy.elements()
-        let automergeElements = elements
-
-        const cytoscapeElements = getSerializableElements();
-
-        
-        worker.onmessage = (event) => {
-            const { array3 } = event.data;
-            
-            // Clear existing elements from Cytoscape instance
-            cy.elements().remove();
-
-
-            // 3. Add new elements to Cytoscape
-            cy.add(elements)
-
-            // update properties in cytoscape given the associated properties in automerge doc
-            array3.forEach(element => {
-                // pseudocode:
-                // 
-                console.log(element.id, element.position)
-            })
-            
-            // Finally, run layout
-            cy.layout({ name: 'preset', fit: false }).run(); // `preset` uses the position data directly
-        };
-        
-        // Send data to the worker to get any position or parameter updates
-        worker.postMessage({ cytoscapeElements, automergeElements });    
-        */    
+        cy.layout({ name: 'preset', fit: false }).run(); // `preset` uses the position data directly  
     }    
     
 
@@ -1244,7 +1236,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             }
                         });
                     } else {
-                        console.log(`An edge already exists between ${nodeA.id()} and ${nodeB.id()}`);
+                        // console.log(`An edge already exists between ${nodeA.id()} and ${nodeB.id()}`);
                     }
                 } else {
                     console.log('The clicked node does not have exactly 2 connected nodes.');
@@ -1790,6 +1782,7 @@ document.addEventListener("DOMContentLoaded", function () {
 //* EVENT HANDLERS
 //* Functions that directly handle UI interactions
 //*
+
     
     // get .forkingpaths files from user's filesystem
     document.getElementById('fileInput').addEventListener('change', async (event) => {
@@ -2131,7 +2124,6 @@ document.addEventListener("DOMContentLoaded", function () {
                         // Find the label node and update its displayed text
                         const labelNode = cy.getElementById(`${currentHandleNode.data('trackID')}-label`);
                         labelNode.data('label', scaledValue.toFixed(2)); // Display the value with 2 decimal places
-                        // console.log(currentHandleNode.data())
                         // const cyHandleNode = cy.getElementById(`${currentHandleNode.data('id')}`)
                         // cyHandleNode.data('value', scaledValue.toFixed(2) )
                         // update in automerge
@@ -2673,7 +2665,6 @@ document.addEventListener("DOMContentLoaded", function () {
     
         // Highlight the intersecting edge
         if (intersectingEdge.length > 0) {
-            console.log('yep')
             intersectingEdge.addClass('edge.highlighted');
         }
     });
@@ -2897,6 +2888,7 @@ document.addEventListener("DOMContentLoaded", function () {
         
         const parentNode = new ParentNode(module, position, children);
 
+
         // parentNode.getModule('oscillator')
         const { parentNode: parentNodeData, childrenNodes } = parentNode.getNodeStructure();
     
@@ -2959,7 +2951,84 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    //*
+    //*
+    //* AUDIO
+    //* 
+    //*
 
+    // Initialize Audio Context
+    const audioContext = new AudioContext();
+
+    // Map to store RNBO devices (key: node ID, value: RNBO device)
+    const rnboDevices = new Map();
+
+    // dynamically load an RNBO device
+    async function loadSynthGraph() {
+        const rnboDevices = new Map(); // Store RNBO device instances by parent node ID
+        const childNodes = new Map(); // Store child nodes by ID for connections
+    
+        // Process parent nodes (modules)
+        const parentNodes = cy.nodes(':parent');
+        for (const parentNode of parentNodes) {
+            const data = parentNode.data();
+            const moduleType = data.rnboName; // e.g., "oscillator"
+            const moduleId = data.id;
+    
+            let deviceDef;
+    
+            // Check if the device definition is already cached
+            if (rnboDeviceCache.has(moduleType)) {
+                deviceDef = rnboDeviceCache.get(moduleType);
+            } else {
+                // Fetch and cache the device definition
+                const response = await fetch(`/path/to/${moduleType}.export.json`);
+                deviceDef = await response.json();
+                rnboDeviceCache.set(moduleType, deviceDef);
+            }
+    
+            // Create a new RNBO device instance
+            const rnboDevice = await RNBO.createDevice({ context: audioContext, deviceDef });
+    
+            // Connect RNBO node to the audio destination by default
+            rnboDevice.node.connect(audioContext.destination);
+    
+            rnboDevices.set(moduleId, rnboDevice);
+    
+            // Process child nodes
+            const children = parentNode.descendants(); // Get child nodes
+            for (const child of children) {
+                childNodes.set(child.data().id, { parent: moduleId, data: child.data() });
+            }
+        }
+    
+        // Process edges (connections)
+        const edges = cy.edges();
+        for (const edge of edges) {
+            const source = edge.source().data().id;
+            const target = edge.target().data().id;
+    
+            // Handle connections between child nodes
+            if (childNodes.has(source) && childNodes.has(target)) {
+                const sourceInfo = childNodes.get(source);
+                const targetInfo = childNodes.get(target);
+    
+                const sourceParent = rnboDevices.get(sourceInfo.parent);
+                const targetParent = rnboDevices.get(targetInfo.parent);
+    
+                if (sourceParent && targetParent) {
+                    // Connect source RNBO output to target RNBO input
+                    sourceParent.node.connect(targetParent.node);
+                    console.log(`Connected ${source} (${sourceInfo.data.label}) to ${target} (${targetInfo.data.label})`);
+                }
+            }
+        }
+    
+        console.log('Synth graph loaded successfully');
+    }
+    
+    
+    
     //*
     //*
     //* UTILITY FUNCTIONS
@@ -3081,6 +3150,12 @@ document.addEventListener("DOMContentLoaded", function () {
     
         return numerator / denominator;
     }
+
+
+
+
+
+
 });
 
 
