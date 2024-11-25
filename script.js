@@ -12,6 +12,7 @@ import { marked } from 'marked'
 import * as Tone from "tone";
 
 const historyGraphWorker = new Worker("./workers/historyGraphWorker.js");
+
 // TODO: look for comments with this: //* old -repo version 
 // TODO: when new automerge implementation is working, remove their related code sections
 
