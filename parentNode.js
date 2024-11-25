@@ -1,4 +1,4 @@
-import modules from './public/export/modules.json' assert { type: 'json'}
+import modules from '/src/modules/modules.json' assert { type: 'json'}
 import {uuidv7} from 'uuidv7'
 
 export class ParentNode {
@@ -20,12 +20,15 @@ export class ParentNode {
         this.params = modules[module].params
         
         for (let i = 0; i<this.inputs.length; i++){
+            this.inputs[i].kind = 'input'
             this.children.push(this.inputs[i])
         }
         for (let i = 0; i<this.params.length; i++){
+            this.params[i].kind = 'slider'
             this.children.push(this.params[i])
         }
         for (let i = 0; i<this.outputs.length; i++){
+            this.outputs[i].kind = 'output'
             this.children.push(this.outputs[i])
         }
     }
@@ -47,7 +50,7 @@ export class ParentNode {
         const offsetY = index * 60; // Each child node is 60px below the previous one
         const offsetX = 0; // Keep the X position the same for a vertical arrangement
             if(child.kind === 'slider'){
-                const sliderId = `${this.moduleName}-slider-${child.label}`
+                const sliderId = `${this.moduleName}-slider-${child.name}`
                 const defaultOptions = {
                     length: 127, // Length of the slider track in pixels
                     minValue: 0, // Minimum slider value
@@ -78,7 +81,7 @@ export class ParentNode {
                         data: {
                             id: sliderTrackId,
                             parent: this.moduleName,
-                            label: child.label || `${this.moduleName}-${sliderTrackId}${index + 1}`,
+                            label: child.name || `${this.moduleName}-${sliderTrackId}${index + 1}`,
                             kind: child.kind,
                             bgcolour: '#CCCCCC',
                             length: config.length,
@@ -101,8 +104,8 @@ export class ParentNode {
                         data: {
                             id: sliderHandleId,
                             parent: this.moduleName,
-                            label: child.label || `${this.moduleName}-${sliderHandleId}${child.label}`,
-                            nameSpace: `${sliderHandleId}.${child.label}`,
+                            label: child.name || `${this.moduleName}-${sliderHandleId}${child.name}`,
+                            nameSpace: `${sliderHandleId}.${child.name}`,
                             kind: child.kind,
                             sliderComponent: 'handle',
                             shape: 'ellipse',
@@ -113,9 +116,9 @@ export class ParentNode {
                             fixedY: config.position.y +10,
                             hash: sliderId,
                             trackID: sliderTrackId,
-                            sliderMin: child.min,
-                            sliderMax: child.max,
-                            value: child.value
+                            sliderMin: child.minimum,
+                            sliderMax: child.maximum,
+                            value: child.initialValue
                             
                         },
                         position: {
@@ -129,7 +132,7 @@ export class ParentNode {
                         data: {
                             id: `${sliderTrackId}-label`,
                             parent: this.moduleName,
-                            label: `${child.min}`, // Initial value; will be updated dynamically
+                            label: `${child.minimum}`, // Initial value; will be updated dynamically
                             kind: 'label',
                             hash: sliderId,
                         },
@@ -150,7 +153,7 @@ export class ParentNode {
                     data: {
                         id: `${this.moduleName}-${child.kind}${index + 1}`,
                         parent: this.moduleName,
-                        label: child.label || `${this.moduleName}-${child.kind}${index + 1}`,
+                        label: child.name || `${this.moduleName}-${child.name}${index + 1}`,
                         kind: child.kind,
                         bgcolour: child.kind === 'input' ? '#FC9A4F' : child.kind === 'output' ? '#6FB1FC' : '#CCCCCC',
                         ghostCableShape: child.kind === 'input' ? 'rectangle' : 'triangle',

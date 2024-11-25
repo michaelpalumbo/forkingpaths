@@ -40,7 +40,7 @@ async function processFiles() {
     } catch (error) {
         console.error('Error processing files:', error);
     }
-    await writeFile('./public/export/modules.json', JSON.stringify(modules, null, 2));
+    await writeFile('./src/modules/modules.json', JSON.stringify(modules, null, 2));
     console.log(modules);
 }
 

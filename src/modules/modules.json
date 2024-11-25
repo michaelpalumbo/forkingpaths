@@ -1,0 +1,68 @@
+{
+  "oscillator": {
+    "inputs": [],
+    "params": [
+      {
+        "type": "ParameterTypeNumber",
+        "index": 0,
+        "name": "frequency",
+        "paramId": "frequency",
+        "minimum": 110,
+        "maximum": 880,
+        "exponent": 1,
+        "steps": 0,
+        "initialValue": 220,
+        "isEnum": false,
+        "enumValues": [],
+        "displayName": "",
+        "unit": "",
+        "order": 0,
+        "debug": false,
+        "visible": true,
+        "signalIndex": null,
+        "ioType": "IOTypeUndefined"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "signal",
+        "index": 1,
+        "tag": "out1",
+        "meta": ""
+      }
+    ]
+  },
+  "oscillator2": {
+    "inputs": [],
+    "params": [
+      {
+        "type": "ParameterTypeNumber",
+        "index": 0,
+        "name": "frequency",
+        "paramId": "frequency",
+        "minimum": 110,
+        "maximum": 880,
+        "exponent": 1,
+        "steps": 0,
+        "initialValue": 220,
+        "isEnum": false,
+        "enumValues": [],
+        "displayName": "",
+        "unit": "",
+        "order": 0,
+        "debug": false,
+        "visible": true,
+        "signalIndex": null,
+        "ioType": "IOTypeUndefined"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "signal",
+        "index": 1,
+        "tag": "out1",
+        "meta": ""
+      }
+    ]
+  }
+}
