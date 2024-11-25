@@ -40,7 +40,9 @@
         "type": "signal",
         "index": 1,
         "tag": "out1",
-        "meta": ""
+        "meta": {
+          "name": "sine out"
+        }
       }
     ],
     "paramConversion": {

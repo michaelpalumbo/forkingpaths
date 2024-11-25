@@ -271,6 +271,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 style: {
                     'background-color': 'data(bgcolour)',
                     'label': 'data(label)', // Use the custom label attribute
+                    'font-size': '18px',
                     'width': 30,
                     'height': 30,
                     'color': '#000',            // Label text color
@@ -310,7 +311,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     'text-valign': 'top', // Position label at the top
                     'text-halign': 'center', // Center label horizontally
                     'color': '#FF0000', // Set the label text color
-                    'font-size': 12, // Adjust font size if needed
+                    'font-size': 20, // Adjust font size if needed
                     'text-margin-y': -10, // Optional: Move the label slightly up if desired
                 
                 }
@@ -872,7 +873,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // define the onChange Callback
     onChange = () => {
         // update synth audio graph
-        loadSynthGraph()
+        // loadSynthGraph()
         // You can add any additional logic here, such as saving to IndexedDB
 
         // set docUpdated so that indexedDB will save it

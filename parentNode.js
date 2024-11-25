@@ -1,10 +1,13 @@
 import modules from '/src/modules/modules.json' assert { type: 'json'}
 import {uuidv7} from 'uuidv7'
+import Chance from 'chance';
+const chance = new Chance();
+
 
 export class ParentNode {
     constructor(module, position, children) {
-
-        const hash = uuidv7().split('-').pop()        
+        this.animal = chance.animal().split(' ').pop()
+        const hash = `${this.animal}_${uuidv7().split('-').pop()}`       
         this.moduleName = `${module}_${hash.split('-')[0]}`
         // this.id = id
         this.position = position;
@@ -12,7 +15,7 @@ export class ParentNode {
         this.isDraggingEnabled = false; // Flag to track if dragging is enabled
         this.module = module;
         // Set up drag control for child nodes based on the 'e' key
-        // this.setupDragControl();
+        // this.setupDragControl();o
 
         // sift through modules.json, construct node
         this.inputs = modules[module].inputs
@@ -39,7 +42,7 @@ export class ParentNode {
 
         // Returns the structure of the parent node and its children
         const parentNode = {
-            data: { id: this.moduleName, label: this.moduleName, kind: 'module', rnboName: this.module },
+            data: { id: this.moduleName, label: `${this.module} ${this.animal}`, kind: 'module', rnboName: this.module },
             position: this.position,
             classes: ':parent',
         };
@@ -149,11 +152,12 @@ export class ParentNode {
 
                 
             } else {
+                
                 return {
                     data: {
                         id: `${this.moduleName}-${child.kind}${index + 1}`,
                         parent: this.moduleName,
-                        label: child.name || `${this.moduleName}-${child.name}${index + 1}`,
+                        label: child.meta.name || child.name || `${this.moduleName}-${child.name}${index + 1}`,
                         kind: child.kind,
                         bgcolour: child.kind === 'input' ? '#FC9A4F' : child.kind === 'output' ? '#6FB1FC' : '#CCCCCC',
                         ghostCableShape: child.kind === 'input' ? 'rectangle' : 'triangle',

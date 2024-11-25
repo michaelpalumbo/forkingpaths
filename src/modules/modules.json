@@ -28,7 +28,9 @@
         "type": "signal",
         "index": 1,
         "tag": "out1",
-        "meta": ""
+        "meta": {
+          "name": "sine out"
+        }
       }
     ]
   },
@@ -114,6 +116,14 @@
         "meta": {
           "name": "signalInput"
         }
+      },
+      {
+        "type": "signal",
+        "index": 2,
+        "tag": "in2",
+        "meta": {
+          "name": "cvInput"
+        }
       }
     ],
     "params": [
@@ -143,7 +153,9 @@
         "type": "signal",
         "index": 1,
         "tag": "out1",
-        "meta": ""
+        "meta": {
+          "name": "out"
+        }
       }
     ]
   }
