@@ -132,7 +132,10 @@ let graphLayouts = {
 let hid = {
     key: {
         cmd: false,
-        shift: false
+        shift: false,
+        o: false,
+        v: false,
+        s: false
     }
 }
 
@@ -2079,7 +2082,18 @@ document.addEventListener("DOMContentLoaded", function () {
                     const currentTime = new Date().getTime();
                     if (currentTime - lastClickTime < doubleClickDelay) {
                         // Double-click detected
-                        addModule(`oscillator`, { x: event.position.x, y: event.position.y }, [    ]);
+                        if(hid.key.o){
+                            addModule(`oscillator`, { x: event.position.x, y: event.position.y }, [    ]);
+                        }
+                        else if(hid.key.v){
+                            addModule(`vca`, { x: event.position.x, y: event.position.y }, [    ]);
+                        }
+                        else if(hid.key.s){
+                            addModule(`simpleSynth`, { x: event.position.x, y: event.position.y }, [    ]);
+                        } else {
+                            console.log('must hold down a letter while double-clicking to spawn associated module (temporary):\no: oscillator \nv: vca \ns: simpleSynth')
+                        }
+                        
                         // console.log("Double-clicked on the background\nLow priority ToDo: background clicks open module library");
                     }
                     lastClickTime = currentTime; // Update the last click time
@@ -2379,7 +2393,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Track when the 'e' key is pressed and released
     window.addEventListener('keydown', (event) => {
-        
+        if (event.key === 'o' || event.key === 'v' || event.key === 's') {
+            hid.key[event.key] = true
+        }
         if (event.key === 'e') {
             isDraggingEnabled = true;
         }
@@ -2399,6 +2415,9 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     window.addEventListener('keyup', (event) => {
+        if (event.key === 'o' || event.key === 'v' || event.key === 's') {
+            hid.key[event.key] = false
+        }
         if (event.key === 'e') {
             isDraggingEnabled = false;
         }
