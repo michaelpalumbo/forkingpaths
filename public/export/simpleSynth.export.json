@@ -80,7 +80,9 @@
         "type": "signal",
         "index": 1,
         "tag": "out1",
-        "meta": ""
+        "meta": {
+          "name": "out"
+        }
       }
     ],
     "paramConversion": {
@@ -108,6 +110,12 @@
       "preset": {
         "frequency": {
           "value": 220
+        },
+        "modulation": {
+          "value": 1
+        },
+        "volume": {
+          "value": 0.5
         }
       }
     }

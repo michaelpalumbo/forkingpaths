@@ -157,7 +157,7 @@ export class ParentNode {
                     data: {
                         id: `${this.moduleName}-${child.kind}${index + 1}`,
                         parent: this.moduleName,
-                        label: child.meta.name || child.name || `${this.moduleName}-${child.name}${index + 1}`,
+                        label: child.meta.name || child.name || child.tag || `${this.moduleName}-${child.name}${index + 1}`,
                         kind: child.kind,
                         bgcolour: child.kind === 'input' ? '#FC9A4F' : child.kind === 'output' ? '#6FB1FC' : '#CCCCCC',
                         ghostCableShape: child.kind === 'input' ? 'rectangle' : 'triangle',
