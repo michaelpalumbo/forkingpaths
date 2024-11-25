@@ -564,6 +564,14 @@ document.addEventListener("DOMContentLoaded", function () {
                     'shape': 'rectangle'
                 }
             },
+            {
+                selector: 'edge.highlighted',
+                style: {
+                    'line-color': '#red', // Highlight color
+                    'width': 10,
+                    
+                }
+            },
         ],
         layout: {
             name: 'circle'
@@ -2907,6 +2915,125 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         isPlaying = !isPlaying;
     });
+
+
+    historySequencerCy.on('position', 'node', (event) => {
+        const draggedNode = event.target; // The node being dragged
+        const draggedPosition = draggedNode.position(); // Current position of the dragged node
+    
+        // Reset edge highlights
+        historySequencerCy.edges().removeClass('edge.highlighted');
+    
+        // Find the edge the node is intersecting with
+        const intersectingEdge = historySequencerCy.edges().filter((edge) => {
+            const sourceNode = edge.source();
+            const targetNode = edge.target();
+    
+            // Skip edges connected to the dragged node itself
+            if (sourceNode.id() === draggedNode.id() || targetNode.id() === draggedNode.id()) {
+                return false;
+            }   
+            const sourcePos = sourceNode.position();
+            const targetPos = targetNode.position();
+    
+            // Check if the node intersects with the edge
+            return isNodeIntersectingEdge(draggedPosition, sourcePos, targetPos);
+        });
+    
+        // Highlight the intersecting edge
+        if (intersectingEdge.length > 0) {
+            console.log('yep')
+            intersectingEdge.addClass('edge.highlighted');
+        }
+    });
+    
+    historySequencerCy.on('dragfree', 'node', (event) => {
+        const draggedNode = event.target; // The node being dragged
+        const draggedPosition = draggedNode.position();
+    
+        // Find the intersecting edge (same logic as before)
+        const intersectingEdge = historySequencerCy.edges().filter((edge) => {
+            const sourceNode = edge.source();
+            const targetNode = edge.target();
+    
+            // Skip edges connected to the dragged node itself
+            if (sourceNode.id() === draggedNode.id() || targetNode.id() === draggedNode.id()) {
+                return false;
+            }
+            const sourcePos = sourceNode.position();
+            const targetPos = targetNode.position();
+    
+            return isNodeIntersectingEdge(draggedPosition, sourcePos, targetPos);
+        });
+    
+        if (intersectingEdge.length > 0) {
+            const edge = intersectingEdge[0];
+            const sourceNode = edge.source();
+            const targetNode = edge.target();
+    
+            // Remove the original edge
+            // edge.remove();
+            // Check for existing edges to prevent duplicates
+            const existingEdgesBetweenSourceAndDragged = historySequencerCy.edges().filter(e =>
+                (e.source().id() === sourceNode.id() && e.target().id() === draggedNode.id()) ||
+                (e.source().id() === draggedNode.id() && e.target().id() === sourceNode.id())
+            );
+
+            const existingEdgesBetweenDraggedAndTarget = historySequencerCy.edges().filter(e =>
+                (e.source().id() === targetNode.id() && e.target().id() === draggedNode.id()) ||
+                (e.source().id() === draggedNode.id() && e.target().id() === targetNode.id())
+            );
+
+            // connect 
+            if (existingEdgesBetweenSourceAndDragged.empty()) {
+                historySequencerCy.add({
+                    group: 'edges',
+                    data: { source: draggedNode.id(), target: sourceNode.id() }
+                });
+                
+            }
+    
+            if (existingEdgesBetweenDraggedAndTarget.empty()) {
+                historySequencerCy.add({
+                    group: 'edges',
+                    data: { source: draggedNode.id(), target: targetNode.id() }
+                });
+            } 
+        }
+    });
+    
+    // Utility: Check if a node intersects an edge
+    function isNodeIntersectingEdge(nodePos, sourcePos, targetPos) {
+        const distance = pointLineDistance(nodePos, sourcePos, targetPos);
+    
+        // Check if the point is near the line segment
+        const isCloseEnough = distance < 10; // Adjust threshold as needed
+    
+        // Ensure the intersection lies on the edge (between source and target)
+        const withinBounds =
+            Math.min(sourcePos.x, targetPos.x) <= nodePos.x &&
+            nodePos.x <= Math.max(sourcePos.x, targetPos.x) &&
+            Math.min(sourcePos.y, targetPos.y) <= nodePos.y &&
+            nodePos.y <= Math.max(sourcePos.y, targetPos.y);
+    
+        return isCloseEnough && withinBounds;
+    }
+    
+    // Utility: Calculate the distance of a point to a line segment
+    function pointLineDistance(point, lineStart, lineEnd) {
+        const x0 = point.x, y0 = point.y;
+        const x1 = lineStart.x, y1 = lineStart.y;
+        const x2 = lineEnd.x, y2 = lineEnd.y;
+    
+        const numerator = Math.abs(
+            (y2 - y1) * x0 - (x2 - x1) * y0 + x2 * y1 - y2 * x1
+        );
+        const denominator = Math.sqrt(
+            Math.pow(y2 - y1, 2) + Math.pow(x2 - x1, 2)
+        );
+    
+        return numerator / denominator;
+    }
 
 
 });
