@@ -425,7 +425,7 @@ document.addEventListener("DOMContentLoaded", function () {
         DOCUMENT HISTORY CYTOSCAPE INSTANCE
     */
     cytoscape.use( dagre );
-    const historyCy = cytoscape({
+    const historyDAG_cy = cytoscape({
         container: document.getElementById('docHistory-cy'),
         elements: [],
         zoom: parseFloat(localStorage.getItem('docHistoryCy_Zoom')) || 1., 
@@ -716,7 +716,7 @@ document.addEventListener("DOMContentLoaded", function () {
             reDrawHistoryGraph()
 
             // ion this case we want the highlighted node to be on the current branch
-            highlightNode(historyCy.getElementById(meta.head.hash))
+            highlightNode(historyDAG_cy.getElementById(meta.head.hash))
 
             // set the document branch (aka title)  in the editor pane
             document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
@@ -725,7 +725,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Set an interval to periodically save meta to IndexedDB
     setInterval(async () => {
-        if(amDoc && docUpdated){
+        if(meta){
             // await saveDocument(docID, Automerge.save(amDoc));
             await saveDocument('meta', Automerge.save(meta));
             docUpdated = false
@@ -832,7 +832,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 // makeBranch(changeMessage, Automerge.getHeads(newDoc)[0])
                 onChangeCallback(amDoc);
                 automergeDocuments.newClone = false
-                panToBranch(historyCy.getElementById(hash))
+                panToBranch(historyDAG_cy.getElementById(hash))
             }
             
             return amDoc;
@@ -848,39 +848,46 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // set docUpdated so that indexedDB will save it
         docUpdated = true
-        // store the current hash (used by historyCy)
+        // store the current hash (used by historyDAG_cy)
 
         branchHeads.current = Automerge.getHeads(amDoc)[0]
        
+        console.log(cy.nodes().toArray(), cy.edges().toArray(), )
         // update the historyGraph
         reDrawHistoryGraph()
     };
     
 
 
+
+    /*
+    
+        HISTORY DAG GRAPH
+
+    */
     function reDrawHistoryGraph(){
 
 
         if (!existingHistoryNodeIDs || existingHistoryNodeIDs.size === 0){
-            existingHistoryNodeIDs = new Set(historyCy.nodes().map(node => node.id()));
+            existingHistoryNodeIDs = new Set(historyDAG_cy.nodes().map(node => node.id()));
         }
         
         historyGraphWorker.onmessage = (event) => {
             const { nodes, edges, historyNodes } = event.data;
             
             if(nodes.length > 0){
-                historyCy.add(nodes);
+                historyDAG_cy.add(nodes);
             }
             if(edges.length > 0){
-                historyCy.add(edges);
+                historyDAG_cy.add(edges);
 
             }
             existingHistoryNodeIDs = historyNodes
 
             // Refresh graph layout
-            historyCy.layout(graphLayouts[graphStyle]).run();
+            historyDAG_cy.layout(graphLayouts[graphStyle]).run();
             
-            highlightNode(historyCy.nodes().last())
+            highlightNode(historyDAG_cy.nodes().last())
             // update the current history node ids for the next time we run this function
             // existingHistoryNodeIDs = new Set(cy.nodes().map(node => node.id()));
         };
@@ -902,7 +909,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (!existingHistoryNodeIDs.has(nodeId)) {
                     
                     // add node to the history graph
-                    historyCy.add({
+                    historyDAG_cy.add({
                         group: 'nodes',
                         data: { id: nodeId, label: item.msg, color: docHistoryGraphStyling.nodeColours[item.msg.split(' ')[0]], branch: branchName }
                     });
@@ -911,7 +918,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     if (item.parent) {
                         // Make sure the parent node also exists before adding the edge
                         if (existingHistoryNodeIDs.has(item.parent)) {
-                            historyCy.add({
+                            historyDAG_cy.add({
                                 group: 'edges',
                                 data: {
                                     id: `${item.parent}_to_${nodeId}`,
@@ -931,9 +938,9 @@ document.addEventListener("DOMContentLoaded", function () {
         
         
         // Refresh graph layout
-        historyCy.layout(graphLayouts[graphStyle]).run();
+        historyDAG_cy.layout(graphLayouts[graphStyle]).run();
     
-        highlightNode(historyCy.nodes().last())
+        highlightNode(historyDAG_cy.nodes().last())
         // update the current history node ids for the next time we run this function
         // existingHistoryNodeIDs = new Set(cy.nodes().map(node => node.id()));
         */
@@ -1137,14 +1144,14 @@ document.addEventListener("DOMContentLoaded", function () {
         switch(cmd){
             case 'clear':
                 selectedHistoryNodes.length = 0
-                historyCy.edges().removeClass("sequencerEdge");
+                historyDAG_cy.edges().removeClass("sequencerEdge");
             break
 
             case 'removeSteps':
                 //
                 let nodeIndex = historySequencerCy.nodes().indexOf(data);
-                let historyCyHash = data.data().id.split(' ')[0]
-                // selectedHistoryNodes = removeLastInstanceById(selectedHistoryNodes, historyCyHash)
+                let historyDAG_cyHash = data.data().id.split(' ')[0]
+                // selectedHistoryNodes = removeLastInstanceById(selectedHistoryNodes, historyDAG_cyHash)
                 selectedHistoryNodes.splice(nodeIndex, 1);
                 let connectedNodes = data.connectedEdges().connectedNodes().difference(data);
                 // remove node from historySequencerCy
@@ -1185,9 +1192,9 @@ document.addEventListener("DOMContentLoaded", function () {
   
 
                 // if node no longer is in sequence, remove its border
-                if (!selectedHistoryNodes.some(item => item.id === historyCyHash)){
-                    let historyCyNode = historyCy.getElementById(historyCyHash)
-                    historyCyNode.removeClass("sequencerNode");
+                if (!selectedHistoryNodes.some(item => item.id === historyDAG_cyHash)){
+                    let historyDAG_cyNode = historyDAG_cy.getElementById(historyDAG_cyHash)
+                    historyDAG_cyNode.removeClass("sequencerNode");
                 }
                 
             break
@@ -1248,11 +1255,11 @@ document.addEventListener("DOMContentLoaded", function () {
             
                 previousHash = meta.head.hash
                 
-                historyCy.elements().remove()
+                historyDAG_cy.elements().remove()
                 reDrawHistoryGraph()
     
                 // ion this case we want the highlighted node to be on the current branch
-                highlightNode(historyCy.getElementById(meta.head.hash))
+                highlightNode(historyDAG_cy.getElementById(meta.head.hash))
     
                 // set the document branch (aka title)  in the editor pane
                 document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
@@ -1464,8 +1471,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     });
                 });
                 // Add elements to Cytoscape
-                // historyCy.add(elements);
-                // historyCy.layout({ name: 'dagre', rankDir: 'BT' }).run();
+                // historyDAG_cy.add(elements);
+                // historyDAG_cy.layout({ name: 'dagre', rankDir: 'BT' }).run();
                 // previousHistoryLength = history.length
 
 
@@ -1603,7 +1610,7 @@ document.addEventListener("DOMContentLoaded", function () {
 //*
     
     // do this once:
-    historyCy.panBy({x: 25, y: 0 })
+    historyDAG_cy.panBy({x: 25, y: 0 })
 
 
     // saving the forking paths 'meta' doc
@@ -1665,13 +1672,13 @@ document.addEventListener("DOMContentLoaded", function () {
     // cmd + scroll = scroll vertically through history graph
     document.addEventListener('wheel', function(event) {
         if(allowPan){
-            historyCy.panBy({
+            historyDAG_cy.panBy({
                 x: 0,
                 y: event.deltaY 
                 });
         }
     });
-    historyCy.on('tap', 'node', (event) => {
+    historyDAG_cy.on('tap', 'node', (event) => {
         if(hid.key.shift){
             modifyHistorySequencerCy('add', event.target)
 
@@ -1684,7 +1691,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     })
 
-    historyCy.on('tap', (event) => {
+    historyDAG_cy.on('tap', (event) => {
         
         if(hid.key.cmd){
             // clear the bounding box
@@ -2182,12 +2189,12 @@ document.addEventListener("DOMContentLoaded", function () {
             isDraggingEnabled = true;
         }
         if (event.key === 'z') {
-            historyCy.zoomingEnabled(true)
+            historyDAG_cy.zoomingEnabled(true)
         }
         if (event.key === 'Meta' || event.key === 'Control') {
             allowMultiSelect = false
             allowPan = true
-            historyCy.userZoomingEnabled(false)
+            historyDAG_cy.userZoomingEnabled(false)
             hid.key.cmd = true
 
         }
@@ -2203,13 +2210,13 @@ document.addEventListener("DOMContentLoaded", function () {
         if (event.key === 'Meta' || event.key === 'Control') {
             allowMultiSelect = false
             historyBoxSelect = true
-            historyCy.userZoomingEnabled(true)
+            historyDAG_cy.userZoomingEnabled(true)
             hid.key.cmd = false
             // Hide a node by setting display to none
 
         }
         if (event.key === 'z') {
-            historyCy.zoomingEnabled(false)
+            historyDAG_cy.zoomingEnabled(false)
         }
         if (event.key === 'Shift') {
             hid.key.shift = false
@@ -2400,7 +2407,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // right-click tap
-    historyCy.on('cxttap', 'node', (event) => {
+    historyDAG_cy.on('cxttap', 'node', (event) => {
         const node = event.target; // The node that was right-clicked
         if(hid.key.shift){
             historySequencerController('removeSteps', event.target)
@@ -2583,14 +2590,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Listen for the select event on nodes
     let historyBoxSelect = true // this is necessary because this event listener fires many times otherwise
-    historyCy.on("boxselect", "node", () => {
+    historyDAG_cy.on("boxselect", "node", () => {
         if(historyBoxSelect){
             historyBoxSelect = false
 
-            let selected = historyCy.$("node:selected"); // Get all selected nodes
+            let selected = historyDAG_cy.$("node:selected"); // Get all selected nodes
             
             
-            historyCy.edges().removeClass("sequencerEdge");
+            historyDAG_cy.edges().removeClass("sequencerEdge");
 
             if (selected.length > 1) {
                 // Find edges connecting selected nodes
@@ -2622,7 +2629,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // Reset the historyBoxSelect flag after a short delay
             setTimeout(() => {
-                historyCy.$('node:selected').unselect();
+                historyDAG_cy.$('node:selected').unselect();
                 historyBoxSelect = true;
             }, 50); // Adjust the delay as needed to debounce the event
         }
@@ -2739,9 +2746,9 @@ document.addEventListener("DOMContentLoaded", function () {
             const position = node.position(); // Get the node's position
 
             // Pan to the node
-            historyCy.pan({
-                x: -position.x + historyCy.width(), // Adjust for viewport center
-                // y: -position.y + historyCy.height() / 1.5
+            historyDAG_cy.pan({
+                x: -position.x + historyDAG_cy.width(), // Adjust for viewport center
+                // y: -position.y + historyDAG_cy.height() / 1.5
             });
         } else {
             // console.log(`Node with ID ${nodeId} not found`);
@@ -2890,7 +2897,7 @@ document.addEventListener("DOMContentLoaded", function () {
     //             // const nodeId = nodes[currentIndex];
     //             // console.log(nodeId)
     //             // Get the node by ID
-    //             // const node = historyCy.getElementById(nodeId);
+    //             // const node = historyDAG_cy.getElementById(nodeId);
                 
     //             if (node) {
     //                 // console.log(node.data())
