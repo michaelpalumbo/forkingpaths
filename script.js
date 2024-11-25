@@ -540,8 +540,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 style: {
                     'background-color': 'data(color)',
                     'label': 'data(label)',
-                    'text-valign': 'center',
-                    'text-halign': 'center',
+                    'text-margin-y': 0, // Offset label vertically
+                    'text-margin-x': 5, // Offset label horizontally
+                    'text-halign': 'right', // Center-align text
+                    'text-valign': 'center', // Vertically align text
+                    'width': 20, // Reduce node width to exclude label
+                    'height': 20, // Reduce node height to exclude label
                     'color': '#fff'
                 }
             },
@@ -567,7 +571,9 @@ document.addEventListener("DOMContentLoaded", function () {
             {
                 selector: 'edge.highlighted',
                 style: {
-                    'line-color': '#red', // Highlight color
+                    'line-color': '#FF0000',           // Highlight color
+                    'target-arrow-color': '#FF0000',    // Highlight arrow color
+                    'source-arrow-color': '#FF0000',
                     'width': 10,
                     
                 }
@@ -609,7 +615,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 },
                 sequencer: {
                     bpm: 120,
-                    ms: 500
+                    ms: 500,
+                    traversalMode: 'Sequential'
                 }
 
             })
@@ -1133,18 +1140,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 historyCy.edges().removeClass("sequencerEdge");
             break
 
-            case 'addSteps':
-            //
-                selectedHistoryNodes.push({
-                    data: data.data(),
-                    cyNode: data,
-                    id: data.data().id
-                })
-                data.addClass("sequencerNode");
-
-                modifyHistorySequencerCy(data)
-            break
-
             case 'removeSteps':
                 //
                 let nodeIndex = historySequencerCy.nodes().indexOf(data);
@@ -1187,6 +1182,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         edge.remove(); // Remove edges connected to hidden nodes
                     }
                 });
+  
 
                 // if node no longer is in sequence, remove its border
                 if (!selectedHistoryNodes.some(item => item.id === historyCyHash)){
@@ -1677,8 +1673,8 @@ document.addEventListener("DOMContentLoaded", function () {
     });
     historyCy.on('tap', 'node', (event) => {
         if(hid.key.shift){
-            
-            historySequencerController('addSteps', event.target)
+            modifyHistorySequencerCy('add', event.target)
+
         } else {
             historySequencerController('clear')
 
@@ -2592,7 +2588,7 @@ document.addEventListener("DOMContentLoaded", function () {
             historyBoxSelect = false
 
             let selected = historyCy.$("node:selected"); // Get all selected nodes
-            console.log(selected.toArray())
+            
             
             historyCy.edges().removeClass("sequencerEdge");
 
@@ -2619,6 +2615,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         id: node.data().id
                     }
                     selectedHistoryNodes.push(n)
+                    modifyHistorySequencerCy('add', node)
                 });
 
             }
@@ -2777,49 +2774,97 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     // Function to add a new node
-    function modifyHistorySequencerCy(node) {
-        const nodeId = `${node.data().id} ${uuidv7()}`// first string is the history hash, 2nd, is just for our sequencer
-        const nodes = historySequencerCy.nodes();
+    function modifyHistorySequencerCy(cmd, data) {
 
-        // Add the new node
-        historySequencerCy.add({
-            group: 'nodes',
-            data: { id: nodeId , label: node.data().label.split('_')[0], color: docHistoryGraphStyling.nodeColours[node.data().label.split(' ')[0]], historyNode: node}
-        });
+        switch(cmd){
+            case 'add':
+                //
+                selectedHistoryNodes.push({
+                    data: data.data(),
+                    cyNode: data,
+                    id: data.data().id
+                })
+                data.addClass("sequencerNode");
 
-        // If there's a previous node, connect it to the new node
-        if (nodes.length > 0) {
-            const lastNode = nodes[nodes.length - 1];
-            historySequencerCy.add({
-                group: 'edges',
-                data: {
-                    id: `${lastNode.id()}-to-${nodeId}`,
-                    source: lastNode.id(),
-                    target: nodeId
+
+                let node = data
+                const nodeId = `${node.data().id} ${uuidv7()}`// first string is the history hash, 2nd, is just for our sequencer
+                const nodes = historySequencerCy.nodes();
+
+                // Add the new node
+                historySequencerCy.add({
+                    group: 'nodes',
+                    data: { id: nodeId , label: node.data().label.split('_')[0], color: docHistoryGraphStyling.nodeColours[node.data().label.split(' ')[0]], historyNode: node}
+                });
+
+                // If there's a previous node, connect it to the new node
+                if (nodes.length > 0) {
+                    const lastNode = nodes[nodes.length - 1];
+                    historySequencerCy.add({
+                        group: 'edges',
+                        data: {
+                            id: `${lastNode.id()}-to-${nodeId}`,
+                            source: lastNode.id(),
+                            target: nodeId
+                        }
+                    });
                 }
-            });
+
+                // Remove any existing connection to the first node
+                if (nodes.length >= 2) {
+                    const firstNode = nodes[0];
+                    historySequencerCy.edges().forEach(edge => {
+                        if (edge.data('target') === firstNode.id()) {
+                            edge.remove();
+                        }
+                    });
+
+                    // Add a new connection from the last node to the first node
+                    historySequencerCy.add({
+                        group: 'edges',
+                        data: {
+                            id: `${nodeId}-to-${firstNode.id()}`,
+                            source: nodeId,
+                            target: firstNode.id()
+                        }
+                    });
+                }
+            break
+
+            case 'intersectingEdge':
+
+            
+                // Check for existing edges to prevent duplicates
+                const existingEdgesBetweenSourceAndDragged = historySequencerCy.edges().filter(e =>
+                    (e.source().id() === data.sourceNode.id() && e.target().id() === data.draggedNode.id()) ||
+                    (e.source().id() === data.draggedNode.id() && e.target().id() === data.sourceNode.id())
+                );
+
+                const existingEdgesBetweenDraggedAndTarget = historySequencerCy.edges().filter(e =>
+                    (e.source().id() === data.targetNode.id() && e.target().id() === data.draggedNode.id()) ||
+                    (e.source().id() === data.draggedNode.id() && e.target().id() === data.targetNode.id())
+                );
+
+                // connect 
+                if (existingEdgesBetweenSourceAndDragged.empty()) {
+                    historySequencerCy.add({
+                        group: 'edges',
+                        data: { source: data.draggedNode.id(), target: data.sourceNode.id() }
+                    });
+                    
+                }
+
+                if (existingEdgesBetweenDraggedAndTarget.empty()) {
+                    historySequencerCy.add({
+                        group: 'edges',
+                        data: { source: data.draggedNode.id(), target: data.targetNode.id() }
+                    });
+                } 
+
+            break
+
         }
-
-        // Remove any existing connection to the first node
-        if (nodes.length >= 2) {
-            const firstNode = nodes[0];
-            historySequencerCy.edges().forEach(edge => {
-                if (edge.data('target') === firstNode.id()) {
-                    edge.remove();
-                }
-            });
-
-            // Add a new connection from the last node to the first node
-            historySequencerCy.add({
-                group: 'edges',
-                data: {
-                    id: `${nodeId}-to-${firstNode.id()}`,
-                    source: nodeId,
-                    target: firstNode.id()
-                }
-            });
-        }
-
+        
         // Reapply the circle layout
         historySequencerCy.layout({ name: 'circle' }).run();
     }
@@ -2868,21 +2913,33 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Set the initial BPM
     transport.bpm.value = 120;
-
+    let currentNode = null
     // Schedule the sequencer loop
     transport.scheduleRepeat((time) => {
-        if (meta && !hid.key.shift && selectedHistoryNodes.length > 0) {
-            const node = historySequencerCy.nodes().eq(currentIndex)
+        let sequencerNodes = historySequencerCy.nodes()
+        if (meta && !hid.key.shift && sequencerNodes.length > 0) {
+            let node
 
-            if (node) {
+
+            // let connectedNodes = node.connectedEdges().connectedNodes().difference(node);
+
+            // console.log(connectedNodes[Math.floor(Math.random() * connectedNodes.length)].data())
+
+            if (meta.sequencer.traversalMode === 'Sequential') {
+                node = sequencerNodes.eq(currentIndex)
+            } else {
+                node = sequencerNodes[Math.floor(Math.random() * sequencerNodes.length)]
+            }
+
+            if (node && node.data().historyNode) {
                 // synth.triggerAttackRelease("C4", "8n", time); // Example note
                 loadVersion(node.data().historyNode.data().id, node.data().historyNode.data().branch); // Your custom logic
                 highlightNode(node.data().historyNode); // Your custom logic
-                highlightSequencerNode(historySequencerCy.nodes().eq(currentIndex))
+                highlightSequencerNode(node)
             }
-
+            currentNode = node
             // Move to the next step
-            currentIndex = (currentIndex + 1) % selectedHistoryNodes.length;
+            currentIndex = (currentIndex + 1) % sequencerNodes.length;
         }
     }, "8n"); // Repeat every eighth note
 
@@ -2967,9 +3024,22 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     
         if (intersectingEdge.length > 0) {
+
+          
+
+            
+
             const edge = intersectingEdge[0];
             const sourceNode = edge.source();
             const targetNode = edge.target();
+
+            modifyHistorySequencerCy({
+                cmd:'intersectEdge',
+                edge: intersectingEdge[0],
+                sourceNode: sourceNode,
+                targetNode: targetNode,
+                draggedNode: draggedNode
+            })
     
             // Remove the original edge
             // edge.remove();
@@ -3004,6 +3074,9 @@ document.addEventListener("DOMContentLoaded", function () {
     
     // Utility: Check if a node intersects an edge
     function isNodeIntersectingEdge(nodePos, sourcePos, targetPos) {
+        // todo: the text label of the dragged node and other dragged nodes are interfering with the dragged node intersecting an edge
+        // todo: the text label is part of the entire node's bounding box, so instead we could set the intersection boundaries of the node
+        // todo: ... to just within the node itself, perhaps a square within the node.  
         const distance = pointLineDistance(nodePos, sourcePos, targetPos);
     
         // Check if the point is near the line segment
@@ -3034,6 +3107,18 @@ document.addEventListener("DOMContentLoaded", function () {
     
         return numerator / denominator;
     }
+
+
+    // Listen for changes to the radio buttons
+    const radioButtons = document.querySelectorAll('input[name="traversalMode"]');
+    radioButtons.forEach((radio) => {
+        radio.addEventListener('change', (event) => {
+            meta = Automerge.change(meta, (meta) =>{
+                meta.sequencer.traversalMode = event.target.value  
+            })
+        });
+    });
+
 
 
 });
