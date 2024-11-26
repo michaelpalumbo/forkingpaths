@@ -647,7 +647,15 @@ document.addEventListener("DOMContentLoaded", function () {
                     traversalMode: 'Sequential'
                 },
                 synth: {
-                    rnboDeviceCache: null
+                    rnboDeviceCache: null,
+                    graph:{
+                        modules: {
+
+                        },
+                        connections: [
+
+                        ]
+                    }
                 },
 
             })
@@ -753,6 +761,7 @@ document.addEventListener("DOMContentLoaded", function () {
             document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
         }
         addSpeaker()
+        syncAudioGraph(audioGraphMockup2);
     })();
 
     // Set an interval to periodically save meta to IndexedDB
@@ -1730,6 +1739,16 @@ document.addEventListener("DOMContentLoaded", function () {
 //*
 
     function addSpeaker(){
+        // Get the current viewport's extent
+        const extent = cy.extent();
+
+        // Bottom-right corner coordinates
+        const x = extent.x2; // Rightmost x-coordinate
+        const y = extent.y2; // Bottom-most y-coordinate
+        // todo: this doesn't seem to have an effect
+        speakerModule[0].position.x = x
+        speakerModule[0].position.y = y
+
         cy.add(speakerModule)
     }
     // do this once:
@@ -1794,7 +1813,13 @@ document.addEventListener("DOMContentLoaded", function () {
 //* EVENT HANDLERS
 //* Functions that directly handle UI interactions
 //*
-
+    // Ensure the AudioContext starts on a button click
+    document.getElementById('start-audio').addEventListener('click', () => {
+        if (audioContext.state === 'suspended') {
+            audioContext.resume();
+        }
+        syncAudioGraph(audioGraphMockup2); // Call your graph sync function
+    });
     
     // get .forkingpaths files from user's filesystem
     document.getElementById('fileInput').addEventListener('change', async (event) => {
@@ -2985,6 +3010,191 @@ document.addEventListener("DOMContentLoaded", function () {
     //* 
     //*
 
+    const audioGraphMockup = {
+        modules: {
+          osc1: {
+            type: "oscillator",
+            params: {
+              frequency: 440,
+              type: "sine"
+            }
+          },
+          gain1: {
+            type: "gain",
+            params: {
+              gain: 0.5
+            }
+          }
+        },
+        connections: [
+          { source: "osc1", target: "gain1" },
+          { source: "gain1", target: "destination" }
+        ]
+    };
+
+    const audioGraphMockup2 = {
+        modules: {
+            osc1: {
+                type: "oscillator",
+                params: {
+                    frequency: 440,
+                    type: "sine"
+                }
+            },
+            osc2: {
+                type: "oscillator",
+                params: {
+                    frequency: 200, // Modulation frequency (e.g., 2 Hz for vibrato)
+                    type: "square"
+                }
+            },
+            gainMod: {
+                type: "gain",
+                params: {
+                    gain: 1000 // Modulation depth (e.g., 50 Hz)
+                }
+            },
+            gain1: {
+                type: "gain",
+                params: {
+                    gain: 0.5
+                }
+            }
+        },
+        connections: [
+            { source: "osc1", target: "gain1" }, // osc1 -> gain1
+            { source: "gain1", target: "destination" }, // gain1 -> speakers
+            { source: "osc2", target: "gainMod" }, // osc2 -> gainMod
+            { source: "gainMod", target: "osc1.frequency" } // gainMod -> osc1.frequency
+        ]
+    };
+    
+    
+    
+    // Audio context
+    const audioContext = new window.AudioContext();
+    const synthNodes = new Map();
+
+    
+    function syncAudioGraph(doc) {
+
+        // Create modules
+        for (const [id, module] of Object.entries(doc.modules)) {
+   
+            if (module.type === "oscillator") {
+                const oscillator = audioContext.createOscillator();
+                oscillator.type = module.params.type || "sine";
+                oscillator.frequency.setValueAtTime(module.params.frequency || 440, audioContext.currentTime);
+                oscillator.start();
+                synthNodes.set(id, oscillator);
+            }
+            else if (module.type === "gain") {
+                const gain = audioContext.createGain();
+                gain.gain.setValueAtTime(module.params.gain || 0.5, audioContext.currentTime);
+                // gain.connect(audioContext.destination);
+                synthNodes.set(id, gain);
+            }
+            // Add other module types as needed
+        }
+
+        // Create connections
+        // Create connections
+        // Create connections
+        // Create connections
+        for (const connection of doc.connections) {
+            const sourceNode = synthNodes.get(connection.source);
+
+            if (connection.target.includes(".")) {
+                // Handle parameter connections, e.g., "osc1.frequency"
+                const [targetId, param] = connection.target.split(".");
+                const targetNode = synthNodes.get(targetId);
+                if (targetNode && param && targetNode[param]) {
+                    console.log(`Connecting ${connection.source} to ${connection.target}`);
+                    sourceNode.connect(targetNode[param]); // Connect to parameter
+                } else {
+                    console.warn(`Failed to connect ${connection.source} to ${connection.target}`);
+                }
+            } else {
+                // Handle regular node-to-node connections
+                const targetNode = connection.target === "destination" ? audioContext.destination : synthNodes.get(connection.target);
+                if (sourceNode && targetNode) {
+                    console.log(`Connecting ${connection.source} to ${connection.target}`);
+                    sourceNode.connect(targetNode);
+                } else {
+                    console.warn(`Failed to connect ${connection.source} to ${connection.target}`);
+                }
+            }
+        }
+
+        console.log('AudioContext state:', audioContext.state);
+    }
+
+    function updateParameter(doc, moduleId, param, value) {
+        // Update Automerge document
+        doc.modules[moduleId].params[param] = value;
+    
+        // Update the Web Audio graph
+        const node = synthNodes.get(moduleId);
+        if (node) {
+            if (param === "frequency" && node.frequency) {
+                node.frequency.setValueAtTime(value, audioContext.currentTime);
+            } else if (param === "gain" && node.gain) {
+                node.gain.setValueAtTime(value, audioContext.currentTime);
+            }
+        }
+    }
+
+    
+    // Example: Handling Automerge changes
+    function onDocumentChange(newDoc) {
+        
+    }
+
+    // const dynamicParams = {
+    //     "oscillator-hash454545-frequency": 440, // Default frequency
+    // };
+    
+    // // Audio context
+    // const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    
+    // // Store references to the oscillator
+    // let oscillator;
+    
+    // // Code string with dynamic variable reference
+    // const codeString = `
+    // oscillator = audioContext.createOscillator();
+    // oscillator.type = 'sine';
+    // oscillator.frequency.setValueAtTime(dynamicParams["oscillator-hash454545-frequency"], audioContext.currentTime);
+    // const gainNode = audioContext.createGain();
+    // gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+    // oscillator.connect(gainNode);
+    // gainNode.connect(audioContext.destination);
+    // oscillator.start();
+    // `;
+    
+    // // Execute the code, passing `dynamicParams` and `audioContext`
+    // const executeCode = new Function('audioContext', 'dynamicParams', 'oscillator', codeString);
+    // executeCode(audioContext, dynamicParams, null);
+    
+    // // Function to update the frequency dynamically
+    // function updateFrequency(newFrequency) {
+    //     dynamicParams["oscillator-hash454545-frequency"] = newFrequency;
+    //     if (oscillator) {
+    //         oscillator.frequency.setValueAtTime(newFrequency, audioContext.currentTime);
+    //     }
+    //     console.log(`Updated frequency to: ${newFrequency}`);
+    // }
+    
+    // // Fetch slider element and attach event listener
+    // const slider = document.getElementById('frequency-slider');
+    // slider.addEventListener('input', (event) => {
+    //     const newFrequency = parseFloat(event.target.value);
+    //     updateFrequency(newFrequency); // Update the frequency
+    // });
+    
+
+
+    /*
     // Initialize Audio Context
     const audioContext = new AudioContext();
 
@@ -3055,7 +3265,7 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log('Synth graph loaded successfully');
     }
     
-    
+    */
     
     //*
     //*
