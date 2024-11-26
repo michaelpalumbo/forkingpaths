@@ -11,7 +11,10 @@ import { saveDocument, loadDocument, deleteDocument } from './utilities/indexedD
 import { marked } from 'marked'
 import * as Tone from "tone";
 
+import * as speaker from "./speaker.json"
 const historyGraphWorker = new Worker("./workers/historyGraphWorker.js");
+
+const speakerModule = speaker.default
 
 // TODO: look for comments with this: //* old -repo version 
 // TODO: when new automerge implementation is working, remove their related code sections
@@ -749,6 +752,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // set the document branch (aka title)  in the editor pane
             document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
         }
+        addSpeaker()
     })();
 
     // Set an interval to periodically save meta to IndexedDB
@@ -1725,6 +1729,9 @@ document.addEventListener("DOMContentLoaded", function () {
 //* Functions that directly handle updating DOM elements & cytoscape
 //*
 
+    function addSpeaker(){
+        cy.add(speakerModule)
+    }
     // do this once:
     historyDAG_cy.panBy({x: 25, y: 0 })
 
@@ -2986,7 +2993,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // dynamically load an RNBO device
     async function loadSynthGraph() {
-        const rnboDevices = new Map(); // Store RNBO device instances by parent node ID
+        const rnboDeviceCache = new Map(); // Store RNBO device instances by parent node ID
         const childNodes = new Map(); // Store child nodes by ID for connections
     
         // Process parent nodes (modules)
