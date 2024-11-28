@@ -16,6 +16,28 @@
   background-color: #f8f8f8; /* Optional for visibility */
 }
 
+
+#moduleList {
+  list-style-type: none;
+  padding: 0; /* Optional: Removes left padding of the list */
+  margin: 0;  /* Optional: Removes default margin */
+}
+
+/* Style odd items */
+#moduleList li:nth-child(odd) {
+  background-color: #f8f8f8; /* Off-white */
+}
+
+/* Style even items */
+#moduleList li:nth-child(even) {
+    background-color: #dcdcdc; /* Light grey */
+}
+
+/* Optional: Add padding for better visuals */
+#moduleList li {
+    padding: 5px;
+}
+
 /* Middle column */
 #synthAndHistoryController {
   grid-column: 2; /* Middle column */

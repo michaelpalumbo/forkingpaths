@@ -4,6 +4,9 @@
 //* Set up dependencies, initialize core variables
 //*
 import { ParentNode } from './parentNode.js';
+
+import { ParentNode_WebAudioNode } from './parentNode_WebAudioNode.js';
+import modules from './src/modules/modules.json' assert { type: 'json'}
 import { uuidv7 } from "uuidv7";
 import randomColor from 'randomcolor';
 import dagre from 'cytoscape-dagre';
@@ -1738,6 +1741,31 @@ document.addEventListener("DOMContentLoaded", function () {
 //* Functions that directly handle updating DOM elements & cytoscape
 //*
 
+    // generate list of audio nodes for adding to patch
+    // Example array
+    function updateModuleLibrary(){
+
+        const moduleNames = Object.keys(modules.webAudioNodes)
+        
+
+        // Reference the list element
+        const listElement = document.getElementById('moduleList');
+    
+        // Loop through the array and create list items
+        moduleNames.forEach(item => {
+            // Create a new <li> element
+            const listItem = document.createElement('li');
+    
+            // Set the text of the <li> to the current item
+            listItem.textContent = item;
+    
+            // Append the <li> to the list
+            listElement.appendChild(listItem);
+        });
+    }
+
+    updateModuleLibrary()
+
     function addSpeaker(){
         // Get the current viewport's extent
         const extent = cy.extent();
@@ -2963,8 +2991,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function addModule(module, position, children) {
         
-        const parentNode = new ParentNode(module, position, children);
+        // const parentNode = new ParentNode(module, position, children); // old version. 
 
+        const parentNode = new ParentNode_WebAudioNode(module, position, children);
 
         // parentNode.getModule('oscillator')
         const { parentNode: parentNodeData, childrenNodes, audioGraph } = parentNode.getNodeStructure();
