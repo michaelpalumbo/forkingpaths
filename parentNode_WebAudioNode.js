@@ -26,8 +26,9 @@ export class ParentNode_WebAudioNode {
         this.inputs = this.moduleSpec.inputs
         this.outputs = this.moduleSpec.outputs
         this.params = this.moduleSpec.paramNames
-        this.cv = this.moduleSpec.cvNames || null           
+        this.cv = this.moduleSpec.cvNames         
 
+        if(this.params){
             for (let i = 0; i<this.params.length; i++){
                 let param = this.moduleSpec.parameters[this.params[i]]
                 param.kind = 'slider'
@@ -37,6 +38,8 @@ export class ParentNode_WebAudioNode {
                 this.audioGraph.params[this.params[i]] = param.default
 
             }
+        }
+        if(this.cv){
             for (let i = 0; i<this.cv.length; i++){
                 let cv = this.moduleSpec.cv[this.cv[i]]
                 cv.kind = 'input'
@@ -44,6 +47,9 @@ export class ParentNode_WebAudioNode {
                 
                 this.children.push(cv)
             }
+        }
+
+        if(this.inputs){
             for (let i = 0; i<this.inputs.length; i++){
                 let input = {
                     kind: 'input',
@@ -51,7 +57,9 @@ export class ParentNode_WebAudioNode {
                 }
                 this.children.push(input)
             }
+        }
 
+        if(this.outputs){
             for (let i = 0; i<this.outputs.length; i++){
                 let output = {
                     kind: 'output',
@@ -59,6 +67,11 @@ export class ParentNode_WebAudioNode {
                 }
                 this.children.push(output)
             }
+        }
+
+            
+
+
 
         
        
@@ -71,7 +84,7 @@ export class ParentNode_WebAudioNode {
 
         // Returns the structure of the parent node and its children
         const parentNode = {
-            data: { id: this.moduleName, label: `${this.module} ${this.animal}`, kind: 'module', rnboName: this.module },
+            data: { id: this.moduleName, label: `${this.module} ${this.animal}`, kind: 'module', rnboName: this.module, moduleSpec: this.moduleSpec },
             position: this.position,
             classes: ':parent',
         };

@@ -1760,17 +1760,18 @@ document.addEventListener("DOMContentLoaded", function () {
     updateModuleLibrary()
 
     function addSpeaker(){
-        // Get the current viewport's extent
-        const extent = cy.extent();
+        addModule('AudioDestination', { x: 500, y: 500}, [   ] )
+        // // Get the current viewport's extent
+        // const extent = cy.extent();
 
-        // Bottom-right corner coordinates
-        const x = extent.x2; // Rightmost x-coordinate
-        const y = extent.y2; // Bottom-most y-coordinate
-        // todo: this doesn't seem to have an effect
-        speakerModule[0].position.x = x
-        speakerModule[0].position.y = y
+        // // Bottom-right corner coordinates
+        // const x = extent.x2; // Rightmost x-coordinate
+        // const y = extent.y2; // Bottom-most y-coordinate
+        // // todo: this doesn't seem to have an effect
+        // speakerModule[0].position.x = x
+        // speakerModule[0].position.y = y
 
-        cy.add(speakerModule)
+        // cy.add(speakerModule)
     }
     // do this once:
     historyDAG_cy.panBy({x: 25, y: 0 })

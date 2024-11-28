@@ -1,38 +1,5 @@
 {
   "webAudioNodes": {
-    "AudioContext": {
-      "parameters": {
-        "sampleRate": {
-          "min": 8000,
-          "max": 96000,
-          "units": "Hz",
-          "description": "The sample rate of the audio context."
-        },
-        "state": {
-          "values": [
-            "suspended",
-            "running",
-            "closed"
-          ],
-          "description": "The current state of the audio context."
-        },
-        "currentTime": {
-          "min": 0,
-          "units": "seconds",
-          "description": "The current time of the audio context."
-        }
-      },
-      "paramNames": [
-        "sampleRate",
-        "state",
-        "currentTime"
-      ],
-      "cv": {},
-      "inputs": [],
-      "outputs": [
-        "Destination"
-      ]
-    },
     "AudioDestination": {
       "parameters": {},
       "paramNames": [],
