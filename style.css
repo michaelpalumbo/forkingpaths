@@ -28,11 +28,16 @@
 
 /* Inner layout: Vertical split for cy and historySequencer */
 #cy {
-  flex: 6; /* 60% of vertical space */
+  flex: 5.5; /* 55% of vertical space */
   background-color: #f0f0f0; /* Optional for visibility */
 }
 
+#cytoscapeTooltipContainer {
+  flex: 0.5; /* 40% of vertical space */
+  display: grid;
 
+  height: 100%; /* Full height of this row */
+}
 /* Container for the row with historySequencer and thirdDiv */
 #rowContainer {
   flex: 4; /* 40% of vertical space */

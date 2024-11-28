@@ -14,6 +14,11 @@ export class ParentNode {
         this.children = children;
         this.isDraggingEnabled = false; // Flag to track if dragging is enabled
         this.module = module;
+        this.audioGraph = {
+            type: module,
+            params: {}
+
+        }
         // Set up drag control for child nodes based on the 'e' key
         // this.setupDragControl();o
 
@@ -29,6 +34,10 @@ export class ParentNode {
         for (let i = 0; i<this.params.length; i++){
             this.params[i].kind = 'slider'
             this.children.push(this.params[i])
+            this.audioGraph.params[this.params[i].name] = this.params[i].initialValue
+            if(this.params[i].name === 'oscillator'){
+                this.audioGraph.params[this.params[i].type] = this.params[i].meta.waveform || "sine"
+            }
         }
         for (let i = 0; i<this.outputs.length; i++){
             this.outputs[i].kind = 'output'
@@ -54,6 +63,8 @@ export class ParentNode {
         const offsetX = 0; // Keep the X position the same for a vertical arrangement
             if(child.kind === 'slider'){
                 const sliderId = `${this.moduleName}-slider-${child.name}`
+                //! important to do: the min and maxvalue should reflect the rnbo device's min and max, and so should the initialValue. 
+                //! but for this to work we also need to update the slider updates scaling in on.mousemove. 
                 const defaultOptions = {
                     length: 127, // Length of the slider track in pixels
                     minValue: 0, // Minimum slider value
@@ -173,7 +184,8 @@ export class ParentNode {
            
             
         });
-
-        return { parentNode, childrenNodes };
+        let audioGraph = this.audioGraph
+        console.log('ag', audioGraph)
+        return { parentNode, childrenNodes, audioGraph };
     }
 }

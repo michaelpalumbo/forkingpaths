@@ -105,7 +105,7 @@
 						}
 ,
 						"classnamespace" : "rnbo",
-						"rect" : [ 668.0, 689.0, 1206.0, 577.0 ],
+						"rect" : [ 1077.0, 674.0, 1206.0, 577.0 ],
 						"bglocked" : 0,
 						"openinpresentation" : 0,
 						"default_fontsize" : 12.0,
@@ -5655,14 +5655,13 @@
 									"maxclass" : "newobj",
 									"numinlets" : 1,
 									"numoutlets" : 0,
-									"patching_rect" : [ 34.0, 410.0, 43.0, 23.0 ],
+									"patching_rect" : [ 34.0, 410.0, 166.0, 23.0 ],
 									"rnbo_classname" : "out~",
 									"rnbo_extra_attributes" : 									{
-										"comment" : "",
-										"meta" : ""
+										"comment" : ""
 									}
 ,
-									"rnbo_serial" : 1,
+									"rnbo_serial" : 2,
 									"rnbo_uniqueid" : "out~_obj-18",
 									"rnboinfo" : 									{
 										"needsInstanceInfo" : 1,
@@ -5741,7 +5740,7 @@
 										"changesPatcherIO" : 1
 									}
 ,
-									"text" : "out~ 1"
+									"text" : "out~ 1 @meta \"{ name: 'out' }\""
 								}
 
 							}
@@ -9010,14 +9009,13 @@
 									"maxclass" : "newobj",
 									"numinlets" : 1,
 									"numoutlets" : 0,
-									"patching_rect" : [ 34.0, 410.0, 43.0, 23.0 ],
+									"patching_rect" : [ 34.0, 410.0, 190.0, 23.0 ],
 									"rnbo_classname" : "out~",
 									"rnbo_extra_attributes" : 									{
-										"comment" : "",
-										"meta" : ""
+										"comment" : ""
 									}
 ,
-									"rnbo_serial" : 1,
+									"rnbo_serial" : 2,
 									"rnbo_uniqueid" : "out~_obj-18",
 									"rnboinfo" : 									{
 										"needsInstanceInfo" : 1,
@@ -9096,7 +9094,7 @@
 										"changesPatcherIO" : 1
 									}
 ,
-									"text" : "out~ 1"
+									"text" : "out~ 1 @meta \"{ name: 'sine out' }\""
 								}
 
 							}

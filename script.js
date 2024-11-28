@@ -648,14 +648,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 },
                 synth: {
                     rnboDeviceCache: null,
-                    graph:{
-                        modules: {
-
-                        },
-                        connections: [
-
-                        ]
-                    }
                 },
 
             })
@@ -703,7 +695,15 @@ document.addEventListener("DOMContentLoaded", function () {
             // Apply initial changes to the new document
             amDoc = Automerge.change(amDoc, amMsg, (amDoc) => {
                 amDoc.title = firstBranchName;
-                amDoc.elements = [];
+                amDoc.elements = [],
+                amDoc.synth = {
+                    graph:{
+                        modules: {
+                        },
+                        connections: []
+                    }
+                }
+
             });
             let hash = Automerge.getHeads(amDoc)[0]
             previousHash = hash
@@ -761,7 +761,7 @@ document.addEventListener("DOMContentLoaded", function () {
             document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
         }
         addSpeaker()
-        syncAudioGraph(audioGraphMockup2);
+        // syncAudioGraph(audioGraphMockup2);
     })();
 
     // Set an interval to periodically save meta to IndexedDB
@@ -1817,8 +1817,32 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById('start-audio').addEventListener('click', () => {
         if (audioContext.state === 'suspended') {
             audioContext.resume();
+        } else {
+            audioContext.suspend()
         }
-        syncAudioGraph(audioGraphMockup2); // Call your graph sync function
+        // syncAudioGraph(audioGraphMockup2); // Call your graph sync function
+    });
+
+
+    cy.on('mouseover', 'node', (event) => {
+        const node = event.target;
+        // Add hover behavior, e.g., change style or show tooltip
+        // node.style('background-color', 'red');
+
+        // Get the element by its ID
+        const element = document.getElementById('cytoscapeTooltipText');
+
+        // Set new text content
+        element.textContent = node.id();
+
+    });
+    
+    cy.on('mouseout', 'node', (event) => {
+        const node = event.target;
+        const element = document.getElementById('cytoscapeTooltipText');
+
+        // Set new text content
+        element.textContent = '';
     });
     
     // get .forkingpaths files from user's filesystem
@@ -2943,18 +2967,23 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
         // parentNode.getModule('oscillator')
-        const { parentNode: parentNodeData, childrenNodes } = parentNode.getNodeStructure();
+        const { parentNode: parentNodeData, childrenNodes, audioGraph } = parentNode.getNodeStructure();
     
         // Add nodes to Cytoscape
         cy.add(parentNodeData);
         cy.add(childrenNodes);
     
+        console.log(audioGraph)
+
+        // console.log(amDoc)
         // * automerge version:        
         amDoc = applyChange(amDoc, (amDoc) => {
             amDoc.elements.push(parentNodeData);
             amDoc.elements.push(...childrenNodes);
+            amDoc.synth.graph.modules[parentNodeData.data.id] = audioGraph
         }, onChange, `add ${parentNodeData.data.id}`);
         
+        console.log(amDoc)
 
         // todo: remove the -repo version once AM is working
         // Update Automerge-repo document
@@ -3050,7 +3079,7 @@ document.addEventListener("DOMContentLoaded", function () {
             },
             gainMod: {
                 type: "gain",
-                params: {
+                params: { 
                     gain: 1000 // Modulation depth (e.g., 50 Hz)
                 }
             },
