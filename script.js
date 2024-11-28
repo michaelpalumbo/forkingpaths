@@ -1863,9 +1863,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Get the element by its ID
         const element = document.getElementById('cytoscapeTooltipText');
+        let toolTip ='';
 
+        if (node.data().description){
+            toolTip = node.data().description
+        } 
         // Set new text content
-        element.textContent = node.id();
+        element.textContent = toolTip;
 
     });
     

@@ -26,7 +26,7 @@
     "parameters": {},
     "paramNames": [],
     "cv": {},
-    "inputs": ["AudioNodes"],
+    "inputs": ["IN"],
     "outputs": []
   },
   "Gain": {
@@ -42,6 +42,7 @@
       }
     },
     "paramNames": ["gain"],
+    "cvNames": ["gain"],
     "cv": {
       "gain": {
         "min": 0,
@@ -53,8 +54,8 @@
         "modulationDescription": "Audio-rate modulation of gain to create effects like tremolo or dynamic volume changes."
       }
     },
-    "inputs": ["AudioNodes"],
-    "outputs": ["AudioNodes"]
+    "inputs": ["IN"],
+    "outputs": ["OUT"]
   },
   "Oscillator": {
     "parameters": {
@@ -83,6 +84,7 @@
       }
     },
     "paramNames": ["frequency", "detune", "type"],
+    "cvNames": ["frequency", "detune"],
     "cv": {
       "frequency": {
         "min": 0,
@@ -104,7 +106,7 @@
       }
     },
     "inputs": [],
-    "outputs": ["AudioNodes"]
+    "outputs": ["OUT"]
   },
   "BiquadFilter": {
     "parameters": {
@@ -160,6 +162,7 @@
       }
     },
     "paramNames": ["frequency", "detune", "Q", "gain", "type"],
+    "cvNames": ["frequency", "detune", "Q", "gain"],
     "cv": {
       "frequency": {
         "min": 10,
@@ -198,8 +201,8 @@
         "modulationDescription": "Audio-rate modulation of gain for dynamic boost or attenuation."
       }
     },
-    "inputs": ["AudioNodes"],
-    "outputs": ["AudioNodes"]
+    "inputs": ["IN"],
+    "outputs": ["OUT"]
   },
   "Delay": {
     "parameters": {
@@ -214,6 +217,7 @@
       }
     },
     "paramNames": ["delayTime"],
+    "cvNames": ["delayTime"],
     "cv": {
       "delayTime": {
         "min": 0,
@@ -225,8 +229,8 @@
         "modulationDescription": "Audio-rate modulation of the delay time. Connect an AudioNode to modulate this parameter."
       }
     },
-    "inputs": ["AudioNodes"],
-    "outputs": ["AudioNodes"]
+    "inputs": ["IN"],
+    "outputs": ["OUT"]
   },
   
     "AudioBufferSource": {
@@ -256,6 +260,7 @@
         }
       },
       "paramNames": ["playbackRate", "loopStart", "loopEnd"],
+      "cvNames": ["playbackRate"],
       "cv": {
         "playbackRate": {
           "min": 0.0625,
@@ -268,7 +273,7 @@
         }
       },
       "inputs": [],
-      "outputs": ["AudioNodes"]
+      "outputs": ["OUT"]
     },
     "DynamicsCompressor": {
       "parameters": {
@@ -319,6 +324,7 @@
         }
       },
       "paramNames": ["threshold", "knee", "ratio", "attack", "release"],
+      "cvNames": ["threshold", "knee", "ratio", "attack", "release"],
       "cv": {
         "threshold": {
           "min": -100,
@@ -366,8 +372,8 @@
           "modulationDescription": "Audio-rate modulation of release for dynamically responsive compression."
         }
       },
-      "inputs": ["AudioNodes"],
-      "outputs": ["AudioNodes"]
+      "inputs": ["IN"],
+      "outputs": ["OUT"]
     },
     "Convolver": {
       "parameters": {
@@ -381,8 +387,8 @@
       },
       "paramNames": ["normalize"],
       "cv": {},
-      "inputs": ["AudioNodes"],
-      "outputs": ["AudioNodes"]
+      "inputs": ["IN"],
+      "outputs": ["OUT"]
     },
     "Analyser": {
       "parameters": {
@@ -425,8 +431,8 @@
       },
       "paramNames": ["fftSize", "minDecibels", "maxDecibels", "smoothingTimeConstant"],
       "cv": {},
-      "inputs": ["AudioNodes"],
-      "outputs": ["AudioNodes"]
+      "inputs": ["IN"],
+      "outputs": ["OUT"]
     },
     "WaveShaper": {
       "parameters": {
@@ -446,8 +452,8 @@
       },
       "paramNames": ["curve", "oversample"],
       "cv": {},
-      "inputs": ["AudioNodes"],
-      "outputs": ["AudioNodes"]
+      "inputs": ["IN"],
+      "outputs": ["OUT"]
     },
     "StereoPanner": {
       "parameters": {
@@ -462,6 +468,7 @@
         }
       },
       "paramNames": ["pan"],
+      "cvNames": ["pan"],
       "cv": {
         "pan": {
           "min": -1,
@@ -473,8 +480,8 @@
           "modulationDescription": "Audio-rate modulation of panning for dynamic spatial effects."
         }
       },
-      "inputs": ["AudioNodes"],
-      "outputs": ["AudioNodes"]
+      "inputs": ["IN"],
+      "outputs": ["OUT"]
     },
   "Panner": {
     "parameters": {
@@ -534,6 +541,7 @@
       }
     },
     "paramNames": ["positionX", "positionY", "positionZ", "orientationX", "orientationY", "orientationZ"],
+    "cvNames": ["positionX", "positionY", "positionZ", "orientationX", "orientationY", "orientationZ"],
     "cv": {
       "positionX": {
         "min": -1,
@@ -590,42 +598,42 @@
         "modulationDescription": "Audio-rate modulation of Z orientation for spatial rotation effects."
       }
     },
-    "inputs": ["AudioNodes"],
-    "outputs": ["AudioNodes"]
+    "inputs": ["IN"],
+    "outputs": ["OUT"]
   },
   "ChannelMerger": {
     "parameters": {},
     "paramNames": [],
     "cv": {},
-    "inputs": ["AudioNodes"],
-    "outputs": ["AudioNodes"]
+    "inputs": ["IN"],
+    "outputs": ["OUT"]
   },
   "ChannelSplitter": {
     "parameters": {},
     "paramNames": [],
     "cv": {},
-    "inputs": ["AudioNodes"],
-    "outputs": ["AudioNodes"]
+    "inputs": ["IN"],
+    "outputs": ["OUT"]
   },
   "MediaElementAudioSource": {
   "parameters": {},
   "paramNames": [],
   "cv": {},
   "inputs": [],
-  "outputs": ["AudioNodes"]
+  "outputs": ["OUT"]
   },
   "MediaStreamAudioSource": {
     "parameters": {},
     "paramNames": [],
     "cv": {},
     "inputs": [],
-    "outputs": ["AudioNodes"]
+    "outputs": ["OUT"]
   },
   "MediaStreamAudioDestination": {
     "parameters": {},
     "paramNames": [],
     "cv": {},
-    "inputs": ["AudioNodes"],
+    "inputs": ["IN"],
     "outputs": []
   },
   "ConstantSource": {
@@ -641,6 +649,7 @@
       }
     },
     "paramNames": ["offset"],
+    "cvNames": ["offset"],
     "cv": {
       "offset": {
         "min": -1,
@@ -653,7 +662,7 @@
       }
     },
     "inputs": [],
-    "outputs": ["AudioNodes"]
+    "outputs": ["OUT"]
   },
   "PeriodicWave": {
     "parameters": {
@@ -685,7 +694,7 @@
     },
     "paramNames": ["port"],
     "cv": {},
-    "inputs": ["AudioNodes"],
-    "outputs": ["AudioNodes"]
+    "inputs": ["IN"],
+    "outputs": ["OUT"]
   }
 }

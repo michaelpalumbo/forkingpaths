@@ -38,7 +38,7 @@
       "paramNames": [],
       "cv": {},
       "inputs": [
-        "AudioNodes"
+        "IN"
       ],
       "outputs": []
     },
@@ -57,6 +57,9 @@
       "paramNames": [
         "gain"
       ],
+      "cvNames": [
+        "gain"
+      ],
       "cv": {
         "gain": {
           "min": 0,
@@ -69,10 +72,10 @@
         }
       },
       "inputs": [
-        "AudioNodes"
+        "IN"
       ],
       "outputs": [
-        "AudioNodes"
+        "OUT"
       ]
     },
     "Oscillator": {
@@ -112,6 +115,10 @@
         "detune",
         "type"
       ],
+      "cvNames": [
+        "frequency",
+        "detune"
+      ],
       "cv": {
         "frequency": {
           "min": 0,
@@ -134,7 +141,7 @@
       },
       "inputs": [],
       "outputs": [
-        "AudioNodes"
+        "OUT"
       ]
     },
     "BiquadFilter": {
@@ -197,6 +204,12 @@
         "gain",
         "type"
       ],
+      "cvNames": [
+        "frequency",
+        "detune",
+        "Q",
+        "gain"
+      ],
       "cv": {
         "frequency": {
           "min": 10,
@@ -236,10 +249,10 @@
         }
       },
       "inputs": [
-        "AudioNodes"
+        "IN"
       ],
       "outputs": [
-        "AudioNodes"
+        "OUT"
       ]
     },
     "Delay": {
@@ -257,6 +270,9 @@
       "paramNames": [
         "delayTime"
       ],
+      "cvNames": [
+        "delayTime"
+      ],
       "cv": {
         "delayTime": {
           "min": 0,
@@ -269,10 +285,10 @@
         }
       },
       "inputs": [
-        "AudioNodes"
+        "IN"
       ],
       "outputs": [
-        "AudioNodes"
+        "OUT"
       ]
     },
     "AudioBufferSource": {
@@ -306,6 +322,9 @@
         "loopStart",
         "loopEnd"
       ],
+      "cvNames": [
+        "playbackRate"
+      ],
       "cv": {
         "playbackRate": {
           "min": 0.0625,
@@ -319,7 +338,7 @@
       },
       "inputs": [],
       "outputs": [
-        "AudioNodes"
+        "OUT"
       ]
     },
     "DynamicsCompressor": {
@@ -377,6 +396,13 @@
         "attack",
         "release"
       ],
+      "cvNames": [
+        "threshold",
+        "knee",
+        "ratio",
+        "attack",
+        "release"
+      ],
       "cv": {
         "threshold": {
           "min": -100,
@@ -425,10 +451,10 @@
         }
       },
       "inputs": [
-        "AudioNodes"
+        "IN"
       ],
       "outputs": [
-        "AudioNodes"
+        "OUT"
       ]
     },
     "Convolver": {
@@ -449,10 +475,10 @@
       ],
       "cv": {},
       "inputs": [
-        "AudioNodes"
+        "IN"
       ],
       "outputs": [
-        "AudioNodes"
+        "OUT"
       ]
     },
     "Analyser": {
@@ -502,10 +528,10 @@
       ],
       "cv": {},
       "inputs": [
-        "AudioNodes"
+        "IN"
       ],
       "outputs": [
-        "AudioNodes"
+        "OUT"
       ]
     },
     "WaveShaper": {
@@ -534,10 +560,10 @@
       ],
       "cv": {},
       "inputs": [
-        "AudioNodes"
+        "IN"
       ],
       "outputs": [
-        "AudioNodes"
+        "OUT"
       ]
     },
     "StereoPanner": {
@@ -555,6 +581,9 @@
       "paramNames": [
         "pan"
       ],
+      "cvNames": [
+        "pan"
+      ],
       "cv": {
         "pan": {
           "min": -1,
@@ -567,10 +596,10 @@
         }
       },
       "inputs": [
-        "AudioNodes"
+        "IN"
       ],
       "outputs": [
-        "AudioNodes"
+        "OUT"
       ]
     },
     "Panner": {
@@ -638,6 +667,14 @@
         "orientationY",
         "orientationZ"
       ],
+      "cvNames": [
+        "positionX",
+        "positionY",
+        "positionZ",
+        "orientationX",
+        "orientationY",
+        "orientationZ"
+      ],
       "cv": {
         "positionX": {
           "min": -1,
@@ -695,10 +732,10 @@
         }
       },
       "inputs": [
-        "AudioNodes"
+        "IN"
       ],
       "outputs": [
-        "AudioNodes"
+        "OUT"
       ]
     },
     "ChannelMerger": {
@@ -706,10 +743,10 @@
       "paramNames": [],
       "cv": {},
       "inputs": [
-        "AudioNodes"
+        "IN"
       ],
       "outputs": [
-        "AudioNodes"
+        "OUT"
       ]
     },
     "ChannelSplitter": {
@@ -717,10 +754,10 @@
       "paramNames": [],
       "cv": {},
       "inputs": [
-        "AudioNodes"
+        "IN"
       ],
       "outputs": [
-        "AudioNodes"
+        "OUT"
       ]
     },
     "MediaElementAudioSource": {
@@ -729,7 +766,7 @@
       "cv": {},
       "inputs": [],
       "outputs": [
-        "AudioNodes"
+        "OUT"
       ]
     },
     "MediaStreamAudioSource": {
@@ -738,7 +775,7 @@
       "cv": {},
       "inputs": [],
       "outputs": [
-        "AudioNodes"
+        "OUT"
       ]
     },
     "MediaStreamAudioDestination": {
@@ -746,7 +783,7 @@
       "paramNames": [],
       "cv": {},
       "inputs": [
-        "AudioNodes"
+        "IN"
       ],
       "outputs": []
     },
@@ -765,6 +802,9 @@
       "paramNames": [
         "offset"
       ],
+      "cvNames": [
+        "offset"
+      ],
       "cv": {
         "offset": {
           "min": -1,
@@ -778,7 +818,7 @@
       },
       "inputs": [],
       "outputs": [
-        "AudioNodes"
+        "OUT"
       ]
     },
     "PeriodicWave": {
@@ -817,10 +857,10 @@
       ],
       "cv": {},
       "inputs": [
-        "AudioNodes"
+        "IN"
       ],
       "outputs": [
-        "AudioNodes"
+        "OUT"
       ]
     }
   },
