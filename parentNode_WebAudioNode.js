@@ -16,7 +16,9 @@ export class ParentNode_WebAudioNode {
         this.module = module;
         this.audioGraph = {
             type: module,
-            params: {}
+            params: {},
+            moduleSpec: modules[module],
+            nodeIDs: []
 
         }
         this.nodeIDs = [] // store parent and child ids for later reference
@@ -229,11 +231,13 @@ export class ParentNode_WebAudioNode {
             
             else {
                 
-                
+                const portID = `${this.moduleName}-${child.kind}${index + 1}`
+
+                this.nodeIDs.push(portID)
                 return {
                     
                     data: {
-                        id: `${this.moduleName}-${child.kind}${index + 1}`,
+                        id: portID,
                         parent: this.moduleName,
                         label: child.name || child.tag || `${this.moduleName}-${child.name}${index + 1}`,
                         kind: child.kind,
@@ -252,6 +256,7 @@ export class ParentNode_WebAudioNode {
            
             
         });
+        this.audioGraph.nodeIDs = this.nodeIDs
         let audioGraph = this.audioGraph
         
         return { parentNode, childrenNodes, audioGraph };

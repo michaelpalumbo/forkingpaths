@@ -3010,10 +3010,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // Add nodes to Cytoscape
         cy.add(parentNodeData);
         cy.add(childrenNodes);
-    
-        console.log(audioGraph)
 
-        // console.log(amDoc)
         // * automerge version:        
         amDoc = applyChange(amDoc, (amDoc) => {
             amDoc.elements.push(parentNodeData);
@@ -3022,7 +3019,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }, onChange, `add ${parentNodeData.data.id}`);
         
         console.log(amDoc)
-
+        syncAudioGraph(amDoc.synth.graph)
         // todo: remove the -repo version once AM is working
         // Update Automerge-repo document
     //     handle.change((doc) => {
