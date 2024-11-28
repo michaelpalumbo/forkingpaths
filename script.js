@@ -1841,14 +1841,7 @@ document.addEventListener("DOMContentLoaded", function () {
     moduleList.addEventListener('click', (event) => {
         let loadedModule = event.target.textContent
 
-        // Add the 'clicked' class for feedback
-        event.target.classList.add('clickFeedback');
-
-        // Remove the 'clicked' class after 300ms
-        setTimeout(() => {
-            event.target.classList.remove('clickFeedback');
-        }, 300);
-
+        addModule(loadedModule, { x: 200, y: 200 }, [    ])
     });
 
 
