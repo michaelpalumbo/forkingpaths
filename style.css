@@ -9,14 +9,27 @@
 }
 
 /* Left column */
-#instructions {
+#leftColumn {
   grid-column: 1; /* First column */
   grid-row: 1; /* Full height */
+  display: flex;
+  flex-direction: column; /* Stack children vertically */
+  height: 100%; /* Ensure it uses full height */
+  width: 100%;
   padding: 10px;
   background-color: #f8f8f8; /* Optional for visibility */
+
+
 }
 
-
+/* Style the container div */
+#modulesLibraryContainer {
+  width: 100%; /* Set the desired width */
+  height: 400px; /* Set the desired height */
+  border: 1px solid #ccc; /* Optional: Add a border */
+  overflow-y: auto; /* Enable vertical scrolling */
+  padding: 1px; /* Optional: Add padding inside the container */
+}
 #moduleList {
   list-style-type: none;
   padding: 0; /* Optional: Removes left padding of the list */
@@ -36,7 +49,10 @@
 /* Optional: Add padding for better visuals */
 #moduleList li {
     padding: 5px;
+    cursor: pointer; /* Ensures pointer cursor on hover */
 }
+
+
 
 /* Middle column */
 #synthAndHistoryController {

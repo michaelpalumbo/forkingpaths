@@ -22,6 +22,12 @@
           "description": "The current time of the audio context."
         }
       },
+      "paramNames": [
+        "sampleRate",
+        "state",
+        "currentTime"
+      ],
+      "cv": {},
       "inputs": [],
       "outputs": [
         "Destination"
@@ -29,6 +35,8 @@
     },
     "AudioDestination": {
       "parameters": {},
+      "paramNames": [],
+      "cv": {},
       "inputs": [
         "AudioNodes"
       ],
@@ -36,6 +44,20 @@
     },
     "Gain": {
       "parameters": {
+        "gain": {
+          "min": 0,
+          "max": 1,
+          "default": 1,
+          "units": "linear gain",
+          "description": "Controls the amount of amplification applied to the input signal.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of gain to create effects like tremolo or dynamic volume changes."
+        }
+      },
+      "paramNames": [
+        "gain"
+      ],
+      "cv": {
         "gain": {
           "min": 0,
           "max": 1,
@@ -83,6 +105,31 @@
           ],
           "default": "sine",
           "description": "The waveform shape of the oscillator."
+        }
+      },
+      "paramNames": [
+        "frequency",
+        "detune",
+        "type"
+      ],
+      "cv": {
+        "frequency": {
+          "min": 0,
+          "max": 22050,
+          "default": 440,
+          "units": "Hz",
+          "description": "The frequency of the oscillator.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects."
+        },
+        "detune": {
+          "min": -1200,
+          "max": 1200,
+          "default": 0,
+          "units": "cents",
+          "description": "Detunes the frequency in cents (1/100th of a semitone).",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of detune for subtle or dramatic pitch variations."
         }
       },
       "inputs": [],
@@ -143,6 +190,51 @@
           "description": "The type of filtering applied."
         }
       },
+      "paramNames": [
+        "frequency",
+        "detune",
+        "Q",
+        "gain",
+        "type"
+      ],
+      "cv": {
+        "frequency": {
+          "min": 10,
+          "max": 22050,
+          "default": 350,
+          "units": "Hz",
+          "description": "The frequency at which the filter operates.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of frequency for dynamic filtering effects."
+        },
+        "detune": {
+          "min": -1200,
+          "max": 1200,
+          "default": 0,
+          "units": "cents",
+          "description": "Adjusts the frequency by detuning.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of detune to create evolving filter effects."
+        },
+        "Q": {
+          "min": 0.0001,
+          "max": 1000,
+          "default": 1,
+          "units": "unitless",
+          "description": "Controls the sharpness of the filter's frequency cutoff.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of Q for dynamic resonance changes."
+        },
+        "gain": {
+          "min": -40,
+          "max": 40,
+          "default": 0,
+          "units": "dB",
+          "description": "The gain applied by the filter, applicable for certain filter types.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of gain for dynamic boost or attenuation."
+        }
+      },
       "inputs": [
         "AudioNodes"
       ],
@@ -152,6 +244,20 @@
     },
     "Delay": {
       "parameters": {
+        "delayTime": {
+          "min": 0,
+          "max": 1,
+          "default": 0,
+          "units": "seconds",
+          "description": "The delay time applied to the input signal.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of the delay time. Connect an AudioNode to modulate this parameter."
+        }
+      },
+      "paramNames": [
+        "delayTime"
+      ],
+      "cv": {
         "delayTime": {
           "min": 0,
           "max": 1,
@@ -193,6 +299,22 @@
           "description": "The point at which looping ends in the buffer.",
           "modulatable": false,
           "modulationDescription": "Not modulatable."
+        }
+      },
+      "paramNames": [
+        "playbackRate",
+        "loopStart",
+        "loopEnd"
+      ],
+      "cv": {
+        "playbackRate": {
+          "min": 0.0625,
+          "max": 1024,
+          "default": 1,
+          "units": "ratio",
+          "description": "The speed at which the audio buffer is played back.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of playback rate for effects like pitch shifting or time-stretching."
         }
       },
       "inputs": [],
@@ -248,6 +370,452 @@
           "modulationDescription": "Audio-rate modulation of release for dynamically responsive compression."
         }
       },
+      "paramNames": [
+        "threshold",
+        "knee",
+        "ratio",
+        "attack",
+        "release"
+      ],
+      "cv": {
+        "threshold": {
+          "min": -100,
+          "max": 0,
+          "default": -24,
+          "units": "dB",
+          "description": "The decibel value above which compression starts.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of threshold for dynamic compression effects."
+        },
+        "knee": {
+          "min": 0,
+          "max": 40,
+          "default": 30,
+          "units": "dB",
+          "description": "Controls how gradually compression is applied near the threshold.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of knee for smooth transitions in compression."
+        },
+        "ratio": {
+          "min": 1,
+          "max": 20,
+          "default": 12,
+          "units": "ratio",
+          "description": "The compression ratio.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of ratio for varying levels of compression intensity."
+        },
+        "attack": {
+          "min": 0,
+          "max": 1,
+          "default": 0.003,
+          "units": "seconds",
+          "description": "How quickly compression is applied.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of attack for dynamically responsive compression."
+        },
+        "release": {
+          "min": 0,
+          "max": 1,
+          "default": 0.25,
+          "units": "seconds",
+          "description": "How quickly compression stops after the signal drops below the threshold.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of release for dynamically responsive compression."
+        }
+      },
+      "inputs": [
+        "AudioNodes"
+      ],
+      "outputs": [
+        "AudioNodes"
+      ]
+    },
+    "Convolver": {
+      "parameters": {
+        "normalize": {
+          "values": [
+            true,
+            false
+          ],
+          "default": true,
+          "description": "Specifies if the impulse response should be normalized.",
+          "modulatable": false,
+          "modulationDescription": "Not modulatable."
+        }
+      },
+      "paramNames": [
+        "normalize"
+      ],
+      "cv": {},
+      "inputs": [
+        "AudioNodes"
+      ],
+      "outputs": [
+        "AudioNodes"
+      ]
+    },
+    "Analyser": {
+      "parameters": {
+        "fftSize": {
+          "min": 32,
+          "max": 32768,
+          "default": 2048,
+          "units": "samples",
+          "description": "The size of the FFT to be used for frequency-domain analysis.",
+          "modulatable": false,
+          "modulationDescription": "Not modulatable."
+        },
+        "minDecibels": {
+          "min": -100,
+          "max": 0,
+          "default": -100,
+          "units": "dB",
+          "description": "The minimum power level in decibels for the analyser.",
+          "modulatable": false,
+          "modulationDescription": "Not modulatable."
+        },
+        "maxDecibels": {
+          "min": -100,
+          "max": 0,
+          "default": -30,
+          "units": "dB",
+          "description": "The maximum power level in decibels for the analyser.",
+          "modulatable": false,
+          "modulationDescription": "Not modulatable."
+        },
+        "smoothingTimeConstant": {
+          "min": 0,
+          "max": 1,
+          "default": 0.8,
+          "units": "unitless",
+          "description": "The smoothing constant for the frequency data.",
+          "modulatable": false,
+          "modulationDescription": "Not modulatable."
+        }
+      },
+      "paramNames": [
+        "fftSize",
+        "minDecibels",
+        "maxDecibels",
+        "smoothingTimeConstant"
+      ],
+      "cv": {},
+      "inputs": [
+        "AudioNodes"
+      ],
+      "outputs": [
+        "AudioNodes"
+      ]
+    },
+    "WaveShaper": {
+      "parameters": {
+        "curve": {
+          "default": null,
+          "description": "The shaping curve for the distortion effect.",
+          "modulatable": false,
+          "modulationDescription": "Not modulatable."
+        },
+        "oversample": {
+          "values": [
+            "none",
+            "2x",
+            "4x"
+          ],
+          "default": "none",
+          "description": "The oversampling factor to apply to reduce aliasing.",
+          "modulatable": false,
+          "modulationDescription": "Not modulatable."
+        }
+      },
+      "paramNames": [
+        "curve",
+        "oversample"
+      ],
+      "cv": {},
+      "inputs": [
+        "AudioNodes"
+      ],
+      "outputs": [
+        "AudioNodes"
+      ]
+    },
+    "StereoPanner": {
+      "parameters": {
+        "pan": {
+          "min": -1,
+          "max": 1,
+          "default": 0,
+          "units": "unitless",
+          "description": "The left-right panning of the audio signal.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of panning for dynamic spatial effects."
+        }
+      },
+      "paramNames": [
+        "pan"
+      ],
+      "cv": {
+        "pan": {
+          "min": -1,
+          "max": 1,
+          "default": 0,
+          "units": "unitless",
+          "description": "The left-right panning of the audio signal.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of panning for dynamic spatial effects."
+        }
+      },
+      "inputs": [
+        "AudioNodes"
+      ],
+      "outputs": [
+        "AudioNodes"
+      ]
+    },
+    "Panner": {
+      "parameters": {
+        "positionX": {
+          "min": -1,
+          "max": 1,
+          "default": 0,
+          "units": "relative position",
+          "description": "The X position of the sound source.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of X position for dynamic spatial panning."
+        },
+        "positionY": {
+          "min": -1,
+          "max": 1,
+          "default": 0,
+          "units": "relative position",
+          "description": "The Y position of the sound source.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of Y position for dynamic spatial panning."
+        },
+        "positionZ": {
+          "min": -1,
+          "max": 1,
+          "default": 0,
+          "units": "relative position",
+          "description": "The Z position of the sound source.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of Z position for immersive spatial audio effects."
+        },
+        "orientationX": {
+          "min": -1,
+          "max": 1,
+          "default": 0,
+          "units": "relative orientation",
+          "description": "The X orientation of the sound source.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of X orientation for spatial rotation effects."
+        },
+        "orientationY": {
+          "min": -1,
+          "max": 1,
+          "default": 0,
+          "units": "relative orientation",
+          "description": "The Y orientation of the sound source.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of Y orientation for spatial rotation effects."
+        },
+        "orientationZ": {
+          "min": -1,
+          "max": 1,
+          "default": 0,
+          "units": "relative orientation",
+          "description": "The Z orientation of the sound source.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of Z orientation for spatial rotation effects."
+        }
+      },
+      "paramNames": [
+        "positionX",
+        "positionY",
+        "positionZ",
+        "orientationX",
+        "orientationY",
+        "orientationZ"
+      ],
+      "cv": {
+        "positionX": {
+          "min": -1,
+          "max": 1,
+          "default": 0,
+          "units": "relative position",
+          "description": "The X position of the sound source.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of X position for dynamic spatial panning."
+        },
+        "positionY": {
+          "min": -1,
+          "max": 1,
+          "default": 0,
+          "units": "relative position",
+          "description": "The Y position of the sound source.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of Y position for dynamic spatial panning."
+        },
+        "positionZ": {
+          "min": -1,
+          "max": 1,
+          "default": 0,
+          "units": "relative position",
+          "description": "The Z position of the sound source.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of Z position for immersive spatial audio effects."
+        },
+        "orientationX": {
+          "min": -1,
+          "max": 1,
+          "default": 0,
+          "units": "relative orientation",
+          "description": "The X orientation of the sound source.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of X orientation for spatial rotation effects."
+        },
+        "orientationY": {
+          "min": -1,
+          "max": 1,
+          "default": 0,
+          "units": "relative orientation",
+          "description": "The Y orientation of the sound source.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of Y orientation for spatial rotation effects."
+        },
+        "orientationZ": {
+          "min": -1,
+          "max": 1,
+          "default": 0,
+          "units": "relative orientation",
+          "description": "The Z orientation of the sound source.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of Z orientation for spatial rotation effects."
+        }
+      },
+      "inputs": [
+        "AudioNodes"
+      ],
+      "outputs": [
+        "AudioNodes"
+      ]
+    },
+    "ChannelMerger": {
+      "parameters": {},
+      "paramNames": [],
+      "cv": {},
+      "inputs": [
+        "AudioNodes"
+      ],
+      "outputs": [
+        "AudioNodes"
+      ]
+    },
+    "ChannelSplitter": {
+      "parameters": {},
+      "paramNames": [],
+      "cv": {},
+      "inputs": [
+        "AudioNodes"
+      ],
+      "outputs": [
+        "AudioNodes"
+      ]
+    },
+    "MediaElementAudioSource": {
+      "parameters": {},
+      "paramNames": [],
+      "cv": {},
+      "inputs": [],
+      "outputs": [
+        "AudioNodes"
+      ]
+    },
+    "MediaStreamAudioSource": {
+      "parameters": {},
+      "paramNames": [],
+      "cv": {},
+      "inputs": [],
+      "outputs": [
+        "AudioNodes"
+      ]
+    },
+    "MediaStreamAudioDestination": {
+      "parameters": {},
+      "paramNames": [],
+      "cv": {},
+      "inputs": [
+        "AudioNodes"
+      ],
+      "outputs": []
+    },
+    "ConstantSource": {
+      "parameters": {
+        "offset": {
+          "min": -1,
+          "max": 1,
+          "default": 0,
+          "units": "unitless",
+          "description": "The constant offset value output by the node.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of the offset value for steady or dynamic constant signals."
+        }
+      },
+      "paramNames": [
+        "offset"
+      ],
+      "cv": {
+        "offset": {
+          "min": -1,
+          "max": 1,
+          "default": 0,
+          "units": "unitless",
+          "description": "The constant offset value output by the node.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of the offset value for steady or dynamic constant signals."
+        }
+      },
+      "inputs": [],
+      "outputs": [
+        "AudioNodes"
+      ]
+    },
+    "PeriodicWave": {
+      "parameters": {
+        "real": {
+          "default": null,
+          "description": "An array of real coefficients for the periodic wave.",
+          "modulatable": false,
+          "modulationDescription": "Not modulatable."
+        },
+        "imag": {
+          "default": null,
+          "description": "An array of imaginary coefficients for the periodic wave.",
+          "modulatable": false,
+          "modulationDescription": "Not modulatable."
+        }
+      },
+      "paramNames": [
+        "real",
+        "imag"
+      ],
+      "cv": {},
+      "inputs": [],
+      "outputs": []
+    },
+    "AudioWorklet": {
+      "parameters": {
+        "port": {
+          "description": "The port used to communicate with the audio worklet.",
+          "modulatable": false,
+          "modulationDescription": "Not modulatable."
+        }
+      },
+      "paramNames": [
+        "port"
+      ],
+      "cv": {},
       "inputs": [
         "AudioNodes"
       ],

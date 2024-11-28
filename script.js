@@ -1742,23 +1742,16 @@ document.addEventListener("DOMContentLoaded", function () {
 //*
 
     // generate list of audio nodes for adding to patch
-    // Example array
     function updateModuleLibrary(){
-
         const moduleNames = Object.keys(modules.webAudioNodes)
-        
-
         // Reference the list element
         const listElement = document.getElementById('moduleList');
-    
         // Loop through the array and create list items
         moduleNames.forEach(item => {
             // Create a new <li> element
             const listItem = document.createElement('li');
-    
             // Set the text of the <li> to the current item
             listItem.textContent = item;
-    
             // Append the <li> to the list
             listElement.appendChild(listItem);
         });
@@ -1841,6 +1834,24 @@ document.addEventListener("DOMContentLoaded", function () {
 //* EVENT HANDLERS
 //* Functions that directly handle UI interactions
 //*
+   
+    // Reference the module library list element
+    const moduleList = document.getElementById('moduleList');
+    // Add click event listener
+    moduleList.addEventListener('click', (event) => {
+        let loadedModule = event.target.textContent
+
+        // Add the 'clicked' class for feedback
+        event.target.classList.add('clickFeedback');
+
+        // Remove the 'clicked' class after 300ms
+        setTimeout(() => {
+            event.target.classList.remove('clickFeedback');
+        }, 300);
+
+    });
+
+
     // Ensure the AudioContext starts on a button click
     document.getElementById('start-audio').addEventListener('click', () => {
         if (audioContext.state === 'suspended') {
