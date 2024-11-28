@@ -1,11 +1,17 @@
 import { readdir, readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
+import audioNodes from './src/modules/webAudioNodes.json' assert { type: 'json'}
 
-let modules = {}
+
 async function processFiles() {
+    let modules = {
+        webAudioNodes: audioNodes,
+        rnboDevices: {}
+    }
     const folderPath = join(process.cwd(), './public/export/'); // Folder to process
 
     try {
+
         // Read all files in the folder
         const files = await readdir(folderPath);
 
@@ -24,7 +30,7 @@ async function processFiles() {
 
             // Your custom code here
             let moduleName = file.split('.export.json')[0]
-            modules[moduleName]= {
+            modules.rnboDevices[moduleName]= {
                 inputs: jsonData.desc.inlets,
                 params: jsonData.desc.parameters,
                 outputs: jsonData.desc.outlets
@@ -40,8 +46,10 @@ async function processFiles() {
     } catch (error) {
         console.error('Error processing files:', error);
     }
+
+
     await writeFile('./src/modules/modules.json', JSON.stringify(modules, null, 2));
-    console.log(modules);
+
 }
 
 processFiles();

@@ -1,9 +1,9 @@
-import modules from '/src/modules/modules.json' assert { type: 'json'}
+import modules from './src/modules/modules.json' assert { type: 'json'}
 import {uuidv7} from 'uuidv7'
 import Chance from 'chance';
 const chance = new Chance();
 
-
+const moduleFormat = 'webAudioNodes'
 export class ParentNode {
     constructor(module, position, children) {
         this.animal = chance.animal().split(' ').pop()
@@ -22,27 +22,32 @@ export class ParentNode {
         // Set up drag control for child nodes based on the 'e' key
         // this.setupDragControl();o
 
-        // sift through modules.json, construct node
-        this.inputs = modules[module].inputs
-        this.outputs = modules[module].outputs
-        this.params = modules[module].params
-        
-        for (let i = 0; i<this.inputs.length; i++){
-            this.inputs[i].kind = 'input'
-            this.children.push(this.inputs[i])
-        }
-        for (let i = 0; i<this.params.length; i++){
-            this.params[i].kind = 'slider'
-            this.children.push(this.params[i])
-            this.audioGraph.params[this.params[i].name] = this.params[i].initialValue
-            if(this.params[i].name === 'oscillator'){
-                this.audioGraph.params[this.params[i].type] = this.params[i].meta.waveform || "sine"
+        if(moduleFormat === 'webAudioNodes'){
+
+        } else if (moduleFormat === 'rnboDevices'){
+             // sift through modules.json, construct node
+            this.inputs = modules[module].inputs
+            this.outputs = modules[module].outputs
+            this.params = modules[module].params
+            
+            for (let i = 0; i<this.inputs.length; i++){
+                this.inputs[i].kind = 'input'
+                this.children.push(this.inputs[i])
+            }
+            for (let i = 0; i<this.params.length; i++){
+                this.params[i].kind = 'slider'
+                this.children.push(this.params[i])
+                this.audioGraph.params[this.params[i].name] = this.params[i].initialValue
+                if(this.params[i].name === 'oscillator'){
+                    this.audioGraph.params[this.params[i].type] = this.params[i].meta.waveform || "sine"
+                }
+            }
+            for (let i = 0; i<this.outputs.length; i++){
+                this.outputs[i].kind = 'output'
+                this.children.push(this.outputs[i])
             }
         }
-        for (let i = 0; i<this.outputs.length; i++){
-            this.outputs[i].kind = 'output'
-            this.children.push(this.outputs[i])
-        }
+       
     }
 
     getNodeStructure() {

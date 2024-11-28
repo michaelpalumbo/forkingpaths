@@ -1,164 +1,423 @@
 {
-  "oscillator": {
-    "inputs": [],
-    "params": [
-      {
-        "type": "ParameterTypeNumber",
-        "index": 0,
-        "name": "frequency",
-        "paramId": "frequency",
-        "minimum": 110,
-        "maximum": 880,
-        "exponent": 1,
-        "steps": 0,
-        "initialValue": 220,
-        "isEnum": false,
-        "enumValues": [],
-        "displayName": "",
-        "unit": "",
-        "order": 0,
-        "debug": false,
-        "visible": true,
-        "signalIndex": null,
-        "ioType": "IOTypeUndefined"
-      }
-    ],
-    "outputs": [
-      {
-        "type": "signal",
-        "index": 1,
-        "tag": "out1",
-        "meta": {
-          "name": "sine out"
+  "webAudioNodes": {
+    "AudioContext": {
+      "parameters": {
+        "sampleRate": {
+          "min": 8000,
+          "max": 96000,
+          "units": "Hz",
+          "description": "The sample rate of the audio context."
+        },
+        "state": {
+          "values": [
+            "suspended",
+            "running",
+            "closed"
+          ],
+          "description": "The current state of the audio context."
+        },
+        "currentTime": {
+          "min": 0,
+          "units": "seconds",
+          "description": "The current time of the audio context."
         }
-      }
-    ]
+      },
+      "inputs": [],
+      "outputs": [
+        "Destination"
+      ]
+    },
+    "AudioDestination": {
+      "parameters": {},
+      "inputs": [
+        "AudioNodes"
+      ],
+      "outputs": []
+    },
+    "Gain": {
+      "parameters": {
+        "gain": {
+          "min": 0,
+          "max": 1,
+          "default": 1,
+          "units": "linear gain",
+          "description": "Controls the amount of amplification applied to the input signal.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of gain to create effects like tremolo or dynamic volume changes."
+        }
+      },
+      "inputs": [
+        "AudioNodes"
+      ],
+      "outputs": [
+        "AudioNodes"
+      ]
+    },
+    "Oscillator": {
+      "parameters": {
+        "frequency": {
+          "min": 0,
+          "max": 22050,
+          "default": 440,
+          "units": "Hz",
+          "description": "The frequency of the oscillator.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects."
+        },
+        "detune": {
+          "min": -1200,
+          "max": 1200,
+          "default": 0,
+          "units": "cents",
+          "description": "Detunes the frequency in cents (1/100th of a semitone).",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of detune for subtle or dramatic pitch variations."
+        },
+        "type": {
+          "values": [
+            "sine",
+            "square",
+            "sawtooth",
+            "triangle",
+            "custom"
+          ],
+          "default": "sine",
+          "description": "The waveform shape of the oscillator."
+        }
+      },
+      "inputs": [],
+      "outputs": [
+        "AudioNodes"
+      ]
+    },
+    "BiquadFilter": {
+      "parameters": {
+        "frequency": {
+          "min": 10,
+          "max": 22050,
+          "default": 350,
+          "units": "Hz",
+          "description": "The frequency at which the filter operates.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of frequency for dynamic filtering effects."
+        },
+        "detune": {
+          "min": -1200,
+          "max": 1200,
+          "default": 0,
+          "units": "cents",
+          "description": "Adjusts the frequency by detuning.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of detune to create evolving filter effects."
+        },
+        "Q": {
+          "min": 0.0001,
+          "max": 1000,
+          "default": 1,
+          "units": "unitless",
+          "description": "Controls the sharpness of the filter's frequency cutoff.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of Q for dynamic resonance changes."
+        },
+        "gain": {
+          "min": -40,
+          "max": 40,
+          "default": 0,
+          "units": "dB",
+          "description": "The gain applied by the filter, applicable for certain filter types.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of gain for dynamic boost or attenuation."
+        },
+        "type": {
+          "values": [
+            "lowpass",
+            "highpass",
+            "bandpass",
+            "lowshelf",
+            "highshelf",
+            "peaking",
+            "notch",
+            "allpass"
+          ],
+          "default": "lowpass",
+          "description": "The type of filtering applied."
+        }
+      },
+      "inputs": [
+        "AudioNodes"
+      ],
+      "outputs": [
+        "AudioNodes"
+      ]
+    },
+    "Delay": {
+      "parameters": {
+        "delayTime": {
+          "min": 0,
+          "max": 1,
+          "default": 0,
+          "units": "seconds",
+          "description": "The delay time applied to the input signal.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of the delay time. Connect an AudioNode to modulate this parameter."
+        }
+      },
+      "inputs": [
+        "AudioNodes"
+      ],
+      "outputs": [
+        "AudioNodes"
+      ]
+    },
+    "AudioBufferSource": {
+      "parameters": {
+        "playbackRate": {
+          "min": 0.0625,
+          "max": 1024,
+          "default": 1,
+          "units": "ratio",
+          "description": "The speed at which the audio buffer is played back.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of playback rate for effects like pitch shifting or time-stretching."
+        },
+        "loopStart": {
+          "min": 0,
+          "units": "seconds",
+          "description": "The point at which looping starts in the buffer.",
+          "modulatable": false,
+          "modulationDescription": "Not modulatable."
+        },
+        "loopEnd": {
+          "min": 0,
+          "units": "seconds",
+          "description": "The point at which looping ends in the buffer.",
+          "modulatable": false,
+          "modulationDescription": "Not modulatable."
+        }
+      },
+      "inputs": [],
+      "outputs": [
+        "AudioNodes"
+      ]
+    },
+    "DynamicsCompressor": {
+      "parameters": {
+        "threshold": {
+          "min": -100,
+          "max": 0,
+          "default": -24,
+          "units": "dB",
+          "description": "The decibel value above which compression starts.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of threshold for dynamic compression effects."
+        },
+        "knee": {
+          "min": 0,
+          "max": 40,
+          "default": 30,
+          "units": "dB",
+          "description": "Controls how gradually compression is applied near the threshold.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of knee for smooth transitions in compression."
+        },
+        "ratio": {
+          "min": 1,
+          "max": 20,
+          "default": 12,
+          "units": "ratio",
+          "description": "The compression ratio.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of ratio for varying levels of compression intensity."
+        },
+        "attack": {
+          "min": 0,
+          "max": 1,
+          "default": 0.003,
+          "units": "seconds",
+          "description": "How quickly compression is applied.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of attack for dynamically responsive compression."
+        },
+        "release": {
+          "min": 0,
+          "max": 1,
+          "default": 0.25,
+          "units": "seconds",
+          "description": "How quickly compression stops after the signal drops below the threshold.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of release for dynamically responsive compression."
+        }
+      },
+      "inputs": [
+        "AudioNodes"
+      ],
+      "outputs": [
+        "AudioNodes"
+      ]
+    }
   },
-  "simpleSynth": {
-    "inputs": [],
-    "params": [
-      {
-        "type": "ParameterTypeNumber",
-        "index": 0,
-        "name": "frequency",
-        "paramId": "frequency",
-        "minimum": 110,
-        "maximum": 880,
-        "exponent": 1,
-        "steps": 0,
-        "initialValue": 220,
-        "isEnum": false,
-        "enumValues": [],
-        "displayName": "",
-        "unit": "",
-        "order": 0,
-        "debug": false,
-        "visible": true,
-        "signalIndex": null,
-        "ioType": "IOTypeUndefined"
-      },
-      {
-        "type": "ParameterTypeNumber",
-        "index": 1,
-        "name": "modulation",
-        "paramId": "modulation",
-        "minimum": -100,
-        "maximum": 100,
-        "exponent": 1,
-        "steps": 0,
-        "initialValue": 1,
-        "isEnum": false,
-        "enumValues": [],
-        "displayName": "",
-        "unit": "",
-        "order": 0,
-        "debug": false,
-        "visible": true,
-        "signalIndex": null,
-        "ioType": "IOTypeUndefined"
-      },
-      {
-        "type": "ParameterTypeNumber",
-        "index": 2,
-        "name": "volume",
-        "paramId": "volume",
-        "minimum": 0,
-        "maximum": 100,
-        "exponent": 1,
-        "steps": 0,
-        "initialValue": 0.5,
-        "isEnum": false,
-        "enumValues": [],
-        "displayName": "",
-        "unit": "",
-        "order": 0,
-        "debug": false,
-        "visible": true,
-        "signalIndex": null,
-        "ioType": "IOTypeUndefined"
-      }
-    ],
-    "outputs": [
-      {
-        "type": "signal",
-        "index": 1,
-        "tag": "out1",
-        "meta": {
-          "name": "out"
+  "rnboDevices": {
+    "oscillator": {
+      "inputs": [],
+      "params": [
+        {
+          "type": "ParameterTypeNumber",
+          "index": 0,
+          "name": "frequency",
+          "paramId": "frequency",
+          "minimum": 110,
+          "maximum": 880,
+          "exponent": 1,
+          "steps": 0,
+          "initialValue": 220,
+          "isEnum": false,
+          "enumValues": [],
+          "displayName": "",
+          "unit": "",
+          "order": 0,
+          "debug": false,
+          "visible": true,
+          "signalIndex": null,
+          "ioType": "IOTypeUndefined"
         }
-      }
-    ]
-  },
-  "vca": {
-    "inputs": [
-      {
-        "type": "signal",
-        "index": 1,
-        "tag": "in1",
-        "meta": {
-          "name": "signalInput"
+      ],
+      "outputs": [
+        {
+          "type": "signal",
+          "index": 1,
+          "tag": "out1",
+          "meta": {
+            "name": "sine out"
+          }
         }
-      },
-      {
-        "type": "signal",
-        "index": 2,
-        "tag": "in2",
-        "meta": {
-          "name": "cvInput"
+      ]
+    },
+    "simpleSynth": {
+      "inputs": [],
+      "params": [
+        {
+          "type": "ParameterTypeNumber",
+          "index": 0,
+          "name": "frequency",
+          "paramId": "frequency",
+          "minimum": 110,
+          "maximum": 880,
+          "exponent": 1,
+          "steps": 0,
+          "initialValue": 220,
+          "isEnum": false,
+          "enumValues": [],
+          "displayName": "",
+          "unit": "",
+          "order": 0,
+          "debug": false,
+          "visible": true,
+          "signalIndex": null,
+          "ioType": "IOTypeUndefined"
+        },
+        {
+          "type": "ParameterTypeNumber",
+          "index": 1,
+          "name": "modulation",
+          "paramId": "modulation",
+          "minimum": -100,
+          "maximum": 100,
+          "exponent": 1,
+          "steps": 0,
+          "initialValue": 1,
+          "isEnum": false,
+          "enumValues": [],
+          "displayName": "",
+          "unit": "",
+          "order": 0,
+          "debug": false,
+          "visible": true,
+          "signalIndex": null,
+          "ioType": "IOTypeUndefined"
+        },
+        {
+          "type": "ParameterTypeNumber",
+          "index": 2,
+          "name": "volume",
+          "paramId": "volume",
+          "minimum": 0,
+          "maximum": 100,
+          "exponent": 1,
+          "steps": 0,
+          "initialValue": 0.5,
+          "isEnum": false,
+          "enumValues": [],
+          "displayName": "",
+          "unit": "",
+          "order": 0,
+          "debug": false,
+          "visible": true,
+          "signalIndex": null,
+          "ioType": "IOTypeUndefined"
         }
-      }
-    ],
-    "params": [
-      {
-        "type": "ParameterTypeNumber",
-        "index": 0,
-        "name": "attenuate",
-        "paramId": "attenuate",
-        "minimum": 0,
-        "maximum": 1,
-        "exponent": 1,
-        "steps": 0,
-        "initialValue": 0.5,
-        "isEnum": false,
-        "enumValues": [],
-        "displayName": "",
-        "unit": "",
-        "order": 0,
-        "debug": false,
-        "visible": true,
-        "signalIndex": null,
-        "ioType": "IOTypeUndefined"
-      }
-    ],
-    "outputs": [
-      {
-        "type": "signal",
-        "index": 1,
-        "tag": "out1",
-        "meta": {
-          "name": "out"
+      ],
+      "outputs": [
+        {
+          "type": "signal",
+          "index": 1,
+          "tag": "out1",
+          "meta": {
+            "name": "out"
+          }
         }
-      }
-    ]
+      ]
+    },
+    "vca": {
+      "inputs": [
+        {
+          "type": "signal",
+          "index": 1,
+          "tag": "in1",
+          "meta": {
+            "name": "signalInput"
+          }
+        },
+        {
+          "type": "signal",
+          "index": 2,
+          "tag": "in2",
+          "meta": {
+            "name": "cvInput"
+          }
+        }
+      ],
+      "params": [
+        {
+          "type": "ParameterTypeNumber",
+          "index": 0,
+          "name": "attenuate",
+          "paramId": "attenuate",
+          "minimum": 0,
+          "maximum": 1,
+          "exponent": 1,
+          "steps": 0,
+          "initialValue": 0.5,
+          "isEnum": false,
+          "enumValues": [],
+          "displayName": "",
+          "unit": "",
+          "order": 0,
+          "debug": false,
+          "visible": true,
+          "signalIndex": null,
+          "ioType": "IOTypeUndefined"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "signal",
+          "index": 1,
+          "tag": "out1",
+          "meta": {
+            "name": "out"
+          }
+        }
+      ]
+    }
   }
 }
