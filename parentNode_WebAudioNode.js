@@ -97,7 +97,7 @@ export class ParentNode_WebAudioNode {
         const offsetY = index * 60; // Each child node is 60px below the previous one
         const offsetX = 0; // Keep the X position the same for a vertical arrangement
             if(child.kind === 'slider'){
-                const sliderId = `${this.moduleName}-slider-${child.name}`
+                const sliderId = `${this.moduleName}${child.name}`
                 
                 //! important to do: the min and maxvalue should reflect the rnbo device's min and max, and so should the initialValue. 
                 //! but for this to work we also need to update the slider updates scaling in on.mousemove. 
@@ -113,7 +113,7 @@ export class ParentNode_WebAudioNode {
                     // Define the track and handle nodes for the slider
                 const sliderTrackId = `${sliderId}-track`;
                 const sliderTrackLabelId = `${sliderTrackId}-label`;
-                const sliderHandleId = `${sliderId}-handle`;
+                const sliderHandleId = `.${sliderId}-handle`;
                 
                 
                 this.nodeIDs.push(sliderTrackId, sliderTrackLabelId, sliderHandleId)
@@ -231,7 +231,7 @@ export class ParentNode_WebAudioNode {
             
             else {
                 
-                const portID = `${this.moduleName}-${child.kind}${index + 1}`
+                const portID = `${this.moduleName}.${child.name}`
 
                 this.nodeIDs.push(portID)
                 return {

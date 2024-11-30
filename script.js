@@ -3,6 +3,8 @@
 //* INITIALIZATION AND SETUP
 //* Set up dependencies, initialize core variables
 //*
+
+
 import { ParentNode } from './parentNode.js';
 
 import { ParentNode_WebAudioNode } from './parentNode_WebAudioNode.js';
@@ -12,6 +14,8 @@ import randomColor from 'randomcolor';
 import dagre from 'cytoscape-dagre';
 import { saveDocument, loadDocument, deleteDocument } from './utilities/indexedDB.js';
 import { marked } from 'marked'
+// Set the TONE_SILENCE_LOGGING flag to true before importing Tone.js
+window.TONE_SILENCE_LOGGING = true;
 import * as Tone from "tone";
 
 import * as speaker from "./speaker.json"
@@ -27,7 +31,7 @@ const transport = Tone.getTransport();
 
 // * Audio 
 const rnboDeviceCache = new Map(); // Cache device definitions by module type
-
+let audioGraphDirty = false
 
 // * History Sequencer
 let currentIndex = 0;
@@ -900,6 +904,11 @@ document.addEventListener("DOMContentLoaded", function () {
        
         // update the historyGraph
         reDrawHistoryGraph()
+
+        if(audioGraphDirty){
+            syncAudioGraph(amDoc.synth.graph)
+            audioGraphDirty = false
+        }
     };
     
     // save forking paths doc (meta) to disk
@@ -1761,6 +1770,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function addSpeaker(){
         addModule('AudioDestination', { x: 500, y: 500}, [   ] )
+
         // // Get the current viewport's extent
         // const extent = cy.extent();
 
@@ -2364,6 +2374,8 @@ document.addEventListener("DOMContentLoaded", function () {
                         id: edgeId,
                         data: { id: edgeId, source: temporaryCables.local.source.id(), target: temporaryCables.local.targetNode.id(), kind: 'cable' }
                     });
+                    amDoc.synth.graph.connections.push( { source: temporaryCables.local.source.id(), target: temporaryCables.local.targetNode.id() })
+                    audioGraphDirty = true
                 }, onChange,  `connect ${temporaryCables.local.source.data().label} to ${temporaryCables.local.targetNode.data().label}`);
 
 
@@ -3016,6 +3028,7 @@ document.addEventListener("DOMContentLoaded", function () {
             amDoc.elements.push(parentNodeData);
             amDoc.elements.push(...childrenNodes);
             amDoc.synth.graph.modules[parentNodeData.data.id] = audioGraph
+            audioGraphDirty = true
         }, onChange, `add ${parentNodeData.data.id}`);
         
         console.log(amDoc)
@@ -3141,21 +3154,27 @@ document.addEventListener("DOMContentLoaded", function () {
 
     
     function syncAudioGraph(doc) {
-
+        
         // Create modules
         for (const [id, module] of Object.entries(doc.modules)) {
-   
-            if (module.type === "oscillator") {
+            console.log(id, module)
+            if (module.type === "Oscillator") {
                 const oscillator = audioContext.createOscillator();
                 oscillator.type = module.params.type || "sine";
                 oscillator.frequency.setValueAtTime(module.params.frequency || 440, audioContext.currentTime);
                 oscillator.start();
                 synthNodes.set(id, oscillator);
             }
-            else if (module.type === "gain") {
+            else if (module.type === "Gain") {
                 const gain = audioContext.createGain();
                 gain.gain.setValueAtTime(module.params.gain || 0.5, audioContext.currentTime);
                 // gain.connect(audioContext.destination);
+                synthNodes.set(id, gain);
+            }
+            else if (module.type === "AudioDestination") {
+                const gain = audioContext.createGain();
+                gain.gain.setValueAtTime(module.params.gain || 0.5, audioContext.currentTime);
+                gain.connect(audioContext.destination);
                 synthNodes.set(id, gain);
             }
             // Add other module types as needed
@@ -3190,7 +3209,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
 
-        console.log('AudioContext state:', audioContext.state);
+        
     }
 
     function updateParameter(doc, moduleId, param, value) {
