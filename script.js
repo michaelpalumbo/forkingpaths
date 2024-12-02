@@ -3192,35 +3192,57 @@ document.addEventListener("DOMContentLoaded", function () {
                 continue;
             }
 
+            let audioNode;
             if (module.type === "AudioDestination") {
                 const gain = audioContext.createGain();
                 gain.gain.setValueAtTime(module.params.gain || 0.5, audioContext.currentTime);
                 gain.connect(audioContext.destination);
                 synthNodes.set(id, gain);
             } 
-
-            let audioNode;
-
-            if (module.type === "Oscillator" || module.type === 'LFO') {
-                audioNode = audioContext.createOscillator();
-                audioNode.type = module.params.type || "sine";
-                audioNode.frequency.setValueAtTime(module.params.frequency || 440, audioContext.currentTime);
-                audioNode.start();
+            else if (module.type === "Oscillator" || module.type === 'LFO') {
+                audioNode = createWebAudioNode("Oscillator");
+                // audioNode.type = module.params.type || "sine";
+                // audioNode.frequency.setValueAtTime(module.params.frequency || 440, audioContext.currentTime);
+                
                 synthNodes.set(id, audioNode);
             }
             else if (module.type === "Gain" || module.type === 'ModGain') {
-                const gain = audioContext.createGain();
-                gain.gain.setValueAtTime(module.params.gain || 0.5, audioContext.currentTime);
+                audioNode = createWebAudioNode("Gain");
+                // gain.gain.setValueAtTime(module.params.gain || 0.5, audioContext.currentTime);
                 // gain.connect(audioContext.destination);
-                synthNodes.set(id, gain);
+                synthNodes.set(id, audioNode);
             }
 
-
+            else if (module.type){
+                audioNode = createWebAudioNode(module.type);
+                synthNodes.set(id, audioNode);
+            }
             
             else {
                 console.log(`missing node creation logic in function syncAudioGraph() for module ${module.type}`)
             }
-            // Add other module types as needed
+
+            module.moduleSpec.paramNames.forEach((paramName) => {
+                const value = module.params[paramName]
+                console.log(paramName, value)
+                if (audioNode[paramName] instanceof AudioParam) {
+                    // For AudioParam properties, use .value
+                    audioNode[paramName].setValueAtTime(value, audioContext.currentTime);
+                } else {
+ 
+                    // make sure source (i.e. oscillator) nodes get started
+                    if(module.type === "Oscillator" || module.type === 'LFO' && paramName === 'type'){
+                        audioNode.start();
+                    } 
+                    // For regular properties, assign directly
+                    audioNode[paramName] = value;
+                    
+                    
+                    
+                }
+
+
+            })
 
             // Mark this module as added
             addedModules.add(id);
@@ -3421,6 +3443,27 @@ document.addEventListener("DOMContentLoaded", function () {
     //* UTILITY FUNCTIONS
     //* reusable helper functions and utility code for debugging, logging, etc.
     //*
+
+    function createWebAudioNode(type) {
+        const creators = {
+            Oscillator: () => audioContext.createOscillator(),
+            Gain: () => audioContext.createGain(),
+            Delay: () => audioContext.createDelay(),
+            BiquadFilter: () => audioContext.createBiquadFilter(),
+            Panner: () => audioContext.createPanner(),
+            ConstantSource: () => audioContext.createConstantSource(),
+            BufferSource: () => audioContext.createBufferSource(),
+            Analyser: () => audioContext.createAnalyser(),
+            WaveShaper: () => audioContext.createWaveShaper(),
+            
+        };
+    
+        if (!creators[type]) {
+            throw new Error(`Node type "${type}" is not supported.`);
+        }
+    
+        return creators[type]();
+    }
 
     // Helper function to detect if the click is near an endpoint of an edge
     function isNearEndpoint(mousePos, endpointPos, threshold = 50) {
