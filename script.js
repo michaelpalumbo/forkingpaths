@@ -1756,7 +1756,6 @@ document.addEventListener("DOMContentLoaded", function () {
         const listElement = document.getElementById('moduleList');
         // Loop through the array and create list items
         moduleNames.forEach(item => {
-            console.log(item)
             if(item != 'AudioDestination' && item != 'AudioWorklet'){
                 // Create a new <li> element
                 const listItem = document.createElement('li');
@@ -3039,7 +3038,6 @@ document.addEventListener("DOMContentLoaded", function () {
             audioGraphDirty = true
         }, onChange, `add ${parentNodeData.data.id}`);
         
-        console.log(amDoc)
         syncAudioGraph(amDoc.synth.graph)
         // todo: remove the -repo version once AM is working
         // Update Automerge-repo document
@@ -3165,7 +3163,6 @@ document.addEventListener("DOMContentLoaded", function () {
         
         // Create modules
         for (const [id, module] of Object.entries(doc.modules)) {
-            console.log(id, module)
             if (module.type === "Oscillator") {
                 const oscillator = audioContext.createOscillator();
                 oscillator.type = module.params.type || "sine";
@@ -3193,13 +3190,24 @@ document.addEventListener("DOMContentLoaded", function () {
         // Create connections
         // Create connections
         for (const connection of doc.connections) {
-            const sourceNode = synthNodes.get(connection.source);
-
+            const sourceNode = synthNodes.get(connection.source.split('.')[0]);
+            console.log(sourceNode)
             if (connection.target.includes(".")) {
                 // Handle parameter connections, e.g., "osc1.frequency"
-                const [targetId, param] = connection.target.split(".");
+                let [targetId, param] = connection.target.split(".");
                 const targetNode = synthNodes.get(targetId);
-                if (targetNode && param && targetNode[param]) {
+                console.log(targetNode, param, targetNode[param])
+
+                // Check if the connection is to an input or a parameter
+                if (param === 'IN') {
+                    console.log(`Connecting ${connection.source} to input of ${targetId}`);
+                    if (sourceNode && targetNode) {
+                        sourceNode.connect(targetNode); // Connect to the node directly
+                    } else {
+                        console.warn(`Failed to connect ${connection.source} to input of ${targetId}`);
+                    }
+                }
+                else if (targetNode && param && targetNode[param]) {
                     console.log(`Connecting ${connection.source} to ${connection.target}`);
                     sourceNode.connect(targetNode[param]); // Connect to parameter
                 } else {
