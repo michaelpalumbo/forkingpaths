@@ -3158,11 +3158,19 @@ document.addEventListener("DOMContentLoaded", function () {
     const audioContext = new window.AudioContext();
     const synthNodes = new Map();
 
+    const addedModules = new Set(); // Tracks added module IDs
+    const addedConnections = new Set(); // Tracks added connection strings
     
     function syncAudioGraph(doc) {
         
         // Create modules
         for (const [id, module] of Object.entries(doc.modules)) {
+
+            if (addedModules.has(id)) {
+                // Skip modules that are already added
+                continue;
+            }
+
             if (module.type === "Oscillator") {
                 const oscillator = audioContext.createOscillator();
                 oscillator.type = module.params.type || "sine";
@@ -3181,17 +3189,23 @@ document.addEventListener("DOMContentLoaded", function () {
                 gain.gain.setValueAtTime(module.params.gain || 0.5, audioContext.currentTime);
                 gain.connect(audioContext.destination);
                 synthNodes.set(id, gain);
+            } else {
+                console.log(`missing node creation logic in function syncAudioGraph() for module ${module.type}`)
             }
             // Add other module types as needed
+
+            // Mark this module as added
+            addedModules.add(id);
         }
 
+        console.log(addedModules)
         // Create connections
         // Create connections
         // Create connections
         // Create connections
         for (const connection of doc.connections) {
             const sourceNode = synthNodes.get(connection.source.split('.')[0]);
-            console.log(sourceNode)
+            // console.log(sourceNode)
             if (connection.target.includes(".")) {
                 // Handle parameter connections, e.g., "osc1.frequency"
                 let [targetId, param] = connection.target.split(".");
