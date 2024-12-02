@@ -2243,16 +2243,21 @@ document.addEventListener("DOMContentLoaded", function () {
                     // Scale to the min and max range
                     const sliderMin = currentHandleNode.data('sliderMin');
                     const sliderMax = currentHandleNode.data('sliderMax');
-                    const scaledValue = sliderMin + (normalizedValue * (sliderMax - sliderMin));
+                    const scaledValue = (sliderMin + (normalizedValue * (sliderMax - sliderMin))).toFixed(2);
 
                     // Check if the new scaled value is different from the last emitted value
+                    // Update the node's data and write to Automerge only if the value has changed
                     if (scaledValue !== currentHandleNode.data('value')) {
-                        // Update the node's data and write to Automerge only if the value has changed
+                        // set params in audio graph:
+                        console.log(currentHandleNode.data().label, scaledValue)
+                        updateParameter(currentHandleNode.data().parent, currentHandleNode.data().label, scaledValue)
+
                         currentHandleNode.data('value', scaledValue);
                         
                         // Find the label node and update its displayed text
                         const labelNode = cy.getElementById(`${currentHandleNode.data('trackID')}-label`);
-                        labelNode.data('label', scaledValue.toFixed(2)); // Display the value with 2 decimal places
+                        
+                        labelNode.data('label', scaledValue); // Display the value with 2 decimal places
                         // const cyHandleNode = cy.getElementById(`${currentHandleNode.data('id')}`)
                         // cyHandleNode.data('value', scaledValue.toFixed(2) )
                         // update in automerge
@@ -2264,8 +2269,11 @@ document.addEventListener("DOMContentLoaded", function () {
                                 x: currentHandleNode.position().x,
                                 y: currentHandleNode.position().y
                             }
+                            // todo: update the web audio graph with the param values. 
+                            // amDoc.synth.graph.connections.push( { source: temporaryCables.local.source.id(), target: temporaryCables.local.targetNode.id() })
                         }, onChange,  `paramUpdate ${currentHandleNode.data().label}`);
         
+
                         // Optionally, trigger an Automerge update here if necessary
                         // handle.change((doc) => {
                         //     // Update the document with the new value
@@ -3184,12 +3192,21 @@ document.addEventListener("DOMContentLoaded", function () {
                 continue;
             }
 
+            if (module.type === "AudioDestination") {
+                const gain = audioContext.createGain();
+                gain.gain.setValueAtTime(module.params.gain || 0.5, audioContext.currentTime);
+                gain.connect(audioContext.destination);
+                synthNodes.set(id, gain);
+            } 
+
+            let audioNode;
+
             if (module.type === "Oscillator" || module.type === 'LFO') {
-                const oscillator = audioContext.createOscillator();
-                oscillator.type = module.params.type || "sine";
-                oscillator.frequency.setValueAtTime(module.params.frequency || 440, audioContext.currentTime);
-                oscillator.start();
-                synthNodes.set(id, oscillator);
+                audioNode = audioContext.createOscillator();
+                audioNode.type = module.params.type || "sine";
+                audioNode.frequency.setValueAtTime(module.params.frequency || 440, audioContext.currentTime);
+                audioNode.start();
+                synthNodes.set(id, audioNode);
             }
             else if (module.type === "Gain" || module.type === 'ModGain') {
                 const gain = audioContext.createGain();
@@ -3197,12 +3214,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 // gain.connect(audioContext.destination);
                 synthNodes.set(id, gain);
             }
-            else if (module.type === "AudioDestination") {
-                const gain = audioContext.createGain();
-                gain.gain.setValueAtTime(module.params.gain || 0.5, audioContext.currentTime);
-                gain.connect(audioContext.destination);
-                synthNodes.set(id, gain);
-            } 
+
 
             
             else {
@@ -3230,7 +3242,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 // Check if the connection is to an input or a parameter
                 if (param === 'IN') {
-                    console.log(connection.target)
                     if (sourceNode && targetNode) {
                         if (connection.target.includes('AudioDestination')){
                             // connect sourceNode to the OutputLimiter (which is already connected to the audioContext.destination)
@@ -3268,26 +3279,25 @@ document.addEventListener("DOMContentLoaded", function () {
         
     }
 
-    function updateParameter(doc, moduleId, param, value) {
-        // Update Automerge document
-        doc.modules[moduleId].params[param] = value;
-    
+    function updateParameter(moduleID, param, value) {
+        console.log(synthNodes, moduleID)
         // Update the Web Audio graph
-        const node = synthNodes.get(moduleId);
+        const node = synthNodes.get(moduleID);
         if (node) {
-            if (param === "frequency" && node.frequency) {
-                node.frequency.setValueAtTime(value, audioContext.currentTime);
-            } else if (param === "gain" && node.gain) {
-                node.gain.setValueAtTime(value, audioContext.currentTime);
-            }
+            console.log(node)
+            node[param].setValueAtTime(value, audioContext.currentTime);
+
+
+            // if (param === "frequency" && node.frequency) {
+            //     node.frequency.setValueAtTime(value, audioContext.currentTime);
+            // } else if (param === "gain" && node.gain) {
+            //     node.gain.setValueAtTime(value, audioContext.currentTime);
+            // }
         }
     }
 
     
-    // Example: Handling Automerge changes
-    function onDocumentChange(newDoc) {
-        
-    }
+
 
     // const dynamicParams = {
     //     "oscillator-hash454545-frequency": 440, // Default frequency

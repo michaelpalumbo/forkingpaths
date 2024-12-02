@@ -48,8 +48,8 @@
     "Oscillator": {
       "parameters": {
         "frequency": {
-          "min": 0,
-          "max": 22050,
+          "min": 110,
+          "max": 9000,
           "default": 440,
           "units": "Hz",
           "description": "The frequency of the oscillator.",
@@ -88,8 +88,8 @@
       ],
       "cv": {
         "frequency": {
-          "min": 0,
-          "max": 22050,
+          "min": 110,
+          "max": 9000,
           "default": 440,
           "units": "Hz",
           "description": "The frequency of the oscillator.",
@@ -834,7 +834,7 @@
       "parameters": {
         "gain": {
           "min": 0,
-          "max": 100,
+          "max": 1000,
           "default": 50,
           "units": "linear gain",
           "description": "Controls the amount of amplification applied to the input signal.",
@@ -857,7 +857,7 @@
       "parameters": {
         "frequency": {
           "min": 0,
-          "max": 200,
+          "max": 20,
           "default": 10,
           "units": "Hz",
           "description": "The frequency of the low frequency oscillator.",
@@ -865,8 +865,8 @@
           "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects."
         },
         "detune": {
-          "min": -200,
-          "max": 200,
+          "min": -20,
+          "max": 20,
           "default": 0,
           "units": "cents",
           "description": "Detunes the frequency in cents (1/100th of a semitone).",
@@ -897,7 +897,7 @@
       "cv": {
         "frequency": {
           "min": 0,
-          "max": 200,
+          "max": 20,
           "default": 10,
           "units": "Hz",
           "description": "The frequency of the oscillator.",
@@ -905,8 +905,8 @@
           "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects."
         },
         "detune": {
-          "min": -200,
-          "max": 200,
+          "min": -20,
+          "max": 20,
           "default": 0,
           "units": "cents",
           "description": "Detunes the frequency in cents (1/100th of a semitone).",
