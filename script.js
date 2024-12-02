@@ -14,8 +14,7 @@ import randomColor from 'randomcolor';
 import dagre from 'cytoscape-dagre';
 import { saveDocument, loadDocument, deleteDocument } from './utilities/indexedDB.js';
 import { marked } from 'marked'
-// Set the TONE_SILENCE_LOGGING flag to true before importing Tone.js
-window.TONE_SILENCE_LOGGING = true;
+
 import * as Tone from "tone";
 
 import * as speaker from "./speaker.json"
@@ -1769,7 +1768,12 @@ document.addEventListener("DOMContentLoaded", function () {
     updateModuleLibrary()
 
     function addSpeaker(){
-        addModule('AudioDestination', { x: 500, y: 500}, [   ] )
+        // check if graph contains a speaker. if not:
+        const nodeIds = cy.nodes().map(node => node.id());
+        const AudioDestinationExists = nodeIds.some(id => id.includes('AudioDestination'));
+        if(!AudioDestinationExists){
+            addModule('AudioDestination', { x: 500, y: 500}, [   ] )
+        }
 
         // // Get the current viewport's extent
         // const extent = cy.extent();
