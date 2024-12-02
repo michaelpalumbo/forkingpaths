@@ -918,6 +918,122 @@
       "outputs": [
         "OUT"
       ]
+    },
+    "OutputLimiter": {
+      "parameters": {
+        "threshold": {
+          "min": -100,
+          "max": 0,
+          "default": -1,
+          "units": "dB",
+          "description": "The decibel value above which limiting starts.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of threshold for dynamic limiting effects."
+        },
+        "knee": {
+          "min": 0,
+          "max": 40,
+          "default": 0,
+          "units": "dB",
+          "description": "Controls how gradually limiting is applied near the threshold.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of knee for smooth transitions in limiting."
+        },
+        "ratio": {
+          "min": 1,
+          "max": 20,
+          "default": 20,
+          "units": "ratio",
+          "description": "The limiting ratio, typically very high for a limiter.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of ratio for precise limiting control."
+        },
+        "attack": {
+          "min": 0,
+          "max": 1,
+          "default": 0.003,
+          "units": "seconds",
+          "description": "How quickly limiting is applied after the signal exceeds the threshold.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of attack for dynamically responsive limiting."
+        },
+        "release": {
+          "min": 0,
+          "max": 1,
+          "default": 0.25,
+          "units": "seconds",
+          "description": "How quickly limiting stops after the signal drops below the threshold.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of release for dynamically responsive limiting."
+        }
+      },
+      "paramNames": [
+        "threshold",
+        "knee",
+        "ratio",
+        "attack",
+        "release"
+      ],
+      "cvNames": [
+        "threshold",
+        "knee",
+        "ratio",
+        "attack",
+        "release"
+      ],
+      "cv": {
+        "threshold": {
+          "min": -100,
+          "max": 0,
+          "default": -1,
+          "units": "dB",
+          "description": "The decibel value above which limiting starts.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of threshold for dynamic limiting effects."
+        },
+        "knee": {
+          "min": 0,
+          "max": 40,
+          "default": 0,
+          "units": "dB",
+          "description": "Controls how gradually limiting is applied near the threshold.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of knee for smooth transitions in limiting."
+        },
+        "ratio": {
+          "min": 1,
+          "max": 20,
+          "default": 20,
+          "units": "ratio",
+          "description": "The limiting ratio, typically very high for a limiter.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of ratio for precise limiting control."
+        },
+        "attack": {
+          "min": 0,
+          "max": 1,
+          "default": 0.003,
+          "units": "seconds",
+          "description": "How quickly limiting is applied after the signal exceeds the threshold.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of attack for dynamically responsive limiting."
+        },
+        "release": {
+          "min": 0,
+          "max": 1,
+          "default": 0.25,
+          "units": "seconds",
+          "description": "How quickly limiting stops after the signal drops below the threshold.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of release for dynamically responsive limiting."
+        }
+      },
+      "inputs": [
+        "IN"
+      ],
+      "outputs": [
+        "OUT"
+      ]
     }
   },
   "rnboDevices": {

@@ -1757,7 +1757,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const listElement = document.getElementById('moduleList');
         // Loop through the array and create list items
         moduleNames.forEach(item => {
-            if(item != 'AudioDestination' && item != 'AudioWorklet'){
+            if(item != 'AudioDestination' && item != 'AudioWorklet' && item != "OutputLimiter"){
                 // Create a new <li> element
                 const listItem = document.createElement('li');
                 // Set the text of the <li> to the current item
@@ -1777,6 +1777,8 @@ document.addEventListener("DOMContentLoaded", function () {
         const AudioDestinationExists = nodeIds.some(id => id.includes('AudioDestination'));
         if(!AudioDestinationExists){
             addModule('AudioDestination', { x: 500, y: 500}, [   ] )
+            OutputLimiter.connect(audioContext.destination);
+
         }
 
         // // Get the current viewport's extent
@@ -3162,6 +3164,16 @@ document.addEventListener("DOMContentLoaded", function () {
     const addedModules = new Set(); // Tracks added module IDs
     const addedConnections = new Set(); // Tracks added connection strings
     
+    // this will be used at the output to protect users' ears
+    const OutputLimiter = audioContext.createDynamicsCompressor();
+    OutputLimiter.threshold.setValueAtTime(-1, audioContext.currentTime); // Limit at -1 dB
+    OutputLimiter.knee.setValueAtTime(0, audioContext.currentTime); // No smoothing
+    OutputLimiter.ratio.setValueAtTime(20, audioContext.currentTime); // High compression ratio
+    OutputLimiter.attack.setValueAtTime(0.003, audioContext.currentTime); // Fast attack
+    OutputLimiter.release.setValueAtTime(0.25, audioContext.currentTime); // Fast release
+
+    synthNodes.set("OutputLimiter", OutputLimiter);
+
     function syncAudioGraph(doc) {
         
         // Create modules
@@ -3190,7 +3202,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 gain.gain.setValueAtTime(module.params.gain || 0.5, audioContext.currentTime);
                 gain.connect(audioContext.destination);
                 synthNodes.set(id, gain);
-            } else {
+            } 
+
+            
+            else {
                 console.log(`missing node creation logic in function syncAudioGraph() for module ${module.type}`)
             }
             // Add other module types as needed
@@ -3199,10 +3214,6 @@ document.addEventListener("DOMContentLoaded", function () {
             addedModules.add(id);
         }
 
-        console.log(addedModules)
-        // Create connections
-        // Create connections
-        // Create connections
         // Create connections
         for (const connection of doc.connections) {
             const connectionKey = `${connection.source}-${connection.target}`; // Unique string for each connection
@@ -3216,33 +3227,39 @@ document.addEventListener("DOMContentLoaded", function () {
                 // Handle parameter connections, e.g., "osc1.frequency"
                 let [targetId, param] = connection.target.split(".");
                 const targetNode = synthNodes.get(targetId);
-                console.log(targetNode, param, targetNode[param])
 
                 // Check if the connection is to an input or a parameter
                 if (param === 'IN') {
-                    console.log(`Connecting ${connection.source} to input of ${targetId}`);
+                    console.log(connection.target)
                     if (sourceNode && targetNode) {
-                        sourceNode.connect(targetNode); // Connect to the node directly
+                        if (connection.target.includes('AudioDestination')){
+                            // connect sourceNode to the OutputLimiter (which is already connected to the audioContext.destination)
+                            sourceNode.connect(OutputLimiter);
+                        } else {
+                            // just connect them
+                            sourceNode.connect(targetNode); // Connect to the node directly
+                        }
+                    
                     } else {
                         console.warn(`Failed to connect ${connection.source} to input of ${targetId}`);
                     }
                 }
                 else if (targetNode && param && targetNode[param]) {
-                    console.log(`Connecting ${connection.source} to ${connection.target}`);
                     sourceNode.connect(targetNode[param]); // Connect to parameter
                 } else {
                     console.warn(`Failed to connect ${connection.source} to ${connection.target}`);
                 }
-            } else {
-                // Handle regular node-to-node connections
-                const targetNode = connection.target === "destination" ? audioContext.destination : synthNodes.get(connection.target);
-                if (sourceNode && targetNode) {
-                    console.log(`Connecting ${connection.source} to ${connection.target}`);
-                    sourceNode.connect(targetNode);
-                } else {
-                    console.warn(`Failed to connect ${connection.source} to ${connection.target}`);
-                }
-            }
+            } 
+            // else {
+            //     // Handle regular node-to-node connections
+            //     const targetNode = connection.target === "destination" ? audioContext.destination : synthNodes.get(connection.target);
+            //     if (sourceNode && targetNode) {
+            //         sourceNode.connect(targetNode);
+            //         console.log('here', targetNode)
+            //     } else {
+            //         console.warn(`Failed to connect ${connection.source} to ${connection.target}`);
+            //     }
+            // }
 
             // Mark this connection as added
             addedConnections.add(connectionKey);
