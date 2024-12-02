@@ -1751,17 +1751,21 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // generate list of audio nodes for adding to patch
     function updateModuleLibrary(){
-        const moduleNames = Object.keys(modules.webAudioNodes)
+        const moduleNames = Object.keys(modules.webAudioNodes).sort()
         // Reference the list element
         const listElement = document.getElementById('moduleList');
         // Loop through the array and create list items
         moduleNames.forEach(item => {
-            // Create a new <li> element
-            const listItem = document.createElement('li');
-            // Set the text of the <li> to the current item
-            listItem.textContent = item;
-            // Append the <li> to the list
-            listElement.appendChild(listItem);
+            console.log(item)
+            if(item != 'AudioDestination' && item != 'AudioWorklet'){
+                // Create a new <li> element
+                const listItem = document.createElement('li');
+                // Set the text of the <li> to the current item
+                listItem.textContent = item;
+                // Append the <li> to the list
+                listElement.appendChild(listItem);
+            }
+
         });
     }
 
