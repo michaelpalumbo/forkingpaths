@@ -3459,7 +3459,7 @@ document.addEventListener("DOMContentLoaded", function () {
         };
     
         if (!creators[type]) {
-            throw new Error(`Node type "${type}" is not supported.`);
+            throw new Error(`Node type "${type}" is not supported. see function createWebAudioNode() and check if you need to add ${type} to it`);
         }
     
         return creators[type]();
