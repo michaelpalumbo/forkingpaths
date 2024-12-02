@@ -763,6 +763,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // ion this case we want the highlighted node to be on the current branch
             highlightNode(historyDAG_cy.getElementById(meta.head.hash))
 
+            syncAudioGraph(amDoc.synth.graph)
             // set the document branch (aka title)  in the editor pane
             document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
         }
@@ -3171,14 +3172,14 @@ document.addEventListener("DOMContentLoaded", function () {
                 continue;
             }
 
-            if (module.type === "Oscillator") {
+            if (module.type === "Oscillator" || module.type === 'LFO') {
                 const oscillator = audioContext.createOscillator();
                 oscillator.type = module.params.type || "sine";
                 oscillator.frequency.setValueAtTime(module.params.frequency || 440, audioContext.currentTime);
                 oscillator.start();
                 synthNodes.set(id, oscillator);
             }
-            else if (module.type === "Gain") {
+            else if (module.type === "Gain" || module.type === 'ModGain') {
                 const gain = audioContext.createGain();
                 gain.gain.setValueAtTime(module.params.gain || 0.5, audioContext.currentTime);
                 // gain.connect(audioContext.destination);
@@ -3204,6 +3205,11 @@ document.addEventListener("DOMContentLoaded", function () {
         // Create connections
         // Create connections
         for (const connection of doc.connections) {
+            const connectionKey = `${connection.source}-${connection.target}`; // Unique string for each connection
+            if (addedConnections.has(connectionKey)) {
+                // Skip connections that are already added
+                continue;
+            }
             const sourceNode = synthNodes.get(connection.source.split('.')[0]);
             // console.log(sourceNode)
             if (connection.target.includes(".")) {
@@ -3237,6 +3243,9 @@ document.addEventListener("DOMContentLoaded", function () {
                     console.warn(`Failed to connect ${connection.source} to ${connection.target}`);
                 }
             }
+
+            // Mark this connection as added
+            addedConnections.add(connectionKey);
         }
 
         
