@@ -39,6 +39,13 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
             
                         };
 
+                    case 'Gain':
+                        this.nodes[data.data.moduleName] = {
+                            node: 'Gain',
+                            gain: data.data.audioGraph.params.gain || 1, // Default gain of 1
+                            output: new Float32Array(128), // Buffer for node output
+                        }
+
                     break
                 }
             break
@@ -49,6 +56,13 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                     this.outputConnections.push(data.data);
                     console.log(`Node ${data.data} connected to output`);
                 }
+            break
+
+            case 'paramChange':
+                this.nodes[data.data.parent][data.data.param] = data.data.value
+                // Object.assign(this.nodes[data.data.parent], params);
+                // console.log(`Node updated: ${id} with params`, params);
+
             break
             
             default: console.log(`no switch case exists for ${data.cmd}`)

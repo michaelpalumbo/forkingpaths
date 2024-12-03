@@ -2251,7 +2251,9 @@ document.addEventListener("DOMContentLoaded", function () {
                     if (scaledValue !== currentHandleNode.data('value')) {
                         // set params in audio graph:
                         console.log(currentHandleNode.data().label, scaledValue)
-                        updateParameter(currentHandleNode.data().parent, currentHandleNode.data().label, scaledValue)
+
+                        updateSynthWorklet('paramChange', { parent: currentHandleNode.data().parent, param: currentHandleNode.data().label, value: scaledValue})
+                        // updateParameter(currentHandleNode.data().parent, currentHandleNode.data().label, scaledValue)
 
                         currentHandleNode.data('value', scaledValue);
                         
@@ -3228,7 +3230,6 @@ document.addEventListener("DOMContentLoaded", function () {
             break
 
             case 'connectNodes':
-                console.log(data, data.source.split('.')[0])
                 // check here if target is audioDestination, if so, pass cmd as 'connectToOutput'
                 if(data.target.includes('AudioDestination')){
                     synthWorklet.port.postMessage({
@@ -3237,6 +3238,11 @@ document.addEventListener("DOMContentLoaded", function () {
                     });
                 }
 
+            break
+
+            case 'paramChange':
+
+                synthWorklet.port.postMessage({ cmd: 'paramChange', data: data });
             break
         }
     }
