@@ -31,7 +31,7 @@ const transport = Tone.getTransport();
 // * Audio 
 const rnboDeviceCache = new Map(); // Cache device definitions by module type
 let audioGraphDirty = false
-let synthManager; // the audioWorklet for managing and running the audio graph
+let synthWorklet; // the audioWorklet for managing and running the audio graph
 
 // * History Sequencer
 let currentIndex = 0;
@@ -1778,7 +1778,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const AudioDestinationExists = nodeIds.some(id => id.includes('AudioDestination'));
         if(!AudioDestinationExists){
             addModule('AudioDestination', { x: 500, y: 500}, [   ] )
-            OutputLimiter.connect(audioContext.destination);
+            // OutputLimiter.connect(audioContext.destination);
 
         }
 
@@ -2192,27 +2192,27 @@ document.addEventListener("DOMContentLoaded", function () {
                 // cy.remove(tempEdge)
             } else {
                 // allowMultiSelect is set to false if cmd or ctrl is held down to allow for multiple selection
-                if(!allowMultiSelect){
+                // if(!allowMultiSelect){
 
-                    const currentTime = new Date().getTime();
-                    if (currentTime - lastClickTime < doubleClickDelay) {
-                        // Double-click detected
-                        if(hid.key.o){
-                            addModule(`oscillator`, { x: event.position.x, y: event.position.y }, [    ]);
-                        }
-                        else if(hid.key.v){
-                            addModule(`vca`, { x: event.position.x, y: event.position.y }, [    ]);
-                        }
-                        else if(hid.key.s){
-                            addModule(`simpleSynth`, { x: event.position.x, y: event.position.y }, [    ]);
-                        } else {
-                            console.log('must hold down a letter while double-clicking to spawn associated module (temporary):\no: oscillator \nv: vca \ns: simpleSynth')
-                        }
+                //     const currentTime = new Date().getTime();
+                //     if (currentTime - lastClickTime < doubleClickDelay) {
+                //         // Double-click detected
+                //         if(hid.key.o){
+                //             addModule(`oscillator`, { x: event.position.x, y: event.position.y }, [    ]);
+                //         }
+                //         else if(hid.key.v){
+                //             addModule(`vca`, { x: event.position.x, y: event.position.y }, [    ]);
+                //         }
+                //         else if(hid.key.s){
+                //             addModule(`simpleSynth`, { x: event.position.x, y: event.position.y }, [    ]);
+                //         } else {
+                //             console.log('must hold down a letter while double-clicking to spawn associated module (temporary):\no: oscillator \nv: vca \ns: simpleSynth')
+                //         }
                         
-                        // console.log("Double-clicked on the background\nLow priority ToDo: background clicks open module library");
-                    }
-                    lastClickTime = currentTime; // Update the last click time
-                }
+                //         // console.log("Double-clicked on the background\nLow priority ToDo: background clicks open module library");
+                //     }
+                //     lastClickTime = currentTime; // Update the last click time
+                // }
             }
         }
     });
@@ -3050,7 +3050,12 @@ document.addEventListener("DOMContentLoaded", function () {
             audioGraphDirty = true
         }, onChange, `add ${parentNodeData.data.id}`);
         
-        syncAudioGraph(amDoc.synth.graph)
+        // update the synthWorklet
+
+        updateSynthWorklet('addNode', parentNode )
+
+
+        // syncAudioGraph(amDoc.synth.graph)
         // addNode(parentNode.data())
         // todo: remove the -repo version once AM is working
         // Update Automerge-repo document
@@ -3171,8 +3176,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const audioContext = new window.AudioContext();
 
     audioContext.audioWorklet.addModule('./audioWorklets/modular-synth-processor.js').then(() => {
-        synthManager = new AudioWorkletNode(audioContext, 'modular-synth-processor');
-        synthManager.connect(audioContext.destination);
+        synthWorklet = new AudioWorkletNode(audioContext, 'modular-synth-processor');
+        synthWorklet.connect(audioContext.destination);
     
         console.log('Audio Worklet Node initialized');
     }).catch((error) => {
@@ -3181,44 +3186,70 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
-    setTimeout(() => {
-        // Example usage
-        addNode('osc1', 'oscillator', { frequency: 440 });
-        // addNode('output', 'output');
-        // connectNodes('osc1', 'outputNode'); // Connect oscillator to output
+    // setTimeout(() => {
+    //     // Example usage
+    //     // addNode('osc1', 'oscillator', { frequency: 440 });
+    //     // addNode('output', 'output');
+    //     // connectNodes('osc1', 'outputNode'); // Connect oscillator to output
 
-        synthManager.port.postMessage({
-            cmd: 'connectToOutput',
-            id: 'osc1'
-        });
-    }, 2000); // Change frequency after 2 seconds
+    //     synthWorklet.port.postMessage({
+    //         cmd: 'connectToOutput',
+    //         id: 'osc1'
+    //     });
+    // }, 2000); // Change frequency after 2 seconds
 
 
     // setTimeout(() => updateNode('osc1', { frequency: 880 }), 5000); // Change frequency after 2 seconds
 
+    function updateSynthWorklet(cmd, data){
+        switch (cmd) {
+            case 'addNode':
+                synthWorklet.port.postMessage({ 
+                    cmd: 'addNode', 
+                    data: data
+                });
+
+
+                setTimeout(() => {
+                    // Example usage
+                    // addNode('osc1', 'oscillator', { frequency: 440 });
+                    // addNode('output', 'output');
+                    // connectNodes('osc1', 'outputNode'); // Connect oscillator to output
+
+                    synthWorklet.port.postMessage({
+                        cmd: 'connectToOutput',
+                        id: data.moduleName
+                    });
+                }, 2000); // Change frequency after 2 seconds
+                
+            break
+
+
+        }
+    }
     // Add a node
     function addNode(id, type, params) {
-        synthManager.port.postMessage({ cmd: 'addNode', type: type, id, params });
+        synthWorklet.port.postMessage({ cmd: 'addNode', type: type, id, params });
     }
 
     // Remove a node
     function removeNode(id) {
-        synthManager.port.postMessage({ cmd: 'removeNode', id });
+        synthWorklet.port.postMessage({ cmd: 'removeNode', id });
     }
 
     // Connect two nodes
     function connectNodes(sourceId, targetId) {
-        synthManager.port.postMessage({ cmd: 'connectNodes', id: sourceId, targetId });
+        synthWorklet.port.postMessage({ cmd: 'connectNodes', id: sourceId, targetId });
     }
 
     // Disconnect two nodes
     function disconnectNodes(sourceId, targetId) {
-        synthManager.port.postMessage({ cmd: 'disconnectNodes', id: sourceId, targetId });
+        synthWorklet.port.postMessage({ cmd: 'disconnectNodes', id: sourceId, targetId });
     }
 
     // Update a node's parameters
     function updateNode(id, params) {
-        synthManager.port.postMessage({ cmd: 'updateNode', id, params });
+        synthWorklet.port.postMessage({ cmd: 'updateNode', id, params });
     }
 
 

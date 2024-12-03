@@ -17,7 +17,44 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
     }
 
     handleMessage(data) {
-        const { cmd, id, targetId, params } = data;
+        console.log(data.data)
+        switch (data.cmd){
+            case 'addNode':
+                
+                switch (data.data.module){
+                    
+                    case 'LFO':
+                    case 'Oscillator':
+                        this.nodes[data.data.moduleName] = {
+                            node: 'Oscillator',
+                            type: data.data.audioGraph.params.type,
+                            frequency: data.data.audioGraph.params.frequency,
+                            detune: data.data.audioGraph.params.detune, 
+                            gain: 1,
+                            output: new Float32Array(128), // Example buffer for node output
+                            phase: 0, // For oscillators,
+                            customWaveform: null,
+                            modulationTarget: null, // Target node or parameter for modulation
+                            startTime: null, // Optional: Scheduled start time
+                            stopTime: null,  // Optional: Scheduled stop time           
+            
+                        };
+
+                    break
+                }
+            break
+
+            case 'connectToOutput':
+                if (this.nodes[data.id] && !this.outputConnections.includes(data.id)) {
+                    this.outputConnections.push(data.id);
+                    console.log(`Node ${data.id} connected to output`);
+                }
+            break
+            
+            default: console.log(`no switch case exists for ${data.cmd}`)
+        }
+        
+        /*
         if (cmd === 'addNode') {
             // Add a new node (e.g., oscillator, gain)
             this.nodes[id] = {
@@ -68,6 +105,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
             console.log(`Node updated: ${id} with params`, params);
 
         }
+            */
         console.log('Active Nodes:', Object.keys(this.nodes));
         console.log('Connections:', this.connections);
     }
