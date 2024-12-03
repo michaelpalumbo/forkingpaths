@@ -3236,6 +3236,15 @@ document.addEventListener("DOMContentLoaded", function () {
                         cmd: 'connectToOutput',
                         data: data.source.split('.')[0]
                     });
+                } else if (data.target.split('.')[1] === 'IN'){
+                    console.log('snared')
+                    // handle direct node inputs
+                    synthWorklet.port.postMessage({
+                        cmd: 'connectNodes',
+                        data: { source: data.source.split('.')[0], target: data.target.split('.')[0] }
+                    });
+                } else {
+                    // handle CV modulation inputs
                 }
 
             break

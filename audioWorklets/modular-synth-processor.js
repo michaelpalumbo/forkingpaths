@@ -50,6 +50,10 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                 }
             break
 
+            case 'connectNodes':
+                this.connections.push(data.data);
+            break
+
             case 'connectToOutput':
                 console.log(this.nodes)
                 if (this.nodes[data.data] && !this.outputConnections.includes(data.data)) {
@@ -120,7 +124,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
 
         }
             */
-
+        console.log(this.connections)
     }
 
     process(inputs, outputs) {
