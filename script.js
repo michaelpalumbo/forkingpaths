@@ -2373,6 +2373,10 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         if (temporaryCables.local.tempEdge) {
             if (temporaryCables.local.targetNode) {
+
+                // update audio right away
+                updateSynthWorklet('connectNodes', { source: temporaryCables.local.source.id(), target: temporaryCables.local.targetNode.id()})
+
                 // If a target node is highlighted, connect the edge to it
                 // tempEdge.data('target', temporaryCables.local.targetNode.id()); // Update the edge target
                 
@@ -3179,7 +3183,6 @@ document.addEventListener("DOMContentLoaded", function () {
         synthWorklet = new AudioWorkletNode(audioContext, 'modular-synth-processor');
         synthWorklet.connect(audioContext.destination);
     
-        console.log('Audio Worklet Node initialized');
     }).catch((error) => {
         console.error('Error loading the worklet:', error);
     });
@@ -3210,21 +3213,31 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
 
 
-                setTimeout(() => {
-                    // Example usage
-                    // addNode('osc1', 'oscillator', { frequency: 440 });
-                    // addNode('output', 'output');
-                    // connectNodes('osc1', 'outputNode'); // Connect oscillator to output
+                // setTimeout(() => {
+                //     // Example usage
+                //     // addNode('osc1', 'oscillator', { frequency: 440 });
+                //     // addNode('output', 'output');
+                //     // connectNodes('osc1', 'outputNode'); // Connect oscillator to output
 
-                    synthWorklet.port.postMessage({
-                        cmd: 'connectToOutput',
-                        id: data.moduleName
-                    });
-                }, 2000); // Change frequency after 2 seconds
+                //     synthWorklet.port.postMessage({
+                //         cmd: 'connectToOutput',
+                //         id: data.moduleName
+                //     });
+                // }, 2000); // Change frequency after 2 seconds
                 
             break
 
+            case 'connectNodes':
+                console.log(data, data.source.split('.')[0])
+                // check here if target is audioDestination, if so, pass cmd as 'connectToOutput'
+                if(data.target.includes('AudioDestination')){
+                    synthWorklet.port.postMessage({
+                        cmd: 'connectToOutput',
+                        data: data.source.split('.')[0]
+                    });
+                }
 
+            break
         }
     }
     // Add a node

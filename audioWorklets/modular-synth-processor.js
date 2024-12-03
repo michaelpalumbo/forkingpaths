@@ -11,7 +11,6 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
 
         this.port.onmessage = (event) => this.handleMessage(event.data);
 
-        console.log('AudioWorkletProcessor instance created');
 
 
     }
@@ -45,9 +44,10 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
             break
 
             case 'connectToOutput':
-                if (this.nodes[data.id] && !this.outputConnections.includes(data.id)) {
-                    this.outputConnections.push(data.id);
-                    console.log(`Node ${data.id} connected to output`);
+                console.log(this.nodes)
+                if (this.nodes[data.data] && !this.outputConnections.includes(data.data)) {
+                    this.outputConnections.push(data.data);
+                    console.log(`Node ${data.data} connected to output`);
                 }
             break
             
@@ -106,8 +106,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
 
         }
             */
-        console.log('Active Nodes:', Object.keys(this.nodes));
-        console.log('Connections:', this.connections);
+
     }
 
     process(inputs, outputs) {
