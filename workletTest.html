@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Worklet Test</title>
+</head>
+<body>
+    <h1>Audio Worklet Sine Wave Test</h1>
+    <button id="start">Start</button>
+    <button id="stop">Stop</button>
+    <p>Frequency: <span id="frequency-display">440</span> Hz</p>
+    <input id="frequency-slider" type="range" min="100" max="1000" value="440">
+    <script>
+        let audioContext;
+        let workletNode;
+
+        document.getElementById('start').addEventListener('click', async () => {
+            if (!audioContext) {
+                audioContext = new AudioContext();
+
+                // Load the audio worklet module
+                await audioContext.audioWorklet.addModule('processor.js');
+
+                // Create the AudioWorkletNode
+                workletNode = new AudioWorkletNode(audioContext, 'modular-synth-processor');
+
+                // Connect to the audio context destination
+                workletNode.connect(audioContext.destination);
+
+                // Add an oscillator node to the worklet
+                workletNode.port.postMessage({
+                    cmd: 'addNode',
+                    id: 'osc1',
+                    params: { node: 'Oscillator', frequency: 440, gain: 1 }
+                });
+                // Connect the oscillator to the output
+                workletNode.port.postMessage({
+                    cmd: 'connectToOutput',
+                    id: 'osc1'
+                });
+            }
+
+            // Resume the audio context
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+        });
+
+        document.getElementById('stop').addEventListener('click', () => {
+            if (audioContext && audioContext.state === 'running') {
+                audioContext.suspend();
+            }
+        });
+
+        document.getElementById('frequency-slider').addEventListener('input', (event) => {
+            const frequency = event.target.value;
+            document.getElementById('frequency-display').textContent = frequency;
+
+            if (workletNode) {
+                // Update oscillator frequency
+                workletNode.port.postMessage({
+                    cmd: 'updateNode',
+                    id: 'osc1',
+                    params: { frequency: parseFloat(frequency) }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

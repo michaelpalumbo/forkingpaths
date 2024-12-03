@@ -31,6 +31,7 @@ const transport = Tone.getTransport();
 // * Audio 
 const rnboDeviceCache = new Map(); // Cache device definitions by module type
 let audioGraphDirty = false
+let synthManager; // the audioWorklet for managing and running the audio graph
 
 // * History Sequencer
 let currentIndex = 0;
@@ -3050,6 +3051,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }, onChange, `add ${parentNodeData.data.id}`);
         
         syncAudioGraph(amDoc.synth.graph)
+        // addNode(parentNode.data())
         // todo: remove the -repo version once AM is working
         // Update Automerge-repo document
     //     handle.change((doc) => {
@@ -3167,23 +3169,77 @@ document.addEventListener("DOMContentLoaded", function () {
     
     // Audio context
     const audioContext = new window.AudioContext();
+
+    audioContext.audioWorklet.addModule('./audioWorklets/modular-synth-processor.js').then(() => {
+        synthManager = new AudioWorkletNode(audioContext, 'modular-synth-processor');
+        synthManager.connect(audioContext.destination);
+    
+        console.log('Audio Worklet Node initialized');
+    }).catch((error) => {
+        console.error('Error loading the worklet:', error);
+    });
+
+
+
+    setTimeout(() => {
+        // Example usage
+        addNode('osc1', 'oscillator', { frequency: 440 });
+        // addNode('output', 'output');
+        // connectNodes('osc1', 'outputNode'); // Connect oscillator to output
+
+        synthManager.port.postMessage({
+            cmd: 'connectToOutput',
+            id: 'osc1'
+        });
+    }, 2000); // Change frequency after 2 seconds
+
+
+    // setTimeout(() => updateNode('osc1', { frequency: 880 }), 5000); // Change frequency after 2 seconds
+
+    // Add a node
+    function addNode(id, type, params) {
+        synthManager.port.postMessage({ cmd: 'addNode', type: type, id, params });
+    }
+
+    // Remove a node
+    function removeNode(id) {
+        synthManager.port.postMessage({ cmd: 'removeNode', id });
+    }
+
+    // Connect two nodes
+    function connectNodes(sourceId, targetId) {
+        synthManager.port.postMessage({ cmd: 'connectNodes', id: sourceId, targetId });
+    }
+
+    // Disconnect two nodes
+    function disconnectNodes(sourceId, targetId) {
+        synthManager.port.postMessage({ cmd: 'disconnectNodes', id: sourceId, targetId });
+    }
+
+    // Update a node's parameters
+    function updateNode(id, params) {
+        synthManager.port.postMessage({ cmd: 'updateNode', id, params });
+    }
+
+
+    // * previous main-thread implementation of audio
     const synthNodes = new Map();
 
-    const addedModules = new Set(); // Tracks added module IDs
-    const addedConnections = new Set(); // Tracks added connection strings
+    // const addedModules = new Set(); // Tracks added module IDs
+    // const addedConnections = new Set(); // Tracks added connection strings
     
-    // this will be used at the output to protect users' ears
-    const OutputLimiter = audioContext.createDynamicsCompressor();
-    OutputLimiter.threshold.setValueAtTime(-1, audioContext.currentTime); // Limit at -1 dB
-    OutputLimiter.knee.setValueAtTime(0, audioContext.currentTime); // No smoothing
-    OutputLimiter.ratio.setValueAtTime(20, audioContext.currentTime); // High compression ratio
-    OutputLimiter.attack.setValueAtTime(0.003, audioContext.currentTime); // Fast attack
-    OutputLimiter.release.setValueAtTime(0.25, audioContext.currentTime); // Fast release
+    // // this will be used at the output to protect users' ears
+    // const OutputLimiter = audioContext.createDynamicsCompressor();
+    // OutputLimiter.threshold.setValueAtTime(-1, audioContext.currentTime); // Limit at -1 dB
+    // OutputLimiter.knee.setValueAtTime(0, audioContext.currentTime); // No smoothing
+    // OutputLimiter.ratio.setValueAtTime(20, audioContext.currentTime); // High compression ratio
+    // OutputLimiter.attack.setValueAtTime(0.003, audioContext.currentTime); // Fast attack
+    // OutputLimiter.release.setValueAtTime(0.25, audioContext.currentTime); // Fast release
 
-    synthNodes.set("OutputLimiter", OutputLimiter);
+    // synthNodes.set("OutputLimiter", OutputLimiter);
 
     function syncAudioGraph(doc) {
-        
+        /*
         // Create modules
         for (const [id, module] of Object.entries(doc.modules)) {
 
@@ -3316,6 +3372,9 @@ document.addEventListener("DOMContentLoaded", function () {
             //     node.gain.setValueAtTime(value, audioContext.currentTime);
             // }
         }
+            
+        
+        */
     }
 
     
