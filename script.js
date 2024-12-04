@@ -35,6 +35,7 @@ let synthWorklet; // the audioWorklet for managing and running the audio graph
 
 // * History Sequencer
 let currentIndex = 0;
+let historySequencerWindow;
 
 // * new automerge implementation
 let Automerge;
@@ -1857,6 +1858,37 @@ document.addEventListener("DOMContentLoaded", function () {
 //* Functions that directly handle UI interactions
 //*
    
+    // Open the history sequencer in a new tab
+    document.getElementById('openHistoryWindow').addEventListener('click', () => {
+        historySequencerWindow = window.open('historySequencer.html', 'HistoryGraph');
+
+        // Example: Send graph data to the history tab
+        function sendGraphUpdate(data) {
+            if (historySequencerWindow && !historySequencerWindow.closed) {
+                historySequencerWindow.postMessage({ cmd: 'updateGraph', data }, '*');
+            } else {
+                console.error('Graph window is not open or has been closed.');
+            }
+        }
+
+        // Example: Update graph from your app
+        const graphData = {
+            nodes: [
+                { data: { id: '1', label: 'Node 1' } },
+                { data: { id: '2', label: 'Node 2' } },
+            ],
+            edges: [
+                { data: { id: '1-2', source: '1', target: '2' } },
+            ],
+        };
+
+        setTimeout(() => {
+            sendGraphUpdate(graphData);
+        }, 2000); // Adjust the delay as needed to debounce the event
+        
+
+    });
+
     // Reference the module library list element
     const moduleList = document.getElementById('moduleList');
     // Add click event listener
