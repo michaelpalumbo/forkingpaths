@@ -226,6 +226,18 @@ let temporaryCables = {
 
 document.addEventListener("DOMContentLoaded", function () {
 
+    // on load, check if historySequencer window is already open:
+    const historySequencerWindowOpen = localStorage.getItem('historySequencerWindowOpen');
+    if (historySequencerWindowOpen) {
+        // Try to reconnect to the graph window
+        historySequencerWindow = window.open('', 'HistoryGraph'); // Reuse the named window
+        if (!historySequencerWindow || historySequencerWindow.closed) {
+            console.log('Graph window is closed. Opening a new one.');
+            openGraphWindow();
+        }
+    } else {
+        openGraphWindow();
+    }
     document.getElementById('viewReadme').addEventListener('click', () => {
         fetch('./README.md') // Fetch the README file
             .then(response => response.text())
@@ -739,7 +751,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // set the document branch (aka title) in the editor pane
             document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
 
-
+            // send doc to history app
             reDrawHistoryGraph()
 
             await saveDocument('meta', Automerge.save(meta));
@@ -1007,6 +1019,14 @@ document.addEventListener("DOMContentLoaded", function () {
     function reDrawHistoryGraph(){
 
 
+        sendMsgToHistoryApp({
+            appID: 'forkingPathsMain',
+            cmd: 'reDrawHistoryGraph',
+            data: meta
+                
+        })
+
+
         if (!existingHistoryNodeIDs || existingHistoryNodeIDs.size === 0){
             existingHistoryNodeIDs = new Set(historyDAG_cy.nodes().map(node => node.id()));
         }
@@ -1033,56 +1053,6 @@ document.addEventListener("DOMContentLoaded", function () {
         
         // Send data to the worker to get any position or parameter updates
         historyGraphWorker.postMessage({ meta, existingHistoryNodeIDs, docHistoryGraphStyling });      
-
-
-
-        /*
-        // Accessing branches in order, create nodes and edges for each branch
-        meta.branchOrder.forEach((branchName) => {            
-            const branch = meta.branches[branchName];
-
-            // iterate over each history item in the branch
-            branch.history.forEach((item, index) => {
-                const nodeId = item.hash
-                // 4. Check if the node already exists in the history graph
-                if (!existingHistoryNodeIDs.has(nodeId)) {
-                    
-                    // add node to the history graph
-                    historyDAG_cy.add({
-                        group: 'nodes',
-                        data: { id: nodeId, label: item.msg, color: docHistoryGraphStyling.nodeColours[item.msg.split(' ')[0]], branch: branchName }
-                    });
-
-                    // If the history item has a parent, add an edge to connect the parent
-                    if (item.parent) {
-                        // Make sure the parent node also exists before adding the edge
-                        if (existingHistoryNodeIDs.has(item.parent)) {
-                            historyDAG_cy.add({
-                                group: 'edges',
-                                data: {
-                                    id: `${item.parent}_to_${nodeId}`,
-                                    source: item.parent,
-                                    target: nodeId
-                                }
-                            });
-                        }
-                    }
-
-                    // Add the newly added node's ID to the set to track it
-                    existingHistoryNodeIDs.add(nodeId);
-
-                }
-            });            
-        });
-        
-        
-        // Refresh graph layout
-        historyDAG_cy.layout(graphLayouts[graphStyle]).run();
-    
-        highlightNode(historyDAG_cy.nodes().last())
-        // update the current history node ids for the next time we run this function
-        // existingHistoryNodeIDs = new Set(cy.nodes().map(node => node.id()));
-        */
     }
     
     // Load a version from the DAG
@@ -1752,6 +1722,7 @@ document.addEventListener("DOMContentLoaded", function () {
 //* Functions that directly handle updating DOM elements & cytoscape
 //*
 
+    
     // generate list of audio nodes for adding to patch
     function updateModuleLibrary(){
         const moduleNames = Object.keys(modules.webAudioNodes).sort()
@@ -1852,15 +1823,52 @@ document.addEventListener("DOMContentLoaded", function () {
             // console.log(`Node with ID ${nodeId} not found`);
         }
     }
+
+
+//*
+//*
+//* APP COMMUNICATION
+//* Functions that communicate between main app and history app 
+//*
+
+    function openGraphWindow() {
+        historySequencerWindow = window.open('historySequencer.html', 'HistoryGraph');
+        localStorage.setItem('historySequencerWindowOpen', true);
+    }
+    // Example: Send graph data to the history tab
+    function sendMsgToHistoryApp(data) {
+        if (historySequencerWindow && !historySequencerWindow.closed) {
+            console.log(data)
+            historySequencerWindow.postMessage(data, '*');
+        } else {
+            console.error('Graph window is not open or has been closed.');
+        }
+    }
+
+
+
 //*
 //*
 //* EVENT HANDLERS
 //* Functions that directly handle UI interactions
 //*
-   
+    // Listen for the historySequencerReady message
+    window.addEventListener('message', (event) => {
+        if (event.data.cmd === 'historySequencerReady') {
+            console.log('historySequencer window is ready. Sending initial data...');
+            sendMsgToHistoryApp({
+                appID: 'forkingPathsMain',
+                cmd: 'reDrawHistoryGraph',
+                data: meta
+                    
+            })
+            // sendGraphUpdate(initialGraphData); // Resend the current graph state
+        }
+    });
     // Open the history sequencer in a new tab
     document.getElementById('openHistoryWindow').addEventListener('click', () => {
         historySequencerWindow = window.open('historySequencer.html', 'HistoryGraph');
+        localStorage.setItem('historySequencerWindowOpen', true);
 
         // Example: Send graph data to the history tab
         function sendGraphUpdate(data) {

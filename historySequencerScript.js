@@ -242,7 +242,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-
+    window.opener?.postMessage({ cmd: 'historySequencerReady' }, '*');
 
     function reDrawHistoryGraph(meta){
         if (!existingHistoryNodeIDs || existingHistoryNodeIDs.size === 0){
@@ -277,16 +277,29 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Listen for messages from the main app
     window.addEventListener('message', (event) => {
-        switch (event.data.cmd){
-            case 'reDrawHistoryGraph':
-                reDrawHistoryGraph(event.data.data)
-            break
-            default: console.log('no switch case for message:', event.data)
+        if (event.data && event.data.appID === 'forkingPathsMain') {
+            console.log(event.data)
+            switch (event.data.cmd){
+                case 'reDrawHistoryGraph':
+                    reDrawHistoryGraph(event.data.data)
+                break
+                default: console.log('no switch case for message:', event.data)
+            }
         }
+
         // if (event.data.cmd === 'updateGraph') {
         //     const graphData = event.data.data;
         //     updateGraph(graphData);
         // }
+    });
+
+    // Remove the flag when the graph window is closed
+    window.addEventListener('beforeunload', () => {
+        if (historySequencerWindow) {
+            historySequencerWindow.close();
+        }
+        localStorage.removeItem('historySequencerWindowOpen');
+        console.log('history window closed')
     });
 
     // * UTILITY FUNCTIONS
