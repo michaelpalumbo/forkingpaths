@@ -53,6 +53,13 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
 
             case 'removeNode':
                 delete this.nodes[data.data]
+
+                // dispose all related connections
+                this.connections = this.connections.filter(item => item.source !== data.data);
+                this.connections = this.connections.filter(item => item.target !== data.data);
+                this.outputConnections = this.connections.filter(item => item !== data.data);
+                this.cvConnections = this.cvConnections.filter(item => item.target !== data.data);
+                this.cvConnections = this.cvConnections.filter(item => item.source !== data.data);
             break
 
             case 'connectNodes':
@@ -255,7 +262,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
         }
 
         // Apply an overall gain to limit output signal
-        const overallGain = 0.8; // Adjust as needed
+        const overallGain = 0.9; // Adjust as needed
         for (let i = 0; i < output.length; i++) {
             output[i] *= overallGain; // Scale the output
         }
