@@ -781,7 +781,6 @@ document.addEventListener("DOMContentLoaded", function () {
             document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
         }
         addSpeaker()
-        // syncAudioGraph(audioGraphMockup2);
     })();
 
     // Set an interval to periodically save meta to IndexedDB
@@ -919,7 +918,6 @@ document.addEventListener("DOMContentLoaded", function () {
         reDrawHistoryGraph()
 
         if(audioGraphDirty){
-            syncAudioGraph(amDoc.synth.graph)
             audioGraphDirty = false
         }
     };
@@ -1913,7 +1911,6 @@ document.addEventListener("DOMContentLoaded", function () {
         } else {
             audioContext.suspend()
         }
-        // syncAudioGraph(audioGraphMockup2); // Call your graph sync function
     });
 
 
@@ -3102,7 +3099,6 @@ document.addEventListener("DOMContentLoaded", function () {
         updateSynthWorklet('addNode', parentNode )
 
 
-        // syncAudioGraph(amDoc.synth.graph)
         // addNode(parentNode.data())
         // todo: remove the -repo version once AM is working
         // Update Automerge-repo document

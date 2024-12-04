@@ -260,11 +260,11 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         
         historyGraphWorker.onmessage = (event) => {
-            console.log(event.data)
             const { nodes, edges, historyNodes } = event.data;
             
             if(nodes.length > 0){
                 historyDAG_cy.add(nodes);
+
             }
             if(edges.length > 0){
                 historyDAG_cy.add(edges);
@@ -274,8 +274,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // Refresh graph layout
             historyDAG_cy.layout(graphLayouts[graphStyle]).run();
+            historyDAG_cy.resize();
+            historyDAG_cy.fit();
             
             highlightNode(historyDAG_cy.nodes().last())
+
             // update the current history node ids for the next time we run this function
             // existingHistoryNodeIDs = new Set(cy.nodes().map(node => node.id()));
         };
