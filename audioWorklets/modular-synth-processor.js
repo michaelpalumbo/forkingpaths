@@ -26,13 +26,23 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                     case 'Oscillator':
                         this.nodes[data.data.moduleName] = {
                             node: 'Oscillator',
+                            baseParams: {
+                                frequency: data.data.audioGraph.params.frequency,
+                                gain: 1,
+                                detune: data.data.audioGraph.params.detune,
+                            },
+                            modulatedParams: {
+                                // offsets for modulation
+                                frequency: 0, 
+                                gain: 0, 
+                                detune: 0
+                            },
+                            output: new Float32Array(128),
+                            phase: 0,
+                            customWaveform: null,
                             type: data.data.audioGraph.params.type,
-                            frequency: data.data.audioGraph.params.frequency,
                             detune: data.data.audioGraph.params.detune, 
                             gain: 1,
-                            output: new Float32Array(128), // Example buffer for node output
-                            phase: 0, // For oscillators,
-                            customWaveform: null,
                             modulationTarget: null, // Target node or parameter for modulation
                             startTime: null, // Optional: Scheduled start time
                             stopTime: null,  // Optional: Scheduled stop time           
@@ -43,8 +53,13 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                     case 'ModGain':
                         this.nodes[data.data.moduleName] = {
                             node: 'Gain',
-                            gain: data.data.audioGraph.params.gain || 1, // Default gain of 1
-                            output: new Float32Array(128), // Buffer for node output
+                            baseParams: {
+                                gain: data.data.audioGraph.params.gain || 1,
+                            },
+                            modulatedParams: {
+                                gain: 0, // Offset for modulation
+                            },
+                            output: new Float32Array(128),
                         }
 
                     break
@@ -203,18 +218,32 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                 const sourceBuffer = signalBuffers[conn.source];
                 // Modulate the specified parameter
                 const modulationValue = sourceBuffer[0]; // Use the first sample for modulation
-                if (modulationValue !== undefined) {
-                    node[conn.param] += modulationValue; // Apply modulation
+                const param = conn.param; // The parameter being modulated
+                if (node.modulatedParams[param] !== undefined) {
+                    node.modulatedParams[param] += modulationValue; // Apply modulation
+                } else {
+                    console.warn(`Parameter ${param} not found for node ${id}`);
                 }
             }
             
+            // Dynamically combine baseParams and modulatedParams for each parameter during processing
+            const getEffectiveParam = (node, param) => {
+                return node.baseParams[param] + (node.modulatedParams[param] || 0);
+            };
+
             // Process this node
             if (node.node === 'Oscillator') {
+                const effectiveFrequency = getEffectiveParam(node, 'frequency');
+                const effectiveGain = getEffectiveParam(node, 'gain');
+                const effectiveDetune = getEffectiveParam(node, 'detune');
+                
+                // Apply detune to frequency (pitch shift formula: frequency * 2^(detune / 1200))
+                const detunedFrequency = effectiveFrequency * Math.pow(2, effectiveDetune / 1200);
+
                 for (let i = 0; i < signalBuffers[id].length; i++) {
-                    node.phase += node.frequency / sampleRate;
+                    node.phase += detunedFrequency / sampleRate;
                     if (node.phase >= 1) node.phase -= 1;
-                    signalBuffers[id][i] = Math.sin(2 * Math.PI * node.phase) * node.gain;
-                    // console.log('osc', signalBuffers[id[i]])
+                    signalBuffers[id][i] = Math.sin(2 * Math.PI * node.phase) * effectiveGain;
                 }
             } else if (node.node === 'Gain') {
                 for (let i = 0; i < signalBuffers[id].length; i++) {
@@ -237,6 +266,12 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
             // Add processed signal to the node's output buffer
             for (let i = 0; i < signalBuffers[id].length; i++) {
                 signalBuffers[id][i] += inputBuffer[i];
+            }
+
+
+            // Reset modulated parameters for the next frame
+            for (const param in node.modulatedParams) {
+                node.modulatedParams[param] = 0;
             }
         };
 
