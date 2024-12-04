@@ -903,7 +903,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 automergeDocuments.newClone = false
 
                 
-                panToBranch(historyDAG_cy.getElementById(hash)) //! remove this line when 2nd window is working fully
+                // panToBranch(historyDAG_cy.getElementById(hash)) //! remove this line when 2nd window is working fully
                 
                 sendMsgToHistoryApp({
                     appID: 'forkingPathsMain',
@@ -1041,7 +1041,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 
         })
 
-
+        /* 
         if (!existingHistoryNodeIDs || existingHistoryNodeIDs.size === 0){
             existingHistoryNodeIDs = new Set(historyDAG_cy.nodes().map(node => node.id()));
         }
@@ -1068,6 +1068,8 @@ document.addEventListener("DOMContentLoaded", function () {
         
         // Send data to the worker to get any position or parameter updates
         historyGraphWorker.postMessage({ meta, existingHistoryNodeIDs, docHistoryGraphStyling });      
+
+        */
     }
     
     // Load a version from the DAG
