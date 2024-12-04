@@ -238,6 +238,15 @@ document.addEventListener("DOMContentLoaded", function () {
     } else {
         openGraphWindow();
     }
+
+    // Remove the flag when the graph window is closed
+    window.addEventListener('beforeunload', () => {
+        if (historySequencerWindow) {
+            historySequencerWindow.close();
+        }
+        localStorage.removeItem('historySequencerWindowOpen');
+        console.log('history window closed')
+    });
     document.getElementById('viewReadme').addEventListener('click', () => {
         fetch('./README.md') // Fetch the README file
             .then(response => response.text())

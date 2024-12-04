@@ -1,9 +1,13 @@
- 
+html, body {
+  height: 100%; /* Ensure the body and HTML elements occupy the full height */
+  /* margin: 0; Remove default margin */
+  /* overflow: hidden; Prevent scrolling caused by expanding elements */
+}
  /* General container layout */
 #container {
   display: grid;
   grid-template-columns: 70% 30%; /* Left, middle, right columns */
-  grid-template-rows: auto; /* Automatically size rows */
+  grid-template-rows: 1fr; /* Automatically size rows */
   height: 100vh; /* Full viewport height */
   /* gap: 10px; Optional: space between columns */
 }
@@ -14,9 +18,9 @@
   grid-row: 1; /* Full height */
   display: flex;
   flex-direction: column; /* Stack children vertically */
-  height: 100%; /* Ensure it uses full height */
+  height: 98%; /* Ensure it uses full height */
   width: 100%;
-  padding: 10px;
+  /* padding: 10px; */
   background-color: #ffffff; /* Optional for visibility */
 
 
@@ -25,7 +29,9 @@
 /* Right column (docHistoryPanel) */
 #docHistory-cy {
   flex: 1; /* Fill available space inside left column */
-  grid-row: 1; /* Full height */
+  /* grid-row: 1; Full height */
+  overflow: hidden; /* Ensure no scrollbars */
+
   background-color: #f8f8f8; /* Optional for visibility */
   height: 100%; /* Full height */
   width: 100%;  /* Full width */

@@ -250,9 +250,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // * UI UPDATES
 
+    historyDAG_cy.on('layoutstop', () => {
+        console.log('Layout completed.');
+    });
+
+    const originalLayout = historyDAG_cy.layout;
+    historyDAG_cy.layout = function (options) {
+        console.log('Layout triggered with options:', options);
+        return originalLayout.call(this, options);
+    };
+
     // do this once:
     historyDAG_cy.panBy({x: 25, y: 0 })
-
+    setInterval(() => {
+        const container = document.getElementById('docHistory-cy');
+        console.log('Viewport after fit:', historyDAG_cy.extent());
+    }, 1000);
     
     function reDrawHistoryGraph(meta){
         if (!existingHistoryNodeIDs || existingHistoryNodeIDs.size === 0){
@@ -260,6 +273,8 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         
         historyGraphWorker.onmessage = (event) => {
+            console.log('Worker message:', event.data);
+
             const { nodes, edges, historyNodes } = event.data;
             
             if(nodes.length > 0){
@@ -274,8 +289,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // Refresh graph layout
             historyDAG_cy.layout(graphLayouts[graphStyle]).run();
-            historyDAG_cy.resize();
-            historyDAG_cy.fit();
             
             highlightNode(historyDAG_cy.nodes().last())
 
