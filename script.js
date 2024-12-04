@@ -1080,6 +1080,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Use `Automerge.view()` to view the state at this specific point in history
         const historicalView = Automerge.view(amDoc, [targetHash]);
+        console.log(historicalView)
         // Check if we're on the head; reset clone if true (so we don't trigger opening a new branch with changes made to head)
         if (Automerge.getHeads(historicalView)[0] === Automerge.getHeads(amDoc)[0]){
             automergeDocuments.newClone = false
@@ -3124,7 +3125,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }, onChange, `add ${parentNodeData.data.id}`);
         
         // update the synthWorklet
-
         updateSynthWorklet('addNode', parentNode )
 
 

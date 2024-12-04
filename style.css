@@ -2,7 +2,7 @@
  /* General container layout */
 #container {
   display: grid;
-  grid-template-columns: 10% 60% 30%; /* Left, middle, right columns */
+  grid-template-columns: 10% 85% 5%; /* Left, middle, right columns */
   grid-template-rows: auto; /* Automatically size rows */
   height: 100vh; /* Full viewport height */
   gap: 10px; /* Optional: space between columns */
@@ -66,7 +66,7 @@
 
 /* Inner layout: Vertical split for cy and historySequencer */
 #cy {
-  flex: 5.5; /* 55% of vertical space */
+  flex: 8; /* 55% of vertical space */
   background-color: #f0f0f0; /* Optional for visibility */
 }
 
@@ -78,7 +78,7 @@
 }
 /* Container for the row with historySequencer and thirdDiv */
 #rowContainer {
-  flex: 4; /* 40% of vertical space */
+  flex: 1.5; /* 40% of vertical space */
   display: grid;
   grid-template-columns: 50% 50%; /* 70% for historySequencer, 30% for selectedHistory,  */
   height: 100%; /* Full height of this row */
