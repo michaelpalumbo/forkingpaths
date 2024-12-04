@@ -38,7 +38,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                             stopTime: null,  // Optional: Scheduled stop time           
             
                         };
-
+                    break
                     case 'Gain':
                         this.nodes[data.data.moduleName] = {
                             node: 'Gain',
@@ -59,6 +59,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                 if (this.nodes[data.data] && !this.outputConnections.includes(data.data)) {
                     this.outputConnections.push(data.data);
                     console.log(`Node ${data.data} connected to output`);
+                    
                 }
             break
 
@@ -124,13 +125,92 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
 
         }
             */
-        console.log(this.connections)
+        console.log('nodes:', this.nodes)
+        console.log('Connections:', this.connections)
+        console.log('outputConnections:', this.outputConnections)
     }
 
     process(inputs, outputs) {
         const output = outputs[0][0]; // Single-channel output for simplicity
         output.fill(0); // Start with silence
 
+
+        // Step 1: Prepare buffers for all nodes
+        const signalBuffers = {};
+        for (const id in this.nodes) {
+            signalBuffers[id] = new Float32Array(128); // Temporary storage for node output
+        }
+
+        // Step 2: Define a recursive function to process each node
+        const visited = new Set();
+
+        const processNode = (id) => {
+            if (visited.has(id)) return; // Avoid re-processing the same node
+            visited.add(id);
+
+            const node = this.nodes[id];
+            if (!node) return;
+
+            console.log(`Processing node: ${id}, ${node.node}`);
+
+            // Sum inputs from connected nodes
+            const inputBuffer = new Float32Array(128);
+            const inputConnections = this.connections.filter(conn => conn.target === id);
+
+            for (const conn of inputConnections) {
+                processNode(conn.source); // Process the source node first
+                const sourceBuffer = signalBuffers[conn.source];
+                for (let i = 0; i < inputBuffer.length; i++) {
+                    inputBuffer[i] += sourceBuffer[i]; // Sum signals from inputs
+                }
+            }
+
+            // Process this node
+            if (node.node === 'Oscillator') {
+                for (let i = 0; i < signalBuffers[id].length; i++) {
+                    node.phase += node.frequency / sampleRate;
+                    if (node.phase >= 1) node.phase -= 1;
+                    signalBuffers[id][i] = Math.sin(2 * Math.PI * node.phase) * node.gain;
+                    // console.log('osc', signalBuffers[id[i]])
+                }
+            } else if (node.node === 'Gain') {
+                for (let i = 0; i < signalBuffers[id].length; i++) {
+                    signalBuffers[id][i] = inputBuffer[i] * node.gain;
+                }
+            } else if (node.node === 'Delay') {
+                if (!node.delayBuffer) {
+                    node.delayBuffer = new Float32Array(44100); // 1-second delay buffer
+                    node.delayIndex = 0;
+                }
+                const delaySamples = Math.min(node.delayTime * sampleRate, node.delayBuffer.length);
+                for (let i = 0; i < signalBuffers[id].length; i++) {
+                    const delayedSample = node.delayBuffer[(node.delayIndex - delaySamples + node.delayBuffer.length) % node.delayBuffer.length];
+                    signalBuffers[id][i] = inputBuffer[i] + delayedSample * node.feedback;
+                    node.delayBuffer[node.delayIndex] = signalBuffers[id][i];
+                    node.delayIndex = (node.delayIndex + 1) % node.delayBuffer.length;
+                }
+            }
+
+            // Add processed signal to the node's output buffer
+            for (let i = 0; i < signalBuffers[id].length; i++) {
+                signalBuffers[id][i] += inputBuffer[i];
+            }
+        };
+
+        // Step 3: Process all nodes connected to the output
+        for (const id of this.outputConnections) {
+            processNode(id);
+
+            // Sum the output of directly connected nodes
+            const nodeBuffer = signalBuffers[id];
+            if (nodeBuffer) {
+                for (let i = 0; i < output.length; i++) {
+                    output[i] += nodeBuffer[i];
+                }
+            }
+        }
+        
+        /*
         // Generate output for directly connected nodes
         for (const id of this.outputConnections) {
             const node = this.nodes[id];
@@ -154,7 +234,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                 }
             }
         }
-        
+        */
         // // Process each node
         // for (const [id, node] of Object.entries(this.nodes)) {
         //     if (node.node === 'Oscillator') {
