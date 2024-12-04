@@ -3245,6 +3245,10 @@ document.addEventListener("DOMContentLoaded", function () {
                     });
                 } else {
                     // handle CV modulation inputs
+                    synthWorklet.port.postMessage({
+                        cmd: 'connectCV',
+                        data: { source: data.source.split('.')[0], target: data.target.split('.')[0], param: data.target.split('.')[1] }
+                    });
                 }
 
             break

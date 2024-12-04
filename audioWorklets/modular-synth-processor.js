@@ -8,7 +8,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
         this.connections = []; // Store connections between nodes
         // Initialize the output node with a fixed ID
         this.outputConnections = []; // Nodes explicitly connected to the audio output
-
+        this.cvConnections = [ ] 
         this.port.onmessage = (event) => this.handleMessage(event.data);
 
 
@@ -40,6 +40,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                         };
                     break
                     case 'Gain':
+                    case 'ModGain':
                         this.nodes[data.data.moduleName] = {
                             node: 'Gain',
                             gain: data.data.audioGraph.params.gain || 1, // Default gain of 1
@@ -62,6 +63,16 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                     
                 }
             break
+
+            case 'connectCV':
+                // Add a modulation connection (source modulates target parameter)
+                this.cvConnections.push({
+                    source: data.data.source,
+                    target: data.data.target,
+                    param: data.data.param // The parameter to modulate
+                });
+                console.log(`Modulation connection added: ${data.data.source} -> ${data.data.target}.${data.data.param}`);
+            break;
 
             case 'paramChange':
                 this.nodes[data.data.parent][data.data.param] = data.data.value
@@ -125,9 +136,9 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
 
         }
             */
-        console.log('nodes:', this.nodes)
-        console.log('Connections:', this.connections)
-        console.log('outputConnections:', this.outputConnections)
+        // console.log('nodes:', this.nodes)
+        // console.log('Connections:', this.connections)
+        // console.log('outputConnections:', this.outputConnections)
     }
 
     process(inputs, outputs) {
@@ -151,7 +162,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
             const node = this.nodes[id];
             if (!node) return;
 
-            console.log(`Processing node: ${id}, ${node.node}`);
+            // console.log(`Processing node: ${id}, ${node.node}`);
 
             // Sum inputs from connected nodes
             const inputBuffer = new Float32Array(128);
@@ -160,11 +171,34 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
             for (const conn of inputConnections) {
                 processNode(conn.source); // Process the source node first
                 const sourceBuffer = signalBuffers[conn.source];
+                if (!sourceBuffer) {
+                    console.warn(`Source buffer for node ${conn.source} is undefined`);
+                    continue; // Skip this modulation if the buffer is unavailable
+                }
                 for (let i = 0; i < inputBuffer.length; i++) {
                     inputBuffer[i] += sourceBuffer[i]; // Sum signals from inputs
                 }
             }
 
+            // Process Modulation Connections
+            // const modulationConnections = this.connections.filter(conn => conn.target === id && conn.param);
+            const modulations = this.cvConnections.filter((conn) => conn.target === id);
+
+            for (const conn of modulations) {
+                if (!this.nodes[conn.source]) {
+                    console.error(`Modulation source node ${conn.source} does not exist`);
+                    continue; // Skip invalid connection
+                }
+
+                processNode(conn.source); // Process the source node first
+                const sourceBuffer = signalBuffers[conn.source];
+                // Modulate the specified parameter
+                const modulationValue = sourceBuffer[0]; // Use the first sample for modulation
+                if (modulationValue !== undefined) {
+                    node[conn.param] += modulationValue; // Apply modulation
+                }
+            }
+            
             // Process this node
             if (node.node === 'Oscillator') {
                 for (let i = 0; i < signalBuffers[id].length; i++) {
