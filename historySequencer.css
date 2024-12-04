@@ -2,7 +2,7 @@
  /* General container layout */
 #container {
   display: grid;
-  grid-template-columns: 10% 60% 30%; /* Left, middle, right columns */
+  grid-template-columns: 70% 30%; /* Left, middle, right columns */
   grid-template-rows: auto; /* Automatically size rows */
   height: 100vh; /* Full viewport height */
   gap: 10px; /* Optional: space between columns */
@@ -22,40 +22,10 @@
 
 }
 
-/* Style the container div */
-#modulesLibraryContainer {
-  width: 100%; /* Set the desired width */
-  height: 400px; /* Set the desired height */
-  border: 1px solid #ccc; /* Optional: Add a border */
-  overflow-y: auto; /* Enable vertical scrolling */
-  padding: 1px; /* Optional: Add padding inside the container */
-}
-#moduleList {
-  list-style-type: none;
-  padding: 0; /* Optional: Removes left padding of the list */
-  margin: 0;  /* Optional: Removes default margin */
-}
-
-/* Style odd items */
-#moduleList li:nth-child(odd) {
-  background-color: #f8f8f8; /* Off-white */
-}
-
-/* Style even items */
-#moduleList li:nth-child(even) {
-    background-color: #dcdcdc; /* Light grey */
-}
-
-/* Optional: Add padding for better visuals */
-#moduleList li {
-    padding: 5px;
-    cursor: pointer; /* Ensures pointer cursor on hover */
-}
-
 
 
 /* Middle column */
-#synthAndHistoryController {
+#historyController {
   grid-column: 2; /* Middle column */
   grid-row: 1; /* Full height */
   display: flex;
@@ -64,18 +34,7 @@
   width: 100%;
 }
 
-/* Inner layout: Vertical split for cy and historySequencer */
-#cy {
-  flex: 5.5; /* 55% of vertical space */
-  background-color: #f0f0f0; /* Optional for visibility */
-}
 
-#cytoscapeTooltipContainer {
-  flex: 0.5; /* 40% of vertical space */
-  display: grid;
-
-  height: 100%; /* Full height of this row */
-}
 /* Container for the row with historySequencer and thirdDiv */
 #rowContainer {
   flex: 4; /* 40% of vertical space */
