@@ -51,6 +51,10 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                 }
             break
 
+            case 'removeNode':
+                delete this.nodes[data.data]
+            break
+
             case 'connectNodes':
                 this.connections.push(data.data);
             break

@@ -2590,6 +2590,10 @@ document.addEventListener("DOMContentLoaded", function () {
         } else if (highlightedNode && (event.key === 'Backspace' || event.key === 'Delete')){
             if (highlightedNode.isParent()) {
                 const nodeId = highlightedNode.id();
+
+                // update audioGraph right away
+                updateSynthWorklet('removeNode', nodeId)
+
                 cy.remove(highlightedNode); // Remove the node from the Cytoscape instance
                 highlightedNode = null; // Clear the reference after deletion
 
@@ -3213,20 +3217,14 @@ document.addEventListener("DOMContentLoaded", function () {
                     cmd: 'addNode', 
                     data: data
                 });
-
-
-                // setTimeout(() => {
-                //     // Example usage
-                //     // addNode('osc1', 'oscillator', { frequency: 440 });
-                //     // addNode('output', 'output');
-                //     // connectNodes('osc1', 'outputNode'); // Connect oscillator to output
-
-                //     synthWorklet.port.postMessage({
-                //         cmd: 'connectToOutput',
-                //         id: data.moduleName
-                //     });
-                // }, 2000); // Change frequency after 2 seconds
                 
+            break
+
+            case 'removeNode':
+                synthWorklet.port.postMessage({ 
+                    cmd: 'removeNode', 
+                    data: data
+                });
             break
 
             case 'connectNodes':
