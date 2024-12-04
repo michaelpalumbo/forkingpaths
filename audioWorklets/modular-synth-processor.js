@@ -80,8 +80,6 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
 
             case 'paramChange':
                 this.nodes[data.data.parent][data.data.param] = data.data.value
-                // Object.assign(this.nodes[data.data.parent], params);
-                // console.log(`Node updated: ${id} with params`, params);
 
             break
             
@@ -237,17 +235,30 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
 
         // Step 3: Process all nodes connected to the output
         for (const id of this.outputConnections) {
-            processNode(id);
+            processNode(id); // process the node first
 
             // Sum the output of directly connected nodes
             const nodeBuffer = signalBuffers[id];
             if (nodeBuffer) {
                 for (let i = 0; i < output.length; i++) {
-                    output[i] += nodeBuffer[i];
+                    output[i] += nodeBuffer[i]; // Sum signals from all connected nodes
                 }
             }
         }
         
+        // Normalize the mixed signal
+        const numConnections = this.outputConnections.length;
+        if (numConnections > 0) {
+            for (let i = 0; i < output.length; i++) {
+                output[i] /= numConnections; // Normalize by the number of contributing nodes
+            }
+        }
+
+        // Apply an overall gain to limit output signal
+        const overallGain = 0.8; // Adjust as needed
+        for (let i = 0; i < output.length; i++) {
+            output[i] *= overallGain; // Scale the output
+        }
         /*
         // Generate output for directly connected nodes
         for (const id of this.outputConnections) {
