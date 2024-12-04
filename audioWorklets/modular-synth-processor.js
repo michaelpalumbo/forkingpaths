@@ -16,7 +16,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
     }
 
     handleMessage(data) {
-        console.log(data.data)
+
         switch (data.cmd){
             case 'addNode':
                 
@@ -29,20 +29,16 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                             baseParams: {
                                 frequency: data.data.audioGraph.params.frequency,
                                 gain: 1,
-                                detune: data.data.audioGraph.params.detune,
                             },
                             modulatedParams: {
                                 // offsets for modulation
                                 frequency: 0, 
                                 gain: 0, 
-                                detune: 0
                             },
                             output: new Float32Array(128),
                             phase: 0,
                             customWaveform: null,
                             type: data.data.audioGraph.params.type,
-                            detune: data.data.audioGraph.params.detune, 
-                            gain: 1,
                             modulationTarget: null, // Target node or parameter for modulation
                             startTime: null, // Optional: Scheduled start time
                             stopTime: null,  // Optional: Scheduled stop time           
@@ -68,7 +64,6 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
 
             case 'removeNode':
                 delete this.nodes[data.data]
-                console.log(`connections ${this.connections}\noutputConnections ${this.outputConnections}\ncvConnections ${JSON.stringify(this.cvConnections)}\n`)
 
                 // Remove all related connections
 
@@ -85,7 +80,6 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                 this.cvConnections = this.cvConnections.filter(
                     (item) => item.source !== data.data && item.target !== data.data
                 );
-                console.log(`connections ${this.connections}\noutputConnections ${this.outputConnections}\ncvConnections ${this.cvConnections}\n`)
             break
 
             case 'connectNodes':
@@ -93,11 +87,8 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
             break
 
             case 'connectToOutput':
-                console.log(this.nodes)
                 if (this.nodes[data.data] && !this.outputConnections.includes(data.data)) {
                     this.outputConnections.push(data.data);
-                    console.log(`Node ${data.data} connected to output`);
-                    
                 }
             break
 
@@ -108,7 +99,6 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                     target: data.data.target,
                     param: data.data.param // The parameter to modulate
                 });
-                console.log(`Modulation connection added: ${data.data.source} -> ${data.data.target}.${data.data.param}`);
             break;
 
             case 'paramChange':
@@ -116,8 +106,12 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                 // update the baseParam (the value associated with the knob/control)
                 const targetNode = this.nodes[data.data.parent];
                 if (targetNode && targetNode.baseParams[data.data.param] !== undefined) {
-                    targetNode.baseParams[data.data.param] = data.data.value;
-                    console.log(`Updated ${data.data.param} of ${data.data.parent} to ${data.data.value}`);
+                    const newValue = parseFloat(data.data.value); // Ensure the value is a number
+                    if (!isNaN(newValue)) {
+                        targetNode.baseParams[data.data.param] = newValue;
+                    } else {
+                        console.warn(`Invalid value for ${data.data.param}: ${data.data.value}`);
+                    }
                 } else {
                     console.warn(`Parameter ${data.data.param} not found for node ${data.data.parent}`);
                 }
@@ -247,7 +241,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
 
 
                 const param = conn.param; // The parameter being modulated
-                if (!isNaN(modulationValue)) {
+                if (!isNaN(modulationValue) || modulationValue != undefined) {
                     const param = conn.param; // Parameter being modulated
                     if (node.modulatedParams[param] !== undefined) {
                         node.modulatedParams[param] += modulationValue; // Apply modulation
@@ -256,29 +250,33 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                     }
                 } else {
                     console.warn(`Invalid modulation value for ${id}:`, modulationValue);
+                    continue
                 }
             }
             
             // Dynamically combine baseParams and modulatedParams for each parameter during processing
             const getEffectiveParam = (node, param) => {
-                return node.baseParams[param] + (node.modulatedParams[param] || 0);
+                const base = node.baseParams[param] || 0;
+                const modulated = node.modulatedParams[param] || 0;
+                const result = base + modulated;
+            
+                // Ensure result is a valid number
+                if (typeof result !== 'number' || isNaN(result)) {
+                    console.warn(`Invalid value for parameter ${param}:`, result);
+                    return 0; // Default to 0 if invalid
+                }
+            
+                return result;
             };
 
             // Process this node
             if (node.node === 'Oscillator') {
                 const effectiveFrequency = getEffectiveParam(node, 'frequency');
+                // const formattedFrequency = parseFloat(effectiveFrequency.toFixed(2));
                 const effectiveGain = getEffectiveParam(node, 'gain');
-                const effectiveDetune = getEffectiveParam(node, 'detune');
-                // console.log(`Effective frequency for ${id}: ${effectiveFrequency}`);
-                // console.log(`Base frequency for ${id}: ${node.baseParams.frequency}`);
-                // console.log(`Modulated frequency for ${id}: ${node.modulatedParams.frequency}`);
 
-
-                // Apply detune to frequency (pitch shift formula: frequency * 2^(detune / 1200))
-                const detunedFrequency = effectiveFrequency * Math.pow(2, effectiveDetune / 1200);
-                console.log(`detunedd frequency for ${id}: ${detunedFrequency}`);
                 for (let i = 0; i < signalBuffers[id].length; i++) {
-                    node.phase += detunedFrequency / sampleRate;
+                    node.phase += effectiveFrequency / sampleRate;
                     if (node.phase >= 1) node.phase -= 1;
                     signalBuffers[id][i] = Math.sin(2 * Math.PI * node.phase) * effectiveGain;
                 }

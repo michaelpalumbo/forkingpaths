@@ -2250,8 +2250,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     // Update the node's data and write to Automerge only if the value has changed
                     if (scaledValue !== currentHandleNode.data('value')) {
                         // set params in audio graph:
-                        console.log(currentHandleNode.data().label, scaledValue)
-
                         updateSynthWorklet('paramChange', { parent: currentHandleNode.data().parent, param: currentHandleNode.data().label, value: scaledValue})
                         // updateParameter(currentHandleNode.data().parent, currentHandleNode.data().label, scaledValue)
 

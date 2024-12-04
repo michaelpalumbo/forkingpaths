@@ -56,15 +56,6 @@
           "modulatable": true,
           "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects."
         },
-        "detune": {
-          "min": -1200,
-          "max": 1200,
-          "default": 0,
-          "units": "cents",
-          "description": "Detunes the frequency in cents (1/100th of a semitone).",
-          "modulatable": true,
-          "modulationDescription": "Audio-rate modulation of detune for subtle or dramatic pitch variations."
-        },
         "type": {
           "values": [
             "sine",
@@ -79,12 +70,10 @@
       },
       "paramNames": [
         "frequency",
-        "detune",
         "type"
       ],
       "cvNames": [
-        "frequency",
-        "detune"
+        "frequency"
       ],
       "cv": {
         "frequency": {
@@ -95,15 +84,6 @@
           "description": "The frequency of the oscillator.",
           "modulatable": true,
           "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects."
-        },
-        "detune": {
-          "min": -1200,
-          "max": 1200,
-          "default": 0,
-          "units": "cents",
-          "description": "Detunes the frequency in cents (1/100th of a semitone).",
-          "modulatable": true,
-          "modulationDescription": "Audio-rate modulation of detune for subtle or dramatic pitch variations."
         }
       },
       "inputs": [],
@@ -864,15 +844,6 @@
           "modulatable": true,
           "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects."
         },
-        "detune": {
-          "min": -20,
-          "max": 20,
-          "default": 0,
-          "units": "cents",
-          "description": "Detunes the frequency in cents (1/100th of a semitone).",
-          "modulatable": true,
-          "modulationDescription": "Audio-rate modulation of detune for subtle or dramatic pitch variations."
-        },
         "type": {
           "values": [
             "sine",
@@ -887,12 +858,10 @@
       },
       "paramNames": [
         "frequency",
-        "detune",
         "type"
       ],
       "cvNames": [
-        "frequency",
-        "detune"
+        "frequency"
       ],
       "cv": {
         "frequency": {
@@ -903,15 +872,6 @@
           "description": "The frequency of the oscillator.",
           "modulatable": true,
           "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects."
-        },
-        "detune": {
-          "min": -20,
-          "max": 20,
-          "default": 0,
-          "units": "cents",
-          "description": "Detunes the frequency in cents (1/100th of a semitone).",
-          "modulatable": true,
-          "modulationDescription": "Audio-rate modulation of detune for subtle or dramatic pitch variations."
         }
       },
       "inputs": [],
