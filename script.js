@@ -1840,6 +1840,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function openGraphWindow() {
         historySequencerWindow = window.open('historySequencer.html', 'HistoryGraph');
         localStorage.setItem('historySequencerWindowOpen', true);
+
     }
     // Example: Send graph data to the history tab
     function sendMsgToHistoryApp(data) {
@@ -1848,6 +1849,7 @@ document.addEventListener("DOMContentLoaded", function () {
             historySequencerWindow.postMessage(data, '*');
         } else {
             console.error('Graph window is not open or has been closed.');
+            openGraphWindow()
         }
     }
 
@@ -1876,29 +1878,29 @@ document.addEventListener("DOMContentLoaded", function () {
         historySequencerWindow = window.open('historySequencer.html', 'HistoryGraph');
         localStorage.setItem('historySequencerWindowOpen', true);
 
-        // Example: Send graph data to the history tab
-        function sendGraphUpdate(data) {
-            if (historySequencerWindow && !historySequencerWindow.closed) {
-                historySequencerWindow.postMessage({ cmd: 'updateGraph', data }, '*');
-            } else {
-                console.error('Graph window is not open or has been closed.');
-            }
-        }
+        // // Example: Send graph data to the history tab
+        // function sendGraphUpdate(data) {
+        //     if (historySequencerWindow && !historySequencerWindow.closed) {
+        //         historySequencerWindow.postMessage({ cmd: 'updateGraph', data }, '*');
+        //     } else {
+        //         console.error('Graph window is not open or has been closed.');
+        //     }
+        // }
 
-        // Example: Update graph from your app
-        const graphData = {
-            nodes: [
-                { data: { id: '1', label: 'Node 1' } },
-                { data: { id: '2', label: 'Node 2' } },
-            ],
-            edges: [
-                { data: { id: '1-2', source: '1', target: '2' } },
-            ],
-        };
+        // // Example: Update graph from your app
+        // const graphData = {
+        //     nodes: [
+        //         { data: { id: '1', label: 'Node 1' } },
+        //         { data: { id: '2', label: 'Node 2' } },
+        //     ],
+        //     edges: [
+        //         { data: { id: '1-2', source: '1', target: '2' } },
+        //     ],
+        // };
 
-        setTimeout(() => {
-            sendGraphUpdate(graphData);
-        }, 2000); // Adjust the delay as needed to debounce the event
+        // setTimeout(() => {
+        //     sendGraphUpdate(graphData);
+        // }, 2000); // Adjust the delay as needed to debounce the event
         
 
     });
