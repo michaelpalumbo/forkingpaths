@@ -242,14 +242,25 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
+    // * COMMUNICATION WITH MAIN APP
     window.opener?.postMessage({ cmd: 'historySequencerReady' }, '*');
 
+
+
+
+    // * UI UPDATES
+
+    // do this once:
+    historyDAG_cy.panBy({x: 25, y: 0 })
+
+    
     function reDrawHistoryGraph(meta){
         if (!existingHistoryNodeIDs || existingHistoryNodeIDs.size === 0){
             existingHistoryNodeIDs = new Set(historyDAG_cy.nodes().map(node => node.id()));
         }
         
         historyGraphWorker.onmessage = (event) => {
+            console.log(event.data)
             const { nodes, edges, historyNodes } = event.data;
             
             if(nodes.length > 0){
@@ -316,6 +327,40 @@ document.addEventListener("DOMContentLoaded", function () {
             target.addClass('highlighted');
         }
     }
+
+    function highlightSequencerNode(target){
+
+        if(historySequencerHighlightedNode){
+            historySequencerHighlightedNode.removeClass('highlighted');
+            historySequencerHighlightedNode = target
+            target.addClass('highlighted');
+        }
+        else {
+            historySequencerHighlightedNode = target;
+            target.addClass('highlighted');
+        }
+    }
+
+    // pan to new/selected branch
+    function panToBranch(node) {
+        if(!meta.userSettings.focusNewBranch){
+            return
+        }
+        // const node = y.getElementById(nodeId); // Select the node by its ID
+
+        if (node && node.length > 0) { // Check if the node exists
+            const position = node.position(); // Get the node's position
+
+            // Pan to the node
+            historyDAG_cy.pan({
+                x: -position.x + historyDAG_cy.width(), // Adjust for viewport center
+                // y: -position.y + historyDAG_cy.height() / 1.5
+            });
+        } else {
+            // console.log(`Node with ID ${nodeId} not found`);
+        }
+    }
+    
 
 
     console.log('History graph ready to receive updates.');
