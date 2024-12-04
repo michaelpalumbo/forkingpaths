@@ -68,13 +68,24 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
 
             case 'removeNode':
                 delete this.nodes[data.data]
+                console.log(`connections ${this.connections}\noutputConnections ${this.outputConnections}\ncvConnections ${JSON.stringify(this.cvConnections)}\n`)
 
-                // dispose all related connections
-                this.connections = this.connections.filter(item => item.source !== data.data);
-                this.connections = this.connections.filter(item => item.target !== data.data);
-                this.outputConnections = this.connections.filter(item => item !== data.data);
-                this.cvConnections = this.cvConnections.filter(item => item.target !== data.data);
-                this.cvConnections = this.cvConnections.filter(item => item.source !== data.data);
+                // Remove all related connections
+
+                // Filter `connections` to exclude those involving the deleted node
+                this.connections = this.connections.filter(
+                    (item) => item.source !== data.data && item.target !== data.data
+                );
+                // Filter `outputConnections` to exclude the deleted node
+                this.outputConnections = this.outputConnections.filter(
+                    (item) => item !== data.data
+                );
+
+                // Filter `cvConnections` to exclude those involving the deleted node
+                this.cvConnections = this.cvConnections.filter(
+                    (item) => item.source !== data.data && item.target !== data.data
+                );
+                console.log(`connections ${this.connections}\noutputConnections ${this.outputConnections}\ncvConnections ${this.cvConnections}\n`)
             break
 
             case 'connectNodes':
@@ -101,7 +112,16 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
             break;
 
             case 'paramChange':
-                this.nodes[data.data.parent][data.data.param] = data.data.value
+                // this.nodes[data.data.parent][data.data.param] = data.data.value
+                // update the baseParam (the value associated with the knob/control)
+                const targetNode = this.nodes[data.data.parent];
+                if (targetNode && targetNode.baseParams[data.data.param] !== undefined) {
+                    targetNode.baseParams[data.data.param] = data.data.value;
+                    console.log(`Updated ${data.data.param} of ${data.data.parent} to ${data.data.value}`);
+                } else {
+                    console.warn(`Parameter ${data.data.param} not found for node ${data.data.parent}`);
+                }
+                break;
 
             break
             
@@ -216,13 +236,26 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
 
                 processNode(conn.source); // Process the source node first
                 const sourceBuffer = signalBuffers[conn.source];
+
+                if (!sourceBuffer) {
+                    console.warn(`No signal buffer for modulation source: ${conn.source}`);
+                    continue; // Skip invalid connections
+                }
+            
                 // Modulate the specified parameter
                 const modulationValue = sourceBuffer[0]; // Use the first sample for modulation
+
+
                 const param = conn.param; // The parameter being modulated
-                if (node.modulatedParams[param] !== undefined) {
-                    node.modulatedParams[param] += modulationValue; // Apply modulation
+                if (!isNaN(modulationValue)) {
+                    const param = conn.param; // Parameter being modulated
+                    if (node.modulatedParams[param] !== undefined) {
+                        node.modulatedParams[param] += modulationValue; // Apply modulation
+                    } else {
+                        console.warn(`Parameter ${param} not found for node ${id}`);
+                    }
                 } else {
-                    console.warn(`Parameter ${param} not found for node ${id}`);
+                    console.warn(`Invalid modulation value for ${id}:`, modulationValue);
                 }
             }
             
@@ -236,18 +269,24 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                 const effectiveFrequency = getEffectiveParam(node, 'frequency');
                 const effectiveGain = getEffectiveParam(node, 'gain');
                 const effectiveDetune = getEffectiveParam(node, 'detune');
-                
+                // console.log(`Effective frequency for ${id}: ${effectiveFrequency}`);
+                // console.log(`Base frequency for ${id}: ${node.baseParams.frequency}`);
+                // console.log(`Modulated frequency for ${id}: ${node.modulatedParams.frequency}`);
+
+
                 // Apply detune to frequency (pitch shift formula: frequency * 2^(detune / 1200))
                 const detunedFrequency = effectiveFrequency * Math.pow(2, effectiveDetune / 1200);
-
+                console.log(`detunedd frequency for ${id}: ${detunedFrequency}`);
                 for (let i = 0; i < signalBuffers[id].length; i++) {
                     node.phase += detunedFrequency / sampleRate;
                     if (node.phase >= 1) node.phase -= 1;
                     signalBuffers[id][i] = Math.sin(2 * Math.PI * node.phase) * effectiveGain;
                 }
             } else if (node.node === 'Gain') {
+                const effectiveGain = getEffectiveParam(node, 'gain'); // Combines base and modulated gain
+
                 for (let i = 0; i < signalBuffers[id].length; i++) {
-                    signalBuffers[id][i] = inputBuffer[i] * node.gain;
+                    signalBuffers[id][i] = inputBuffer[i] * effectiveGain;
                 }
             } else if (node.node === 'Delay') {
                 if (!node.delayBuffer) {
@@ -290,6 +329,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
         
         // Normalize the mixed signal
         const numConnections = this.outputConnections.length;
+        // console.log(this.outputConnections)
         if (numConnections > 0) {
             for (let i = 0; i < output.length; i++) {
                 output[i] /= numConnections; // Normalize by the number of contributing nodes
