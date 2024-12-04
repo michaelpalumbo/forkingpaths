@@ -901,7 +901,16 @@ document.addEventListener("DOMContentLoaded", function () {
                 // makeBranch(changeMessage, Automerge.getHeads(newDoc)[0])
                 onChangeCallback(amDoc);
                 automergeDocuments.newClone = false
-                panToBranch(historyDAG_cy.getElementById(hash))
+
+                
+                panToBranch(historyDAG_cy.getElementById(hash)) //! remove this line when 2nd window is working fully
+                
+                sendMsgToHistoryApp({
+                    appID: 'forkingPathsMain',
+                    cmd: 'panToBranch',
+                    data: historyDAG_cy.getElementById(hash)
+                        
+                })
             }
             
             return amDoc;
@@ -1840,7 +1849,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function openGraphWindow() {
         historySequencerWindow = window.open('historySequencer.html', 'HistoryGraph');
         localStorage.setItem('historySequencerWindowOpen', true);
-
+        
     }
     // Example: Send graph data to the history tab
     function sendMsgToHistoryApp(data) {
@@ -1853,26 +1862,33 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    // Listen for the historySequencerReady message
+    window.addEventListener('message', (event) => {
 
+        switch(event.data.cmd){
+
+            case 'historySequencerReady':
+                console.log('historySequencer window is ready. Sending initial data...');
+                sendMsgToHistoryApp({
+                    appID: 'forkingPathsMain',
+                    cmd: 'reDrawHistoryGraph',
+                    data: meta
+                        
+                })
+            break
+            case 'loadVersion':
+                loadVersion(event.data.data.hash, event.data.data.branch)
+            break
+        }
+
+    });
 
 //*
 //*
 //* EVENT HANDLERS
 //* Functions that directly handle UI interactions
 //*
-    // Listen for the historySequencerReady message
-    window.addEventListener('message', (event) => {
-        if (event.data.cmd === 'historySequencerReady') {
-            console.log('historySequencer window is ready. Sending initial data...');
-            sendMsgToHistoryApp({
-                appID: 'forkingPathsMain',
-                cmd: 'reDrawHistoryGraph',
-                data: meta
-                    
-            })
-            // sendGraphUpdate(initialGraphData); // Resend the current graph state
-        }
-    });
+
     // Open the history sequencer in a new tab
     document.getElementById('openHistoryWindow').addEventListener('click', () => {
         historySequencerWindow = window.open('historySequencer.html', 'HistoryGraph');

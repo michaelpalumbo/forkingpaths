@@ -1,13 +1,18 @@
 import dagre from 'cytoscape-dagre';
 import * as Tone from "tone";
+import { uuidv7 } from "uuidv7";
 
 const historyGraphWorker = new Worker("./workers/historyGraphWorker.js");
+// meta doc
+let meta;
 
 // * History Graph
 let selectedHistoryNodes = []
 let existingHistoryNodeIDs
 let historyHighlightedNode = null
 let historySequencerHighlightedNode = null
+let allowMultiSelect = false;
+let allowPan = false
 let isDraggingEnabled = false;
 let highlightedNode = null
 let graphStyle = 'DAG'
@@ -67,6 +72,19 @@ let currentIndex = 0;
 let historySequencerWindow;
 
 const transport = Tone.getTransport();
+
+
+// * INPUTS
+
+let hid = {
+    key: {
+        cmd: false,
+        shift: false,
+        o: false,
+        v: false,
+        s: false
+    }
+}
 
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -242,38 +260,54 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // * COMMUNICATION WITH MAIN APP
+    // *
+    // *
+    // * COMMUNICATIONS WITH MAIN APP
+    // * 
+    // *
     window.opener?.postMessage({ cmd: 'historySequencerReady' }, '*');
 
+    // Listen for messages from the main app
+    window.addEventListener('message', (event) => {
+        if (event.data && event.data.appID === 'forkingPathsMain') {
+            console.log(event.data)
+            switch (event.data.cmd){
+                case 'reDrawHistoryGraph':
+                    meta = event.data.data
+                    reDrawHistoryGraph(meta)
+                break
+                case 'panToBranch':
+                    panToBranch(event.data.data)
+                break
+                default: console.log('no switch case for message:', event.data)
+            }
+        }
 
-
-
-    // * UI UPDATES
-
-    historyDAG_cy.on('layoutstop', () => {
-        console.log('Layout completed.');
+        // if (event.data.cmd === 'updateGraph') {
+        //     const graphData = event.data.data;
+        //     updateGraph(graphData);
+        // }
     });
 
-    const originalLayout = historyDAG_cy.layout;
-    historyDAG_cy.layout = function (options) {
-        console.log('Layout triggered with options:', options);
-        return originalLayout.call(this, options);
-    };
+
+    // *
+    // *
+    // * UI UPDATES
+    // * 
+    // *
+
+    // *
+    // * HISTORY GRAPH
 
     // do this once:
     historyDAG_cy.panBy({x: 25, y: 0 })
-    setInterval(() => {
-        const container = document.getElementById('docHistory-cy');
-        console.log('Viewport after fit:', historyDAG_cy.extent());
-    }, 1000);
-    
-    function reDrawHistoryGraph(meta){
+
+    function reDrawHistoryGraph(){
         if (!existingHistoryNodeIDs || existingHistoryNodeIDs.size === 0){
             existingHistoryNodeIDs = new Set(historyDAG_cy.nodes().map(node => node.id()));
         }
         
         historyGraphWorker.onmessage = (event) => {
-            console.log('Worker message:', event.data);
 
             const { nodes, edges, historyNodes } = event.data;
             
@@ -300,25 +334,229 @@ document.addEventListener("DOMContentLoaded", function () {
         historyGraphWorker.postMessage({ meta, existingHistoryNodeIDs, docHistoryGraphStyling });      
     }
 
-    // * communications
 
-    // Listen for messages from the main app
-    window.addEventListener('message', (event) => {
-        if (event.data && event.data.appID === 'forkingPathsMain') {
-            console.log(event.data)
-            switch (event.data.cmd){
-                case 'reDrawHistoryGraph':
-                    reDrawHistoryGraph(event.data.data)
-                break
-                default: console.log('no switch case for message:', event.data)
+/*
+
+        HISTORY SEQUENCER 
+
+    */
+
+    // history sequencer
+    function historySequencerController(cmd, data){
+        switch(cmd){
+            case 'clear':
+                selectedHistoryNodes.length = 0
+                historyDAG_cy.edges().removeClass("sequencerEdge");
+            break
+
+            case 'removeSteps':
+                //
+                let nodeIndex = historySequencerCy.nodes().indexOf(data);
+                let historyDAG_cyHash = data.data().id.split(' ')[0]
+                // selectedHistoryNodes = removeLastInstanceById(selectedHistoryNodes, historyDAG_cyHash)
+                selectedHistoryNodes.splice(nodeIndex, 1);
+                let connectedNodes = data.connectedEdges().connectedNodes().difference(data);
+                // remove node from historySequencerCy
+                if (connectedNodes.length === 2) {
+                    const [nodeB, nodeA] = connectedNodes;
+            
+                    // Check if an edge already exists between these two nodes
+                    const existingEdge = historySequencerCy.edges().filter(edge =>
+                        edge.visible() && // Only consider visible edges
+                        (edge.source().id() === nodeA.id() && edge.target().id() === nodeB.id()) ||
+                        (edge.source().id() === nodeB.id() && edge.target().id() === nodeA.id())
+                    );
+            
+                    if (existingEdge.empty()) {
+                        // Add a new edge connecting the two nodes
+                        historySequencerCy.add({
+                            group: 'edges',
+                            data: {
+                                id: `edge-${nodeA.id()}-${nodeB.id()}`,
+                                source: nodeA.id(),
+                                target: nodeB.id()
+                            }
+                        });
+                    } else {
+                        // console.log(`An edge already exists between ${nodeA.id()} and ${nodeB.id()}`);
+                    }
+                } else {
+                    console.log('The clicked node does not have exactly 2 connected nodes.');
+                }
+
+                historySequencerCy.remove(data)
+                // now close the circle
+                historySequencerCy.edges().forEach(edge => {
+                    if (!edge.source().visible() || !edge.target().visible()) {
+                        edge.remove(); // Remove edges connected to hidden nodes
+                    }
+                });
+  
+
+                // if node no longer is in sequence, remove its border
+                if (!selectedHistoryNodes.some(item => item.id === historyDAG_cyHash)){
+                    let historyDAG_cyNode = historyDAG_cy.getElementById(historyDAG_cyHash)
+                    historyDAG_cyNode.removeClass("sequencerNode");
+                }
+                
+            break
+    
+
+        }
+    }
+
+     // Function to add a new node
+     function modifyHistorySequencerCy(cmd, data) {
+
+        switch(cmd){
+            case 'add':
+                //
+                selectedHistoryNodes.push({
+                    data: data.data(),
+                    cyNode: data,
+                    id: data.data().id
+                })
+                data.addClass("sequencerNode");
+
+
+                let node = data
+                const nodeId = `${node.data().id} ${uuidv7()}`// first string is the history hash, 2nd, is just for our sequencer
+                const nodes = historySequencerCy.nodes();
+
+                // Add the new node
+                historySequencerCy.add({
+                    group: 'nodes',
+                    data: { id: nodeId , label: node.data().label.split('_')[0], color: docHistoryGraphStyling.nodeColours[node.data().label.split(' ')[0]], historyNode: node}
+                });
+
+                // If there's a previous node, connect it to the new node
+                if (nodes.length > 0) {
+                    const lastNode = nodes[nodes.length - 1];
+                    historySequencerCy.add({
+                        group: 'edges',
+                        data: {
+                            id: `${lastNode.id()}-to-${nodeId}`,
+                            source: lastNode.id(),
+                            target: nodeId
+                        }
+                    });
+                }
+
+                // Remove any existing connection to the first node
+                if (nodes.length >= 2) {
+                    const firstNode = nodes[0];
+                    historySequencerCy.edges().forEach(edge => {
+                        if (edge.data('target') === firstNode.id()) {
+                            edge.remove();
+                        }
+                    });
+
+                    // Add a new connection from the last node to the first node
+                    historySequencerCy.add({
+                        group: 'edges',
+                        data: {
+                            id: `${nodeId}-to-${firstNode.id()}`,
+                            source: nodeId,
+                            target: firstNode.id()
+                        }
+                    });
+                }
+            break
+
+            case 'intersectingEdge':
+
+            
+                // Check for existing edges to prevent duplicates
+                const existingEdgesBetweenSourceAndDragged = historySequencerCy.edges().filter(e =>
+                    (e.source().id() === data.sourceNode.id() && e.target().id() === data.draggedNode.id()) ||
+                    (e.source().id() === data.draggedNode.id() && e.target().id() === data.sourceNode.id())
+                );
+
+                const existingEdgesBetweenDraggedAndTarget = historySequencerCy.edges().filter(e =>
+                    (e.source().id() === data.targetNode.id() && e.target().id() === data.draggedNode.id()) ||
+                    (e.source().id() === data.draggedNode.id() && e.target().id() === data.targetNode.id())
+                );
+
+                // connect 
+                if (existingEdgesBetweenSourceAndDragged.empty()) {
+                    historySequencerCy.add({
+                        group: 'edges',
+                        data: { source: data.draggedNode.id(), target: data.sourceNode.id() }
+                    });
+                    
+                }
+
+                if (existingEdgesBetweenDraggedAndTarget.empty()) {
+                    historySequencerCy.add({
+                        group: 'edges',
+                        data: { source: data.draggedNode.id(), target: data.targetNode.id() }
+                    });
+                } 
+
+            break
+
+        }
+        
+        // Reapply the circle layout
+        historySequencerCy.layout({ name: 'circle' }).run();
+    }
+
+    // Set the initial BPM
+    transport.bpm.value = 120;
+    let currentNode = null
+    // Schedule the sequencer loop
+    transport.scheduleRepeat((time) => {
+        let sequencerNodes = historySequencerCy.nodes()
+        if (meta && !hid.key.shift && sequencerNodes.length > 0) {
+            let node
+
+
+            // let connectedNodes = node.connectedEdges().connectedNodes().difference(node);
+
+            // console.log(connectedNodes[Math.floor(Math.random() * connectedNodes.length)].data())
+
+            if (meta.sequencer.traversalMode === 'Sequential') {
+                node = sequencerNodes.eq(currentIndex)
+            } else {
+                node = sequencerNodes[Math.floor(Math.random() * sequencerNodes.length)]
             }
+
+            if (node && node.data().historyNode) {
+                // synth.triggerAttackRelease("C4", "8n", time); // Example note
+                // loadVersion(node.data().historyNode.data().id, node.data().historyNode.data().branch); // Your custom logic
+                window.opener?.postMessage({ cmd: 'loadVersion', data: { hash: node.data().historyNode.data().id, branch: node.data().historyNode.data().branch} }, '*');
+
+                highlightNode(node.data().historyNode); // Your custom logic
+                highlightSequencerNode(node)
+            }
+            currentNode = node
+            // Move to the next step
+            currentIndex = (currentIndex + 1) % sequencerNodes.length;
+        }
+    }, "8n"); // Repeat every eighth note
+
+
+
+    // *
+    // *
+    // * EVENT HANDLERS
+    // * 
+    // *
+
+    historyDAG_cy.on('tap', 'node', (event) => {
+        console.log(hid.key.shift)
+        if(hid.key.shift){
+            modifyHistorySequencerCy('add', event.target)
+
+        } else {
+            historySequencerController('clear')
+
+            // loadVersion(event.target.data().id, event.target.data().branch)
+            window.opener?.postMessage({ cmd: 'loadVersion', data: {hash: event.target.data().id, branch: event.target.data().branch} }, '*');
+            highlightNode(event.target)
         }
 
-        // if (event.data.cmd === 'updateGraph') {
-        //     const graphData = event.data.data;
-        //     updateGraph(graphData);
-        // }
-    });
+    })
 
     // Remove the flag when the graph window is closed
     window.addEventListener('beforeunload', () => {
@@ -329,7 +567,250 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log('history window closed')
     });
 
+
+        // Track when the 'e' key is pressed and released
+        window.addEventListener('keydown', (event) => {
+            if (event.key === 'o' || event.key === 'v' || event.key === 's') {
+                hid.key[event.key] = true
+            }
+            // if (event.key === 'e') {
+            //     isDraggingEnabled = true;
+            // }
+            if (event.key === 'z') {
+                historyDAG_cy.zoomingEnabled(true)
+            }
+            if (event.key === 'Meta' || event.key === 'Control') {
+                allowMultiSelect = false
+                allowPan = true
+                historyDAG_cy.userZoomingEnabled(false)
+                hid.key.cmd = true
+    
+            }
+            if (event.key === 'Shift') {
+                hid.key.shift = true
+            }
+        });
+    
+        window.addEventListener('keyup', (event) => {
+            if (event.key === 'o' || event.key === 'v' || event.key === 's') {
+                hid.key[event.key] = false
+            }
+            // if (event.key === 'e') {
+            //     isDraggingEnabled = false;
+            // }
+            if (event.key === 'Meta' || event.key === 'Control') {
+                allowMultiSelect = false
+                historyBoxSelect = true
+                historyDAG_cy.userZoomingEnabled(true)
+                hid.key.cmd = false
+                // Hide a node by setting display to none
+    
+            }
+            if (event.key === 'z') {
+                historyDAG_cy.zoomingEnabled(false)
+            }
+            if (event.key === 'Shift') {
+                hid.key.shift = false
+            }
+        });
+
+        // right-click tap
+    historyDAG_cy.on('cxttap', 'node', (event) => {
+        const node = event.target; // The node that was right-clicked
+        if(hid.key.shift){
+            historySequencerController('removeSteps', event.target)
+        }
+        
+    });
+
+    // right-click tap
+    historySequencerCy.on('cxttap', 'node', (event) => {
+        const node = event.target; // The node that was right-clicked
+        historySequencerController('removeSteps', event.target)
+        
+    });
+
+
+    // BPM Slider Control
+    const bpmSlider = document.getElementById("bpmSlider");
+    // Listen for slider changes
+    bpmSlider.addEventListener('input', (event) => {
+        let bpm = parseInt(event.target.value, 10)
+        meta = Automerge.change(meta, (meta) => {
+            meta.sequencer.bpm = bpm
+        });
+
+        bpmValue.textContent = bpm; // Display the current BPM
+        transport.bpm.value = bpm; // Dynamically update the BPM
+
+    });
+
+    // Start/Stop Control
+    const startStopButton = document.getElementById("startStopButton");
+    let isPlaying = false;
+
+    startStopButton.addEventListener("click", async () => {
+        if (isPlaying) {
+            transport.stop();
+            startStopButton.textContent = "Start Sequencer";
+        } else {
+            await Tone.start(); // Required to start audio in modern browsers
+            transport.start();
+            startStopButton.textContent = "Stop Sequencer";
+        }
+        isPlaying = !isPlaying;
+    });
+
+
+    historySequencerCy.on('position', 'node', (event) => {
+        const draggedNode = event.target; // The node being dragged
+        const draggedPosition = draggedNode.position(); // Current position of the dragged node
+    
+        // Reset edge highlights
+        historySequencerCy.edges().removeClass('edge.highlighted');
+    
+        // Find the edge the node is intersecting with
+        const intersectingEdge = historySequencerCy.edges().filter((edge) => {
+            const sourceNode = edge.source();
+            const targetNode = edge.target();
+    
+            // Skip edges connected to the dragged node itself
+            if (sourceNode.id() === draggedNode.id() || targetNode.id() === draggedNode.id()) {
+                return false;
+            }   
+            const sourcePos = sourceNode.position();
+            const targetPos = targetNode.position();
+    
+            // Check if the node intersects with the edge
+            return isNodeIntersectingEdge(draggedPosition, sourcePos, targetPos);
+        });
+    
+        // Highlight the intersecting edge
+        if (intersectingEdge.length > 0) {
+            intersectingEdge.addClass('edge.highlighted');
+        }
+    });
+    
+    historySequencerCy.on('dragfree', 'node', (event) => {
+        const draggedNode = event.target; // The node being dragged
+        const draggedPosition = draggedNode.position();
+    
+        // Find the intersecting edge (same logic as before)
+        const intersectingEdge = historySequencerCy.edges().filter((edge) => {
+            const sourceNode = edge.source();
+            const targetNode = edge.target();
+    
+            // Skip edges connected to the dragged node itself
+            if (sourceNode.id() === draggedNode.id() || targetNode.id() === draggedNode.id()) {
+                return false;
+            }
+            const sourcePos = sourceNode.position();
+            const targetPos = targetNode.position();
+    
+            return isNodeIntersectingEdge(draggedPosition, sourcePos, targetPos);
+        });
+    
+        if (intersectingEdge.length > 0) {
+
+          
+
+            
+
+            const edge = intersectingEdge[0];
+            const sourceNode = edge.source();
+            const targetNode = edge.target();
+
+            modifyHistorySequencerCy({
+                cmd:'intersectEdge',
+                edge: intersectingEdge[0],
+                sourceNode: sourceNode,
+                targetNode: targetNode,
+                draggedNode: draggedNode
+            })
+    
+            // Remove the original edge
+            // edge.remove();
+            // Check for existing edges to prevent duplicates
+            const existingEdgesBetweenSourceAndDragged = historySequencerCy.edges().filter(e =>
+                (e.source().id() === sourceNode.id() && e.target().id() === draggedNode.id()) ||
+                (e.source().id() === draggedNode.id() && e.target().id() === sourceNode.id())
+            );
+
+            const existingEdgesBetweenDraggedAndTarget = historySequencerCy.edges().filter(e =>
+                (e.source().id() === targetNode.id() && e.target().id() === draggedNode.id()) ||
+                (e.source().id() === draggedNode.id() && e.target().id() === targetNode.id())
+            );
+
+            // connect 
+            if (existingEdgesBetweenSourceAndDragged.empty()) {
+                historySequencerCy.add({
+                    group: 'edges',
+                    data: { source: draggedNode.id(), target: sourceNode.id() }
+                });
+                
+            }
+    
+            if (existingEdgesBetweenDraggedAndTarget.empty()) {
+                historySequencerCy.add({
+                    group: 'edges',
+                    data: { source: draggedNode.id(), target: targetNode.id() }
+                });
+            } 
+        }
+    });
+    
+
+    // Listen for the select event on nodes
+    let historyBoxSelect = true // this is necessary because this event listener fires many times otherwise
+    historyDAG_cy.on("boxselect", "node", () => {
+        if(historyBoxSelect){
+            historyBoxSelect = false
+
+            let selected = historyDAG_cy.$("node:selected"); // Get all selected nodes
+            
+            
+            historyDAG_cy.edges().removeClass("sequencerEdge");
+
+            if (selected.length > 1) {
+                // Find edges connecting selected nodes
+                /* 
+                const connectingEdges = selected.connectedEdges().filter(edge => {
+                    const source = edge.source();
+                    const target = edge.target();
+                    return selected.includes(source) && selected.includes(target);
+                });
+                
+                // Apply a custom style to these edges
+                connectingEdges.addClass("sequencerEdge");
+                */
+                selected.addClass("sequencerNode");
+                // Update selectedHistoryNodes to match the current selection   
+                selectedHistoryNodes.length = 0
+
+                selected.forEach((node) => {
+                    let n = {
+                        data: node.data(),
+                        cyNode: node,
+                        id: node.data().id
+                    }
+                    selectedHistoryNodes.push(n)
+                    modifyHistorySequencerCy('add', node)
+                });
+
+            }
+
+            // Reset the historyBoxSelect flag after a short delay
+            setTimeout(() => {
+                historyDAG_cy.$('node:selected').unselect();
+                historyBoxSelect = true;
+            }, 50); // Adjust the delay as needed to debounce the event
+        }
+    });
+    // *
+    // *
     // * UTILITY FUNCTIONS
+    // * 
+    // *
 
     function highlightNode(target){
 
@@ -377,7 +858,41 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
     
+    // Utility: Check if a node intersects an edge
+    function isNodeIntersectingEdge(nodePos, sourcePos, targetPos) {
+        // todo: the text label of the dragged node and other dragged nodes are interfering with the dragged node intersecting an edge
+        // todo: the text label is part of the entire node's bounding box, so instead we could set the intersection boundaries of the node
+        // todo: ... to just within the node itself, perhaps a square within the node.  
+        const distance = pointLineDistance(nodePos, sourcePos, targetPos);
+    
+        // Check if the point is near the line segment
+        const isCloseEnough = distance < 10; // Adjust threshold as needed
+    
+        // Ensure the intersection lies on the edge (between source and target)
+        const withinBounds =
+            Math.min(sourcePos.x, targetPos.x) <= nodePos.x &&
+            nodePos.x <= Math.max(sourcePos.x, targetPos.x) &&
+            Math.min(sourcePos.y, targetPos.y) <= nodePos.y &&
+            nodePos.y <= Math.max(sourcePos.y, targetPos.y);
+    
+        return isCloseEnough && withinBounds;
+    }
 
+    // Utility: Calculate the distance of a point to a line segment
+    function pointLineDistance(point, lineStart, lineEnd) {
+        const x0 = point.x, y0 = point.y;
+        const x1 = lineStart.x, y1 = lineStart.y;
+        const x2 = lineEnd.x, y2 = lineEnd.y;
+    
+        const numerator = Math.abs(
+            (y2 - y1) * x0 - (x2 - x1) * y0 + x2 * y1 - y2 * x1
+        );
+        const denominator = Math.sqrt(
+            Math.pow(y2 - y1, 2) + Math.pow(x2 - x1, 2)
+        );
+    
+        return numerator / denominator;
+    }
 
     console.log('History graph ready to receive updates.');
 })
