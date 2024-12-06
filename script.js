@@ -481,7 +481,8 @@ document.addEventListener("DOMContentLoaded", function () {
     /*
         DOCUMENT HISTORY CYTOSCAPE INSTANCE
     */
-    cytoscape.use( dagre );
+    /*
+        cytoscape.use( dagre );
     const historyDAG_cy = cytoscape({
         container: document.getElementById('docHistory-cy'),
         elements: [],
@@ -585,10 +586,12 @@ document.addEventListener("DOMContentLoaded", function () {
         ]
     });
 
-
+    */
     /*
         SELECTED HISTORY CYTOSCAPE INSTANCE
     */
+
+        /*
         const historySequencerCy = cytoscape({
         container: document.getElementById('historySequencerCy'), // Your container element
         style: [
@@ -640,6 +643,9 @@ document.addEventListener("DOMContentLoaded", function () {
             name: 'circle'
         }
     });
+
+    */
+
     //*
     //*
     //* DOCUMENT & HISTORY MANAGEMENT 
@@ -784,7 +790,7 @@ document.addEventListener("DOMContentLoaded", function () {
             reDrawHistoryGraph()
 
             // ion this case we want the highlighted node to be on the current branch
-            highlightNode(historyDAG_cy.getElementById(meta.head.hash))
+            //! highlightNode(historyDAG_cy.getElementById(meta.head.hash))
 
             // set the document branch (aka title)  in the editor pane
             document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
@@ -1218,7 +1224,8 @@ document.addEventListener("DOMContentLoaded", function () {
         HISTORY SEQUENCER 
 
     */
-
+    // !
+    /*
     // history sequencer
     function historySequencerController(cmd, data){
         switch(cmd){
@@ -1411,7 +1418,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }, "8n"); // Repeat every eighth note
 
-
+    */ //!
     //TODO OLD AUTOMERGE-REPO IMPLEMENTATION, PHASE IT OUT EVENTUALLY
     // Import dependencies dynamically
     // (async () => {
@@ -1785,7 +1792,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // cy.add(speakerModule)
     }
     // do this once:
-    historyDAG_cy.panBy({x: 25, y: 0 })
+    // ! historyDAG_cy.panBy({x: 25, y: 0 })
 
     function updateCableControlPointDistances(x, y){
         cy.style()
@@ -1823,6 +1830,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // pan to new/selected branch
+    /* 
     function panToBranch(node) {
         if(!meta.userSettings.focusNewBranch){
             return
@@ -1841,7 +1849,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // console.log(`Node with ID ${nodeId} not found`);
         }
     }
-
+    */ 
 
 //*
 //*
@@ -1857,7 +1865,6 @@ document.addEventListener("DOMContentLoaded", function () {
     // Example: Send graph data to the history tab
     function sendMsgToHistoryApp(data) {
         if (historySequencerWindow && !historySequencerWindow.closed) {
-            console.log(data)
             historySequencerWindow.postMessage(data, '*');
         } else {
             console.error('Graph window is not open or has been closed.');
@@ -1998,11 +2005,12 @@ document.addEventListener("DOMContentLoaded", function () {
             
                 previousHash = meta.head.hash
                 
-                historyDAG_cy.elements().remove()
+                //! historyDAG_cy.elements().remove()
+
                 reDrawHistoryGraph()
     
                 // ion this case we want the highlighted node to be on the current branch
-                highlightNode(historyDAG_cy.getElementById(meta.head.hash))
+                // ! highlightNode(historyDAG_cy.getElementById(meta.head.hash))
     
                 // set the document branch (aka title)  in the editor pane
                 document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
@@ -2050,6 +2058,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     // cmd + scroll = scroll vertically through history graph
+   //!
+    /* 
     document.addEventListener('wheel', function(event) {
         if(allowPan){
             historyDAG_cy.panBy({
@@ -2058,6 +2068,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
         }
     });
+
     historyDAG_cy.on('tap', 'node', (event) => {
         if(hid.key.shift){
             modifyHistorySequencerCy('add', event.target)
@@ -2079,6 +2090,8 @@ document.addEventListener("DOMContentLoaded", function () {
         
 
     })
+
+    */
 
     // get mousedown events from cytoscape
     cy.on('mousedown', (event) => {
@@ -2595,12 +2608,12 @@ document.addEventListener("DOMContentLoaded", function () {
             isDraggingEnabled = true;
         }
         if (event.key === 'z') {
-            historyDAG_cy.zoomingEnabled(true)
+            //! historyDAG_cy.zoomingEnabled(true)
         }
         if (event.key === 'Meta' || event.key === 'Control') {
             allowMultiSelect = false
             allowPan = true
-            historyDAG_cy.userZoomingEnabled(false)
+            // ! historyDAG_cy.userZoomingEnabled(false)
             hid.key.cmd = true
 
         }
@@ -2619,13 +2632,13 @@ document.addEventListener("DOMContentLoaded", function () {
         if (event.key === 'Meta' || event.key === 'Control') {
             allowMultiSelect = false
             historyBoxSelect = true
-            historyDAG_cy.userZoomingEnabled(true)
+            //! historyDAG_cy.userZoomingEnabled(true)
             hid.key.cmd = false
             // Hide a node by setting display to none
 
         }
         if (event.key === 'z') {
-            historyDAG_cy.zoomingEnabled(false)
+            // ! historyDAG_cy.zoomingEnabled(false)
         }
         if (event.key === 'Shift') {
             hid.key.shift = false
@@ -2810,7 +2823,8 @@ document.addEventListener("DOMContentLoaded", function () {
         updateCableControlPointDistances(x, y)
     }
 
-
+    //!
+    /* 
     // right-click tap
     historyDAG_cy.on('cxttap', 'node', (event) => {
         const node = event.target; // The node that was right-clicked
@@ -2956,6 +2970,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
     
+    
 
     // Listen for the select event on nodes
     let historyBoxSelect = true // this is necessary because this event listener fires many times otherwise
@@ -2970,16 +2985,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             if (selected.length > 1) {
                 // Find edges connecting selected nodes
-                /* 
-                const connectingEdges = selected.connectedEdges().filter(edge => {
-                    const source = edge.source();
-                    const target = edge.target();
-                    return selected.includes(source) && selected.includes(target);
-                });
                 
-                // Apply a custom style to these edges
-                connectingEdges.addClass("sequencerEdge");
-                */
                 selected.addClass("sequencerNode");
                 // Update selectedHistoryNodes to match the current selection   
                 selectedHistoryNodes.length = 0
@@ -3003,6 +3009,9 @@ document.addEventListener("DOMContentLoaded", function () {
             }, 50); // Adjust the delay as needed to debounce the event
         }
     });
+
+    */ 
+   
     //*
     //* PATCHING
     //*
