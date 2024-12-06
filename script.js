@@ -64,6 +64,11 @@ let branches = {
         // root: hash (the node that it started from)
     //}
 }
+
+// Throttle interval (e.g., 500ms)
+const THROTTLE_INTERVAL = 1000;
+let throttleSend = true
+
 let historyBoundingBox;
 let selectedHistoryNodes = []
 let historySelectionBoxStatus = false
@@ -1039,13 +1044,17 @@ document.addEventListener("DOMContentLoaded", function () {
  
     function reDrawHistoryGraph(){
 
+        if(!throttleSend){
+            console.log('snared')
+            sendMsgToHistoryApp({
+                appID: 'forkingPathsMain',
+                cmd: 'reDrawHistoryGraph',
+                data: meta
+                    
+            })
+            throttleSend = true
+        }
 
-        sendMsgToHistoryApp({
-            appID: 'forkingPathsMain',
-            cmd: 'reDrawHistoryGraph',
-            data: meta
-                
-        })
 
         /* 
         if (!existingHistoryNodeIDs || existingHistoryNodeIDs.size === 0){
@@ -3011,7 +3020,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     */ 
-   
+
     //*
     //* PATCHING
     //*
@@ -3476,7 +3485,11 @@ document.addEventListener("DOMContentLoaded", function () {
         return numerator / denominator;
     }
 
-
+    // messages to historyCy throttling
+    setInterval(() => {
+        throttleSend = false
+        console.log('throttleSend', throttleSend)
+    }, THROTTLE_INTERVAL); // Attempt to send updates every 100ms
 
 
 

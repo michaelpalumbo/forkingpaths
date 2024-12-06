@@ -5,6 +5,7 @@ const ws = new WebSocket('ws://localhost:3000');
 
 
 
+
 const historyGraphWorker = new Worker("./workers/historyGraphWorker.js");
 // meta doc
 let meta;
@@ -276,6 +277,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // console.log(event.data)
             switch (event.data.cmd){
                 case 'reDrawHistoryGraph':
+                    console.log('msg')
                     meta = event.data.data
                     reDrawHistoryGraph(meta)
                 break
@@ -306,8 +308,10 @@ document.addEventListener("DOMContentLoaded", function () {
         // console.log('Message from server:', event.data);
     
         const msg = JSON.parse(event.data)
-        console.log(msg)
+        // console.log(msg)
         historyDAG_cy.json(msg)
+        historyDAG_cy.panBy({x: 25, y: 25 })
+        highlightNode(historyDAG_cy.nodes().last())
         
     };
     
@@ -315,7 +319,7 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log('Disconnected from WebSocket server');
     };
 
-    
+
     // *
     // *
     // * UI UPDATES
@@ -336,8 +340,10 @@ document.addEventListener("DOMContentLoaded", function () {
             // existingHistoryNodeIDs: existingHistoryNodeIDs,
             docHistoryGraphStyling: docHistoryGraphStyling
         })
-
-        ws.send(update);
+        
+            ws.send(update);
+        
+        
         
         // if (!existingHistoryNodeIDs || existingHistoryNodeIDs.size === 0){
         //     existingHistoryNodeIDs = new Set(historyDAG_cy.nodes().map(node => node.id()));
@@ -943,6 +949,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // console.log('History graph ready to receive updates.');
+
+
+    
 })
 
 
