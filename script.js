@@ -3488,7 +3488,6 @@ document.addEventListener("DOMContentLoaded", function () {
     // messages to historyCy throttling
     setInterval(() => {
         throttleSend = false
-        console.log('throttleSend', throttleSend)
     }, THROTTLE_INTERVAL); // Attempt to send updates every 100ms
 
 

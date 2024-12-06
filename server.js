@@ -184,12 +184,12 @@ console.log(`WebSocket server is running on ws://localhost:${PORT}`);
 
 // Handle client connections
 wss.on('connection', (ws) => {
-    console.log('Client connected');
+
 
     // Handle messages received from clients
     ws.on('message', (message) => {
         let msg = JSON.parse(message)
-        console.log('Received:', msg);
+
         updateHistoryGraph(ws, msg.meta, msg.docHistoryGraphStyling)
         
 
@@ -244,50 +244,10 @@ function updateHistoryGraph(ws, meta, docHistoryGraphStyling){
 
     // Send the graph JSON back to the client
     const graphJSON = historyDAG_cy.json();
-    console.log(graphJSON)
+
     ws.send(JSON.stringify(graphJSON))
 }
-/* 
-// Endpoint to render Cytoscape graph as JSON
-app.post('/render-graph', (req, res) => {
-    const { elements, layout } = req.body;
 
-    // Validate input
-
-
-    if (!existingHistoryNodeIDs || existingHistoryNodeIDs.size === 0){
-        existingHistoryNodeIDs = new Set(historyDAG_cy.nodes().map(node => node.id()));
-    }
-    // Build the graph
-    const { nodes, edges, historyNodes } = buildHistoryGraph(
-        meta,
-        existingHistoryNodeIDs,
-        docHistoryGraphStyling
-    );
-    // Run the layout and get the rendered graph
-    // historyDAG_cy.layout(layout).run();
-
-    if(nodes.length > 0){
-        historyDAG_cy.add(nodes);
-
-    }
-    if(edges.length > 0){
-        historyDAG_cy.add(edges);
-
-    }
-    existingHistoryNodeIDs = historyNodes
-
-    historyDAG_cy.layout(graphLayouts[graphStyle]).run();
-
-    highlightNode(historyDAG_cy.nodes().last())
-
-
-    // Send the graph JSON back to the client
-    const graphJSON = cy.json();
-    res.json(graphJSON);
-});
-
-*/ 
 
 
 
