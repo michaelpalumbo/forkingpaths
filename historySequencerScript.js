@@ -1,6 +1,9 @@
 import dagre from 'cytoscape-dagre';
 import * as Tone from "tone";
 import { uuidv7 } from "uuidv7";
+const ws = new WebSocket('ws://localhost:3000');
+
+
 
 const historyGraphWorker = new Worker("./workers/historyGraphWorker.js");
 // meta doc
@@ -270,7 +273,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Listen for messages from the main app
     window.addEventListener('message', (event) => {
         if (event.data && event.data.appID === 'forkingPathsMain') {
-            console.log(event.data)
+            // console.log(event.data)
             switch (event.data.cmd){
                 case 'reDrawHistoryGraph':
                     meta = event.data.data
@@ -290,6 +293,29 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 
+
+
+
+
+    ws.onopen = () => {
+        console.log('Connected to WebSocket server');
+        // ws.send('Hello, server!');
+    };
+    
+    ws.onmessage = (event) => {
+        // console.log('Message from server:', event.data);
+    
+        const msg = JSON.parse(event.data)
+        console.log(msg)
+        historyDAG_cy.json(msg)
+        
+    };
+    
+    ws.onclose = () => {
+        console.log('Disconnected from WebSocket server');
+    };
+
+    
     // *
     // *
     // * UI UPDATES
@@ -303,38 +329,50 @@ document.addEventListener("DOMContentLoaded", function () {
     historyDAG_cy.panBy({x: 25, y: 0 })
 
     function reDrawHistoryGraph(){
-        if (!existingHistoryNodeIDs || existingHistoryNodeIDs.size === 0){
-            existingHistoryNodeIDs = new Set(historyDAG_cy.nodes().map(node => node.id()));
-        }
         
-        historyGraphWorker.onmessage = (event) => {
+        // Send the elements to the server for rendering
+        const update = JSON.stringify({
+            meta: meta,
+            // existingHistoryNodeIDs: existingHistoryNodeIDs,
+            docHistoryGraphStyling: docHistoryGraphStyling
+        })
 
-            const { nodes, edges, historyNodes } = event.data;
+        ws.send(update);
+        
+        // if (!existingHistoryNodeIDs || existingHistoryNodeIDs.size === 0){
+        //     existingHistoryNodeIDs = new Set(historyDAG_cy.nodes().map(node => node.id()));
+        // }
+        // console.log(existingHistoryNodeIDs, historyDAG_cy.nodes().toArray)
+
+        // historyGraphWorker.onmessage = (event) => {
+
+        //     const { nodes, edges, historyNodes } = event.data;
             
-            if(nodes.length > 0){
-                historyDAG_cy.add(nodes);
+        //     if(nodes.length > 0){
+        //         historyDAG_cy.add(nodes);
 
-            }
-            if(edges.length > 0){
-                historyDAG_cy.add(edges);
+        //     }
+        //     if(edges.length > 0){
+        //         historyDAG_cy.add(edges);
 
-            }
-            existingHistoryNodeIDs = historyNodes
+        //     }
+        //     existingHistoryNodeIDs = historyNodes
 
-            // Refresh graph layout
-            historyDAG_cy.layout(graphLayouts[graphStyle]).run();
+        //     // Refresh graph layout
+        //     historyDAG_cy.layout(graphLayouts[graphStyle]).run();
             
-            highlightNode(historyDAG_cy.nodes().last())
+        //     highlightNode(historyDAG_cy.nodes().last())
 
-            // update the current history node ids for the next time we run this function
-            // existingHistoryNodeIDs = new Set(cy.nodes().map(node => node.id()));
-        };
+        //     // update the current history node ids for the next time we run this function
+        //     // existingHistoryNodeIDs = new Set(cy.nodes().map(node => node.id()));
+        // };
         
         // Send data to the worker to get any position or parameter updates
-        historyGraphWorker.postMessage({ meta, existingHistoryNodeIDs, docHistoryGraphStyling });      
+        // historyGraphWorker.postMessage({ meta, existingHistoryNodeIDs, docHistoryGraphStyling });      
     }
 
 
+    
 /*
 
         HISTORY SEQUENCER 
@@ -542,6 +580,16 @@ document.addEventListener("DOMContentLoaded", function () {
     // * EVENT HANDLERS
     // * 
     // *
+
+    // cmd + scroll = scroll vertically through history graph
+    document.addEventListener('wheel', function(event) {
+        if(allowPan){
+            historyDAG_cy.panBy({
+                x: 0,
+                y: event.deltaY 
+                });
+        }
+    });
 
     historyDAG_cy.on('tap', 'node', (event) => {
         console.log(hid.key.shift)
@@ -894,7 +942,7 @@ document.addEventListener("DOMContentLoaded", function () {
         return numerator / denominator;
     }
 
-    console.log('History graph ready to receive updates.');
+    // console.log('History graph ready to receive updates.');
 })
 
 
