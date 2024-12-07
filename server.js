@@ -189,8 +189,21 @@ wss.on('connection', (ws) => {
     // Handle messages received from clients
     ws.on('message', (message) => {
         let msg = JSON.parse(message)
+        switch(msg.cmd){
+            case 'updateGraph':
 
-        updateHistoryGraph(ws, msg.meta, msg.docHistoryGraphStyling)
+                updateHistoryGraph(ws, msg.meta, msg.docHistoryGraphStyling)
+            break
+
+            case 'clearHistoryGraph':
+                historyDAG_cy.elements().remove();
+                if(existingHistoryNodeIDs){
+                    existingHistoryNodeIDs.size = 0
+                }
+                historyDAG_cy.layout(graphLayouts[graphStyle]).run()
+            break
+        }
+        
         
 
         // Echo the message back to the client
@@ -237,10 +250,6 @@ function updateHistoryGraph(ws, meta, docHistoryGraphStyling){
     existingHistoryNodeIDs = historyNodes
 
     historyDAG_cy.layout(graphLayouts[graphStyle]).run();
-
-    // highlightNode(historyDAG_cy.nodes().last())
-    console.log('remeber tofigure out where the highlightNode function should be called from (server or client?)')
-
 
     // Send the graph JSON back to the client
     const graphJSON = historyDAG_cy.json();

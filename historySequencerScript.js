@@ -279,14 +279,27 @@ document.addEventListener("DOMContentLoaded", function () {
                 case 'reDrawHistoryGraph':
                     
                     meta = event.data.data
-                    reDrawHistoryGraph(meta)
+                    // reDrawHistoryGraph(meta)
+                            // Send the elements to the server for rendering
+                    const update = JSON.stringify({
+                        cmd: 'updateGraph',
+                        meta: meta,
+                        // existingHistoryNodeIDs: existingHistoryNodeIDs,
+                        docHistoryGraphStyling: docHistoryGraphStyling
+                    })
+                    
+                    ws.send(update);
+                        
                 break
                 case 'panToBranch':
                     panToBranch(event.data.data)
                 break
 
                 case 'clearHistoryGraph':
-                    historyDAG_cy.elements().remove();
+                    ws.send(JSON.stringify({
+                        cmd: 'clearHistoryGraph'
+                    }))
+ 
                 break
                 default: console.log('no switch case for message:', event.data)
             }
@@ -338,14 +351,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function reDrawHistoryGraph(){
         
-        // Send the elements to the server for rendering
-        const update = JSON.stringify({
-            meta: meta,
-            // existingHistoryNodeIDs: existingHistoryNodeIDs,
-            docHistoryGraphStyling: docHistoryGraphStyling
-        })
-        
-            ws.send(update);
+
         
         
         
