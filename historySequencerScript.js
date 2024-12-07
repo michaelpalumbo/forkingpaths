@@ -277,12 +277,16 @@ document.addEventListener("DOMContentLoaded", function () {
             // console.log(event.data)
             switch (event.data.cmd){
                 case 'reDrawHistoryGraph':
-                    console.log('msg')
+                    
                     meta = event.data.data
                     reDrawHistoryGraph(meta)
                 break
                 case 'panToBranch':
                     panToBranch(event.data.data)
+                break
+
+                case 'clearHistoryGraph':
+                    historyDAG_cy.elements().remove();
                 break
                 default: console.log('no switch case for message:', event.data)
             }

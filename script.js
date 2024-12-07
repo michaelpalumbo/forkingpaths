@@ -951,6 +951,89 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     };
     
+
+    function createNewSession(){
+        // deletes the document in the indexedDB instance
+        deleteDocument(docID)
+        deleteDocument('meta')
+        sendMsgToHistoryApp({
+            appID: 'forkingPathsMain',
+            cmd: 'clearHistoryGraph'
+        })
+
+        meta = Automerge.from({
+            title: "Forking Paths System",
+            branches: {},
+            branchOrder: [],
+            docs: {},
+            head: {
+                hash: null,
+                branch: null
+            },
+            
+            userSettings: {
+                focusNewBranch:false 
+            },
+            sequencer: {
+                bpm: 120,
+                ms: 500,
+                traversalMode: 'Sequential'
+            },
+            synth: {
+                rnboDeviceCache: null,
+            },
+
+        })
+
+        amDoc = Automerge.init();
+        let amMsg = makeChangeMessage(firstBranchName, 'blank_patch')
+        // Apply initial changes to the new document
+        amDoc = Automerge.change(amDoc, amMsg, (amDoc) => {
+            amDoc.title = firstBranchName;
+            amDoc.elements = [],
+            amDoc.synth = {
+                graph:{
+                    modules: {
+                    },
+                    connections: []
+                }
+            }
+
+        });
+        let hash = Automerge.getHeads(amDoc)[0]
+        previousHash = hash
+        branches[amDoc.title] = {
+            head: hash,
+            root: hash
+        }
+        
+        meta = Automerge.change(meta, (meta) => {
+            meta.branches[amDoc.title] = {
+                head: hash,
+                root: null,
+                parent: null,
+                // doc: amDoc,
+                history: [ {hash: hash, parent: null, msg: 'blank_patch'} ] 
+            }
+            
+            // encode the doc as a binary object for efficiency
+            meta.docs[amDoc.title] = Automerge.save(amDoc)
+            meta.head.branch = firstBranchName
+            meta.head.hash = hash 
+            meta.branchOrder.push(amDoc.title)
+            
+        });
+        // set the document branch (aka title) in the editor pane
+        document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
+
+        updateCytoscapeFromDocument(amDoc);
+            
+        previousHash = meta.head.hash
+        // send doc to history app
+        reDrawHistoryGraph()
+
+        addSpeaker()
+    }
     // save forking paths doc (meta) to disk
     function saveAutomergeDocument(fileName) {
         // Generate the binary format of the Automerge document
@@ -1045,7 +1128,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function reDrawHistoryGraph(){
 
         if(!throttleSend){
-            console.log('snared')
+            
             sendMsgToHistoryApp({
                 appID: 'forkingPathsMain',
                 cmd: 'reDrawHistoryGraph',
@@ -2798,12 +2881,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // open a new session (with empty document)
     newSession.addEventListener('click', function() {
-        // deletes the document in the indexedDB instance
-        deleteDocument(docID)
-        deleteDocument('meta')
+
         
+        createNewSession()
+
         // Reload the page with the new URL
-        window.location.href = window.location.origin
+        // window.location.href = window.location.origin
     });
 
     
