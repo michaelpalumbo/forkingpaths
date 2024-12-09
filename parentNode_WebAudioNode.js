@@ -28,7 +28,9 @@ export class ParentNode_WebAudioNode {
         this.inputs = this.moduleSpec.inputs
         this.outputs = this.moduleSpec.outputs
         this.params = this.moduleSpec.paramNames
-        this.cv = this.moduleSpec.cvNames         
+        this.cv = this.moduleSpec.cvNames        
+        
+        this.knobs = []
 
         if(this.params){
             for (let i = 0; i<this.params.length; i++){
@@ -37,6 +39,7 @@ export class ParentNode_WebAudioNode {
                 param.name = this.params[i]
                 
                 this.children.push(param)
+                
                 this.audioGraph.params[this.params[i]] = param.default
 
             }

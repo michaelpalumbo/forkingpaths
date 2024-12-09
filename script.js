@@ -1842,11 +1842,41 @@ document.addEventListener("DOMContentLoaded", function () {
     
     // generate list of audio nodes for adding to patch
     function updateModuleLibrary(){
-        const moduleNames = Object.keys(modules.webAudioNodes).sort()
+        
+        const webAudioNodeNames = Object.keys(modules.webAudioNodes).sort()
+        const RNBODeviceNames = Object.keys(modules.rnboDevices).sort()
+
         // Reference the list element
         const listElement = document.getElementById('moduleList');
+        // RNBO device category
+        const heading1 = document.createElement('li');
+        heading1.textContent = 'RNBO Devices';
+        heading1.style.fontWeight = 'bold'; // Make the heading stand out
+        heading1.style.pointerEvents = 'none'; // Disable interaction
+
+        listElement.appendChild(heading1);
+         // Loop through the array and create list items
+         RNBODeviceNames.forEach(item => {
+            // Create a new <li> element
+            const listItem = document.createElement('li');
+            // Set the text of the <li> to the current item
+            listItem.textContent = item;
+            // Append the <li> to the list
+            listElement.appendChild(listItem);
+            
+
+        });       
+
+
+        // Web Audio Node category
+        const heading2 = document.createElement('li');
+        heading2.textContent = 'Web Audio Nodes';
+        heading2.style.fontWeight = 'bold'; // Make the heading stand out
+        heading2.style.pointerEvents = 'none'; // Disable interaction
+
+        listElement.appendChild(heading2);
         // Loop through the array and create list items
-        moduleNames.forEach(item => {
+        webAudioNodeNames.forEach(item => {
             if(item != 'AudioDestination' && item != 'AudioWorklet' && item != "OutputLimiter"){
                 // Create a new <li> element
                 const listItem = document.createElement('li');
@@ -2028,8 +2058,14 @@ document.addEventListener("DOMContentLoaded", function () {
     // Add click event listener
     moduleList.addEventListener('click', (event) => {
         let loadedModule = event.target.textContent
+        // if(loadedModule)
+        // console.log(loadedModule)
+        if(!loadedModule.includes('RNBO Devices') || !loadedModule.includes('Web Audio Nodes') ){
+            addModule(loadedModule, { x: 200, y: 200 }, [    ])
+            console.log(loadedModule)
 
-        addModule(loadedModule, { x: 200, y: 200 }, [    ])
+        }
+        // addModule(loadedModule, { x: 200, y: 200 }, [    ])
     });
 
 
