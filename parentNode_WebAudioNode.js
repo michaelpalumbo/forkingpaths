@@ -5,7 +5,7 @@ const chance = new Chance();
 
 // const modules = audioNodes.webAudioNodes
 export class ParentNode_WebAudioNode {
-    constructor(module, position, children) {
+    constructor(module, position, children, structure) {
         this.animal = chance.animal().split(' ').pop()
         const hash = `${this.animal}_${uuidv7().split('-').pop()}`       
         this.moduleName = `${module}_${hash.split('-')[0]}`
@@ -17,19 +17,20 @@ export class ParentNode_WebAudioNode {
 
         // console.log(modules, module)
 
-        
+      
         this.audioGraph = {
             type: module,
             params: {},
-            moduleSpec: this.findMatchingObject(audioNodes, module),
+            moduleSpec: audioNodes[structure][module],
             nodeIDs: []
 
         }
-        console.log(this.audioGraph.moduleSpec)
         this.nodeIDs = [] // store parent and child ids for later reference
         // sift through modules.json, construct node
 
-        this.moduleSpec = this.audioGraph.moduleSpec
+        
+        this.moduleSpec = audioNodes[structure][module]
+        this.structure = structure // whether it is a basic web audio node or a rnboDevice
         this.inputs = this.moduleSpec.inputs
         this.outputs = this.moduleSpec.outputs
         this.params = this.moduleSpec.paramNames
@@ -93,7 +94,7 @@ export class ParentNode_WebAudioNode {
             if (typeof value === "object" && !Array.isArray(value)) {
                 for (const [innerKey, innerValue] of Object.entries(value)) {
                     if (innerKey.toLowerCase() === searchKey.toLowerCase()) {
-                        return innerValue; // Return the matching object
+                        return { structure: key, code: innerValue }; // Return the parent property and the matching object
                     }
                 }
             }
@@ -107,7 +108,7 @@ export class ParentNode_WebAudioNode {
 
         // Returns the structure of the parent node and its children
         const parentNode = {
-            data: { id: this.moduleName, label: `${this.module} ${this.animal}`, kind: 'module', rnboName: this.module, moduleSpec: this.moduleSpec },
+            data: { id: this.moduleName, label: `${this.module} ${this.animal}`, kind: 'module', rnboName: this.module, moduleSpec: this.moduleSpec, structure: this.structure },
             position: this.position,
             classes: ':parent',
         };

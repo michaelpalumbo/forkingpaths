@@ -36,7 +36,8 @@ async function getJsonFiles(directoryPath) {
             cvNames: [],
             cv: {},
             inputs: [],
-            outputs: []
+            outputs: [],
+            structure: 'rnboDevice'
         }
         jsonData.desc.inlets.forEach((input) =>{
             if(input.meta){

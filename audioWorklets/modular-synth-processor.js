@@ -16,7 +16,8 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
     }
 
     handleMessage(data) {
-
+        console.log(data.data.structure)
+        
         switch (data.cmd){
             case 'addNode':
                 
@@ -59,6 +60,8 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                         }
 
                     break
+
+                    default: 
                 }
             break
 

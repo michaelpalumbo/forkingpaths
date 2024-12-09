@@ -1861,6 +1861,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const listItem = document.createElement('li');
             // Set the text of the <li> to the current item
             listItem.textContent = item;
+            listItem.dataset.structure = 'rnboDevices'
             // Append the <li> to the list
             listElement.appendChild(listItem);
             
@@ -1882,6 +1883,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 const listItem = document.createElement('li');
                 // Set the text of the <li> to the current item
                 listItem.textContent = item;
+
+                listItem.dataset.structure = 'webAudioNodes'
                 // Append the <li> to the list
                 listElement.appendChild(listItem);
             }
@@ -1896,7 +1899,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const nodeIds = cy.nodes().map(node => node.id());
         const AudioDestinationExists = nodeIds.some(id => id.includes('AudioDestination'));
         if(!AudioDestinationExists){
-            addModule('AudioDestination', { x: 500, y: 500}, [   ] )
+            addModule('AudioDestination', { x: 500, y: 500}, [   ], 'webAudioNodes')
             // OutputLimiter.connect(audioContext.destination);
 
         }
@@ -2058,11 +2061,11 @@ document.addEventListener("DOMContentLoaded", function () {
     // Add click event listener
     moduleList.addEventListener('click', (event) => {
         let loadedModule = event.target.textContent
+        // console.log(event.target.dataset.structure)
         // if(loadedModule)
         // console.log(loadedModule)
         if(!loadedModule.includes('RNBO Devices') || !loadedModule.includes('Web Audio Nodes') ){
-            addModule(loadedModule, { x: 200, y: 200 }, [    ])
-            console.log(loadedModule)
+            addModule(loadedModule, { x: 200, y: 200 }, [    ], event.target.dataset.structure )
 
         }
         // addModule(loadedModule, { x: 200, y: 200 }, [    ])
@@ -2759,7 +2762,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         if (event.key === 'Meta' || event.key === 'Control') {
             allowMultiSelect = false
-            historyBoxSelect = true
             //! historyDAG_cy.userZoomingEnabled(true)
             hid.key.cmd = false
             // Hide a node by setting display to none
@@ -3240,11 +3242,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     } 
 
-    function addModule(module, position, children) {
+    function addModule(module, position, children, structure) {
         
         // const parentNode = new ParentNode(module, position, children); // old version. 
 
-        const parentNode = new ParentNode_WebAudioNode(module, position, children);
+        const parentNode = new ParentNode_WebAudioNode(module, position, children, structure);
 
         // parentNode.getModule('oscillator')
         const { parentNode: parentNodeData, childrenNodes, audioGraph } = parentNode.getNodeStructure();
