@@ -998,9 +998,8 @@
   },
   "rnboDevices": {
     "oscillator": {
-      "inputs": [],
-      "params": [
-        {
+      "parameters": {
+        "frequency": {
           "type": "ParameterTypeNumber",
           "index": 0,
           "name": "frequency",
@@ -1018,24 +1017,47 @@
           "debug": false,
           "visible": true,
           "signalIndex": null,
-          "ioType": "IOTypeUndefined"
+          "ioType": "IOTypeUndefined",
+          "description": "frequency"
         }
+      },
+      "paramNames": [
+        "frequency"
       ],
-      "outputs": [
-        {
-          "type": "signal",
-          "index": 1,
-          "tag": "out1",
-          "meta": {
-            "name": "sine out"
-          }
+      "cvNames": [
+        "frequency"
+      ],
+      "cv": {
+        "frequency": {
+          "type": "ParameterTypeNumber",
+          "index": 0,
+          "name": "frequency",
+          "paramId": "frequency",
+          "minimum": 110,
+          "maximum": 880,
+          "exponent": 1,
+          "steps": 0,
+          "initialValue": 220,
+          "isEnum": false,
+          "enumValues": [],
+          "displayName": "",
+          "unit": "",
+          "order": 0,
+          "debug": false,
+          "visible": true,
+          "signalIndex": null,
+          "ioType": "IOTypeUndefined",
+          "description": "frequency"
         }
+      },
+      "inputs": [],
+      "outputs": [
+        "sine out"
       ]
     },
     "simpleSynth": {
-      "inputs": [],
-      "params": [
-        {
+      "parameters": {
+        "frequency": {
           "type": "ParameterTypeNumber",
           "index": 0,
           "name": "frequency",
@@ -1053,9 +1075,10 @@
           "debug": false,
           "visible": true,
           "signalIndex": null,
-          "ioType": "IOTypeUndefined"
+          "ioType": "IOTypeUndefined",
+          "description": "frequency"
         },
-        {
+        "modulation": {
           "type": "ParameterTypeNumber",
           "index": 1,
           "name": "modulation",
@@ -1073,9 +1096,10 @@
           "debug": false,
           "visible": true,
           "signalIndex": null,
-          "ioType": "IOTypeUndefined"
+          "ioType": "IOTypeUndefined",
+          "description": "modulation"
         },
-        {
+        "volume": {
           "type": "ParameterTypeNumber",
           "index": 2,
           "name": "volume",
@@ -1093,41 +1117,93 @@
           "debug": false,
           "visible": true,
           "signalIndex": null,
-          "ioType": "IOTypeUndefined"
+          "ioType": "IOTypeUndefined",
+          "description": "volume"
         }
+      },
+      "paramNames": [
+        "frequency",
+        "modulation",
+        "volume"
       ],
-      "outputs": [
-        {
-          "type": "signal",
+      "cvNames": [
+        "frequency",
+        "modulation",
+        "volume"
+      ],
+      "cv": {
+        "frequency": {
+          "type": "ParameterTypeNumber",
+          "index": 0,
+          "name": "frequency",
+          "paramId": "frequency",
+          "minimum": 110,
+          "maximum": 880,
+          "exponent": 1,
+          "steps": 0,
+          "initialValue": 220,
+          "isEnum": false,
+          "enumValues": [],
+          "displayName": "",
+          "unit": "",
+          "order": 0,
+          "debug": false,
+          "visible": true,
+          "signalIndex": null,
+          "ioType": "IOTypeUndefined",
+          "description": "frequency"
+        },
+        "modulation": {
+          "type": "ParameterTypeNumber",
           "index": 1,
-          "tag": "out1",
-          "meta": {
-            "name": "out"
-          }
+          "name": "modulation",
+          "paramId": "modulation",
+          "minimum": -100,
+          "maximum": 100,
+          "exponent": 1,
+          "steps": 0,
+          "initialValue": 1,
+          "isEnum": false,
+          "enumValues": [],
+          "displayName": "",
+          "unit": "",
+          "order": 0,
+          "debug": false,
+          "visible": true,
+          "signalIndex": null,
+          "ioType": "IOTypeUndefined",
+          "description": "modulation"
+        },
+        "volume": {
+          "type": "ParameterTypeNumber",
+          "index": 2,
+          "name": "volume",
+          "paramId": "volume",
+          "minimum": 0,
+          "maximum": 100,
+          "exponent": 1,
+          "steps": 0,
+          "initialValue": 0.5,
+          "isEnum": false,
+          "enumValues": [],
+          "displayName": "",
+          "unit": "",
+          "order": 0,
+          "debug": false,
+          "visible": true,
+          "signalIndex": null,
+          "ioType": "IOTypeUndefined",
+          "description": "volume"
         }
+      },
+      "inputs": [],
+      "outputs": [
+        "out"
       ]
     },
     "vca": {
-      "inputs": [
-        {
-          "type": "signal",
-          "index": 1,
-          "tag": "in1",
-          "meta": {
-            "name": "signalInput"
-          }
-        },
-        {
-          "type": "signal",
-          "index": 2,
-          "tag": "in2",
-          "meta": {
-            "name": "cvInput"
-          }
-        }
-      ],
-      "params": [
-        {
+      "parameters": {
+        "attenuate": {
           "type": "ParameterTypeNumber",
           "index": 0,
           "name": "attenuate",
@@ -1145,18 +1221,49 @@
           "debug": false,
           "visible": true,
           "signalIndex": null,
-          "ioType": "IOTypeUndefined"
+          "ioType": "IOTypeUndefined",
+          "description": "attenuate"
+        }
+      },
+      "paramNames": [
+        "attenuate"
+      ],
+      "cvNames": [
+        "attenuate"
+      ],
+      "cv": {
+        "attenuate": {
+          "type": "ParameterTypeNumber",
+          "index": 0,
+          "name": "attenuate",
+          "paramId": "attenuate",
+          "minimum": 0,
+          "maximum": 1,
+          "exponent": 1,
+          "steps": 0,
+          "initialValue": 0.5,
+          "isEnum": false,
+          "enumValues": [],
+          "displayName": "",
+          "unit": "",
+          "order": 0,
+          "debug": false,
+          "visible": true,
+          "signalIndex": null,
+          "ioType": "IOTypeUndefined",
+          "description": "attenuate"
+        }
+      },
+      "inputs": [
+        {
+          "name": "signalInput"
+        },
+        {
+          "name": "cvInput"
         }
       ],
       "outputs": [
-        {
-          "type": "signal",
-          "index": 1,
-          "tag": "out1",
-          "meta": {
-            "name": "out"
-          }
-        }
+        "out"
       ]
     }
   }
