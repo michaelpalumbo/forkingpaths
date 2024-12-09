@@ -3,7 +3,7 @@ import {uuidv7} from 'uuidv7'
 import Chance from 'chance';
 const chance = new Chance();
 
-const modules = audioNodes.webAudioNodes
+// const modules = audioNodes.webAudioNodes
 export class ParentNode_WebAudioNode {
     constructor(module, position, children) {
         this.animal = chance.animal().split(' ').pop()
@@ -14,17 +14,22 @@ export class ParentNode_WebAudioNode {
         this.children = children;
         this.isDraggingEnabled = false; // Flag to track if dragging is enabled
         this.module = module;
+
+        // console.log(modules, module)
+
+        
         this.audioGraph = {
             type: module,
             params: {},
-            moduleSpec: modules[module],
+            moduleSpec: this.findMatchingObject(audioNodes, module),
             nodeIDs: []
 
         }
+        console.log(this.audioGraph.moduleSpec)
         this.nodeIDs = [] // store parent and child ids for later reference
         // sift through modules.json, construct node
 
-        this.moduleSpec = modules[module]
+        this.moduleSpec = this.audioGraph.moduleSpec
         this.inputs = this.moduleSpec.inputs
         this.outputs = this.moduleSpec.outputs
         this.params = this.moduleSpec.paramNames
@@ -82,6 +87,19 @@ export class ParentNode_WebAudioNode {
        
     }
 
+    findMatchingObject(obj, searchKey) {
+        for (const [key, value] of Object.entries(obj)) {
+            // Recursively search through nested objects
+            if (typeof value === "object" && !Array.isArray(value)) {
+                for (const [innerKey, innerValue] of Object.entries(value)) {
+                    if (innerKey.toLowerCase() === searchKey.toLowerCase()) {
+                        return innerValue; // Return the matching object
+                    }
+                }
+            }
+        }
+        return null; // Return null if no match is found
+    }
     getNodeStructure() {
         
         // Reset or initialize an offset index counter for this instance
