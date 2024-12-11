@@ -3254,7 +3254,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // Add nodes to Cytoscape
         cy.add(parentNodeData);
         cy.add(childrenNodes);
-
+        
         // * automerge version:        
         amDoc = applyChange(amDoc, (amDoc) => {
             amDoc.elements.push(parentNodeData);
@@ -3264,7 +3264,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }, onChange, `add ${parentNodeData.data.id}`);
         
         // update the synthWorklet
-        updateSynthWorklet('addNode', parentNode )
+        updateSynthWorklet('addNode', parentNode, structure )
 
 
         // addNode(parentNode.data())
@@ -3411,12 +3411,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // setTimeout(() => updateNode('osc1', { frequency: 880 }), 5000); // Change frequency after 2 seconds
 
-    function updateSynthWorklet(cmd, data){
+    function updateSynthWorklet(cmd, data, structure){
         switch (cmd) {
             case 'addNode':
                 synthWorklet.port.postMessage({ 
                     cmd: 'addNode', 
-                    data: data
+                    data: data,
+                    structure: structure
                 });
                 
             break

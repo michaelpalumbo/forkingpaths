@@ -149,12 +149,13 @@ export class ParentNode_WebAudioNode {
             
                 // Calculate initial handle position within the track
                 const initialHandleX = config.position.x - config.length / 2 + (config.length * (config.initialValue - config.minValue)) / (config.maxValue - config.minValue);
-                
+               
                 // this is a parameter with strings for steps, i.e. ["sine", "square", "sawtooth", "triangle", "custom"],
                 if(child.name === 'type'){
-                    child.min = 0,
-                    child.max = child.values.length - 1
+                    child.min = child.values[0],
+                    child.max = child.values[child.values.length - 1]
                 }
+                
                 return [
                     // slider track
                     {                  
@@ -197,8 +198,8 @@ export class ParentNode_WebAudioNode {
                             fixedY: config.position.y +10,
                             hash: sliderId,
                             trackID: sliderTrackId,
-                            sliderMin: child.min,
-                            sliderMax: child.max,
+                            sliderMin: child.min || child.minimum || 0,
+                            sliderMax: child.max || child.maximum,
                             value: child.default,
                             description: child.description
                             

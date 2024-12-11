@@ -16,7 +16,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
     }
 
     handleMessage(data) {
-        console.log(data.data.structure)
+        console.log(data.structure)
         
         switch (data.cmd){
             case 'addNode':
