@@ -66,8 +66,9 @@ let branches = {
 }
 
 // Throttle interval (e.g., 500ms)
-const THROTTLE_INTERVAL = 1000;
+const THROTTLE_INTERVAL = 250;
 let throttleSend = true
+let metaIsDirty = false
 
 let historyBoundingBox;
 let selectedHistoryNodes = []
@@ -1132,7 +1133,7 @@ document.addEventListener("DOMContentLoaded", function () {
     */
  
     function reDrawHistoryGraph(){
-
+        metaIsDirty = true
         if(!throttleSend){
             
             sendMsgToHistoryApp({
@@ -3636,7 +3637,17 @@ document.addEventListener("DOMContentLoaded", function () {
     // messages to historyCy throttling
     setInterval(() => {
         throttleSend = false
-    }, THROTTLE_INTERVAL); // Attempt to send updates every 100ms
+        if(metaIsDirty){
+            sendMsgToHistoryApp({
+                appID: 'forkingPathsMain',
+                cmd: 'reDrawHistoryGraph',
+                data: meta
+                    
+            })
+        }
+
+        metaIsDirty = false
+    }, THROTTLE_INTERVAL); // Attempt to send updates every interval
 
 
 
