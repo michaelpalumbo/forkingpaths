@@ -920,7 +920,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 sendMsgToHistoryApp({
                     appID: 'forkingPathsMain',
                     cmd: 'panToBranch',
-                    data: historyDAG_cy.getElementById(hash)
+                    data: hash
                         
                 })
             }

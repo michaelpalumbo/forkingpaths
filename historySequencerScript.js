@@ -295,12 +295,13 @@ document.addEventListener("DOMContentLoaded", function () {
                     panToBranch(event.data.data)
                 break
 
-                case 'clearHistoryGraph':
-                    ws.send(JSON.stringify({
-                        cmd: 'clearHistoryGraph'
-                    }))
+                // commented out because this is now handled by the main app
+                // case 'clearHistoryGraph':
+                //     ws.send(JSON.stringify({
+                //         cmd: 'clearHistoryGraph'
+                //     }))
  
-                break
+                // break
                 default: console.log('no switch case for message:', event.data)
             }
         }
@@ -903,7 +904,8 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // pan to new/selected branch
-    function panToBranch(node) {
+    function panToBranch(hash) {
+        const node = historyDAG_cy.getElementById(hash)
         if(!meta.userSettings.focusNewBranch){
             return
         }
