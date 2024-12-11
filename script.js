@@ -3,7 +3,7 @@
 //* INITIALIZATION AND SETUP
 //* Set up dependencies, initialize core variables
 //*
-
+const ws = new WebSocket('ws://localhost:3000');
 
 import { ParentNode } from './parentNode.js';
 
@@ -730,6 +730,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // amDoc = await loadDocument(docID);
         // if meta doesn't contain a document, create a new one
         if (!meta.docs[meta.head.branch]) {
+            console.log('creating new branch')
             amDoc = Automerge.init();
             let amMsg = makeChangeMessage(firstBranchName, 'blank_patch')
             // Apply initial changes to the new document
@@ -777,7 +778,7 @@ document.addEventListener("DOMContentLoaded", function () {
             await saveDocument('meta', Automerge.save(meta));
         } else {
             // meta does contain at least one document, so grab whichever is the one that was last looked at
-            
+            console.log('loading doc', meta.head.branch)
             amDoc = Automerge.load(meta.docs[meta.head.branch]);
             // // store previous head in heads obj
             // branchHeads[branchHeads.current] = {}
@@ -956,10 +957,15 @@ document.addEventListener("DOMContentLoaded", function () {
         // deletes the document in the indexedDB instance
         deleteDocument(docID)
         deleteDocument('meta')
-        sendMsgToHistoryApp({
-            appID: 'forkingPathsMain',
+        
+        ws.send(JSON.stringify({
             cmd: 'clearHistoryGraph'
-        })
+        }))
+        
+        // sendMsgToHistoryApp({
+        //     appID: 'forkingPathsMain',
+        //     cmd: 'clearHistoryGraph'
+        // })
 
         meta = Automerge.from({
             title: "Forking Paths System",
@@ -1975,6 +1981,26 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
     */ 
+
+//*
+//*
+//* SERVER COMMUNICATION
+//* Functions that communicate between main app and server
+//*
+
+    ws.onopen = () => {
+        console.log('Connected to WebSocket server');
+        // ws.send('Hello, server!');
+    };
+    
+    ws.onmessage = (event) => {
+        console.log('Message from server:', event.data);
+    };
+    
+    ws.onclose = () => {
+        console.log('Disconnected from WebSocket server');
+    };
+
 
 //*
 //*

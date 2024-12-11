@@ -21,7 +21,7 @@ import { WebSocketServer } from 'ws';
 //     }
 // }
 
-
+let meta;
 let existingHistoryNodeIDs = new Set()
 
 let graphStyle = 'DAG'
@@ -191,8 +191,8 @@ wss.on('connection', (ws) => {
         let msg = JSON.parse(message)
         switch(msg.cmd){
             case 'updateGraph':
-
-                updateHistoryGraph(ws, msg.meta, msg.docHistoryGraphStyling)
+                meta = msg.meta
+                updateHistoryGraph(ws, meta, msg.docHistoryGraphStyling)
             break
 
             case 'clearHistoryGraph':
