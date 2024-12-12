@@ -2629,11 +2629,19 @@ document.addEventListener("DOMContentLoaded", function () {
         if (temporaryCables.local.tempEdge) {
             if (temporaryCables.local.targetNode) {
 
+                let src = temporaryCables.local.source.id()
+                let targ = temporaryCables.local.targetNode.id()
+                // if the cable was created from an IN to an OUT, swap them so that the audio worklet always maintains the correct flow of audio
+                if(src.includes('AudioDestination') || src.split('.')[1] === 'IN'){
+                    src = temporaryCables.local.targetNode.id()
+                    targ = temporaryCables.local.source.id()
+                }
+                console.log('src', src, 'targ:', targ)
                 // update audio right away
-                updateSynthWorklet('connectNodes', { source: temporaryCables.local.source.id(), target: temporaryCables.local.targetNode.id()})
+                updateSynthWorklet('connectNodes', { source: src, target: targ})
 
                 // If a target node is highlighted, connect the edge to it
-                // tempEdge.data('target', temporaryCables.local.targetNode.id()); // Update the edge target
+                // tempEdge.data('target', targ); // Update the edge target
                 
                 // tempEdge.removeClass('tempEdge'); // Remove temporary class if needed
                 cy.remove(temporaryCables.local.tempEdge)
@@ -2641,7 +2649,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 cy.add({
                     group: 'edges',
-                    data: { id: edgeId, source: temporaryCables.local.source.id(), target: temporaryCables.local.targetNode.id(), kind: 'cable' },
+                    data: { id: edgeId, source: src, target: targ, kind: 'cable' },
                     classes: 'edge'
                 });
                 
@@ -2650,9 +2658,9 @@ document.addEventListener("DOMContentLoaded", function () {
                     amDoc.elements.push({
                         type: 'edge',
                         id: edgeId,
-                        data: { id: edgeId, source: temporaryCables.local.source.id(), target: temporaryCables.local.targetNode.id(), kind: 'cable' }
+                        data: { id: edgeId, source: src, target: targ, kind: 'cable' }
                     });
-                    amDoc.synth.graph.connections.push( { source: temporaryCables.local.source.id(), target: temporaryCables.local.targetNode.id() })
+                    amDoc.synth.graph.connections.push( { source: src, target: targ })
                     audioGraphDirty = true
                 }, onChange,  `connect ${temporaryCables.local.source.data().label} to ${temporaryCables.local.targetNode.data().label}`);
 
@@ -3488,6 +3496,7 @@ document.addEventListener("DOMContentLoaded", function () {
             break
 
             case 'connectNodes':
+                console.log(data)
                 // check here if target is audioDestination, if so, pass cmd as 'connectToOutput'
                 if(data.target.includes('AudioDestination')){
                     synthWorklet.port.postMessage({
