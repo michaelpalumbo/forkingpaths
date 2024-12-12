@@ -2628,7 +2628,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         if (temporaryCables.local.tempEdge) {
             if (temporaryCables.local.targetNode) {
-                console.log('source node:', temporaryCables.local.source.id())
+
                 // update audio right away
                 updateSynthWorklet('connectNodes', { source: temporaryCables.local.source.id(), target: temporaryCables.local.targetNode.id()})
 
@@ -3492,20 +3492,23 @@ document.addEventListener("DOMContentLoaded", function () {
                 if(data.target.includes('AudioDestination')){
                     synthWorklet.port.postMessage({
                         cmd: 'connectToOutput',
-                        data: data.source
+                        data: data.source,
+                        connection: 'output'
                     });
                 } else if (data.target.split('.')[1] === 'IN'){
                     
                     // handle direct node inputs
                     synthWorklet.port.postMessage({
                         cmd: 'connectNodes',
-                        data: { source: data.source, target: data.target }
+                        data: { source: data.source, target: data.target },
+                        connection: 'signal'
                     });
                 } else {
                     // handle CV modulation inputs
                     synthWorklet.port.postMessage({
                         cmd: 'connectCV',
-                        data: { source: data.source, target: data.target, param: data.target.split('.')[1] }
+                        data: { source: data.source, target: data.target, param: data.target.split('.')[1] },
+                        connection: 'cv'
                     });
                 }
 

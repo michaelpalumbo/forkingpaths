@@ -5,7 +5,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
     constructor() {
         super();
         this.nodes = {}; // Store all nodes
-        this.connections = []; // Store connections between nodes
+        this.signalConnections = []; // Store connections between nodes
         // Initialize the output node with a fixed ID
         this.outputConnections = []; // Nodes explicitly connected to the audio output
         this.cvConnections = [ ] 
@@ -18,7 +18,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
     getGraph(){
         const graph = {
             nodes: this.nodes,
-            connections: this.connections,
+            connections: this.signalConnections,
             outputConnections: this.outputConnections,
             cvConnections: this.cvConnections
         }
@@ -88,7 +88,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                 // Remove all related connections
 
                 // Filter `connections` to exclude those involving the deleted node
-                this.connections = this.connections.filter(
+                this.signalConnections = this.signalConnections.filter(
                     (item) => item.source !== data.data && item.target !== data.data
                 );
                 // Filter `outputConnections` to exclude the deleted node
@@ -103,7 +103,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
             break
 
             case 'connectNodes':
-                this.connections.push(data.data);
+                this.signalConnections.push(data.data);
             break
 
             case 'connectToOutput':
@@ -124,10 +124,41 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
             break;
 
             case 'disconnectNodes':
-                // console.log('before', this.connections)
+                console.log('before')
+                
+                console.log(data.data)
+                
+                if(data.data.target.includes('AudioDestination')){
+                    console.log('this.outputConnections', this.outputConnections);
+                    const index = this.outputConnections.findIndex(
+                        (item) => 
+ 
+                            item === data.data.source
+                            // item.source === data.data.source && 
+                            // item.target === data.data.target
+                    );
+                    console.log('found at index', index)
+                    // Remove the object if it exists
+                    if (index !== -1) {
+                        this.outputConnections.splice(index, 1);
+                    }
+                } else if (data.connection === 'signal'){
+                    console.log(this.signalConnections);
+                } else if(data.connection === 'cv'){
+
+                    console.log(this.cvConnections);
+
+                }
+
+                console.log('after')
+                console.log(this.signalConnections);
+                console.log(this.cvConnections);
+                console.log(this.outputConnections);
+
+                // console.log('before', this.signalConnections)
 
                 // // Find the index of the connection
-                // const index = this.connections.findIndex(
+                // const index = this.signalConnections.findIndex(
                 //     (item) => 
                 //         item.source === data.data.source && 
                 //         item.target === data.data.target
@@ -135,51 +166,45 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
 
                 // // Remove the object if it exists
                 // if (index !== -1) {
-                //     this.connections.splice(index, 1);
+                //     this.signalConnections.splice(index, 1);
                 // }
-                // console.log('after', this.connections)
-                console.log('before')
-                console.log(this.connections);
-                console.log(this.cvConnections);
-                console.log(this.outputConnections);
-                function removeFromArrays(arrays, connectionToRemove) {
-                    arrays.forEach((array) => {
-                        const index = array.findIndex((item) => {
-                            console.log(`Comparing item:`, item);
-                            console.log(`With connectionToRemove:`, connectionToRemove);
-                
-                            const isSourceMatch = item.source === connectionToRemove.source;
-                            const isTargetMatch = item.target === connectionToRemove.target;
-                
-                            console.log(`Comparison result:`, {
-                                itemSource: item.source,
-                                itemTarget: item.target,
-                                connectionSource: connectionToRemove.source,
-                                connectionTarget: connectionToRemove.target,
-                                isSourceMatch,
-                                isTargetMatch
-                            });
-                
-                            return isSourceMatch && isTargetMatch;
-                        });
-                
-                        if (index !== -1) {
-                            console.log(`Removing item at index ${index} from array:`, array[index]);
-                            array.splice(index, 1);
-                        }
-                    });
-                }
+                // console.log('after', this.signalConnections)
 
-                // Combine the arrays into a single array of arrays
-                const allConnections = [this.connections, this.cvConnections, this.outputConnections];
+                // function removeFromArrays(arrays, connectionToRemove) {
+                //     arrays.forEach((array) => {
+                //         const index = array.findIndex((item) => {
+                //             console.log(`Comparing item:`, item);
+                //             console.log(`With connectionToRemove:`, connectionToRemove);
+                
+                //             const isSourceMatch = item.source === connectionToRemove.source;
+                //             const isTargetMatch = item.target === connectionToRemove.target;
+                
+                //             console.log(`Comparison result:`, {
+                //                 itemSource: item.source,
+                //                 itemTarget: item.target,
+                //                 connectionSource: connectionToRemove.source,
+                //                 connectionTarget: connectionToRemove.target,
+                //                 isSourceMatch,
+                //                 isTargetMatch
+                //             });
+                
+                //             return isSourceMatch && isTargetMatch;
+                //         });
+                
+                //         if (index !== -1) {
+                //             console.log(`Removing item at index ${index} from array:`, array[index]);
+                //             array.splice(index, 1);
+                //         }
+                //     });
+                // }
 
-                // Remove the object from the relevant array
-                removeFromArrays(allConnections, data.data);
+                // // Combine the arrays into a single array of arrays
+                // const allConnections = [this.signalConnections, this.cvConnections, this.outputConnections];
 
-                console.log('after')
-                console.log(this.connections);
-                console.log(this.cvConnections);
-                console.log(this.outputConnections);
+                // // Remove the object from the relevant array
+                // removeFromArrays(allConnections, data.data);
+
+
                 
             break
 
@@ -229,12 +254,12 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
             delete this.nodes[id];
         } else if (cmd === 'connectNodes') {
             // Add a connection between nodes
-            this.connections.push({ source: id, target: targetId });
+            this.signalConnections.push({ source: id, target: targetId });
 
             console.log(`Connected: ${id} -> ${targetId}`);
         } else if (cmd === 'disconnectNodes') {
             // Remove a connection
-            this.connections = this.connections.filter(
+            this.signalConnections = this.signalConnections.filter(
                 (conn) => !(conn.source === id && conn.target === targetId)
             );
         } 
@@ -257,7 +282,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
         }
             */
         // console.log('nodes:', this.nodes)
-        // console.log('Connections:', this.connections)
+        // console.log('Connections:', this.signalConnections)
         // console.log('outputConnections:', this.outputConnections)
     }
 
@@ -287,7 +312,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
 
             // Sum inputs from connected nodes
             const inputBuffer = new Float32Array(128);
-            const inputConnections = this.connections.filter(conn => conn.target.split('.')[0] === id);
+            const inputConnections = this.signalConnections.filter(conn => conn.target.split('.')[0] === id);
 
             for (const conn of inputConnections) {
                 processNode(conn.source); // Process the source node first
@@ -302,7 +327,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
             }
 
             // Process Modulation Connections
-            // const modulationConnections = this.connections.filter(conn => conn.target === id && conn.param);
+            // const modulationConnections = this.signalConnections.filter(conn => conn.target === id && conn.param);
             const modulations = this.cvConnections.filter((conn) => conn.target.split('.')[0] === id);
 
             for (const conn of modulations) {
@@ -436,7 +461,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
         }
 
         // Propagate signals through connections
-        for (const conn of this.connections) {
+        for (const conn of this.signalConnections) {
             const sourceNode = this.nodes[conn.source];
             const targetNode = this.nodes[conn.target];
 
@@ -482,7 +507,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
         // }
 
         // Propagate signals through connections
-        // for (const conn of this.connections) {
+        // for (const conn of this.signalConnections) {
         //     const sourceNode = this.nodes[conn.source];
         //     const targetNode = this.nodes[conn.target];
 
