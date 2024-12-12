@@ -125,11 +125,10 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
 
             case 'disconnectNodes':
                 console.log('before')
-                
                 console.log(data.data)
                 
                 if(data.data.target.includes('AudioDestination')){
-                    console.log('this.outputConnections', this.outputConnections);
+
                     const index = this.outputConnections.findIndex(
                         (item) => 
  
@@ -151,7 +150,6 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                 }
 
                 console.log('after')
-                console.log(this.signalConnections);
                 console.log(this.cvConnections);
                 console.log(this.outputConnections);
 
@@ -315,7 +313,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
             const inputConnections = this.signalConnections.filter(conn => conn.target.split('.')[0] === id);
 
             for (const conn of inputConnections) {
-                processNode(conn.source); // Process the source node first
+                processNode(conn.source.split('.')[0]); // Process the source node first
                 const sourceBuffer = signalBuffers[conn.source.split('.')[0]];
                 if (!sourceBuffer) {
                     console.warn(`Source buffer for node ${conn.source.split('.')[0]} is undefined`);
@@ -336,8 +334,8 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                     continue; // Skip invalid connection
                 }
 
-                processNode(conn.source); // Process the source node first
-                const sourceBuffer = signalBuffers[conn.source];
+                processNode(conn.source.split('.')[0]); // Process the source node first
+                const sourceBuffer = signalBuffers[conn.source.split('.')[0]];
 
                 if (!sourceBuffer) {
                     console.warn(`No signal buffer for modulation source: ${conn.source.split('.')[0]}`);

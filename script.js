@@ -2636,7 +2636,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     src = temporaryCables.local.targetNode.id()
                     targ = temporaryCables.local.source.id()
                 }
-                console.log('src', src, 'targ:', targ)
                 // update audio right away
                 updateSynthWorklet('connectNodes', { source: src, target: targ})
 
