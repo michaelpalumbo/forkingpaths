@@ -24,6 +24,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
         }
         return graph
     }
+
     handleMessage(data) {
         
         switch (data.cmd){
@@ -136,16 +137,38 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                             // item.source === data.data.source && 
                             // item.target === data.data.target
                     );
-                    console.log('found at index', index)
                     // Remove the object if it exists
                     if (index !== -1) {
                         this.outputConnections.splice(index, 1);
                     }
-                } else if (data.connection === 'signal'){
+                } else if (data.data.target.split('.')[1] === 'IN'){
                     console.log(this.signalConnections);
-                } else if(data.connection === 'cv'){
+                    const index = this.signalConnections.findIndex(
+                        (item) => 
+ 
+                            // item === data.data.source
+                            item.source === data.data.source && 
+                            item.target === data.data.target
+                    );
+                    // Remove the object if it exists
+                    if (index !== -1) {
+                        this.signalConnections.splice(index, 1);
+                    }
+                } else{
 
                     console.log(this.cvConnections);
+
+                    const index = this.cvConnections.findIndex(
+                        (item) => 
+ 
+                            // item === data.data.source
+                            item.source === data.data.source && 
+                            item.target === data.data.target
+                    );
+                    // Remove the object if it exists
+                    if (index !== -1) {
+                        this.cvConnections.splice(index, 1);
+                    }
 
                 }
 
