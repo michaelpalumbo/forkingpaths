@@ -28,6 +28,7 @@
     "cors": "^2.8.5",
     "cytoscape-canvas": "^3.0.1",
     "cytoscape-dagre": "^2.5.0",
+    "cytoscape-grid-guide": "^2.3.3",
     "cytoscape-popper": "^4.0.1",
     "express": "^4.21.2",
     "idb": "^8.0.0",

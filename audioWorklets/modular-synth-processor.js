@@ -15,54 +15,71 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
 
     }
 
+    getGraph(){
+        const graph = {
+            nodes: this.nodes,
+            connections: this.connections,
+            outputConnections: this.outputConnections,
+            cvConnections: this.cvConnections
+        }
+        return graph
+    }
     handleMessage(data) {
-        console.log(data.structure)
         
         switch (data.cmd){
+
+            case 'loadVersion':
+                console.log(data.data)
+            break;
             case 'addNode':
-                
-                switch (data.data.module){
+                // console.log(data.structure)
+                if(data.structure === 'webAudioNodes'){
+                    switch (data.data.module){
                     
-                    case 'LFO':
-                    case 'Oscillator':
-                        this.nodes[data.data.moduleName] = {
-                            node: 'Oscillator',
-                            baseParams: {
-                                frequency: data.data.audioGraph.params.frequency,
-                                gain: 1,
-                            },
-                            modulatedParams: {
-                                // offsets for modulation
-                                frequency: 0, 
-                                gain: 0, 
-                            },
-                            output: new Float32Array(128),
-                            phase: 0,
-                            customWaveform: null,
-                            type: data.data.audioGraph.params.type,
-                            modulationTarget: null, // Target node or parameter for modulation
-                            startTime: null, // Optional: Scheduled start time
-                            stopTime: null,  // Optional: Scheduled stop time           
-            
-                        };
-                    break
-                    case 'Gain':
-                    case 'ModGain':
-                        this.nodes[data.data.moduleName] = {
-                            node: 'Gain',
-                            baseParams: {
-                                gain: data.data.audioGraph.params.gain || 1,
-                            },
-                            modulatedParams: {
-                                gain: 0, // Offset for modulation
-                            },
-                            output: new Float32Array(128),
-                        }
-
-                    break
-
-                    default: 
+                        case 'LFO':
+                        case 'Oscillator':
+                            this.nodes[data.data.moduleName] = {
+                                node: 'Oscillator',
+                                baseParams: {
+                                    frequency: data.data.audioGraph.params.frequency,
+                                    gain: 1,
+                                },
+                                modulatedParams: {
+                                    // offsets for modulation
+                                    frequency: 0, 
+                                    gain: 0, 
+                                },
+                                output: new Float32Array(128),
+                                phase: 0,
+                                customWaveform: null,
+                                type: data.data.audioGraph.params.type,
+                                modulationTarget: null, // Target node or parameter for modulation
+                                startTime: null, // Optional: Scheduled start time
+                                stopTime: null,  // Optional: Scheduled stop time           
+                
+                            };
+                        break
+                        case 'Gain':
+                        case 'ModGain':
+                            this.nodes[data.data.moduleName] = {
+                                node: 'Gain',
+                                baseParams: {
+                                    gain: data.data.audioGraph.params.gain || 1,
+                                },
+                                modulatedParams: {
+                                    gain: 0, // Offset for modulation
+                                },
+                                output: new Float32Array(128),
+                            }
+    
+                        break
+    
+                        default: 
+                    }
+                } else {
+                    console.log('code for loading rnbo devices has not been written')
                 }
+                
             break
 
             case 'removeNode':
@@ -90,8 +107,10 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
             break
 
             case 'connectToOutput':
-                if (this.nodes[data.data] && !this.outputConnections.includes(data.data)) {
+                console.log(data.data, this.nodes[data.data.split('.')[0]])
+                if (this.nodes[data.data.split('.')[0]] && !this.outputConnections.includes(data.data)) {
                     this.outputConnections.push(data.data);
+                    console.log(this.outputConnections)
                 }
             break
 
@@ -103,6 +122,66 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                     param: data.data.param // The parameter to modulate
                 });
             break;
+
+            case 'disconnectNodes':
+                // console.log('before', this.connections)
+
+                // // Find the index of the connection
+                // const index = this.connections.findIndex(
+                //     (item) => 
+                //         item.source === data.data.source && 
+                //         item.target === data.data.target
+                // );
+
+                // // Remove the object if it exists
+                // if (index !== -1) {
+                //     this.connections.splice(index, 1);
+                // }
+                // console.log('after', this.connections)
+                console.log('before')
+                console.log(this.connections);
+                console.log(this.cvConnections);
+                console.log(this.outputConnections);
+                function removeFromArrays(arrays, connectionToRemove) {
+                    arrays.forEach((array) => {
+                        const index = array.findIndex((item) => {
+                            console.log(`Comparing item:`, item);
+                            console.log(`With connectionToRemove:`, connectionToRemove);
+                
+                            const isSourceMatch = item.source === connectionToRemove.source;
+                            const isTargetMatch = item.target === connectionToRemove.target;
+                
+                            console.log(`Comparison result:`, {
+                                itemSource: item.source,
+                                itemTarget: item.target,
+                                connectionSource: connectionToRemove.source,
+                                connectionTarget: connectionToRemove.target,
+                                isSourceMatch,
+                                isTargetMatch
+                            });
+                
+                            return isSourceMatch && isTargetMatch;
+                        });
+                
+                        if (index !== -1) {
+                            console.log(`Removing item at index ${index} from array:`, array[index]);
+                            array.splice(index, 1);
+                        }
+                    });
+                }
+
+                // Combine the arrays into a single array of arrays
+                const allConnections = [this.connections, this.cvConnections, this.outputConnections];
+
+                // Remove the object from the relevant array
+                removeFromArrays(allConnections, data.data);
+
+                console.log('after')
+                console.log(this.connections);
+                console.log(this.cvConnections);
+                console.log(this.outputConnections);
+                
+            break
 
             case 'paramChange':
                 // this.nodes[data.data.parent][data.data.param] = data.data.value
@@ -197,6 +276,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
         const visited = new Set();
 
         const processNode = (id) => {
+
             if (visited.has(id)) return; // Avoid re-processing the same node
             visited.add(id);
 
@@ -207,13 +287,13 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
 
             // Sum inputs from connected nodes
             const inputBuffer = new Float32Array(128);
-            const inputConnections = this.connections.filter(conn => conn.target === id);
+            const inputConnections = this.connections.filter(conn => conn.target.split('.')[0] === id);
 
             for (const conn of inputConnections) {
                 processNode(conn.source); // Process the source node first
-                const sourceBuffer = signalBuffers[conn.source];
+                const sourceBuffer = signalBuffers[conn.source.split('.')[0]];
                 if (!sourceBuffer) {
-                    console.warn(`Source buffer for node ${conn.source} is undefined`);
+                    console.warn(`Source buffer for node ${conn.source.split('.')[0]} is undefined`);
                     continue; // Skip this modulation if the buffer is unavailable
                 }
                 for (let i = 0; i < inputBuffer.length; i++) {
@@ -223,11 +303,11 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
 
             // Process Modulation Connections
             // const modulationConnections = this.connections.filter(conn => conn.target === id && conn.param);
-            const modulations = this.cvConnections.filter((conn) => conn.target === id);
+            const modulations = this.cvConnections.filter((conn) => conn.target.split('.')[0] === id);
 
             for (const conn of modulations) {
-                if (!this.nodes[conn.source]) {
-                    console.error(`Modulation source node ${conn.source} does not exist`);
+                if (!this.nodes[conn.source.split('.')[0]]) {
+                    console.error(`Modulation source node ${conn.source.split('.')[0]} does not exist`);
                     continue; // Skip invalid connection
                 }
 
@@ -235,7 +315,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                 const sourceBuffer = signalBuffers[conn.source];
 
                 if (!sourceBuffer) {
-                    console.warn(`No signal buffer for modulation source: ${conn.source}`);
+                    console.warn(`No signal buffer for modulation source: ${conn.source.split('.')[0]}`);
                     continue; // Skip invalid connections
                 }
             
@@ -317,10 +397,10 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
 
         // Step 3: Process all nodes connected to the output
         for (const id of this.outputConnections) {
-            processNode(id); // process the node first
+            processNode(id.split('.')[0]); // process the node first
 
             // Sum the output of directly connected nodes
-            const nodeBuffer = signalBuffers[id];
+            const nodeBuffer = signalBuffers[id.split('.')[0]];
             if (nodeBuffer) {
                 for (let i = 0; i < output.length; i++) {
                     output[i] += nodeBuffer[i]; // Sum signals from all connected nodes

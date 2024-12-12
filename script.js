@@ -779,7 +779,6 @@ document.addEventListener("DOMContentLoaded", function () {
             await saveDocument('meta', Automerge.save(meta));
         } else {
             // meta does contain at least one document, so grab whichever is the one that was last looked at
-            console.log('loading doc', meta.head.branch)
             amDoc = Automerge.load(meta.docs[meta.head.branch]);
             // // store previous head in heads obj
             // branchHeads[branchHeads.current] = {}
@@ -1189,6 +1188,8 @@ document.addEventListener("DOMContentLoaded", function () {
         // Check if we're on the head; reset clone if true (so we don't trigger opening a new branch with changes made to head)
         if (Automerge.getHeads(historicalView)[0] === Automerge.getHeads(amDoc)[0]){
             automergeDocuments.newClone = false
+            updateSynthWorklet('loadVersion', historicalView)
+
             updateCytoscapeFromDocument(historicalView);
 
             meta = Automerge.change(meta, (meta) => {
@@ -1227,6 +1228,8 @@ document.addEventListener("DOMContentLoaded", function () {
             // Step 3: Add node in Cytoscape for this clone point
             // get info about targetNode (what was clicked by user)
             branchHeads.previous = Automerge.getHeads(amDoc)[0]
+            
+            updateSynthWorklet('loadVersion', historicalView)
 
             updateCytoscapeFromDocument(branchDoc);
         } 
@@ -1263,6 +1266,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // get info about targetNode (what was clicked by user)
             branchHeads.previous = Automerge.getHeads(amDoc)[0]
 
+            updateSynthWorklet('loadVersion', historicalView)
             updateCytoscapeFromDocument(historicalView);
 
         }
@@ -1306,9 +1310,14 @@ document.addEventListener("DOMContentLoaded", function () {
             // Step 3: Add node in Cytoscape for this clone point
             // get info about targetNode (what was clicked by user)
             branchHeads.previous = Automerge.getHeads(amDoc)[0]
-          
+
+            updateSynthWorklet('loadVersion', historicalView)
+
             updateCytoscapeFromDocument(historicalView);
+
         }
+
+
 
 
         
@@ -1990,7 +1999,7 @@ document.addEventListener("DOMContentLoaded", function () {
 //*
 
     ws.onopen = () => {
-        console.log('Connected to WebSocket server');
+        
         // ws.send('Hello, server!');
     };
     
@@ -2019,7 +2028,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (historySequencerWindow && !historySequencerWindow.closed) {
             historySequencerWindow.postMessage(data, '*');
         } else {
-            console.error('Graph window is not open or has been closed.');
+            // console.error('Graph window is not open or has been closed.');
             openGraphWindow()
         }
     }
@@ -2030,7 +2039,6 @@ document.addEventListener("DOMContentLoaded", function () {
         switch(event.data.cmd){
 
             case 'historySequencerReady':
-                console.log('historySequencer window is ready. Sending initial data...');
                 sendMsgToHistoryApp({
                     appID: 'forkingPathsMain',
                     cmd: 'reDrawHistoryGraph',
@@ -2091,11 +2099,13 @@ document.addEventListener("DOMContentLoaded", function () {
         // console.log(event.target.dataset.structure)
         // if(loadedModule)
         // console.log(loadedModule)
+
+        // prevent loading either of the headings text from the Module Library
         if(!loadedModule.includes('RNBO Devices') || !loadedModule.includes('Web Audio Nodes') ){
             addModule(loadedModule, { x: 200, y: 200 }, [    ], event.target.dataset.structure )
 
         }
-        // addModule(loadedModule, { x: 200, y: 200 }, [    ])
+        
     });
 
 
@@ -2313,6 +2323,10 @@ document.addEventListener("DOMContentLoaded", function () {
             
                     // Check if the click is near the source or target endpoint
                     if (isNearEndpoint(mousePos, sourcePos)) {
+
+                        // remove from audio graph
+                        updateSynthWorklet('disconnectNodes', edge.data())
+
                         // delete the cable
                         cy.remove(edge);
                         // also remove the cable from automerge!
@@ -2363,6 +2377,10 @@ document.addEventListener("DOMContentLoaded", function () {
                         // })
 
                     } else if (isNearEndpoint(mousePos, targetPos)) {
+
+                        // remove from audio graph
+                        updateSynthWorklet('disconnectNodes', edge.data())
+                        
                         // delete the cable
                         cy.remove(edge);
 
@@ -2610,7 +2628,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         if (temporaryCables.local.tempEdge) {
             if (temporaryCables.local.targetNode) {
-
+                console.log('source node:', temporaryCables.local.source.id())
                 // update audio right away
                 updateSynthWorklet('connectNodes', { source: temporaryCables.local.source.id(), target: temporaryCables.local.targetNode.id()})
 
@@ -2808,7 +2826,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (highlightedEdge && (event.key === 'Backspace' || event.key === 'Delete')) {
             
-
+            // remove from audio graph
+            // console.log(highlightedEdge.data().id)
+            updateSynthWorklet('disconnectNodes', { source: highlightedEdge.data().source, target: highlightedEdge.data().target })
+            
             amDoc = applyChange(amDoc, (amDoc) => {
                 // Find the index of the object that matches the condition
                 const index = amDoc.elements.findIndex(el => el.id === highlightedEdge.data().id);
@@ -3440,6 +3461,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function updateSynthWorklet(cmd, data, structure){
         switch (cmd) {
+            case 'loadVersion':
+                // will need to figure out how to sort through previous graph:
+                    // - new nodes get added
+                    // - 
+                
+                synthWorklet.port.postMessage({ 
+                    cmd: 'loadVersion', 
+                    data: data
+                });
+            break;
             case 'addNode':
                 synthWorklet.port.postMessage({ 
                     cmd: 'addNode', 
@@ -3461,55 +3492,62 @@ document.addEventListener("DOMContentLoaded", function () {
                 if(data.target.includes('AudioDestination')){
                     synthWorklet.port.postMessage({
                         cmd: 'connectToOutput',
-                        data: data.source.split('.')[0]
+                        data: data.source
                     });
                 } else if (data.target.split('.')[1] === 'IN'){
-                    console.log('snared')
+                    
                     // handle direct node inputs
                     synthWorklet.port.postMessage({
                         cmd: 'connectNodes',
-                        data: { source: data.source.split('.')[0], target: data.target.split('.')[0] }
+                        data: { source: data.source, target: data.target }
                     });
                 } else {
                     // handle CV modulation inputs
                     synthWorklet.port.postMessage({
                         cmd: 'connectCV',
-                        data: { source: data.source.split('.')[0], target: data.target.split('.')[0], param: data.target.split('.')[1] }
+                        data: { source: data.source, target: data.target, param: data.target.split('.')[1] }
                     });
                 }
 
             break
 
+            case 'disconnectNodes':
+                console.log(data)
+                synthWorklet.port.postMessage({
+                    cmd: 'disconnectNodes',
+                    data: data
+                });
+            break
             case 'paramChange':
 
                 synthWorklet.port.postMessage({ cmd: 'paramChange', data: data });
             break
         }
     }
-    // Add a node
-    function addNode(id, type, params) {
-        synthWorklet.port.postMessage({ cmd: 'addNode', type: type, id, params });
-    }
+    // // Add a node
+    // function addNode(id, type, params) {
+    //     synthWorklet.port.postMessage({ cmd: 'addNode', type: type, id, params });
+    // }
 
-    // Remove a node
-    function removeNode(id) {
-        synthWorklet.port.postMessage({ cmd: 'removeNode', id });
-    }
+    // // Remove a node
+    // function removeNode(id) {
+    //     synthWorklet.port.postMessage({ cmd: 'removeNode', id });
+    // }
 
-    // Connect two nodes
-    function connectNodes(sourceId, targetId) {
-        synthWorklet.port.postMessage({ cmd: 'connectNodes', id: sourceId, targetId });
-    }
+    // // Connect two nodes
+    // function connectNodes(sourceId, targetId) {
+    //     synthWorklet.port.postMessage({ cmd: 'connectNodes', id: sourceId, targetId });
+    // }
 
-    // Disconnect two nodes
-    function disconnectNodes(sourceId, targetId) {
-        synthWorklet.port.postMessage({ cmd: 'disconnectNodes', id: sourceId, targetId });
-    }
+    // // Disconnect two nodes
+    // function disconnectNodes(sourceId, targetId) {
+    //     synthWorklet.port.postMessage({ cmd: 'disconnectNodes', id: sourceId, targetId });
+    // }
 
-    // Update a node's parameters
-    function updateNode(id, params) {
-        synthWorklet.port.postMessage({ cmd: 'updateNode', id, params });
-    }
+    // // Update a node's parameters
+    // function updateNode(id, params) {
+    //     synthWorklet.port.postMessage({ cmd: 'updateNode', id, params });
+    // }
     
     //*
     //*
