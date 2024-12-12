@@ -84,13 +84,14 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
             break
 
             case 'removeNode':
+                console.log(data.data, this.cvConnections)
                 delete this.nodes[data.data]
 
                 // Remove all related connections
 
                 // Filter `connections` to exclude those involving the deleted node
                 this.signalConnections = this.signalConnections.filter(
-                    (item) => item.source !== data.data && item.target !== data.data
+                    (item) => item.source.split('.')[0] !== data.data && item.target.split('.')[0] !== data.data
                 );
                 // Filter `outputConnections` to exclude the deleted node
                 this.outputConnections = this.outputConnections.filter(
@@ -99,7 +100,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
 
                 // Filter `cvConnections` to exclude those involving the deleted node
                 this.cvConnections = this.cvConnections.filter(
-                    (item) => item.source !== data.data && item.target !== data.data
+                    (item) => item.source.split('.')[0] !== data.data && item.target.split('.')[0] !== data.data
                 );
             break
 

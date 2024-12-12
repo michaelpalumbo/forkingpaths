@@ -667,9 +667,21 @@
         "modulatable": true,
         "modulationDescription": "Audio-rate modulation of gain to create effects like tremolo or dynamic volume changes."
       }
+      
     },
     "paramNames": ["gain"],
-    "cv": {},
+    "cvNames": ["gain"],
+    "cv": {
+      "gain": {
+        "min": 0,
+        "max": 1,
+        "default": 1,
+        "units": "linear gain",
+        "description": "Controls the amount of amplification applied to the input signal.",
+        "modulatable": true,
+        "modulationDescription": "Audio-rate modulation of gain to create effects like tremolo or dynamic volume changes."
+      }
+    },
     "inputs": ["IN"],
     "outputs": ["OUT"]
   },

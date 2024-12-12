@@ -2632,7 +2632,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 let src = temporaryCables.local.source.id()
                 let targ = temporaryCables.local.targetNode.id()
                 // if the cable was created from an IN to an OUT, swap them so that the audio worklet always maintains the correct flow of audio
-                if(src.includes('AudioDestination') || src.split('.')[1] === 'IN'){
+                if(src.split('.')[1] != 'OUT'){
                     src = temporaryCables.local.targetNode.id()
                     targ = temporaryCables.local.source.id()
                 }
