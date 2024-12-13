@@ -1190,7 +1190,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (Automerge.getHeads(historicalView)[0] === Automerge.getHeads(amDoc)[0]){
             automergeDocuments.newClone = false
 
-            updateSynthWorklet('loadVersion', historicalView)
+            updateSynthWorklet('loadVersion', historicalView.synth.graph)
 
             updateCytoscapeFromDocument(historicalView);
 
@@ -1231,7 +1231,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // get info about targetNode (what was clicked by user)
             branchHeads.previous = Automerge.getHeads(amDoc)[0]
 
-            updateSynthWorklet('loadVersion', historicalView)
+            updateSynthWorklet('loadVersion', historicalView.synth.graph)
 
             updateCytoscapeFromDocument(branchDoc);
         } 
@@ -1268,7 +1268,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // get info about targetNode (what was clicked by user)
             branchHeads.previous = Automerge.getHeads(amDoc)[0]
 
-            updateSynthWorklet('loadVersion', historicalView)
+            updateSynthWorklet('loadVersion', historicalView.synth.graph)
 
             updateCytoscapeFromDocument(historicalView);
 
@@ -1314,7 +1314,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // get info about targetNode (what was clicked by user)
             branchHeads.previous = Automerge.getHeads(amDoc)[0]
           
-            updateSynthWorklet('loadVersion', historicalView)
+            updateSynthWorklet('loadVersion', historicalView.synth.graph)
 
             updateCytoscapeFromDocument(historicalView);
         }
@@ -3308,7 +3308,7 @@ document.addEventListener("DOMContentLoaded", function () {
             amDoc.synth.graph.modules[parentNodeData.data.id] = audioGraph
             audioGraphDirty = true
         }, onChange, `add ${parentNodeData.data.id}`);
-        
+        console.log(parentNode)
         // update the synthWorklet
         updateSynthWorklet('addNode', parentNode, structure )
 

@@ -22,7 +22,8 @@ export class ParentNode_WebAudioNode {
             type: module,
             params: {},
             moduleSpec: audioNodes[structure][module],
-            nodeIDs: []
+            nodeIDs: [],
+            structure: structure
 
         }
         this.nodeIDs = [] // store parent and child ids for later reference
