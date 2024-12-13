@@ -84,7 +84,6 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
             break
 
             case 'removeNode':
-                console.log(data.data, this.cvConnections)
                 delete this.nodes[data.data]
 
                 // Remove all related connections
@@ -109,7 +108,6 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
             break
 
             case 'connectToOutput':
-                console.log(data.data, this.nodes[data.data.split('.')[0]])
                 if (this.nodes[data.data.split('.')[0]] && !this.outputConnections.includes(data.data)) {
                     this.outputConnections.push(data.data);
                     console.log(this.outputConnections)
@@ -126,8 +124,6 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
             break;
 
             case 'disconnectNodes':
-                console.log('before')
-                console.log(data.data)
                 
                 if(data.data.target.includes('AudioDestination')){
 
@@ -143,7 +139,6 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                         this.outputConnections.splice(index, 1);
                     }
                 } else if (data.data.target.split('.')[1] === 'IN'){
-                    console.log(this.signalConnections);
                     const index = this.signalConnections.findIndex(
                         (item) => 
  
@@ -156,9 +151,6 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                         this.signalConnections.splice(index, 1);
                     }
                 } else{
-
-                    console.log(this.cvConnections);
-
                     const index = this.cvConnections.findIndex(
                         (item) => 
  
@@ -171,63 +163,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                         this.cvConnections.splice(index, 1);
                     }
 
-                }
-
-                console.log('after')
-                console.log(this.cvConnections);
-                console.log(this.outputConnections);
-
-                // console.log('before', this.signalConnections)
-
-                // // Find the index of the connection
-                // const index = this.signalConnections.findIndex(
-                //     (item) => 
-                //         item.source === data.data.source && 
-                //         item.target === data.data.target
-                // );
-
-                // // Remove the object if it exists
-                // if (index !== -1) {
-                //     this.signalConnections.splice(index, 1);
-                // }
-                // console.log('after', this.signalConnections)
-
-                // function removeFromArrays(arrays, connectionToRemove) {
-                //     arrays.forEach((array) => {
-                //         const index = array.findIndex((item) => {
-                //             console.log(`Comparing item:`, item);
-                //             console.log(`With connectionToRemove:`, connectionToRemove);
-                
-                //             const isSourceMatch = item.source === connectionToRemove.source;
-                //             const isTargetMatch = item.target === connectionToRemove.target;
-                
-                //             console.log(`Comparison result:`, {
-                //                 itemSource: item.source,
-                //                 itemTarget: item.target,
-                //                 connectionSource: connectionToRemove.source,
-                //                 connectionTarget: connectionToRemove.target,
-                //                 isSourceMatch,
-                //                 isTargetMatch
-                //             });
-                
-                //             return isSourceMatch && isTargetMatch;
-                //         });
-                
-                //         if (index !== -1) {
-                //             console.log(`Removing item at index ${index} from array:`, array[index]);
-                //             array.splice(index, 1);
-                //         }
-                //     });
-                // }
-
-                // // Combine the arrays into a single array of arrays
-                // const allConnections = [this.signalConnections, this.cvConnections, this.outputConnections];
-
-                // // Remove the object from the relevant array
-                // removeFromArrays(allConnections, data.data);
-
-
-                
+                }         
             break
 
             case 'paramChange':
