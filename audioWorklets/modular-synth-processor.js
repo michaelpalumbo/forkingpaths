@@ -71,6 +71,10 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
 
 
     } 
+
+    cableBuilder(){
+
+    }
     
     handleMessage(msg) {
         
@@ -85,10 +89,23 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                 this.cvConnections = [] 
 
                 // repopulate given automerge version of synth graph
-                console.log(synthGraph)
                 Object.keys(synthGraph.modules).forEach((moduleID)=>{
                     const module = synthGraph.modules[moduleID]
                     this.audioNodeBuilder(module.type, moduleID, module.params)
+                })
+
+                synthGraph.connections.forEach((cable)=>{
+                    if(cable.target.includes('AudioDestination')){
+                        
+                        this.outputConnections.push(cable.source);
+                    } else if (data.target.split('.')[1] === 'IN'){
+                        this.signalConnections.push(cable);
+                        // handle direct node inputs
+                    } else {
+                        // handle CV modulation inputs
+                        // Add a modulation connection (source modulates target parameter)
+                        this.cvConnections.push(cable);
+                    }
                 })
             break;
             case 'addNode':
@@ -96,50 +113,11 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                 if(msg.structure === 'webAudioNodes'){
                     
                     this.audioNodeBuilder(msg.data.module, msg.data.moduleName, msg.data.audioGraph.params)
-                    // switch (msg.data.module){
-                    
-                    //     case 'LFO':
-                    //     case 'Oscillator':
-                    //         this.nodes[msg.data.moduleName] = {
-                    //             node: 'Oscillator',
-                    //             baseParams: {
-                    //                 frequency: msg.data.audioGraph.params.frequency,
-                    //                 gain: 1,
-                    //             },
-                    //             modulatedParams: {
-                    //                 // offsets for modulation
-                    //                 frequency: 0, 
-                    //                 gain: 0, 
-                    //             },
-                    //             output: new Float32Array(128),
-                    //             phase: 0,
-                    //             customWaveform: null,
-                    //             type: msg.data.audioGraph.params.type,
-                    //             modulationTarget: null, // Target node or parameter for modulation
-                    //             startTime: null, // Optional: Scheduled start time
-                    //             stopTime: null,  // Optional: Scheduled stop time           
-                
-                    //         };
-                    //     break
-                    //     case 'Gain':
-                    //     case 'ModGain':
-                    //         this.nodes[msg.data.moduleName] = {
-                    //             node: 'Gain',
-                    //             baseParams: {
-                    //                 gain: msg.data.audioGraph.params.gain || 1,
-                    //             },
-                    //             modulatedParams: {
-                    //                 gain: 0, // Offset for modulation
-                    //             },
-                    //             output: new Float32Array(128),
-                    //         }
-    
-                    //     break
-    
-                    //     default: 
-                    // }
+   
                 } else {
                     console.log('code for loading rnbo devices has not been written')
+                    // todo: run this in this.rnboDeviceBuilder()
+                    // todo reason: similar to audioNodeBuilder(), we need to be able to both build devices through addNode, and also through case 'loadVersion'
                 }
                 
             break
@@ -171,7 +149,6 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
             case 'connectToOutput':
                 if (this.nodes[msg.data.split('.')[0]] && !this.outputConnections.includes(msg.data)) {
                     this.outputConnections.push(msg.data);
-                    console.log(this.outputConnections)
                 }
             break
 
