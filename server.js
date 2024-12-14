@@ -199,7 +199,7 @@ wss.on('connection', (ws, req) => {
             case 'clearHistoryGraph':
                 historyDAG_cy.elements().remove();
                 if(existingHistoryNodeIDs){
-                    existingHistoryNodeIDs.size = 0
+                    existingHistoryNodeIDs.clear()
                 }
                 historyDAG_cy.layout(graphLayouts[graphStyle]).run()
             break

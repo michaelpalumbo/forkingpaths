@@ -718,9 +718,18 @@
         "values": ["sine", "square", "sawtooth", "triangle", "custom"],
         "default": "sine",
         "description": "The waveform shape of the oscillator."
+      },
+      "freqAttenuverter": {
+        "min": -20,
+        "max": 20,
+        "default": 10,
+        "units": "Hz",
+        "description": "The attenuverter of the frequency CV input",
+        "modulatable": false,
+        "modulationDescription": "The attenuverter of the frequency CV input"
       }
     },
-    "paramNames": ["frequency", "type"],
+    "paramNames": ["frequency", "type", "freqAttenuverter"],
     "cvNames": ["frequency"],
     "cv": {
       "frequency": {
