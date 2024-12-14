@@ -183,9 +183,10 @@ const wss = new WebSocketServer({ port: PORT });
 console.log(`WebSocket server is running on ws://localhost:${PORT}`);
 
 // Handle client connections
-wss.on('connection', (ws) => {
+wss.on('connection', (ws, req) => {
 
-
+    const clientIp = req.socket.remoteAddress;
+    console.log(`New connection from ${clientIp}`);
     // Handle messages received from clients
     ws.on('message', (message) => {
         let msg = JSON.parse(message)
