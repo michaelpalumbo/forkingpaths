@@ -2050,6 +2050,12 @@ document.addEventListener("DOMContentLoaded", function () {
             case 'loadVersion':
                 loadVersion(event.data.data.hash, event.data.data.branch)
             break
+
+            case 'updateBPM':
+                meta = Automerge.change(meta, (meta) => {
+                    meta.sequencer.bpm = event.data.bpm
+                });
+            break
         }
 
     });

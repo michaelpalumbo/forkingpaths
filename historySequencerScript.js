@@ -289,6 +289,10 @@ document.addEventListener("DOMContentLoaded", function () {
                     })
                     
                     ws.send(update);
+
+                    
+                    bpmValue.textContent = meta.sequencer.bpm; // Display the current BPM
+                    transport.bpm.value = meta.sequencer.bpm; // Dynamically update the BPM
                         
                 break
                 case 'panToBranch':
@@ -701,9 +705,15 @@ document.addEventListener("DOMContentLoaded", function () {
     // Listen for slider changes
     bpmSlider.addEventListener('input', (event) => {
         let bpm = parseInt(event.target.value, 10)
-        meta = Automerge.change(meta, (meta) => {
-            meta.sequencer.bpm = bpm
-        });
+
+        const update = JSON.stringify({
+            cmd: 'updateBPM',
+            bpm: bpm,
+            // existingHistoryNodeIDs: existingHistoryNodeIDs,
+            // docHistoryGraphStyling: docHistoryGraphStyling
+        })
+        window.opener?.postMessage(update, '*')
+        
 
         bpmValue.textContent = bpm; // Display the current BPM
         transport.bpm.value = bpm; // Dynamically update the BPM
