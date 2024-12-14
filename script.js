@@ -238,7 +238,6 @@ document.addEventListener("DOMContentLoaded", function () {
         // Try to reconnect to the graph window
         historySequencerWindow = window.open('', 'HistoryGraph'); // Reuse the named window
         if (!historySequencerWindow || historySequencerWindow.closed) {
-            console.log('Graph window is closed. Opening a new one.');
             openGraphWindow();
         }
     } else {
@@ -251,7 +250,6 @@ document.addEventListener("DOMContentLoaded", function () {
             historySequencerWindow.close();
         }
         localStorage.removeItem('historySequencerWindowOpen');
-        console.log('history window closed')
     });
     document.getElementById('viewReadme').addEventListener('click', () => {
         fetch('./README.md') // Fetch the README file
@@ -397,6 +395,15 @@ document.addEventListener("DOMContentLoaded", function () {
                     'target-arrow-color': '#FF0000',    // Highlight arrow color
                     'source-arrow-color': '#FF0000',
                     'width': 10  
+                }
+            },
+            {
+                selector: 'edge.connectedEdges',
+                style: {
+                    'line-color': '#228B22',           // Highlight color
+                    'target-arrow-color': '#228B22',    // Highlight arrow color
+                    'source-arrow-color': '#228B22',
+                    'width': 6 
                 }
             },
             {
@@ -731,7 +738,6 @@ document.addEventListener("DOMContentLoaded", function () {
         // amDoc = await loadDocument(docID);
         // if meta doesn't contain a document, create a new one
         if (!meta.docs[meta.head.branch]) {
-            console.log('creating new branch')
             amDoc = Automerge.init();
             let amMsg = makeChangeMessage(firstBranchName, 'blank_patch')
             // Apply initial changes to the new document
@@ -779,7 +785,6 @@ document.addEventListener("DOMContentLoaded", function () {
             await saveDocument('meta', Automerge.save(meta));
         } else {
             // meta does contain at least one document, so grab whichever is the one that was last looked at
-            console.log('loading doc', meta.head.branch)
             amDoc = Automerge.load(meta.docs[meta.head.branch]);
             // // store previous head in heads obj
             // branchHeads[branchHeads.current] = {}
@@ -1185,7 +1190,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Use `Automerge.view()` to view the state at this specific point in history
         const historicalView = Automerge.view(amDoc, [targetHash]);
-        // console.log(historicalView)
         // Check if we're on the head; reset clone if true (so we don't trigger opening a new branch with changes made to head)
         if (Automerge.getHeads(historicalView)[0] === Automerge.getHeads(amDoc)[0]){
             automergeDocuments.newClone = false
@@ -1371,7 +1375,6 @@ document.addEventListener("DOMContentLoaded", function () {
                             }
                         });
                     } else {
-                        // console.log(`An edge already exists between ${nodeA.id()} and ${nodeB.id()}`);
                     }
                 } else {
                     console.log('The clicked node does not have exactly 2 connected nodes.');
@@ -1855,7 +1858,37 @@ document.addEventListener("DOMContentLoaded", function () {
 //* Functions that directly handle updating DOM elements & cytoscape
 //*
 
-    
+    // highlight all edges connected to a clicked parent node
+    function highlightEdges(cmd, node){
+        // Get all child nodes of the parent
+        const childNodes = node.children();
+
+        // Create a collection to store all connected edges
+        let connectedEdges = cy.collection();
+
+
+
+
+        if(cmd === 'show'){
+            // Iterate over the child nodes to gather their connected edges
+            childNodes.forEach((child) => {
+                child.connectedEdges().forEach((edge)=>{
+                    edge.addClass('connectedEdges');
+                })
+            });
+        } else if (cmd === 'hide'){
+            // Iterate over the child nodes to gather their connected edges
+            childNodes.forEach((child) => {
+                child.connectedEdges().forEach((edge)=>{
+                    edge.removeClass('connectedEdges');
+                })
+            });
+        }
+        
+
+        // .addClass('highlighted');
+        // .removeClass('highlighted');
+    }
     // generate list of audio nodes for adding to patch
     function updateModuleLibrary(){
         
@@ -2039,7 +2072,6 @@ document.addEventListener("DOMContentLoaded", function () {
         switch(event.data.cmd){
 
             case 'historySequencerReady':
-                console.log('historySequencer window is ready. Sending initial data...');
                 sendMsgToHistoryApp({
                     appID: 'forkingPathsMain',
                     cmd: 'reDrawHistoryGraph',
@@ -2103,14 +2135,11 @@ document.addEventListener("DOMContentLoaded", function () {
     // Add click event listener
     moduleList.addEventListener('click', (event) => {
         let loadedModule = event.target.textContent
-        // console.log(event.target.dataset.structure)
-        // if(loadedModule)
-        // console.log(loadedModule)
+
         if(!loadedModule.includes('RNBO Devices') || !loadedModule.includes('Web Audio Nodes') ){
             addModule(loadedModule, { x: 200, y: 200 }, [    ], event.target.dataset.structure )
 
         }
-        // addModule(loadedModule, { x: 200, y: 200 }, [    ])
     });
 
 
@@ -2758,16 +2787,25 @@ document.addEventListener("DOMContentLoaded", function () {
         // Remove highlight class from any previously highlighted node
         if (highlightedNode) {
             highlightedNode.removeClass('highlighted');
+            // remove connected edge highlights
+            highlightEdges('hide', highlightedNode)
         } 
         // if highlighted module is clicked again, unhighlighted it
         if( highlightedNode == event.target){
             highlightedNode.removeClass('highlighted');
+            // remove connected edge highlights
+            highlightEdges('hide', highlightedNode)
             highlightedNode = null
+            
         }
         else {
+            // remove any cable highlights
+            // highlightEdges('hide', highlightedNode)
             // Highlight the clicked parent node
             highlightedNode = event.target;
             highlightedNode.addClass('highlighted');
+            // show connected edge highlights
+            highlightEdges('show', highlightedNode)
 
 
         }
@@ -3314,7 +3352,6 @@ document.addEventListener("DOMContentLoaded", function () {
             amDoc.synth.graph.modules[parentNodeData.data.id] = audioGraph
             audioGraphDirty = true
         }, onChange, `add ${parentNodeData.data.id}`);
-        console.log(parentNode)
         // update the synthWorklet
         updateSynthWorklet('addNode', parentNode, structure )
 
@@ -3501,7 +3538,6 @@ document.addEventListener("DOMContentLoaded", function () {
                         data: data.source.split('.')[0]
                     });
                 } else if (data.target.split('.')[1] === 'IN'){
-                    console.log('snared')
                     // handle direct node inputs
                     synthWorklet.port.postMessage({
                         cmd: 'connectNodes',
