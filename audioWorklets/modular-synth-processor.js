@@ -107,6 +107,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
 
             case 'loadVersion':
                 const synthGraph = msg.data
+                console.log(synthGraph)
                 // clear the audioWorklet's own graph:
                 this.nodes = {};
                 this.signalConnections = [];
@@ -123,7 +124,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                     if(cable.target.includes('AudioDestination')){
                         
                         this.outputConnections.push(cable.source);
-                    } else if (data.target.split('.')[1] === 'IN'){
+                    } else if (cable.target.split('.')[1] === 'IN'){
                         this.signalConnections.push(cable);
                         // handle direct node inputs
                     } else {
@@ -243,6 +244,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                         console.warn(`Invalid value for ${msg.data.param}: ${msg.data.value}`);
                     }
                 } else {
+                    console.log(msg.data)
                     console.warn(`Parameter ${msg.data.param} not found for node ${msg.data.parent}`);
                 }
                 break;
@@ -377,6 +379,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                     if (node.modulatedParams[param] !== undefined) {
                         node.modulatedParams[param] += modulationValue; // Apply modulation
                     } else {
+                        
                         console.warn(`Parameter ${param} not found for node ${id}`);
                     }
                 } else {

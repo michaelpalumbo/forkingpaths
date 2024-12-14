@@ -299,6 +299,9 @@ document.addEventListener("DOMContentLoaded", function () {
                     panToBranch(event.data.data)
                 break
 
+                case 'newSession':
+                    historySequencerCy.elements().remove();
+                break
                 // commented out because this is now handled by the main app
                 // case 'clearHistoryGraph':
                 //     ws.send(JSON.stringify({

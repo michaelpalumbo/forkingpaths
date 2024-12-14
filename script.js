@@ -964,6 +964,12 @@ document.addEventListener("DOMContentLoaded", function () {
         deleteDocument(docID)
         deleteDocument('meta')
         updateSynthWorklet('clearGraph')
+        // clear the sequences
+        sendMsgToHistoryApp({
+            appID: 'forkingPathsMain',
+            cmd: 'newSession'
+                
+        })
         ws.send(JSON.stringify({
             cmd: 'clearHistoryGraph'
         }))
@@ -1857,7 +1863,7 @@ document.addEventListener("DOMContentLoaded", function () {
 //* UI UPDATES
 //* Functions that directly handle updating DOM elements & cytoscape
 //*
-
+    let parentConnectedEdges = []
     // highlight all edges connected to a clicked parent node
     function highlightEdges(cmd, node){
         // Get all child nodes of the parent
@@ -1874,6 +1880,7 @@ document.addEventListener("DOMContentLoaded", function () {
             childNodes.forEach((child) => {
                 child.connectedEdges().forEach((edge)=>{
                     edge.addClass('connectedEdges');
+                    parentConnectedEdges.push(edge)
                 })
             });
         } else if (cmd === 'hide'){
@@ -1882,6 +1889,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 child.connectedEdges().forEach((edge)=>{
                     edge.removeClass('connectedEdges');
                 })
+                parentConnectedEdges = []
             });
         }
         
@@ -2343,6 +2351,13 @@ document.addEventListener("DOMContentLoaded", function () {
                     heldModule = event.target
                 }
             } else if (target.isEdge && target.isEdge()) {
+                if(highlightedNode){
+                    highlightedNode.removeClass('highlighted');
+                    // remove connected edge highlights
+                    highlightEdges('hide', highlightedNode)
+                    highlightedNode = null
+                }
+                
                 const edge = event.target
                 const mousePos = event.position
 
@@ -2576,6 +2591,12 @@ document.addEventListener("DOMContentLoaded", function () {
         // this is for local Ghost cables only
         // Step 2: Update ghost node position to follow the mouse and track collisons
         if (temporaryCables.local.ghostNode) {
+            if(parentConnectedEdges.length > 0){
+                parentConnectedEdges.forEach((edge)=>{
+                    edge.removeClass('connectedEdges');
+                })
+                parentConnectedEdges = []
+            }
             const mousePos = event.position;
             temporaryCables.local.ghostNode.position(mousePos); // Update ghost node position
             // send the localGhostNode position to all connected peers
