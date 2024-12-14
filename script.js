@@ -958,7 +958,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // deletes the document in the indexedDB instance
         deleteDocument(docID)
         deleteDocument('meta')
-        
+        updateSynthWorklet('clearGraph')
         ws.send(JSON.stringify({
             cmd: 'clearHistoryGraph'
         }))
@@ -3465,6 +3465,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function updateSynthWorklet(cmd, data, structure){
         switch (cmd) {
+            case 'clearGraph':
+                synthWorklet.port.postMessage({ 
+                    cmd: 'clearGraph'
+                });
+            break
             case 'loadVersion':
                 synthWorklet.port.postMessage({ 
                     cmd: 'loadVersion', 

@@ -79,6 +79,13 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
     handleMessage(msg) {
         
         switch (msg.cmd){
+            case 'clearGraph':
+                // clear the audioWorklet's own graph:
+                this.nodes = {};
+                this.signalConnections = [];
+                this.outputConnections = [];
+                this.cvConnections = [] 
+            break
 
             case 'loadVersion':
                 const synthGraph = msg.data
