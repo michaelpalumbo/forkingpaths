@@ -202,6 +202,7 @@ wss.on('connection', (ws) => {
                 }
                 historyDAG_cy.layout(graphLayouts[graphStyle]).run()
             break
+            default:
         }
         
         

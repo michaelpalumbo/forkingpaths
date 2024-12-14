@@ -49,7 +49,7 @@
       "parameters": {
         "frequency": {
           "min": 110,
-          "max": 9000,
+          "max": 3000,
           "default": 440,
           "units": "Hz",
           "description": "The frequency of the oscillator.",
@@ -64,13 +64,23 @@
             "triangle",
             "custom"
           ],
-          "default": "sine",
+          "default": "sawtooth",
           "description": "The waveform shape of the oscillator."
+        },
+        "freqAttenuverter": {
+          "min": -1000,
+          "max": 1000,
+          "default": 100,
+          "units": "Hz",
+          "description": "The attenuverter of the frequency CV input",
+          "modulatable": false,
+          "modulationDescription": "The attenuverter of the frequency CV input"
         }
       },
       "paramNames": [
         "frequency",
-        "type"
+        "type",
+        "freqAttenuverter"
       ],
       "cvNames": [
         "frequency"
@@ -206,16 +216,25 @@
       "parameters": {
         "delayTime": {
           "min": 0,
-          "max": 1,
-          "default": 0,
-          "units": "seconds",
+          "max": 3000,
+          "default": 500,
+          "units": "milliseconds",
           "description": "The delay time applied to the input signal.",
           "modulatable": true,
           "modulationDescription": "Audio-rate modulation of the delay time. Connect an AudioNode to modulate this parameter."
+        },
+        "timeAttenuverter": {
+          "min": -1000,
+          "max": 1000,
+          "default": 100,
+          "units": "Hz",
+          "description": "The attenuverter of the delayTime CV input",
+          "modulatable": false,
+          "modulationDescription": "The attenuverter of the delayTime CV input"
         }
       },
       "paramNames": [
-        "delayTime"
+        "delayTime, timeAttenuverter"
       ],
       "cvNames": [
         "delayTime"
@@ -223,8 +242,8 @@
       "cv": {
         "delayTime": {
           "min": 0,
-          "max": 1,
-          "default": 0,
+          "max": 3000,
+          "default": 100,
           "units": "seconds",
           "description": "The delay time applied to the input signal.",
           "modulatable": true,

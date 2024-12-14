@@ -1,9 +1,12 @@
+import { parse } from 'marked';
 import audioNodes from '../src/modules/modules.json' assert { type: 'json'}
 
 
 class ModularSynthProcessor extends AudioWorkletProcessor {
     constructor() {
         super();
+        console.log('Sample rate:', sampleRate); // Logs the sample rate of the audio context
+
         this.nodes = {}; // Store all nodes
         this.signalConnections = []; // Store connections between nodes
         // Initialize the output node with a fixed ID
@@ -35,6 +38,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                     baseParams: {
                         frequency: parseFloat(params.frequency),
                         gain: parseFloat(1),
+                        freqAttenuverter: parseFloat(params.freqAttenuverter)
                     },
                     modulatedParams: {
                         // offsets for modulation
@@ -50,6 +54,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                     stopTime: null,  // Optional: Scheduled stop time           
     
                 };
+
             break
             case 'Gain':
             case 'ModGain':
@@ -66,6 +71,19 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
 
             break
 
+            case 'Delay':
+                this.nodes[moduleName] = {
+                    node: 'Delay',
+                    baseParams: {
+                        delayTime: parseFloat(params.delayTime) || 500,
+                        timeAttenuverter: parseFloat(params.timeAttenuverter) || 100,
+                    },
+                    modulatedParams: {
+                        delayTime: 0, // Offset for modulation
+                    },
+                    output: new Float32Array(128),
+                }
+            break;
             default: 
         }
 
@@ -368,9 +386,13 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
             }
             
             // Dynamically combine baseParams and modulatedParams for each parameter during processing
-            const getEffectiveParam = (node, param) => {
+            const getEffectiveParam = (node, param, attenuverter) => {
                 const base = node.baseParams[param] || 0;
-                const modulated = node.modulatedParams[param] || 0;
+                let modulated = node.modulatedParams[param] || 0;
+                // multiply modulator param by attenuverter value
+                if(attenuverter){
+                    modulated = modulated * attenuverter
+                }
                 const result = base + modulated;
             
                 // Ensure result is a valid number
@@ -384,12 +406,12 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
 
             // Process this node
             if (node.node === 'Oscillator') {
-                const effectiveFrequency = getEffectiveParam(node, 'frequency');
+                const effectiveFrequency = getEffectiveParam(node, 'frequency', node.baseParams['freqAttenuverter']);
                 // const formattedFrequency = parseFloat(effectiveFrequency.toFixed(2));
                 const effectiveGain = getEffectiveParam(node, 'gain');
-
+                
                 for (let i = 0; i < signalBuffers[id].length; i++) {
-                    node.phase += effectiveFrequency / sampleRate;
+                    node.phase += effectiveFrequency/ sampleRate;
                     if (node.phase >= 1) node.phase -= 1;
                     signalBuffers[id][i] = Math.sin(2 * Math.PI * node.phase) * effectiveGain;
                 }
@@ -401,10 +423,12 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                 }
             } else if (node.node === 'Delay') {
                 if (!node.delayBuffer) {
-                    node.delayBuffer = new Float32Array(44100); // 1-second delay buffer
+                    const effectiveDelayTime = getEffectiveParam(node, 'delayTime', node.baseParams['timeAttenuverter']);
+                    const delayTime = Math.round(effectiveDelayTime * sampleRate / 1000)
+                    node.delayBuffer = new Float32Array(sampleRate); // 1-second delay buffer
                     node.delayIndex = 0;
                 }
-                const delaySamples = Math.min(node.delayTime * sampleRate, node.delayBuffer.length);
+                const delaySamples = Math.min(getEffectiveParam(node, 'delayTime', node.baseParams['timeAttenuverter']) * sampleRate, node.delayBuffer.length);
                 for (let i = 0; i < signalBuffers[id].length; i++) {
                     const delayedSample = node.delayBuffer[(node.delayIndex - delaySamples + node.delayBuffer.length) % node.delayBuffer.length];
                     signalBuffers[id][i] = inputBuffer[i] + delayedSample * node.feedback;
