@@ -2375,7 +2375,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         // delete the cable
                         cy.remove(edge);
                         // also remove the cable from automerge!
-
+                        updateSynthWorklet('removeCable', { source: edge.data().source, target: edge.data().target})
                         // * automerge version: 
                         amDoc = applyChange(amDoc, (amDoc) => {
                             // Find the index of the object that matches the condition
@@ -2424,7 +2424,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     } else if (isNearEndpoint(mousePos, targetPos)) {
                         // delete the cable
                         cy.remove(edge);
-
+                        updateSynthWorklet('removeCable', { source: edge.data().source, target: edge.data().target})
                         // also remove the cable from automerge!
 
                         // * automerge version:      
@@ -2678,7 +2678,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if (temporaryCables.local.targetNode) {
 
                 // update audio right away
-                updateSynthWorklet('connectNodes', { source: temporaryCables.local.source.id(), target: temporaryCables.local.targetNode.id()})
+                updateSynthWorklet('addCable', { source: temporaryCables.local.source.id(), target: temporaryCables.local.targetNode.id()})
 
                 // If a target node is highlighted, connect the edge to it
                 // tempEdge.data('target', temporaryCables.local.targetNode.id()); // Update the edge target
@@ -2883,6 +2883,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (highlightedEdge && (event.key === 'Backspace' || event.key === 'Delete')) {
             
+            updateSynthWorklet('removeCable', { source: highlightedEdge.data().source, target: highlightedEdge.data().target})
 
             amDoc = applyChange(amDoc, (amDoc) => {
                 // Find the index of the object that matches the condition
@@ -3510,7 +3511,7 @@ document.addEventListener("DOMContentLoaded", function () {
     //     // Example usage
     //     // addNode('osc1', 'oscillator', { frequency: 440 });
     //     // addNode('output', 'output');
-    //     // connectNodes('osc1', 'outputNode'); // Connect oscillator to output
+    //     // addCable('osc1', 'outputNode'); // Connect oscillator to output
 
     //     synthWorklet.port.postMessage({
     //         cmd: 'connectToOutput',
@@ -3551,27 +3552,41 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
             break
 
-            case 'connectNodes':
-                // check here if target is audioDestination, if so, pass cmd as 'connectToOutput'
-                if(data.target.includes('AudioDestination')){
-                    synthWorklet.port.postMessage({
-                        cmd: 'connectToOutput',
-                        data: data.source.split('.')[0]
-                    });
-                } else if (data.target.split('.')[1] === 'IN'){
-                    // handle direct node inputs
-                    synthWorklet.port.postMessage({
-                        cmd: 'connectNodes',
-                        data: { source: data.source.split('.')[0], target: data.target.split('.')[0] }
-                    });
-                } else {
-                    // handle CV modulation inputs
-                    synthWorklet.port.postMessage({
-                        cmd: 'connectCV',
-                        data: { source: data.source.split('.')[0], target: data.target.split('.')[0], param: data.target.split('.')[1] }
-                    });
-                }
+            case 'addCable':
+                console.log(data)
+                synthWorklet.port.postMessage({
+                    cmd: 'addCable',
+                    data: { source: data.source, target: data.target }
+                });
 
+
+                // // check here if target is audioDestination, if so, pass cmd as 'connectToOutput'
+                // if(data.target.includes('AudioDestination')){
+                //     synthWorklet.port.postMessage({
+                //         cmd: 'connectToOutput',
+                //         data: data.source
+                //     });
+                // } else if (data.target.split('.')[1] === 'IN'){
+                //     // handle direct node inputs
+                //     synthWorklet.port.postMessage({
+                //         cmd: 'addCable',
+                //         data: { source: data.source, target: data.target }
+                //     });
+                // } else {
+                //     // handle CV modulation inputs
+                //     synthWorklet.port.postMessage({
+                //         cmd: 'connectCV',
+                //         data: { source: data.source, target: data.target, param: data.target.split('.')[1] }
+                //     });
+                // }
+
+            break
+
+            case 'removeCable':
+                synthWorklet.port.postMessage({
+                    cmd: 'removeCable',
+                    data: data
+                });
             break
 
             case 'paramChange':
@@ -3580,30 +3595,7 @@ document.addEventListener("DOMContentLoaded", function () {
             break
         }
     }
-    // Add a node
-    function addNode(id, type, params) {
-        synthWorklet.port.postMessage({ cmd: 'addNode', type: type, id, params });
-    }
 
-    // Remove a node
-    function removeNode(id) {
-        synthWorklet.port.postMessage({ cmd: 'removeNode', id });
-    }
-
-    // Connect two nodes
-    function connectNodes(sourceId, targetId) {
-        synthWorklet.port.postMessage({ cmd: 'connectNodes', id: sourceId, targetId });
-    }
-
-    // Disconnect two nodes
-    function disconnectNodes(sourceId, targetId) {
-        synthWorklet.port.postMessage({ cmd: 'disconnectNodes', id: sourceId, targetId });
-    }
-
-    // Update a node's parameters
-    function updateNode(id, params) {
-        synthWorklet.port.postMessage({ cmd: 'updateNode', id, params });
-    }
     
     //*
     //*

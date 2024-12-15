@@ -168,13 +168,22 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                 );
             break
 
-            case 'connectNodes':
-                this.signalConnections.push(msg.data);
+            case 'addCable':
+                
+
+                if(msg.data.target.includes('AudioDestination')){
+                    this.outputConnections.push(msg.data.source);
+                } else if (msg.data.target.split('.')[1] === 'IN'){
+                    this.signalConnections.push(msg.data);
+                } else {
+                    msg.data.param = msg.data.target.split('.')[1] // The parameter to modulate
+                    this.cvConnections.push(msg.data);
+                }
             break
 
             case 'connectToOutput':
                 if (this.nodes[msg.data.split('.')[0]] && !this.outputConnections.includes(msg.data)) {
-                    this.outputConnections.push(msg.data);
+                    
                 }
             break
 
@@ -187,10 +196,10 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                 });
             break;
 
-            case 'disconnectNodes':
-                
+            case 'removeCable':
+                console.log(msg.data)
                 if(msg.data.target.includes('AudioDestination')){
-
+                    console.log('ad', msg.data.target, this.outputConnections)
                     const index = this.outputConnections.findIndex(
                         (item) => 
  
@@ -210,6 +219,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                             item.source === msg.data.source && 
                             item.target === msg.data.target
                     );
+
                     // Remove the object if it exists
                     if (index !== -1) {
                         this.signalConnections.splice(index, 1);
@@ -222,6 +232,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                             item.source === msg.data.source && 
                             item.target === msg.data.target
                     );
+                    console.log(msg.data, this.cvConnections)
                     // Remove the object if it exists
                     if (index !== -1) {
                         this.cvConnections.splice(index, 1);
@@ -244,7 +255,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                         console.warn(`Invalid value for ${msg.data.param}: ${msg.data.value}`);
                     }
                 } else {
-                    console.log(msg.data)
+                    
                     console.warn(`Parameter ${msg.data.param} not found for node ${msg.data.parent}`);
                 }
                 break;
@@ -277,12 +288,12 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
         } else if (cmd === 'removeNode') {
             // Remove a node
             delete this.nodes[id];
-        } else if (cmd === 'connectNodes') {
+        } else if (cmd === 'addCable') {
             // Add a connection between nodes
             this.signalConnections.push({ source: id, target: targetId });
 
             console.log(`Connected: ${id} -> ${targetId}`);
-        } else if (cmd === 'disconnectNodes') {
+        } else if (cmd === 'removeCable') {
             // Remove a connection
             this.signalConnections = this.signalConnections.filter(
                 (conn) => !(conn.source === id && conn.target === targetId)
