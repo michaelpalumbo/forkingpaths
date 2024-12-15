@@ -27,7 +27,7 @@ const speakerModule = speaker.default
 
 
 const transport = Tone.getTransport();
-
+let debugVar
 // * Audio 
 const rnboDeviceCache = new Map(); // Cache device definitions by module type
 let audioGraphDirty = false
@@ -833,9 +833,11 @@ document.addEventListener("DOMContentLoaded", function () {
             // grab the current hash before making the new change:
             previousHash = Automerge.getHeads(amDoc)[0]
             
+
             // Apply the change using Automerge.change
             amDoc = Automerge.change(amDoc, amMsg, changeCallback);
-            
+
+
             // If there was a change, call the onChangeCallback
             if (amDoc !== doc && typeof onChangeCallback === 'function') {
                 
@@ -940,6 +942,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // define the onChange Callback
     onChange = () => {
+        console.log(amDoc.elements[0])
         // update synth audio graph
         // loadSynthGraph()
         // You can add any additional logic here, such as saving to IndexedDB
@@ -956,6 +959,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if(audioGraphDirty){
             audioGraphDirty = false
         }
+
     };
     
 
@@ -1123,18 +1127,69 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Function to update Cytoscape with the state from forkedDoc
     function updateCytoscapeFromDocument(forkedDoc) {
-           
-        let elements = forkedDoc.elements
+        
+        const history = Automerge.getHistory(forkedDoc);
 
+        // console.log(debugVar)
+        // console.log('forkedDoc node pos', forkedDoc.elements.find(el => el.data.id === debugVar)?.position)
+        // history.forEach((entry, index) => {
+        //     console.log(`Version ${index}:`, entry.change.message);
+        //     console.log(
+        //         `Parent node position:`,
+        //         entry.snapshot.elements.find(el => el.data.id === debugVar)?.position
+        //     );
+        // });
+
+        let elements = forkedDoc.elements
+ 
+     
+
+        // Sync the positions in `elements`
+        const syncedElements = syncPositions(forkedDoc);
+        // console.log(elements.map(el => ({ id: el.data.id, position: el.position })));
+
+        console.log(syncedElements)
+        if(debugVar){
+            
+            console.log('ad pre', cy.getElementById(debugVar).position())
+        }
+        
         // Clear existing elements from Cytoscape instance
         cy.elements().remove();
 
-
+        cy.reset()
         // 3. Add new elements to Cytoscape
-        cy.add(elements)
+        cy.add(syncedElements)
+
+        if(debugVar){
+            
+            console.log('ad post', cy.getElementById(debugVar).position())
+        }
+        cy.nodes().forEach(node => {
+            const id = node.id();
+            const el = elements.find(e => e.data.id === id);
+            if (el?.position) {
+                node.position(el.position); // Force Cytoscape to respect the position
+            }
+        });
+        
+        if(debugVar){
+            
+            console.log('ad post post', cy.getElementById(debugVar).position())
+        }
+
+        // elements.forEach(el => {
+        //     // console.log(el)
+        //     if (el.group === 'nodes' && el.position) {
+                
+        //         cy.getElementById(el.data.id).position(el.position);
+        //     }
+        // });
         
         // Finally, run layout
         cy.layout({ name: 'preset', fit: false }).run(); // `preset` uses the position data directly  
+
+   
     }    
     
 
@@ -1196,6 +1251,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Use `Automerge.view()` to view the state at this specific point in history
         const historicalView = Automerge.view(amDoc, [targetHash]);
+        
         // Check if we're on the head; reset clone if true (so we don't trigger opening a new branch with changes made to head)
         if (Automerge.getHeads(historicalView)[0] === Automerge.getHeads(amDoc)[0]){
             automergeDocuments.newClone = false
@@ -2751,14 +2807,21 @@ document.addEventListener("DOMContentLoaded", function () {
         } else if (heldModule){
             // * automerge version: 
             const elementIndex = amDoc.elements.findIndex(el => el.data.id === heldModule.data().id);
+            console.log('el index', elementIndex) 
+            //  Ensure position values are deeply copied
+            const positionCopy = { x: heldModule.position().x, y: heldModule.position().y };
             amDoc = applyChange(amDoc, (amDoc) => {
                 
                 if (elementIndex !== -1) {
+                    console.log('snared', heldModule.data().label, heldModule.position())
                     // update the position
-                    amDoc.elements[elementIndex].position = {
-                        x: heldModule.position().x,
-                        y: heldModule.position().y
-                    }        
+                    amDoc.elements[elementIndex].position = positionCopy
+                    
+                    // {
+                    //     x: heldModule.position().x,
+                    //     y: heldModule.position().y
+                    // }      
+                    
                 }
     
             }, onChange, `move ${heldModule.data().label}`);
@@ -3374,6 +3437,9 @@ document.addEventListener("DOMContentLoaded", function () {
         cy.add(parentNodeData);
         cy.add(childrenNodes);
         
+        debugVar = parentNodeData.data.id
+        console.log(debugVar)
+
         // * automerge version:        
         amDoc = applyChange(amDoc, (amDoc) => {
             amDoc.elements.push(parentNodeData);
@@ -3560,7 +3626,6 @@ document.addEventListener("DOMContentLoaded", function () {
             break
 
             case 'addCable':
-                console.log(data)
                 synthWorklet.port.postMessage({
                     cmd: 'addCable',
                     data: { source: data.source, target: data.target }
@@ -3722,7 +3787,28 @@ document.addEventListener("DOMContentLoaded", function () {
     }, THROTTLE_INTERVAL); // Attempt to send updates every interval
 
 
-
+    function syncPositions(forkedDoc) {
+        // Map positions from forkedDoc by element ID
+        const positionsById = forkedDoc.elements.reduce((acc, el) => {
+            if (el.position) {
+                acc[el.data.id] = el.position; // Map the position by the element ID
+            }
+            return acc;
+        }, {});
+    
+        // Update the `position` in `elements` with the correct values
+        const syncedElements = forkedDoc.elements.map(el => {
+            if (positionsById[el.data.id]) {
+                return {
+                    ...el,
+                    position: positionsById[el.data.id], // Overwrite with the correct position
+                };
+            }
+            return el; // Return unchanged if no position is mapped
+        });
+    
+        return syncedElements;
+    }
 
 });
 
