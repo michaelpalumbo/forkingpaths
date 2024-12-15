@@ -1128,6 +1128,23 @@ document.addEventListener("DOMContentLoaded", function () {
     // Function to update Cytoscape with the state from forkedDoc
     function updateCytoscapeFromDocument(forkedDoc) {
         
+
+        const parentNodePositions = []; // Array to store positions of all parent nodes
+
+        // Step 1: Extract all parent nodes from the given document
+        const parentNodes = forkedDoc.elements.filter(el => el.classes === ':parent'); // Adjust based on your schema
+    
+        parentNodes.forEach(parentNode => {
+            if (parentNode.position) {
+                parentNodePositions.push({
+                    id: parentNode.data.id,
+                    position: parentNode.position
+                });
+            }
+        });
+    
+        console.log('Extracted Parent Node Positions:', parentNodePositions);
+
         const history = Automerge.getHistory(forkedDoc);
 
         // console.log(debugVar)
@@ -1142,7 +1159,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         let elements = forkedDoc.elements
  
-     
+        console.log(forkedDoc)
 
         // Sync the positions in `elements`
         const syncedElements = syncPositions(forkedDoc);
@@ -1189,6 +1206,30 @@ document.addEventListener("DOMContentLoaded", function () {
         // Finally, run layout
         cy.layout({ name: 'preset', fit: false }).run(); // `preset` uses the position data directly  
 
+
+            // Step 3: Update parent node positions manually
+        parentNodePositions.forEach(parentNode => {
+            const node = cy.getElementById(parentNode.id);
+
+            if (node) {
+                node.position(parentNode.position); // Set the position manually
+                console.log(`Updated position for parent node ${parentNode.id}:`, parentNode.position);
+            }
+        });
+
+        
+        // if(debugVar){
+            
+
+        //     const node = cy.getElementById(debugVar);
+
+        //     // Set the position programmatically
+        //     node.position({ x: 200, y: 300 });
+
+        //     console.log('after layout', cy.getElementById(debugVar).position())
+
+
+        // }
    
     }    
     
@@ -3438,7 +3479,7 @@ document.addEventListener("DOMContentLoaded", function () {
         cy.add(childrenNodes);
         
         debugVar = parentNodeData.data.id
-        console.log(debugVar)
+        console.log(parentNodeData)
 
         // * automerge version:        
         amDoc = applyChange(amDoc, (amDoc) => {
