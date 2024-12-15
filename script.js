@@ -2677,11 +2677,18 @@ document.addEventListener("DOMContentLoaded", function () {
         if (temporaryCables.local.tempEdge) {
             if (temporaryCables.local.targetNode) {
 
+                let src = temporaryCables.local.source.id()
+                let targ = temporaryCables.local.targetNode.id()
+
+                if(targ.includes('OUT')){
+                    src = temporaryCables.local.targetNode.id()
+                    targ = temporaryCables.local.source.id()
+                }
                 // update audio right away
-                updateSynthWorklet('addCable', { source: temporaryCables.local.source.id(), target: temporaryCables.local.targetNode.id()})
+                updateSynthWorklet('addCable', { source: src, target: targ})
 
                 // If a target node is highlighted, connect the edge to it
-                // tempEdge.data('target', temporaryCables.local.targetNode.id()); // Update the edge target
+                // tempEdge.data('target', targ); // Update the edge target
                 
                 // tempEdge.removeClass('tempEdge'); // Remove temporary class if needed
                 cy.remove(temporaryCables.local.tempEdge)
@@ -2689,7 +2696,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 cy.add({
                     group: 'edges',
-                    data: { id: edgeId, source: temporaryCables.local.source.id(), target: temporaryCables.local.targetNode.id(), kind: 'cable' },
+                    data: { id: edgeId, source: src, target: targ, kind: 'cable' },
                     classes: 'edge'
                 });
                 
@@ -2698,9 +2705,9 @@ document.addEventListener("DOMContentLoaded", function () {
                     amDoc.elements.push({
                         type: 'edge',
                         id: edgeId,
-                        data: { id: edgeId, source: temporaryCables.local.source.id(), target: temporaryCables.local.targetNode.id(), kind: 'cable' }
+                        data: { id: edgeId, source: src, target: targ, kind: 'cable' }
                     });
-                    amDoc.synth.graph.connections.push( { source: temporaryCables.local.source.id(), target: temporaryCables.local.targetNode.id() })
+                    amDoc.synth.graph.connections.push( { source: src, target: targ })
                     audioGraphDirty = true
                 }, onChange,  `connect ${temporaryCables.local.source.data().label} to ${temporaryCables.local.targetNode.data().label}`);
 
@@ -2711,10 +2718,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 //     doc.elements.push({
                 //         type: 'edge',
                 //         id: edgeId,
-                //         data: { id: edgeId, source: temporaryCables.local.source.id(), target: temporaryCables.local.targetNode.id(), kind: 'cable' }
+                //         data: { id: edgeId, source: src, target: temporaryCables.local.targetNode.id(), kind: 'cable' }
                 //     });
                 // }, {
-                //     message: `connect ${temporaryCables.local.source.id()} to ${temporaryCables.local.targetNode.id()}` // Set a custom change message here
+                //     message: `connect ${src} to ${temporaryCables.local.targetNode.id()}` // Set a custom change message here
                 // });
             } else {
                 // If no target node, remove the temporary edge
@@ -3558,27 +3565,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     cmd: 'addCable',
                     data: { source: data.source, target: data.target }
                 });
-
-
-                // // check here if target is audioDestination, if so, pass cmd as 'connectToOutput'
-                // if(data.target.includes('AudioDestination')){
-                //     synthWorklet.port.postMessage({
-                //         cmd: 'connectToOutput',
-                //         data: data.source
-                //     });
-                // } else if (data.target.split('.')[1] === 'IN'){
-                //     // handle direct node inputs
-                //     synthWorklet.port.postMessage({
-                //         cmd: 'addCable',
-                //         data: { source: data.source, target: data.target }
-                //     });
-                // } else {
-                //     // handle CV modulation inputs
-                //     synthWorklet.port.postMessage({
-                //         cmd: 'connectCV',
-                //         data: { source: data.source, target: data.target, param: data.target.split('.')[1] }
-                //     });
-                // }
 
             break
 
