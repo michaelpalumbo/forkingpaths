@@ -106,7 +106,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
             break
 
             case 'loadVersion':
-                console.log('snared')
+                
                 const synthGraph = msg.data
 
                 // clear the audioWorklet's own graph:

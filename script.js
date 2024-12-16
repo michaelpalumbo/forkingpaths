@@ -18,6 +18,18 @@ import { marked } from 'marked'
 import * as Tone from "tone";
 
 import * as speaker from "./speaker.json"
+
+// import popper from 'cytoscape-popper';
+// cytoscape.use(popper);
+// console.log('Popper registered:', typeof cytoscape.prototype.popper);
+
+// import {
+//   computePosition,
+//   flip,
+//   shift,
+//   limitShift,
+// } from '@floating-ui/dom';
+
 const historyGraphWorker = new Worker("./workers/historyGraphWorker.js");
 
 const speakerModule = speaker.default
@@ -304,11 +316,15 @@ document.addEventListener("DOMContentLoaded", function () {
     //* CONFIGURE CYTOSCAPE INSTANCES
     //* 
     //*
-
+    
     const cy = cytoscape({
         container: document.getElementById('cy'),
 
-        elements: [], // Start with no elements; add them dynamically
+        elements: [
+            { data: { id: 'node1' }, position: { x: 100, y: 200 } },
+            { data: { id: 'node2' }, position: { x: 300, y: 400 } }
+
+        ], // Start with no elements; add them dynamically
 
         layout: {
             name: 'preset', // Preset layout allows manual positioning
@@ -1415,11 +1431,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
             updateCytoscapeFromDocument(historicalView);
         }
-
-
-        
-        
-
     }
 
 
@@ -2811,7 +2822,7 @@ document.addEventListener("DOMContentLoaded", function () {
         } else if (heldModule){
             // * automerge version: 
             const elementIndex = amDoc.elements.findIndex(el => el.data.id === heldModule.data().id);
-            console.log('el index', elementIndex) 
+
             //  Ensure position values are deeply copied
             const positionCopy = { x: heldModule.position().x, y: heldModule.position().y };
             amDoc = applyChange(amDoc, (amDoc) => {
@@ -3441,14 +3452,69 @@ document.addEventListener("DOMContentLoaded", function () {
         const parentNode = new ParentNode_WebAudioNode(module, position, children, structure);
 
         // parentNode.getModule('oscillator')
-        const { parentNode: parentNodeData, childrenNodes, audioGraph } = parentNode.getNodeStructure();
+        const { parentNode: parentNodeData, childrenNodes, audioGraph, paramOverlays } = parentNode.getNodeStructure();
     
         // Add nodes to Cytoscape
         cy.add(parentNodeData);
         cy.add(childrenNodes);
         
+        
         debugVar = parentNodeData.data.id
-        console.log(parentNodeData)
+        childrenNodes.forEach((param)=>{
+            
+            if(param.classes == 'sliderHandle'){
+                console.log(param)
+                createOverlayDiv(parentNodeData.data.id, param);
+            }
+        })
+        
+        // createOverlayDiv('node2', 'Overlay for Node 2');
+        /*
+        // Create a floating `div` element
+        const floatingDiv = document.createElement('div');
+        floatingDiv.innerText = 'testDiv'; // Add your custom content here
+        floatingDiv.style.position = 'absolute';
+        floatingDiv.style.backgroundColor = 'white';
+        floatingDiv.style.border = '1px solid black';
+        floatingDiv.style.padding = '5px';
+        floatingDiv.style.pointerEvents = 'none'; // Prevent interference with Cytoscape events
+
+        document.body.appendChild(floatingDiv);
+
+        // Function to update the position of the floating div
+        const updateFloatingDivPosition = (node) => {
+            const nodeRenderedPosition = node.renderedPosition();
+
+            // Compute the floating position using Floating UI
+            computePosition(
+                {
+                    getBoundingClientRect: () => ({
+                        width: 0,
+                        height: 0,
+                        top: nodeRenderedPosition.y,
+                        left: nodeRenderedPosition.x,
+                        right: nodeRenderedPosition.x,
+                        bottom: nodeRenderedPosition.y,
+                    }),
+                },
+                floatingDiv,
+                {
+                    middleware: [offset(10), flip(), shift()],
+                    placement: 'top', // Placement relative to the node
+                }
+            ).then(({ x, y }) => {
+                floatingDiv.style.left = `${x}px`;
+                floatingDiv.style.top = `${y}px`;
+            });
+        };
+
+        // Auto-update the floating div position when the viewport or node position changes
+        autoUpdate(
+            parentNodeData, // The reference node
+            floatingDiv, // The floating div
+            updateFloatingDivPosition(cy.getElementById(parentNodeData.data.id)) // The callback to update position
+        );
+        */
 
         // * automerge version:        
         amDoc = applyChange(amDoc, (amDoc) => {
@@ -3811,6 +3877,103 @@ document.addEventListener("DOMContentLoaded", function () {
         return syncedElements;
     }
 
+
+    // // Function to update the position of the floating div
+    // const updateFloatingDivPosition = (node) => {
+    //     const nodeRenderedPosition = node.renderedPosition();
+
+    //     // Compute the floating position using Floating UI
+    //     computePosition(
+    //         {
+    //             getBoundingClientRect: () => ({
+    //                 width: 0,
+    //                 height: 0,
+    //                 top: nodeRenderedPosition.y,
+    //                 left: nodeRenderedPosition.x,
+    //                 right: nodeRenderedPosition.x,
+    //                 bottom: nodeRenderedPosition.y,
+    //             }),
+    //         },
+    //         floatingDiv,
+    //         {
+    //             middleware: [offset(10), flip(), shift()],
+    //             placement: 'top', // Placement relative to the node
+    //         }
+    //     ).then(({ x, y }) => {
+    //         floatingDiv.style.left = `${x}px`;
+    //         floatingDiv.style.top = `${y}px`;
+    //     });
+    // };
+    function popperFactory(ref, content, opts) {
+        // see https://floating-ui.com/docs/computePosition#options
+        const popperOptions = {
+            // matching the default behaviour from Popper@2
+            // https://floating-ui.com/docs/migration#configure-middleware
+            middleware: [
+                flip(),
+                shift({limiter: limitShift()})
+            ],
+            ...opts,
+        }
+     
+        function update() {
+            computePosition(ref, content, popperOptions).then(({x, y}) => {
+                Object.assign(content.style, {
+                    left: `${x}px`,
+                    top: `${y}px`,
+                });
+            });
+        }
+        update();
+        return { update };
+    }
+    
+
+    // Function to create and manage an overlay div
+    function createOverlayDiv(nodeId, param) {
+
+        let content = param.data.label
+
+        const overlayDiv = document.createElement('div');
+        overlayDiv.classList.add('cy-overlay');
+        overlayDiv.innerHTML = content;
+
+        // Style the overlay div
+        overlayDiv.style.position = 'absolute';
+        overlayDiv.style.background = 'white';
+        overlayDiv.style.border = '1px solid black';
+        overlayDiv.style.padding = '5px';
+        overlayDiv.style.pointerEvents = 'none'; // Prevent interaction issues with Cytoscape
+        document.body.appendChild(overlayDiv);
+
+        // Update the position of the overlay div
+        function updatePosition() {
+            const node = cy.getElementById(nodeId);
+            const childNode = cy.getElementById(param.data.id);
+            const childPos = childNode.renderedPosition();
+            if (node && node.renderedPosition) {
+                const pos = node.renderedPosition();
+                let paramPos = param.position
+                const containerRect = cy.container().getBoundingClientRect();
+
+                // Adjust position relative to the Cytoscape container
+                overlayDiv.style.left = `${containerRect.left + childPos.x}px`;
+                overlayDiv.style.top = `${containerRect.top + childPos.y}px`;
+            }
+        }
+
+        // Update position initially and when the graph changes
+        updatePosition();
+        cy.on('pan zoom position', updatePosition);
+
+        // Return the div for further customization
+        return overlayDiv;
+    }
+
+    // Example: Attach overlay to a node
+
+
+    // cytoscape.use(cytoscapePopper(popperFactory));
 });
 
 

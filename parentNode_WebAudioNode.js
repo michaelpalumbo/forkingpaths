@@ -35,6 +35,8 @@ export class ParentNode_WebAudioNode {
         this.inputs = this.moduleSpec.inputs
         this.outputs = this.moduleSpec.outputs
         this.params = this.moduleSpec.paramNames
+
+        this.paramOverlays = []
         this.cv = this.moduleSpec.cvNames        
         
         this.knobs = []
@@ -49,6 +51,7 @@ export class ParentNode_WebAudioNode {
                 
                 this.audioGraph.params[this.params[i]] = param.default
 
+                this.paramOverlays.push(param)
             }
         }
         if(this.cv){
@@ -282,7 +285,8 @@ export class ParentNode_WebAudioNode {
         });
         this.audioGraph.nodeIDs = this.nodeIDs
         let audioGraph = this.audioGraph
-        
-        return { parentNode, childrenNodes, audioGraph };
+        let paramOverlays = this.paramOverlays
+        console.log(paramOverlays)
+        return { parentNode, childrenNodes, audioGraph, paramOverlays };
     }
 }

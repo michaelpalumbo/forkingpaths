@@ -356,46 +356,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // do this once:
     historyDAG_cy.panBy({x: 25, y: 0 })
-
-    function reDrawHistoryGraph(){
-        
-
-        
-        
-        
-        // if (!existingHistoryNodeIDs || existingHistoryNodeIDs.size === 0){
-        //     existingHistoryNodeIDs = new Set(historyDAG_cy.nodes().map(node => node.id()));
-        // }
-        // console.log(existingHistoryNodeIDs, historyDAG_cy.nodes().toArray)
-
-        // historyGraphWorker.onmessage = (event) => {
-
-        //     const { nodes, edges, historyNodes } = event.data;
-            
-        //     if(nodes.length > 0){
-        //         historyDAG_cy.add(nodes);
-
-        //     }
-        //     if(edges.length > 0){
-        //         historyDAG_cy.add(edges);
-
-        //     }
-        //     existingHistoryNodeIDs = historyNodes
-
-        //     // Refresh graph layout
-        //     historyDAG_cy.layout(graphLayouts[graphStyle]).run();
-            
-        //     highlightNode(historyDAG_cy.nodes().last())
-
-        //     // update the current history node ids for the next time we run this function
-        //     // existingHistoryNodeIDs = new Set(cy.nodes().map(node => node.id()));
-        // };
-        
-        // Send data to the worker to get any position or parameter updates
-        // historyGraphWorker.postMessage({ meta, existingHistoryNodeIDs, docHistoryGraphStyling });      
-    }
-
-
     
 /*
 
