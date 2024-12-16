@@ -810,6 +810,8 @@ document.addEventListener("DOMContentLoaded", function () {
             // // get info about targetNode (what was clicked by user)
             // branchHeads.previous = Automerge.getHeads(amDoc)[0]
 
+            updateSynthWorklet('loadVersion', amDoc.synth.graph)
+
             updateCytoscapeFromDocument(amDoc);
             
             previousHash = meta.head.hash
@@ -1214,14 +1216,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 // console.log(`Updated position for parent node ${parentNode.id}:`, pos);
             }
         });
-        console.log(currentPan, currentZoom)
+        // make sure viewport is set back to user's position and zoom
         cy.zoom(currentZoom)
         cy.pan(currentPan)
-        // cy.viewport({
-        //     pan: currentPan,
-        //     zoom: currentZoom
-        //   });
-        console.log(count++)
+
+
     }    
     
 
@@ -2856,7 +2855,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         // update pan after dragging viewport
         currentPan = cy.pan()
-        console.log('update', currentPan, currentZoom)
+
 
     });
 
