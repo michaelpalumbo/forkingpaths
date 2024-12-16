@@ -101,6 +101,10 @@ let branchHeads = {
 
 // * CYTOSCAPE
 
+let currentPan
+let currentZoom
+let parentNodePositions = []
+
 // double-clicking
 let lastClickTime = 0;
 const doubleClickDelay = 300; // Delay in milliseconds to register a double-click
@@ -502,6 +506,7 @@ document.addEventListener("DOMContentLoaded", function () {
         ]
     });
 
+
     /*
         DOCUMENT HISTORY CYTOSCAPE INSTANCE
     */
@@ -819,6 +824,8 @@ document.addEventListener("DOMContentLoaded", function () {
             document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
         }
         addSpeaker()
+        currentPan = cy.pan()
+        currentZoom = cy.zoom()
     })();
 
     // Set an interval to periodically save meta to IndexedDB
@@ -1139,12 +1146,12 @@ document.addEventListener("DOMContentLoaded", function () {
     // Function to update Cytoscape with the state from forkedDoc
     function updateCytoscapeFromDocument(forkedDoc) {
         
-        console.log(forkedDoc)
-        const parentNodePositions = []; // Array to store positions of all parent nodes
+        
+        parentNodePositions = []; // Array to store positions of all parent nodes
 
         // Step 1: Extract all parent nodes from the given document
         const parentNodes = forkedDoc.elements.filter(el => el.classes === ':parent'); // Adjust based on your schema
-        console.log(parentNodes)
+        // console.log(parentNodes)
         parentNodes.forEach(parentNode => {
             if (parentNode.position) {
                 parentNodePositions.push({
@@ -1154,7 +1161,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     
-        console.log('Extracted Parent Node Positions:', parentNodePositions);
+        // console.log('Extracted Parent Node Positions:', parentNodePositions);
 
         const history = Automerge.getHistory(forkedDoc);
 
@@ -1215,42 +1222,28 @@ document.addEventListener("DOMContentLoaded", function () {
         // });
         
         // Finally, run layout
-        cy.layout({ name: 'preset', fit: false, zoom: 0.8}).run(); // `preset` uses the position data directly  
+        // cy.layout({ name: 'preset', fit: false}).run(); // `preset` uses the position data directly  
 
-
-            // Step 3: Update parent node positions manually
         parentNodePositions.forEach(parentNode => {
             const node = cy.getElementById(parentNode.id);
 
             if (node) {
                 // test
-                console.log('Parent node position:', parentNode.position);
+                // console.log('Parent node position:', parentNode.position);
 
                 let pos = {x: parseFloat(parentNode.position.x), y: parseFloat(parentNode.position.y)}
-                console.log('New position:', typeof pos.x, typeof pos.y);
+                // console.log('New position:', typeof pos.x, typeof pos.y);
                 // pos = {x: Math.random() * 100 + 200, y: Math.random() * 100 + 200};
-                  // console.log(`Random`, typeof pos.x, typeof pos.y);
+                    // console.log(`Random`, typeof pos.x, typeof pos.y);
                 pos = {x: 273.3788826175895, y: 434.9628649535062};
                 // let clonedPos = {...pos}
                 node.position(pos); // Set the position manually
-                console.log(`Updated position for parent node ${parentNode.id}:`, pos);
+                // console.log(`Updated position for parent node ${parentNode.id}:`, pos);
             }
         });
 
-        
-        // if(debugVar){
-            
-
-        //     const node = cy.getElementById(debugVar);
-
-        //     // Set the position programmatically
-        //     node.position({ x: 200, y: 300 });
-
-        //     console.log('after layout', cy.getElementById(debugVar).position())
-
-
-        // }
-   
+        cy.pan(currentPan)
+        cy.zoom(currentZoom)
     }    
     
 
@@ -2222,6 +2215,37 @@ document.addEventListener("DOMContentLoaded", function () {
 //* EVENT HANDLERS
 //* Functions that directly handle UI interactions
 //*
+    // when viewport has been panned or zoomed, store them so when we recall earlier versions we keep the current viewport settings
+    cy.on('viewport', (event) => {
+        currentPan = cy.pan()
+        currentZoom = cy.zoom()
+    });
+    // when layout has finished running, update node positions and panning and zoom
+    cy.on('layoutstop', (event) => {
+        console.log('Layout has finished running.');
+        // Update parent node positions manually
+        parentNodePositions.forEach(parentNode => {
+            const node = cy.getElementById(parentNode.id);
+
+            if (node) {
+                // test
+                // console.log('Parent node position:', parentNode.position);
+
+                let pos = {x: parseFloat(parentNode.position.x), y: parseFloat(parentNode.position.y)}
+                // console.log('New position:', typeof pos.x, typeof pos.y);
+                // pos = {x: Math.random() * 100 + 200, y: Math.random() * 100 + 200};
+                    // console.log(`Random`, typeof pos.x, typeof pos.y);
+                // pos = {x: 273.3788826175895, y: 434.9628649535062};
+                // let clonedPos = {...pos}
+                node.position(pos); // Set the position manually
+                // console.log(`Updated position for parent node ${parentNode.id}:`, pos);
+            }
+        });
+
+        
+        cy.pan(currentPan)
+        cy.zoom(currentZoom)
+    });
 
     // Open the history sequencer in a new tab
     document.getElementById('openHistoryWindow').addEventListener('click', () => {
