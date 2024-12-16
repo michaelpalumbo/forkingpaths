@@ -101,8 +101,8 @@ let branchHeads = {
 
 // * CYTOSCAPE
 
-let currentPan
-let currentZoom
+let currentPan = { x: 0, y: 0 }
+let currentZoom = 0.8
 let parentNodePositions = []
 
 // double-clicking
@@ -824,8 +824,11 @@ document.addEventListener("DOMContentLoaded", function () {
             document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
         }
         addSpeaker()
-        currentPan = cy.pan()
+        
         currentZoom = cy.zoom()
+
+
+        console.log('set current Pan on load')
     })();
 
     // Set an interval to periodically save meta to IndexedDB
@@ -1143,6 +1146,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     */
 
+        let count = 0
     // Function to update Cytoscape with the state from forkedDoc
     function updateCytoscapeFromDocument(forkedDoc) {
         
@@ -1181,46 +1185,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Sync the positions in `elements`
         const syncedElements = syncPositions(forkedDoc);
-        // console.log(elements.map(el => ({ id: el.data.id, position: el.position })));
-
-        // console.log(syncedElements)
-        // if(debugVar){
-            
-        //     console.log('ad pre', cy.getElementById(debugVar).position())
-        // }
         
         // Clear existing elements from Cytoscape instance
         cy.elements().remove();
 
-        cy.reset()
+        // cy.reset()
         // 3. Add new elements to Cytoscape
         cy.add(syncedElements)
 
-        // if(debugVar){
-            
-        //     console.log('ad post', cy.getElementById(debugVar).position())
-        // }
-        // cy.nodes().forEach(node => {
-        //     const id = node.id();
-        //     const el = elements.find(e => e.data.id === id);
-        //     if (el?.position) {
-        //         node.position(el.position); // Force Cytoscape to respect the position
-        //     }
-        // });
-        
-        // if(debugVar){
-            
-        //     console.log('ad post post', cy.getElementById(debugVar).position())
-        // }
-
-        // elements.forEach(el => {
-        //     // console.log(el)
-        //     if (el.group === 'nodes' && el.position) {
-                
-        //         cy.getElementById(el.data.id).position(el.position);
-        //     }
-        // });
-        
+    
         // Finally, run layout
         // cy.layout({ name: 'preset', fit: false}).run(); // `preset` uses the position data directly  
 
@@ -1241,9 +1214,14 @@ document.addEventListener("DOMContentLoaded", function () {
                 // console.log(`Updated position for parent node ${parentNode.id}:`, pos);
             }
         });
-
-        cy.pan(currentPan)
+        console.log(currentPan, currentZoom)
         cy.zoom(currentZoom)
+        cy.pan(currentPan)
+        // cy.viewport({
+        //     pan: currentPan,
+        //     zoom: currentZoom
+        //   });
+        console.log(count++)
     }    
     
 
@@ -2084,7 +2062,6 @@ document.addEventListener("DOMContentLoaded", function () {
         // cy.add(speakerModule)
     }
     // do this once:
-    // ! historyDAG_cy.panBy({x: 25, y: 0 })
 
     function updateCableControlPointDistances(x, y){
         cy.style()
@@ -2215,36 +2192,13 @@ document.addEventListener("DOMContentLoaded", function () {
 //* EVENT HANDLERS
 //* Functions that directly handle UI interactions
 //*
-    // when viewport has been panned or zoomed, store them so when we recall earlier versions we keep the current viewport settings
-    cy.on('viewport', (event) => {
-        currentPan = cy.pan()
+    
+    cy.off('add');
+
+    window.addEventListener('wheel', (event) => {
         currentZoom = cy.zoom()
-    });
-    // when layout has finished running, update node positions and panning and zoom
-    cy.on('layoutstop', (event) => {
-        console.log('Layout has finished running.');
-        // Update parent node positions manually
-        parentNodePositions.forEach(parentNode => {
-            const node = cy.getElementById(parentNode.id);
 
-            if (node) {
-                // test
-                // console.log('Parent node position:', parentNode.position);
 
-                let pos = {x: parseFloat(parentNode.position.x), y: parseFloat(parentNode.position.y)}
-                // console.log('New position:', typeof pos.x, typeof pos.y);
-                // pos = {x: Math.random() * 100 + 200, y: Math.random() * 100 + 200};
-                    // console.log(`Random`, typeof pos.x, typeof pos.y);
-                // pos = {x: 273.3788826175895, y: 434.9628649535062};
-                // let clonedPos = {...pos}
-                node.position(pos); // Set the position manually
-                // console.log(`Updated position for parent node ${parentNode.id}:`, pos);
-            }
-        });
-
-        
-        cy.pan(currentPan)
-        cy.zoom(currentZoom)
     });
 
     // Open the history sequencer in a new tab
@@ -2408,41 +2362,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 
-    // cmd + scroll = scroll vertically through history graph
-   //!
-    /* 
-    document.addEventListener('wheel', function(event) {
-        if(allowPan){
-            historyDAG_cy.panBy({
-                x: 0,
-                y: event.deltaY 
-                });
-        }
-    });
 
-    historyDAG_cy.on('tap', 'node', (event) => {
-        if(hid.key.shift){
-            modifyHistorySequencerCy('add', event.target)
-
-        } else {
-            historySequencerController('clear')
-
-            loadVersion(event.target.data().id, event.target.data().branch)
-            highlightNode(event.target)
-        }
-
-    })
-
-    historyDAG_cy.on('tap', (event) => {
-        
-        if(hid.key.cmd){
-            // clear the bounding box
-        }
-        
-
-    })
-
-    */
 
     // get mousedown events from cytoscape
     cy.on('mousedown', (event) => {
@@ -2934,6 +2854,10 @@ document.addEventListener("DOMContentLoaded", function () {
             heldModulePos = { }
             heldModule = null
         }
+        // update pan after dragging viewport
+        currentPan = cy.pan()
+        console.log('update', currentPan, currentZoom)
+
     });
 
     // Listen for drag events on nodes
