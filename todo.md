@@ -1,0 +1,3 @@
+
+
+**ok, this is super frustrating, but the progress we have is that we need to update the module positions AFTER cy.layout() has run. however, there’s something funky about the forkerdDoc positions. at one point when we were checking the positions within the history, that was reporting correct position changes for each doc version. so we just need to get nodes from the correct doc, and as long as their positions are correct, store them in an array (see ‘parentNodePositions’), and then AFTER cy.layout() is run, loop through the array and update their positions. we already know that we can update positions after layout is run. YOURE CLOSE!!**

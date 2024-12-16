@@ -232,6 +232,17 @@ let temporaryCables = {
 
 document.addEventListener("DOMContentLoaded", function () {
 
+    // Audio context
+    const audioContext = new window.AudioContext();
+
+    audioContext.audioWorklet.addModule('./audioWorklets/modular-synth-processor.js').then(() => {
+        synthWorklet = new AudioWorkletNode(audioContext, 'modular-synth-processor');
+        synthWorklet.connect(audioContext.destination);
+    
+    }).catch((error) => {
+        console.error('Error loading the worklet:', error);
+    });
+    
     // on load, check if historySequencer window is already open:
     const historySequencerWindowOpen = localStorage.getItem('historySequencerWindowOpen');
     if (historySequencerWindowOpen) {
@@ -942,7 +953,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // define the onChange Callback
     onChange = () => {
-        console.log(amDoc.elements[0])
+        
         // update synth audio graph
         // loadSynthGraph()
         // You can add any additional logic here, such as saving to IndexedDB
@@ -1128,12 +1139,12 @@ document.addEventListener("DOMContentLoaded", function () {
     // Function to update Cytoscape with the state from forkedDoc
     function updateCytoscapeFromDocument(forkedDoc) {
         
-
+        console.log(forkedDoc)
         const parentNodePositions = []; // Array to store positions of all parent nodes
 
         // Step 1: Extract all parent nodes from the given document
         const parentNodes = forkedDoc.elements.filter(el => el.classes === ':parent'); // Adjust based on your schema
-    
+        console.log(parentNodes)
         parentNodes.forEach(parentNode => {
             if (parentNode.position) {
                 parentNodePositions.push({
@@ -1147,7 +1158,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const history = Automerge.getHistory(forkedDoc);
 
-        // console.log(debugVar)
+        // console.log(history)
         // console.log('forkedDoc node pos', forkedDoc.elements.find(el => el.data.id === debugVar)?.position)
         // history.forEach((entry, index) => {
         //     console.log(`Version ${index}:`, entry.change.message);
@@ -1159,17 +1170,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
         let elements = forkedDoc.elements
  
-        console.log(forkedDoc)
+        
 
         // Sync the positions in `elements`
         const syncedElements = syncPositions(forkedDoc);
         // console.log(elements.map(el => ({ id: el.data.id, position: el.position })));
 
-        console.log(syncedElements)
-        if(debugVar){
+        // console.log(syncedElements)
+        // if(debugVar){
             
-            console.log('ad pre', cy.getElementById(debugVar).position())
-        }
+        //     console.log('ad pre', cy.getElementById(debugVar).position())
+        // }
         
         // Clear existing elements from Cytoscape instance
         cy.elements().remove();
@@ -1178,22 +1189,22 @@ document.addEventListener("DOMContentLoaded", function () {
         // 3. Add new elements to Cytoscape
         cy.add(syncedElements)
 
-        if(debugVar){
+        // if(debugVar){
             
-            console.log('ad post', cy.getElementById(debugVar).position())
-        }
-        cy.nodes().forEach(node => {
-            const id = node.id();
-            const el = elements.find(e => e.data.id === id);
-            if (el?.position) {
-                node.position(el.position); // Force Cytoscape to respect the position
-            }
-        });
+        //     console.log('ad post', cy.getElementById(debugVar).position())
+        // }
+        // cy.nodes().forEach(node => {
+        //     const id = node.id();
+        //     const el = elements.find(e => e.data.id === id);
+        //     if (el?.position) {
+        //         node.position(el.position); // Force Cytoscape to respect the position
+        //     }
+        // });
         
-        if(debugVar){
+        // if(debugVar){
             
-            console.log('ad post post', cy.getElementById(debugVar).position())
-        }
+        //     console.log('ad post post', cy.getElementById(debugVar).position())
+        // }
 
         // elements.forEach(el => {
         //     // console.log(el)
@@ -1204,7 +1215,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // });
         
         // Finally, run layout
-        cy.layout({ name: 'preset', fit: false }).run(); // `preset` uses the position data directly  
+        cy.layout({ name: 'preset', fit: false, zoom: 0.8}).run(); // `preset` uses the position data directly  
 
 
             // Step 3: Update parent node positions manually
@@ -1212,8 +1223,17 @@ document.addEventListener("DOMContentLoaded", function () {
             const node = cy.getElementById(parentNode.id);
 
             if (node) {
-                node.position(parentNode.position); // Set the position manually
-                console.log(`Updated position for parent node ${parentNode.id}:`, parentNode.position);
+                // test
+                console.log('Parent node position:', parentNode.position);
+
+                let pos = {x: parseFloat(parentNode.position.x), y: parseFloat(parentNode.position.y)}
+                console.log('New position:', typeof pos.x, typeof pos.y);
+                // pos = {x: Math.random() * 100 + 200, y: Math.random() * 100 + 200};
+                  // console.log(`Random`, typeof pos.x, typeof pos.y);
+                pos = {x: 273.3788826175895, y: 434.9628649535062};
+                // let clonedPos = {...pos}
+                node.position(pos); // Set the position manually
+                console.log(`Updated position for parent node ${parentNode.id}:`, pos);
             }
         });
 
@@ -2053,7 +2073,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const nodeIds = cy.nodes().map(node => node.id());
         const AudioDestinationExists = nodeIds.some(id => id.includes('AudioDestination'));
         if(!AudioDestinationExists){
-            addModule('AudioDestination', { x: 500, y: 500}, [   ], 'webAudioNodes')
+            addModule('AudioDestination', { x: 50, y: 50}, [   ], 'webAudioNodes')
             // OutputLimiter.connect(audioContext.destination);
 
         }
@@ -3162,6 +3182,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
         localStorage.setItem('sliderValue', CPDslider.value);
 
+
+
     });
 
 
@@ -3608,16 +3630,7 @@ document.addEventListener("DOMContentLoaded", function () {
     
     
     
-    // Audio context
-    const audioContext = new window.AudioContext();
 
-    audioContext.audioWorklet.addModule('./audioWorklets/modular-synth-processor.js').then(() => {
-        synthWorklet = new AudioWorkletNode(audioContext, 'modular-synth-processor');
-        synthWorklet.connect(audioContext.destination);
-    
-    }).catch((error) => {
-        console.error('Error loading the worklet:', error);
-    });
 
 
 
