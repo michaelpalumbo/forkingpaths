@@ -23,12 +23,8 @@ import * as speaker from "./speaker.json"
 // cytoscape.use(popper);
 // console.log('Popper registered:', typeof cytoscape.prototype.popper);
 
-// import {
-//   computePosition,
-//   flip,
-//   shift,
-//   limitShift,
-// } from '@floating-ui/dom';
+import { computePosition, flip, shift } from '@floating-ui/dom';
+
 
 const historyGraphWorker = new Worker("./workers/historyGraphWorker.js");
 
@@ -3464,11 +3460,11 @@ document.addEventListener("DOMContentLoaded", function () {
             
             if(param.classes == 'sliderHandle'){
                 console.log(param)
-                createOverlayDiv(parentNodeData.data.id, param);
+                createFloatingOverlay(parentNodeData.data.id, param);
             }
         })
         
-        // createOverlayDiv('node2', 'Overlay for Node 2');
+        // createFloatingOverlay('node2', 'Overlay for Node 2');
         /*
         // Create a floating `div` element
         const floatingDiv = document.createElement('div');
@@ -3930,7 +3926,7 @@ document.addEventListener("DOMContentLoaded", function () {
     
 
     // Function to create and manage an overlay div
-    function createOverlayDiv(nodeId, param) {
+    function createFloatingOverlay(nodeId, param) {
 
         let content = param.data.label
 
@@ -3946,29 +3942,111 @@ document.addEventListener("DOMContentLoaded", function () {
         overlayDiv.style.pointerEvents = 'none'; // Prevent interaction issues with Cytoscape
         document.body.appendChild(overlayDiv);
 
-        // Update the position of the overlay div
-        function updatePosition() {
-            const node = cy.getElementById(nodeId);
-            const childNode = cy.getElementById(param.data.id);
-            const childPos = childNode.renderedPosition();
-            if (node && node.renderedPosition) {
-                const pos = node.renderedPosition();
-                let paramPos = param.position
-                const containerRect = cy.container().getBoundingClientRect();
+        // Virtual element for Floating UI
+        const virtualElement = {
+            getBoundingClientRect: () => {
+                const childNode = cy.getElementById(param.data.id);
+                if (childNode) {
+                    const containerRect = cy.container().getBoundingClientRect();
+                    const zoom = cy.zoom();
+                    const pan = cy.pan();
 
-                // Adjust position relative to the Cytoscape container
-                overlayDiv.style.left = `${containerRect.left + childPos.x}px`;
-                overlayDiv.style.top = `${containerRect.top + childPos.y}px`;
-            }
+                    // Model position scaled with zoom and adjusted for pan
+                    const pos = childNode.position();
+                    const x = containerRect.left + (pos.x * zoom) + pan.x;
+                    const y = containerRect.top + (pos.y * zoom) + pan.y;
+
+                    // Return the bounding box centered on the child node
+                    return {
+                        width: 0,
+                        height: 0,
+                        top: y,
+                        left: x,
+                        right: x,
+                        bottom: y,
+                    };
+                }
+                return { top: 0, left: 0, right: 0, bottom: 0, width: 0, height: 0 };
+            },
+        };
+            // Function to update the overlay position
+        function updateOverlayPosition() {
+            computePosition(virtualElement, overlayDiv, {
+                placement: 'top', // Adjust placement as needed
+                middleware: [flip(), shift()], // Ensure it stays visible on screen
+            }).then(({ x, y }) => {
+                overlayDiv.style.left = `${x}px`;
+                overlayDiv.style.top = `${y}px`;
+            });
         }
 
-        // Update position initially and when the graph changes
-        updatePosition();
-        cy.on('pan zoom position', updatePosition);
+        // Update initially and on Cytoscape viewport changes
+        updateOverlayPosition();
+        cy.on('pan zoom position', updateOverlayPosition);
 
-        // Return the div for further customization
-        return overlayDiv;
+        return overlayDiv; // Return the overlay for further use
+
     }
+    //     // Update the position of the overlay div
+    //     function updatePosition() {
+    //         const node = cy.getElementById(nodeId);
+    //         const childNode = cy.getElementById(param.data.id);
+            
+    //         if (childNode) {
+    //             const container = cy.container(); // Cytoscape container
+    //             const containerRect = container.getBoundingClientRect();
+
+    //             // Get the graph model position of the child node
+    //             const nodePos = childNode.position();
+
+    //                         // Get the size of the node
+    //                         const nodeHeight = childNode.renderedBoundingBox().h;
+
+    //             // Cytoscape's zoom and pan
+    //             const zoom = cy.zoom();
+    //             const pan = cy.pan();
+
+    //             // Map model position to screen position using zoom and pan
+    //             const screenX = containerRect.left + pan.x + nodePos.x * zoom;
+    //             const screenY = containerRect.top + pan.y + nodePos.y * zoom;
+
+    //             // Push the overlay down by half the node's height
+    //             const adjustedY = screenY - nodeHeight ;
+                
+    //             // Set the overlay position
+    //             overlayDiv.style.left = `${screenX}px`;
+    //             overlayDiv.style.top = `${adjustedY}px`;
+    //         }
+        
+    //         // if (node && childNode) {
+    //         //     const pos = node.renderedPosition();
+    //         //     const childPos = childNode.renderedPosition();
+
+    //         //     const nodePos = childNode.position();
+                
+    //         //     const zoom = cy.zoom(); // Current zoom level
+    //         //     const pan = cy.pan(); // Current pan offset
+    //         //     console.log(zoom, pan)
+    //         //     let paramPos = param.position
+    //         //     const containerRect = cy.container().getBoundingClientRect();
+
+    //         //     // Adjust position to account for zoom and pan
+    //         //     const adjustedX = containerRect.left + (nodePos.x * zoom) + pan.x;
+    //         //     const adjustedY = containerRect.top + (nodePos.y * zoom) + pan.y;
+
+    //         //     // Adjust position relative to the Cytoscape container
+    //         //     overlayDiv.style.left = `${adjustedX}px`;
+    //         //     overlayDiv.style.top = `${adjustedY}px`;
+    //         // }
+    //     }
+
+    //     // Update position initially and when the graph changes
+    //     updatePosition();
+    //     cy.on('pan zoom position', updatePosition);
+
+    //     // Return the div for further customization
+    //     return overlayDiv;
+    // }
 
     // Example: Attach overlay to a node
 
