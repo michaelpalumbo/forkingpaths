@@ -17,6 +17,10 @@ import { marked } from 'marked'
 
 import * as Tone from "tone";
 
+import 'input-knob'; // Import input-knob library
+
+
+
 import * as speaker from "./speaker.json"
 
 // import popper from 'cytoscape-popper';
@@ -1957,6 +1961,112 @@ document.addEventListener("DOMContentLoaded", function () {
 //* UI UPDATES
 //* Functions that directly handle updating DOM elements & cytoscape
 //*
+
+// Function to create and manage an overlay div
+function createFloatingOverlay(nodeId, param) {
+    console.log(param)
+    // Create the overlay div
+    const overlayDiv = document.createElement('div');
+    overlayDiv.style.position = 'absolute';
+    overlayDiv.style.background = 'white';
+    overlayDiv.style.border = '1px solid black';
+    overlayDiv.style.padding = '10px';
+    overlayDiv.style.borderRadius = '8px';
+    overlayDiv.style.boxShadow = '0 4px 8px rgba(0,0,0,0.2)';
+    overlayDiv.style.display = 'flex';
+    overlayDiv.style.flexDirection = 'column';
+    overlayDiv.style.alignItems = 'center';
+    overlayDiv.style.pointerEvents = 'auto'; // Allow interactions
+    overlayDiv.style.zIndex = '1000'; // Ensure it renders above other elements
+
+    // Add a label
+    const label = document.createElement('div');
+    label.innerText = param.data.label || 'Knob Control';
+    label.style.marginBottom = '5px';
+    label.style.fontWeight = 'bold';
+    overlayDiv.appendChild(label);
+
+    // Add the input-knob element
+    const knob = document.createElement('input-knob');
+    // knob.min = param.min || 0;
+    // knob.max = param.max || 100;
+    // knob.value = param.default || 50;
+    // todo: define in all modules a param.curve so that we can set them to linear or logarithmic. the function determineStepSize already has this built in
+    const stepSize = determineStepSize(param.min, param.max, 'logarithmic', 100 )
+    // knob.step = stepSize || 1;
+    
+    // Enable the indicator
+    knob.setAttribute('min', param.min || 0);
+    knob.setAttribute('max', param.max || 100);
+    knob.setAttribute('value', param.default || 50);
+    knob.setAttribute('step', stepSize || 1);
+    knob.setAttribute('indicator', 'true'); // Enable the indicator
+    knob.style.width = '60px';
+    knob.style.height = '60px';
+    knob.style.margin = '5px';
+    overlayDiv.appendChild(knob);
+
+    // Add an event listener for knob changes
+    knob.addEventListener('input', (e) => {
+        console.log(`Knob value changed to: ${e.target.value}`);
+    });
+    // const overlayDiv = document.createElement('div');
+    // overlayDiv.classList.add('cy-overlay');
+    // overlayDiv.innerHTML = content;
+
+    // // Style the overlay div
+    // overlayDiv.style.position = 'absolute';
+    // overlayDiv.style.background = 'white';
+    // overlayDiv.style.border = '1px solid black';
+    // overlayDiv.style.padding = '5px';
+    // overlayDiv.style.pointerEvents = 'none'; // Prevent interaction issues with Cytoscape
+    document.body.appendChild(overlayDiv);
+
+    // Virtual element for Floating UI
+    const virtualElement = {
+        getBoundingClientRect: () => {
+            const childNode = cy.getElementById(param.data.id);
+            if (childNode) {
+                const containerRect = cy.container().getBoundingClientRect();
+                const zoom = cy.zoom();
+                const pan = cy.pan();
+
+                // Model position scaled with zoom and adjusted for pan
+                const pos = childNode.position();
+                const x = containerRect.left + (pos.x * zoom) + pan.x;
+                const y = containerRect.top + (pos.y * zoom) + pan.y;
+
+                // Return the bounding box centered on the child node
+                return {
+                    width: 0,
+                    height: 0,
+                    top: y,
+                    left: x,
+                    right: x,
+                    bottom: y,
+                };
+            }
+            return { top: 0, left: 0, right: 0, bottom: 0, width: 0, height: 0 };
+        },
+    };
+        // Function to update the overlay position
+    function updateOverlayPosition() {
+        computePosition(virtualElement, overlayDiv, {
+            placement: 'top', // Adjust placement as needed
+            middleware: [flip(), shift()], // Ensure it stays visible on screen
+        }).then(({ x, y }) => {
+            overlayDiv.style.left = `${x}px`;
+            overlayDiv.style.top = `${y}px`;
+        });
+    }
+
+    // Update initially and on Cytoscape viewport changes
+    updateOverlayPosition();
+    cy.on('pan zoom position', updateOverlayPosition);
+
+    return overlayDiv; // Return the overlay for further use
+
+}
     let parentConnectedEdges = []
     // highlight all edges connected to a clicked parent node
     function highlightEdges(cmd, node){
@@ -3458,7 +3568,7 @@ document.addEventListener("DOMContentLoaded", function () {
         debugVar = parentNodeData.data.id
         childrenNodes.forEach((param)=>{
             
-            if(param.classes == 'sliderHandle'){
+            if(param.classes == 'sliderHandle' && paramOverlays){
                 console.log(param)
                 createFloatingOverlay(parentNodeData.data.id, param);
             }
@@ -3925,68 +4035,26 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     
 
-    // Function to create and manage an overlay div
-    function createFloatingOverlay(nodeId, param) {
-
-        let content = param.data.label
-
-        const overlayDiv = document.createElement('div');
-        overlayDiv.classList.add('cy-overlay');
-        overlayDiv.innerHTML = content;
-
-        // Style the overlay div
-        overlayDiv.style.position = 'absolute';
-        overlayDiv.style.background = 'white';
-        overlayDiv.style.border = '1px solid black';
-        overlayDiv.style.padding = '5px';
-        overlayDiv.style.pointerEvents = 'none'; // Prevent interaction issues with Cytoscape
-        document.body.appendChild(overlayDiv);
-
-        // Virtual element for Floating UI
-        const virtualElement = {
-            getBoundingClientRect: () => {
-                const childNode = cy.getElementById(param.data.id);
-                if (childNode) {
-                    const containerRect = cy.container().getBoundingClientRect();
-                    const zoom = cy.zoom();
-                    const pan = cy.pan();
-
-                    // Model position scaled with zoom and adjusted for pan
-                    const pos = childNode.position();
-                    const x = containerRect.left + (pos.x * zoom) + pan.x;
-                    const y = containerRect.top + (pos.y * zoom) + pan.y;
-
-                    // Return the bounding box centered on the child node
-                    return {
-                        width: 0,
-                        height: 0,
-                        top: y,
-                        left: x,
-                        right: x,
-                        bottom: y,
-                    };
-                }
-                return { top: 0, left: 0, right: 0, bottom: 0, width: 0, height: 0 };
-            },
-        };
-            // Function to update the overlay position
-        function updateOverlayPosition() {
-            computePosition(virtualElement, overlayDiv, {
-                placement: 'top', // Adjust placement as needed
-                middleware: [flip(), shift()], // Ensure it stays visible on screen
-            }).then(({ x, y }) => {
-                overlayDiv.style.left = `${x}px`;
-                overlayDiv.style.top = `${y}px`;
-            });
+    
+    function determineStepSize(min, max, method = 'linear', divisions = 100) {
+        if (min >= max) {
+            console.error('Invalid range: min must be less than max');
+            return null;
         }
-
-        // Update initially and on Cytoscape viewport changes
-        updateOverlayPosition();
-        cy.on('pan zoom position', updateOverlayPosition);
-
-        return overlayDiv; // Return the overlay for further use
-
+    
+        const range = max - min;
+    
+        if (method === 'logarithmic') {
+            const magnitude = Math.floor(Math.log10(range));
+            return Math.pow(10, magnitude - 1);
+        } else if (method === 'linear') {
+            return range / divisions;
+        } else {
+            console.error('Invalid method: Choose "logarithmic" or "linear"');
+            return null;
+        }
     }
+
     //     // Update the position of the overlay div
     //     function updatePosition() {
     //         const node = cy.getElementById(nodeId);

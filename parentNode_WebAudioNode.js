@@ -286,7 +286,9 @@ export class ParentNode_WebAudioNode {
         this.audioGraph.nodeIDs = this.nodeIDs
         let audioGraph = this.audioGraph
         let paramOverlays = this.paramOverlays
-        console.log(paramOverlays)
+        if(paramOverlays.length === 0){
+            paramOverlays = false
+        }
         return { parentNode, childrenNodes, audioGraph, paramOverlays };
     }
 }
