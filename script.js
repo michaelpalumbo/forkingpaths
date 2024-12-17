@@ -45,6 +45,13 @@ const rnboDeviceCache = new Map(); // Cache device definitions by module type
 let audioGraphDirty = false
 let synthWorklet; // the audioWorklet for managing and running the audio graph
 
+
+// * UI
+const baseKnobSize = 60; // Default size in pixels
+const knobOffsetAmount = 60; // Horizontal offset for staggering knobs
+const knobVerticalSpacing = baseKnobSize * 0.2; // 20% of base knob size for vertical spacing
+
+
 // * History Sequencer
 let currentIndex = 0;
 let historySequencerWindow;
@@ -320,11 +327,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const cy = cytoscape({
         container: document.getElementById('cy'),
 
-        elements: [
-            { data: { id: 'node1' }, position: { x: 100, y: 200 } },
-            { data: { id: 'node2' }, position: { x: 300, y: 400 } }
-
-        ], // Start with no elements; add them dynamically
+        elements: [ ], // Start with no elements; add them dynamically
 
         layout: {
             name: 'preset', // Preset layout allows manual positioning
@@ -815,6 +818,10 @@ document.addEventListener("DOMContentLoaded", function () {
             reDrawHistoryGraph()
 
             await saveDocument('meta', Automerge.save(meta));
+
+            addSpeaker()
+        
+            currentZoom = cy.zoom()
         } else {
             // meta does contain at least one document, so grab whichever is the one that was last looked at
             amDoc = Automerge.load(meta.docs[meta.head.branch]);
@@ -825,28 +832,32 @@ document.addEventListener("DOMContentLoaded", function () {
             // // Step 3: Add node in Cytoscape for this clone point
             // // get info about targetNode (what was clicked by user)
             // branchHeads.previous = Automerge.getHeads(amDoc)[0]
+            // wait 1 second before loading content (give the audio worklet a moment to load)
+            setTimeout(()=>{
+                updateSynthWorklet('loadVersion', amDoc.synth.graph)
 
-            updateSynthWorklet('loadVersion', amDoc.synth.graph)
-
-            updateCytoscapeFromDocument(amDoc);
-            
-            previousHash = meta.head.hash
-            
-            // send doc to history app
-            reDrawHistoryGraph()
-
-            // ion this case we want the highlighted node to be on the current branch
-            //! highlightNode(historyDAG_cy.getElementById(meta.head.hash))
-
-            // set the document branch (aka title)  in the editor pane
-            document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
-        }
-        addSpeaker()
+                updateCytoscapeFromDocument(amDoc);
+                
+                previousHash = meta.head.hash
+                
+                // send doc to history app
+                reDrawHistoryGraph()
+    
+                // ion this case we want the highlighted node to be on the current branch
+                //! highlightNode(historyDAG_cy.getElementById(meta.head.hash))
+    
+                // set the document branch (aka title)  in the editor pane
+                document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
+                addSpeaker()
         
-        currentZoom = cy.zoom()
+                currentZoom = cy.zoom()
+
+            }, 1000);
 
 
-        console.log('set current Pan on load')
+
+        }
+
     })();
 
     // Set an interval to periodically save meta to IndexedDB
@@ -1230,13 +1241,25 @@ document.addEventListener("DOMContentLoaded", function () {
                 // let clonedPos = {...pos}
                 node.position(pos); // Set the position manually
                 // console.log(`Updated position for parent node ${parentNode.id}:`, pos);
+
+                
+                
             }
         });
         // make sure viewport is set back to user's position and zoom
         cy.zoom(currentZoom)
         cy.pan(currentPan)
 
-
+        
+        // add overlay UI elements
+        let index = 0
+        elements.forEach((node)=>{
+            
+            if(node.classes === 'sliderHandle'){
+                createFloatingOverlay(node.data.id, node, index)
+                index++
+            }
+        })
     }    
     
 
@@ -1963,21 +1986,21 @@ document.addEventListener("DOMContentLoaded", function () {
 //*
 
 // Function to create and manage an overlay div
-function createFloatingOverlay(nodeId, param) {
-    console.log(param)
+function createFloatingOverlay(nodeId, param, index) {
+
+
     // Create the overlay div
     const overlayDiv = document.createElement('div');
     overlayDiv.style.position = 'absolute';
+    overlayDiv.style.zIndex = '1000'; // Ensure it renders above other elements
+    overlayDiv.style.pointerEvents = 'auto'; // Allow interactions
     overlayDiv.style.background = 'white';
-    overlayDiv.style.border = '1px solid black';
-    overlayDiv.style.padding = '10px';
-    overlayDiv.style.borderRadius = '8px';
-    overlayDiv.style.boxShadow = '0 4px 8px rgba(0,0,0,0.2)';
+    overlayDiv.style.zIndex = '900'; // Lower z-index for overlayDiv
+    overlayDiv.style.borderRadius = '0px';
     overlayDiv.style.display = 'flex';
     overlayDiv.style.flexDirection = 'column';
     overlayDiv.style.alignItems = 'center';
-    overlayDiv.style.pointerEvents = 'auto'; // Allow interactions
-    overlayDiv.style.zIndex = '1000'; // Ensure it renders above other elements
+
 
     // Add a label
     const label = document.createElement('div');
@@ -1998,13 +2021,29 @@ function createFloatingOverlay(nodeId, param) {
     // Enable the indicator
     knob.setAttribute('min', param.min || 0);
     knob.setAttribute('max', param.max || 100);
-    knob.setAttribute('value', param.default || 50);
+    knob.setAttribute('value', param.data.default || param.data.value);
     knob.setAttribute('step', stepSize || 1);
     knob.setAttribute('indicator', 'true'); // Enable the indicator
-    knob.style.width = '60px';
-    knob.style.height = '60px';
-    knob.style.margin = '5px';
+    knob.style.width = `${baseKnobSize}px`;
+    knob.style.height = `${baseKnobSize}px`;
+    knob.style.zIndex = '1000'; // Higher z-index for knob itself
+    
+    // knob.style.margin = '5px';
     overlayDiv.appendChild(knob);
+
+    // Add a custom indicator (inside input-knob)
+    const mark = document.createElement('div');
+    mark.className = 'mark';
+    mark.innerHTML = '▲'; // The visual indicator (can customize)
+    mark.style.position = 'absolute';
+    mark.style.top = '5%'; // Position near the top
+    mark.style.left = '50%'; // Center horizontally
+    mark.style.transform = 'translate(-50%, 0)'; // Align to center
+    mark.style.fontSize = '150%';
+    mark.style.color = 'blue'; // Indicator color
+    mark.style.zIndex = '1001'; // Higher z-index for knob itself
+
+    knob.appendChild(mark); // Append the mark inside the knob
 
     // Add an event listener for knob changes
     knob.addEventListener('input', (e) => {
@@ -2033,8 +2072,19 @@ function createFloatingOverlay(nodeId, param) {
 
                 // Model position scaled with zoom and adjusted for pan
                 const pos = childNode.position();
-                const x = containerRect.left + (pos.x * zoom) + pan.x;
-                const y = containerRect.top + (pos.y * zoom) + pan.y;
+                let offsetX = 0;
+
+                // Adjust horizontal offset: odd => left, even => right
+                if (index % 2 === 0) {
+                    offsetX = knobOffsetAmount / zoom; // Even knobs to the right
+                } else {
+                    offsetX = -knobOffsetAmount / zoom; // Odd knobs to the left
+                }
+                
+                const offsetY = knobVerticalSpacing * index / zoom;
+
+                const x = containerRect.left + (pos.x * zoom) + pan.x + offsetX;
+                const y = containerRect.top + (pos.y * zoom) + pan.y + offsetY;
 
                 // Return the bounding box centered on the child node
                 return {
@@ -2050,7 +2100,10 @@ function createFloatingOverlay(nodeId, param) {
         },
     };
         // Function to update the overlay position
-    function updateOverlayPosition() {
+    function updateOverlayPositionAndScale(baseKnobSize) {
+        const zoom = cy.zoom();
+
+        // Update position with Floating UI
         computePosition(virtualElement, overlayDiv, {
             placement: 'top', // Adjust placement as needed
             middleware: [flip(), shift()], // Ensure it stays visible on screen
@@ -2058,11 +2111,18 @@ function createFloatingOverlay(nodeId, param) {
             overlayDiv.style.left = `${x}px`;
             overlayDiv.style.top = `${y}px`;
         });
+
+        // Dynamically scale the knob size
+        const scaledSize = baseKnobSize / zoom;
+        knob.style.width = `${scaledSize}px`;
+        knob.style.height = `${scaledSize}px`;
+        knob.style.transform = `scale(${zoom})`;
+        
     }
 
     // Update initially and on Cytoscape viewport changes
-    updateOverlayPosition();
-    cy.on('pan zoom position', updateOverlayPosition);
+    updateOverlayPositionAndScale();
+    cy.on('pan zoom position', updateOverlayPositionAndScale);
 
     return overlayDiv; // Return the overlay for further use
 
@@ -2243,7 +2303,7 @@ function createFloatingOverlay(nodeId, param) {
 //*
 
     ws.onopen = () => {
-        console.log('Connected to WebSocket server');
+        // console.log('Connected to WebSocket server');
         // ws.send('Hello, server!');
     };
     
@@ -2272,7 +2332,7 @@ function createFloatingOverlay(nodeId, param) {
         if (historySequencerWindow && !historySequencerWindow.closed) {
             historySequencerWindow.postMessage(data, '*');
         } else {
-            console.error('Graph window is not open or has been closed.');
+            // console.error('Graph window is not open or has been closed.');
             openGraphWindow()
         }
     }
@@ -3566,11 +3626,14 @@ function createFloatingOverlay(nodeId, param) {
         
         
         debugVar = parentNodeData.data.id
+        // index determines the left or right positioning of each knob
+        let index = 0
         childrenNodes.forEach((param)=>{
             
             if(param.classes == 'sliderHandle' && paramOverlays){
-                console.log(param)
-                createFloatingOverlay(parentNodeData.data.id, param);
+                
+                createFloatingOverlay(parentNodeData.data.id, param, index);
+                index++
             }
         })
         
