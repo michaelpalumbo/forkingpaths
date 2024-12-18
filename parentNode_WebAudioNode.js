@@ -139,7 +139,7 @@ export class ParentNode_WebAudioNode {
                     // Define the track and handle nodes for the slider
                 const sliderTrackId = `${sliderId}-track`;
                 const sliderTrackLabelId = `${sliderTrackId}-label`;
-                const sliderHandleId = `.${sliderId}-handle`;
+                const sliderHandleId = `${sliderId}-handle`;
                 
                 
                 this.nodeIDs.push(sliderTrackId, sliderTrackLabelId, sliderHandleId)
@@ -289,6 +289,7 @@ export class ParentNode_WebAudioNode {
         if(paramOverlays.length === 0){
             paramOverlays = false
         }
+        
         return { parentNode, childrenNodes, audioGraph, paramOverlays };
     }
 }

@@ -19,6 +19,9 @@ import * as Tone from "tone";
 
 import 'input-knob'; // Import input-knob library
 
+// import $ from 'jquery'; // Import jQuery
+import 'jquery-knob';   // Import jQuery Knob plugin
+
 
 
 import * as speaker from "./speaker.json"
@@ -1256,6 +1259,7 @@ document.addEventListener("DOMContentLoaded", function () {
         elements.forEach((node)=>{
             
             if(node.classes === 'sliderHandle'){
+                
                 createFloatingOverlay(node.data.id, node, index)
                 index++
             }
@@ -1988,68 +1992,99 @@ document.addEventListener("DOMContentLoaded", function () {
 // Function to create and manage an overlay div
 function createFloatingOverlay(nodeId, param, index) {
 
-
+    // !
+    // ! don't worry about NaN params appearing. these are params that need to be as dropdown menus (their values are strings and can't be registered as knobs)
+    // !
     // Create the overlay div
-    const overlayDiv = document.createElement('div');
-    overlayDiv.style.position = 'absolute';
-    overlayDiv.style.zIndex = '1000'; // Ensure it renders above other elements
-    overlayDiv.style.pointerEvents = 'auto'; // Allow interactions
-    overlayDiv.style.background = 'white';
-    overlayDiv.style.zIndex = '900'; // Lower z-index for overlayDiv
-    overlayDiv.style.borderRadius = '0px';
-    overlayDiv.style.display = 'flex';
-    overlayDiv.style.flexDirection = 'column';
-    overlayDiv.style.alignItems = 'center';
+    // const overlayDiv = document.createElement('div');
+    // overlayDiv.style.position = 'absolute';
+    // overlayDiv.style.zIndex = '1000'; // Ensure it renders above other elements
+    // overlayDiv.style.pointerEvents = 'auto'; // Allow interactions
+    // overlayDiv.style.background = 'white';
+    // overlayDiv.style.zIndex = '900'; // Lower z-index for overlayDiv
+    // overlayDiv.style.borderRadius = '0px';
+    // overlayDiv.style.display = 'flex';
+    // overlayDiv.style.flexDirection = 'column';
+    // overlayDiv.style.alignItems = 'center';
 
 
     // Add a label
-    const label = document.createElement('div');
-    label.innerText = param.data.label || 'Knob Control';
-    label.style.marginBottom = '5px';
-    label.style.fontWeight = 'bold';
-    overlayDiv.appendChild(label);
+    // const label = document.createElement('div');
+    // label.innerText = param.data.label || 'Knob Control';
+    // label.style.marginBottom = '5px';
+    // label.style.fontWeight = 'bold';
+    // overlayDiv.appendChild(label);
 
     // Add the input-knob element
-    const knob = document.createElement('input-knob');
+    // const knob = document.createElement('input-knob');
     // knob.min = param.min || 0;
     // knob.max = param.max || 100;
     // knob.value = param.default || 50;
-    // todo: define in all modules a param.curve so that we can set them to linear or logarithmic. the function determineStepSize already has this built in
     const stepSize = determineStepSize(param.min, param.max, 'logarithmic', 100 )
     // knob.step = stepSize || 1;
     
     // Enable the indicator
-    knob.setAttribute('min', param.min || 0);
-    knob.setAttribute('max', param.max || 100);
-    knob.setAttribute('value', param.data.default || param.data.value);
-    knob.setAttribute('step', stepSize || 1);
-    knob.setAttribute('indicator', 'true'); // Enable the indicator
-    knob.style.width = `${baseKnobSize}px`;
-    knob.style.height = `${baseKnobSize}px`;
-    knob.style.zIndex = '1000'; // Higher z-index for knob itself
-    
-    // knob.style.margin = '5px';
-    overlayDiv.appendChild(knob);
+    // knob.setAttribute('min', param.min || 0);
+    // knob.setAttribute('max', param.max || 100);
+    // knob.setAttribute('value', param.data.default || param.data.value);
+    // knob.setAttribute('step', stepSize || 1);
+    // knob.setAttribute('indicator', 'true'); // Enable the indicator
+    // // Style the knob to act as the overlay
+    // knob.style.position = 'absolute';
+    // knob.style.width = `${baseKnobSize}px`;
+    // knob.style.height = `${baseKnobSize}px`;
+    // knob.style.zIndex = '1000'; // Ensure it renders on top
+    // knob.style.pointerEvents = 'auto'; // Ensure interactions are allowed
 
-    // Add a custom indicator (inside input-knob)
-    const mark = document.createElement('div');
-    mark.className = 'mark';
-    mark.innerHTML = '▲'; // The visual indicator (can customize)
-    mark.style.position = 'absolute';
-    mark.style.top = '5%'; // Position near the top
-    mark.style.left = '50%'; // Center horizontally
-    mark.style.transform = 'translate(-50%, 0)'; // Align to center
-    mark.style.fontSize = '150%';
-    mark.style.color = 'blue'; // Indicator color
-    mark.style.zIndex = '1001'; // Higher z-index for knob itself
+    // Create an input element for jQuery Knob
+    const knobInput = document.createElement('input');
+    knobInput.type = 'text';
+    knobInput.value = param.data.default || param.data.value || 50; // Initial value
+    knobInput.style.position = 'absolute';
+    knobInput.style.width = `${baseKnobSize}px`;
+    knobInput.style.height = `${baseKnobSize}px`;
+    // knobInput.style.zIndex = '1000';
+    // knobInput.style.pointerEvents = 'auto'; // Ensure interactions are enabled
 
-    knob.appendChild(mark); // Append the mark inside the knob
-
-    // Add an event listener for knob changes
-    knob.addEventListener('input', (e) => {
-        console.log(`Knob value changed to: ${e.target.value}`);
+    document.body.appendChild(knobInput); // Add knob to the DOM
+    // Initialize jQuery Knob on the input
+    $(knobInput).knob({
+        min: param.min || 0,
+        max: param.max || 100,
+        fgColor: "#00aaff",
+        bgColor: "#e6e6e6",
+        inputColor: "#333",
+        thickness: 0.3,
+        angleArc: 270,
+        angleOffset: -135,
+        width: 100,          // Set width of the knob
+        height: 100,  
+        release: (value) => {
+            console.log(`Knob ${inputId} value: ${value}`);
+        },
     });
-    // const overlayDiv = document.createElement('div');
+    // // knob.style.margin = '5px';
+    // document.body.appendChild(knob);
+
+    // // Add a custom indicator (inside input-knob)
+    // const mark = document.createElement('div');
+    // mark.className = 'mark';
+    // mark.innerHTML = '▲'; // The visual indicator (can customize)
+    // mark.style.position = 'absolute';
+    // mark.style.top = '5%'; // Position near the top
+    // mark.style.left = '50%'; // Center horizontally
+    // mark.style.transform = 'translate(-50%, 0)'; // Align to center
+    // mark.style.fontSize = '150%';
+    // mark.style.color = 'blue'; // Indicator color
+    // mark.style.zIndex = '1001'; // Higher z-index for knob itself
+
+    // knob.appendChild(mark); // Append the mark inside the knob
+
+    // // Add an event listener for knob changes
+    // knob.addEventListener('input', (e) => {
+    //     console.log(`Knob value changed to: ${e.target.value}`);
+    // });
+    // // const overlayDiv = document.createElement('div');
     // overlayDiv.classList.add('cy-overlay');
     // overlayDiv.innerHTML = content;
 
@@ -2059,7 +2094,7 @@ function createFloatingOverlay(nodeId, param, index) {
     // overlayDiv.style.border = '1px solid black';
     // overlayDiv.style.padding = '5px';
     // overlayDiv.style.pointerEvents = 'none'; // Prevent interaction issues with Cytoscape
-    document.body.appendChild(overlayDiv);
+    // document.body.appendChild(overlayDiv);
 
     // Virtual element for Floating UI
     const virtualElement = {
@@ -2104,19 +2139,19 @@ function createFloatingOverlay(nodeId, param, index) {
         const zoom = cy.zoom();
 
         // Update position with Floating UI
-        computePosition(virtualElement, overlayDiv, {
+        computePosition(virtualElement, knobInput, {
             placement: 'top', // Adjust placement as needed
             middleware: [flip(), shift()], // Ensure it stays visible on screen
         }).then(({ x, y }) => {
-            overlayDiv.style.left = `${x}px`;
-            overlayDiv.style.top = `${y}px`;
+            knobInput.style.left = `${x}px`;
+            knobInput.style.top = `${y}px`;
         });
 
         // Dynamically scale the knob size
         const scaledSize = baseKnobSize / zoom;
-        knob.style.width = `${scaledSize}px`;
-        knob.style.height = `${scaledSize}px`;
-        knob.style.transform = `scale(${zoom})`;
+        knobInput.style.width = `${scaledSize}px`;
+        knobInput.style.height = `${scaledSize}px`;
+        // knobInput.style.transform = `scale(${zoom})`;
         
     }
 
@@ -2124,7 +2159,7 @@ function createFloatingOverlay(nodeId, param, index) {
     updateOverlayPositionAndScale();
     cy.on('pan zoom position', updateOverlayPositionAndScale);
 
-    return overlayDiv; // Return the overlay for further use
+    return knobInput; // Return the overlay for further use
 
 }
     let parentConnectedEdges = []
@@ -2994,7 +3029,6 @@ function createFloatingOverlay(nodeId, param, index) {
             amDoc = applyChange(amDoc, (amDoc) => {
                 
                 if (elementIndex !== -1) {
-                    console.log('snared', heldModule.data().label, heldModule.position())
                     // update the position
                     amDoc.elements[elementIndex].position = positionCopy
                     
@@ -3631,7 +3665,6 @@ function createFloatingOverlay(nodeId, param, index) {
         childrenNodes.forEach((param)=>{
             
             if(param.classes == 'sliderHandle' && paramOverlays){
-                
                 createFloatingOverlay(parentNodeData.data.id, param, index);
                 index++
             }
