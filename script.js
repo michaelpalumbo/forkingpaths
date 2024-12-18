@@ -50,10 +50,11 @@ let synthWorklet; // the audioWorklet for managing and running the audio graph
 
 
 // * UI
-const baseKnobSize = 60; // Default size in pixels
+const baseKnobSize = 50; // Default size in pixels
 const knobOffsetAmount = 60; // Horizontal offset for staggering knobs
 const knobVerticalSpacing = baseKnobSize * 0.2; // 20% of base knob size for vertical spacing
-
+const baseDropdownWidth = 100; // Base width of the dropdown
+let paramUIOverlays = {}
 
 // * History Sequencer
 let currentIndex = 0;
@@ -338,6 +339,8 @@ document.addEventListener("DOMContentLoaded", function () {
         },
         fit: false,
         resize: false,
+        userZoomingEnabled: false, // Disable zooming
+
         style: [
             {
                 selector: 'node',
@@ -1259,8 +1262,8 @@ document.addEventListener("DOMContentLoaded", function () {
         elements.forEach((node)=>{
             
             if(node.classes === 'sliderHandle'){
-                
-                createFloatingOverlay(node.data.id, node, index)
+                console.log(node)
+                createFloatingOverlay(node.data.parent, node, index)
                 index++
             }
         })
@@ -1990,60 +1993,35 @@ document.addEventListener("DOMContentLoaded", function () {
 //*
 
 // Function to create and manage an overlay div
-function createFloatingOverlay(nodeId, param, index) {
+function createFloatingOverlay(parentNodeID, param, index) {
 
     // !
     // ! don't worry about NaN params appearing. these are params that need to be as dropdown menus (their values are strings and can't be registered as knobs)
     // !
-    // Create the overlay div
-    // const overlayDiv = document.createElement('div');
-    // overlayDiv.style.position = 'absolute';
-    // overlayDiv.style.zIndex = '1000'; // Ensure it renders above other elements
-    // overlayDiv.style.pointerEvents = 'auto'; // Allow interactions
-    // overlayDiv.style.background = 'white';
-    // overlayDiv.style.zIndex = '900'; // Lower z-index for overlayDiv
-    // overlayDiv.style.borderRadius = '0px';
-    // overlayDiv.style.display = 'flex';
-    // overlayDiv.style.flexDirection = 'column';
-    // overlayDiv.style.alignItems = 'center';
 
-
-    // Add a label
-    // const label = document.createElement('div');
-    // label.innerText = param.data.label || 'Knob Control';
-    // label.style.marginBottom = '5px';
-    // label.style.fontWeight = 'bold';
-    // overlayDiv.appendChild(label);
-
-    // Add the input-knob element
-    // const knob = document.createElement('input-knob');
-    // knob.min = param.min || 0;
-    // knob.max = param.max || 100;
-    // knob.value = param.default || 50;
     const stepSize = determineStepSize(param.min, param.max, 'logarithmic', 100 )
-    // knob.step = stepSize || 1;
-    
-    // Enable the indicator
-    // knob.setAttribute('min', param.min || 0);
-    // knob.setAttribute('max', param.max || 100);
-    // knob.setAttribute('value', param.data.default || param.data.value);
-    // knob.setAttribute('step', stepSize || 1);
-    // knob.setAttribute('indicator', 'true'); // Enable the indicator
-    // // Style the knob to act as the overlay
-    // knob.style.position = 'absolute';
-    // knob.style.width = `${baseKnobSize}px`;
-    // knob.style.height = `${baseKnobSize}px`;
-    // knob.style.zIndex = '1000'; // Ensure it renders on top
-    // knob.style.pointerEvents = 'auto'; // Ensure interactions are allowed
 
-    console.log('knob size', baseKnobSize)
-
-    // Create a container div to hold the knob
+    // Create a container div to hold the UI element
     const containerDiv = document.createElement('div');
     containerDiv.style.position = 'absolute';
     containerDiv.style.zIndex = '1000';
     containerDiv.style.width = `${baseKnobSize}px`;
     containerDiv.style.height = `${baseKnobSize}px`;
+    containerDiv.id = `paramDivContainer_${param.data.id}`
+    // store container div id so we can delete it along with module removals or graph version loads
+    if(!paramUIOverlays[parentNodeID]){
+        paramUIOverlays[parentNodeID] = []
+    } else {
+        paramUIOverlays[parentNodeID].push(containerDiv)
+    }
+
+    // Create the label element
+    const labelDiv = document.createElement('div');
+    labelDiv.innerText = param.data.label || `Knob`; // Use parameter label or default
+    labelDiv.style.textAlign = 'center';
+    labelDiv.style.marginBottom = '5px';
+    labelDiv.style.fontSize = '12px';
+    labelDiv.style.color = '#333';
     
     // Create an input element for jQuery Knob
     const knobInput = document.createElement('input');
@@ -2052,12 +2030,15 @@ function createFloatingOverlay(nodeId, param, index) {
     // knobInput.style.position = 'absolute';
     knobInput.style.width = `100%`;
     knobInput.style.height = `100%`;
+    knobInput.id = `knob_${param.data.id}`
     // knobInput.style.zIndex = '1000';
     // knobInput.style.pointerEvents = 'auto'; // Ensure interactions are enabled
 
     // Append the input to the container
+    containerDiv.appendChild(labelDiv);
     containerDiv.appendChild(knobInput);
     document.body.appendChild(containerDiv);
+    
     // Initialize jQuery Knob on the input
     $(knobInput).knob({
         min: param.min || 0,
@@ -2068,38 +2049,69 @@ function createFloatingOverlay(nodeId, param, index) {
         thickness: 0.3,
         angleArc: 270,
         angleOffset: -135,
-        width: 100,          // Set width of the knob
-        height: 100,  
+        width: baseKnobSize,          // Set width of the knob
+        height: baseKnobSize,  
         release: (value) => {
-            console.log(`Knob ${inputId} value: ${value}`);
+            console.log(`Knob ${knobInput.id} value: ${value}`);
         },
     });
 
-    // Function to position the container over the childNode
-    function positionContainer() {
-        const childNode = cy.getElementById(param.data.id);
-        if (!childNode) return;
+    // Create a virtual element for Floating UI
+    const virtualElement = {
+        getBoundingClientRect: () => {
+            const childNode = cy.getElementById(param.data.id);
+            if (childNode) {
+                const containerRect = cy.container().getBoundingClientRect();
+                const zoom = cy.zoom();
+                const pan = cy.pan();
 
-        const pos = childNode.renderedPosition();
-        const containerRect = cy.container().getBoundingClientRect();
+                // Get childNode's position scaled with zoom and adjusted for pan
+                const pos = childNode.position();
+                const offsetX = (index % 2 === 0 ? knobOffsetAmount : -knobOffsetAmount) / zoom;
+                const offsetY = (knobVerticalSpacing * index) / zoom;
 
-        // Calculate position relative to Cytoscape container
-        const x = containerRect.left + pos.x - baseKnobSize / 2;
-        const y = containerRect.top + pos.y - baseKnobSize / 2;
+                const x = containerRect.left + (pos.x * zoom) + pan.x + offsetX;
+                const y = containerRect.top + (pos.y * zoom) + pan.y + offsetY;
 
-        // Update container position
-        containerDiv.style.left = `${x}px`;
-        containerDiv.style.top = `${y}px`;
+                return {
+                    width: 0,
+                    height: 0,
+                    top: y,
+                    left: x,
+                    right: x,
+                    bottom: y,
+                };
+            }
+            return { top: 0, left: 0, right: 0, bottom: 0, width: 0, height: 0 };
+        },
+    };
+
+     // Function to update the knob's position and scale dynamically
+     function updateKnobPositionAndScale() {
+        const zoom = cy.zoom();
+
+        // Update position with Floating UI
+        computePosition(virtualElement, containerDiv, {
+            placement: 'top', // Adjust placement as needed
+            middleware: [flip(), shift()], // Prevent the knob from leaving the viewport
+        }).then(({ x, y }) => {
+            containerDiv.style.left = `${x}px`;
+            containerDiv.style.top = `${y}px`;
+        });
+
+        // Dynamically scale the knob size
+        const scaledSize = baseKnobSize / zoom;
+        containerDiv.style.width = `${scaledSize}px`;
+        containerDiv.style.height = `${scaledSize}px`;
     }
 
-    // Initial position update
-    positionContainer();
-    
+    // Initial position and scale update
+    updateKnobPositionAndScale();
 
-        // Update position dynamically on pan/zoom
-        cy.on('pan zoom', positionContainer);
+    // Update position dynamically on pan/zoom
+    cy.on('pan zoom position', updateKnobPositionAndScale);
 
-        return containerDiv;
+    return containerDiv;
     // // knob.style.margin = '5px';
     // document.body.appendChild(knob);
 
@@ -2201,6 +2213,15 @@ function createFloatingOverlay(nodeId, param, index) {
     return knobInput; // Return the overlay for further use
     */
 }
+
+    function removeParamOverlay(containerDiv) {
+        if (containerDiv && containerDiv.parentNode) {
+            containerDiv.parentNode.removeChild(containerDiv);
+            console.log('Knob container removed from the DOM');
+        } else {
+            console.error('ContainerDiv not found in the DOM');
+        }
+    }
     let parentConnectedEdges = []
     // highlight all edges connected to a clicked parent node
     function highlightEdges(cmd, node){
@@ -3241,15 +3262,12 @@ function createFloatingOverlay(nodeId, param, index) {
                 // update audioGraph right away
                 updateSynthWorklet('removeNode', nodeId)
 
-                cy.remove(highlightedNode); // Remove the node from the Cytoscape instance
-                highlightedNode = null; // Clear the reference after deletion
 
-                // Update the Automerge document to reflect the deletion
 
                 // * automerge version:
                 
                 amDoc = applyChange(amDoc, (amDoc) => {
-                    delete amDoc.synth.graph.modules[currentHandleNode.data().parent]
+                    delete amDoc.synth.graph.modules[highlightedNode.data().parent]
                     const elementIndex = amDoc.elements.findIndex(el => el.data.id === nodeId);
                     // IMPORTANT: here we need to remove elements in this order:
                     // 1. connected edges
@@ -3286,6 +3304,15 @@ function createFloatingOverlay(nodeId, param, index) {
                     }
                 }, onChange, `remove ${nodeId}`);
 
+                cy.remove(highlightedNode); // Remove the node from the Cytoscape instance
+                highlightedNode = null; // Clear the reference after deletion
+
+                // remove the param UI overlays
+                // paramUIOverlays[nodeId].forEach((childDiv)=>{
+                //     childDiv.parentNode.removeChild(childDiv);
+                // })
+                console.log(highlightedNode)
+                // Update the Automerge document to reflect the deletion
 
 
                 //* old -repo version
