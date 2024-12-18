@@ -2036,17 +2036,28 @@ function createFloatingOverlay(nodeId, param, index) {
     // knob.style.zIndex = '1000'; // Ensure it renders on top
     // knob.style.pointerEvents = 'auto'; // Ensure interactions are allowed
 
+    console.log('knob size', baseKnobSize)
+
+    // Create a container div to hold the knob
+    const containerDiv = document.createElement('div');
+    containerDiv.style.position = 'absolute';
+    containerDiv.style.zIndex = '1000';
+    containerDiv.style.width = `${baseKnobSize}px`;
+    containerDiv.style.height = `${baseKnobSize}px`;
+    
     // Create an input element for jQuery Knob
     const knobInput = document.createElement('input');
     knobInput.type = 'text';
     knobInput.value = param.data.default || param.data.value || 50; // Initial value
-    knobInput.style.position = 'absolute';
-    knobInput.style.width = `${baseKnobSize}px`;
-    knobInput.style.height = `${baseKnobSize}px`;
+    // knobInput.style.position = 'absolute';
+    knobInput.style.width = `100%`;
+    knobInput.style.height = `100%`;
     // knobInput.style.zIndex = '1000';
     // knobInput.style.pointerEvents = 'auto'; // Ensure interactions are enabled
 
-    document.body.appendChild(knobInput); // Add knob to the DOM
+    // Append the input to the container
+    containerDiv.appendChild(knobInput);
+    document.body.appendChild(containerDiv);
     // Initialize jQuery Knob on the input
     $(knobInput).knob({
         min: param.min || 0,
@@ -2063,6 +2074,32 @@ function createFloatingOverlay(nodeId, param, index) {
             console.log(`Knob ${inputId} value: ${value}`);
         },
     });
+
+    // Function to position the container over the childNode
+    function positionContainer() {
+        const childNode = cy.getElementById(param.data.id);
+        if (!childNode) return;
+
+        const pos = childNode.renderedPosition();
+        const containerRect = cy.container().getBoundingClientRect();
+
+        // Calculate position relative to Cytoscape container
+        const x = containerRect.left + pos.x - baseKnobSize / 2;
+        const y = containerRect.top + pos.y - baseKnobSize / 2;
+
+        // Update container position
+        containerDiv.style.left = `${x}px`;
+        containerDiv.style.top = `${y}px`;
+    }
+
+    // Initial position update
+    positionContainer();
+    
+
+        // Update position dynamically on pan/zoom
+        cy.on('pan zoom', positionContainer);
+
+        return containerDiv;
     // // knob.style.margin = '5px';
     // document.body.appendChild(knob);
 
@@ -2097,6 +2134,8 @@ function createFloatingOverlay(nodeId, param, index) {
     // document.body.appendChild(overlayDiv);
 
     // Virtual element for Floating UI
+    
+    /*
     const virtualElement = {
         getBoundingClientRect: () => {
             const childNode = cy.getElementById(param.data.id);
@@ -2160,7 +2199,7 @@ function createFloatingOverlay(nodeId, param, index) {
     cy.on('pan zoom position', updateOverlayPositionAndScale);
 
     return knobInput; // Return the overlay for further use
-
+    */
 }
     let parentConnectedEdges = []
     // highlight all edges connected to a clicked parent node
