@@ -2044,13 +2044,10 @@ document.addEventListener("DOMContentLoaded", function () {
         containerDiv.appendChild(knobInput);
         document.body.appendChild(containerDiv);
 
-
-        
-        
         // Initialize jQuery Knob on the input
         $(knobInput).knob({
-            min: param.min || 0,
-            max: param.max || 100,
+            min: param.data.min || param.data.sliderMin || 0,
+            max: param.data.max || param.data.sliderMax || 100,
             fgColor: "#00aaff",
             bgColor: "#e6e6e6",
             inputColor: "#333",
@@ -2059,6 +2056,12 @@ document.addEventListener("DOMContentLoaded", function () {
             angleOffset: -135,
             width: baseKnobSize,          // Set width of the knob
             height: baseKnobSize,  
+            change: (value) => {
+                console.log(`Knob ${knobInput.id} value while dragging: ${value}`);
+
+                // set params in audio graph:
+                updateSynthWorklet('paramChange', { parent: param.data.parent, param: param.data.label, value: value})
+            },
             release: (value) => {
                 console.log(`Knob ${knobInput.id} value: ${value}`);
             },
