@@ -1224,6 +1224,16 @@ document.addEventListener("DOMContentLoaded", function () {
         // Clear existing elements from Cytoscape instance
         cy.elements().remove();
 
+        // delete all param UI overlays
+        Object.values(paramUIOverlays).forEach((parentNode) => {
+            parentNode.forEach((paramUIDiv) => {
+                // paramUIDiv.parentNode.removeChild(paramUIDiv);
+                paramUIDiv.removeKnob()
+            });
+        });
+        // reset overlays object
+        paramUIOverlays = {}
+
         // cy.reset()
         // 3. Add new elements to Cytoscape
         cy.add(syncedElements)
@@ -1992,227 +2002,247 @@ document.addEventListener("DOMContentLoaded", function () {
 //* Functions that directly handle updating DOM elements & cytoscape
 //*
 
-// Function to create and manage an overlay div
-function createFloatingOverlay(parentNodeID, param, index) {
+    // Function to create and manage an overlay div
+    function createFloatingOverlay(parentNodeID, param, index) {
 
-    // !
-    // ! don't worry about NaN params appearing. these are params that need to be as dropdown menus (their values are strings and can't be registered as knobs)
-    // !
+        // !
+        // ! don't worry about NaN params appearing. these are params that need to be as dropdown menus (their values are strings and can't be registered as knobs)
+        // !
 
-    const stepSize = determineStepSize(param.min, param.max, 'logarithmic', 100 )
+        const stepSize = determineStepSize(param.min, param.max, 'logarithmic', 100 )
 
-    // Create a container div to hold the UI element
-    const containerDiv = document.createElement('div');
-    containerDiv.style.position = 'absolute';
-    containerDiv.style.zIndex = '1000';
-    containerDiv.style.width = `${baseKnobSize}px`;
-    containerDiv.style.height = `${baseKnobSize}px`;
-    containerDiv.id = `paramDivContainer_${param.data.id}`
-    // store container div id so we can delete it along with module removals or graph version loads
-    if(!paramUIOverlays[parentNodeID]){
-        paramUIOverlays[parentNodeID] = []
-    } else {
-        paramUIOverlays[parentNodeID].push(containerDiv)
-    }
+        // Create a container div to hold the UI element
+        const containerDiv = document.createElement('div');
+        containerDiv.style.position = 'absolute';
+        containerDiv.style.zIndex = '1000';
+        containerDiv.style.width = `${baseKnobSize}px`;
+        containerDiv.style.height = `${baseKnobSize}px`;
+        containerDiv.id = `paramDivContainer_${param.data.id}`
 
-    // Create the label element
-    const labelDiv = document.createElement('div');
-    labelDiv.innerText = param.data.label || `Knob`; // Use parameter label or default
-    labelDiv.style.textAlign = 'center';
-    labelDiv.style.marginBottom = '5px';
-    labelDiv.style.fontSize = '12px';
-    labelDiv.style.color = '#333';
-    
-    // Create an input element for jQuery Knob
-    const knobInput = document.createElement('input');
-    knobInput.type = 'text';
-    knobInput.value = param.data.default || param.data.value || 50; // Initial value
-    // knobInput.style.position = 'absolute';
-    knobInput.style.width = `100%`;
-    knobInput.style.height = `100%`;
-    knobInput.id = `knob_${param.data.id}`
-    // knobInput.style.zIndex = '1000';
-    // knobInput.style.pointerEvents = 'auto'; // Ensure interactions are enabled
 
-    // Append the input to the container
-    containerDiv.appendChild(labelDiv);
-    containerDiv.appendChild(knobInput);
-    document.body.appendChild(containerDiv);
-    
-    // Initialize jQuery Knob on the input
-    $(knobInput).knob({
-        min: param.min || 0,
-        max: param.max || 100,
-        fgColor: "#00aaff",
-        bgColor: "#e6e6e6",
-        inputColor: "#333",
-        thickness: 0.3,
-        angleArc: 270,
-        angleOffset: -135,
-        width: baseKnobSize,          // Set width of the knob
-        height: baseKnobSize,  
-        release: (value) => {
-            console.log(`Knob ${knobInput.id} value: ${value}`);
-        },
-    });
-
-    // Create a virtual element for Floating UI
-    const virtualElement = {
-        getBoundingClientRect: () => {
-            const childNode = cy.getElementById(param.data.id);
-            if (childNode) {
-                const containerRect = cy.container().getBoundingClientRect();
-                const zoom = cy.zoom();
-                const pan = cy.pan();
-
-                // Get childNode's position scaled with zoom and adjusted for pan
-                const pos = childNode.position();
-                const offsetX = (index % 2 === 0 ? knobOffsetAmount : -knobOffsetAmount) / zoom;
-                const offsetY = (knobVerticalSpacing * index) / zoom;
-
-                const x = containerRect.left + (pos.x * zoom) + pan.x + offsetX;
-                const y = containerRect.top + (pos.y * zoom) + pan.y + offsetY;
-
-                return {
-                    width: 0,
-                    height: 0,
-                    top: y,
-                    left: x,
-                    right: x,
-                    bottom: y,
-                };
-            }
-            return { top: 0, left: 0, right: 0, bottom: 0, width: 0, height: 0 };
-        },
-    };
-
-     // Function to update the knob's position and scale dynamically
-     function updateKnobPositionAndScale() {
-        const zoom = cy.zoom();
-
-        // Update position with Floating UI
-        computePosition(virtualElement, containerDiv, {
-            placement: 'top', // Adjust placement as needed
-            middleware: [flip(), shift()], // Prevent the knob from leaving the viewport
-        }).then(({ x, y }) => {
-            containerDiv.style.left = `${x}px`;
-            containerDiv.style.top = `${y}px`;
-        });
-
-        // Dynamically scale the knob size
-        const scaledSize = baseKnobSize / zoom;
-        containerDiv.style.width = `${scaledSize}px`;
-        containerDiv.style.height = `${scaledSize}px`;
-    }
-
-    // Initial position and scale update
-    updateKnobPositionAndScale();
-
-    // Update position dynamically on pan/zoom
-    cy.on('pan zoom position', updateKnobPositionAndScale);
-
-    return containerDiv;
-    // // knob.style.margin = '5px';
-    // document.body.appendChild(knob);
-
-    // // Add a custom indicator (inside input-knob)
-    // const mark = document.createElement('div');
-    // mark.className = 'mark';
-    // mark.innerHTML = '▲'; // The visual indicator (can customize)
-    // mark.style.position = 'absolute';
-    // mark.style.top = '5%'; // Position near the top
-    // mark.style.left = '50%'; // Center horizontally
-    // mark.style.transform = 'translate(-50%, 0)'; // Align to center
-    // mark.style.fontSize = '150%';
-    // mark.style.color = 'blue'; // Indicator color
-    // mark.style.zIndex = '1001'; // Higher z-index for knob itself
-
-    // knob.appendChild(mark); // Append the mark inside the knob
-
-    // // Add an event listener for knob changes
-    // knob.addEventListener('input', (e) => {
-    //     console.log(`Knob value changed to: ${e.target.value}`);
-    // });
-    // // const overlayDiv = document.createElement('div');
-    // overlayDiv.classList.add('cy-overlay');
-    // overlayDiv.innerHTML = content;
-
-    // // Style the overlay div
-    // overlayDiv.style.position = 'absolute';
-    // overlayDiv.style.background = 'white';
-    // overlayDiv.style.border = '1px solid black';
-    // overlayDiv.style.padding = '5px';
-    // overlayDiv.style.pointerEvents = 'none'; // Prevent interaction issues with Cytoscape
-    // document.body.appendChild(overlayDiv);
-
-    // Virtual element for Floating UI
-    
-    /*
-    const virtualElement = {
-        getBoundingClientRect: () => {
-            const childNode = cy.getElementById(param.data.id);
-            if (childNode) {
-                const containerRect = cy.container().getBoundingClientRect();
-                const zoom = cy.zoom();
-                const pan = cy.pan();
-
-                // Model position scaled with zoom and adjusted for pan
-                const pos = childNode.position();
-                let offsetX = 0;
-
-                // Adjust horizontal offset: odd => left, even => right
-                if (index % 2 === 0) {
-                    offsetX = knobOffsetAmount / zoom; // Even knobs to the right
-                } else {
-                    offsetX = -knobOffsetAmount / zoom; // Odd knobs to the left
-                }
-                
-                const offsetY = knobVerticalSpacing * index / zoom;
-
-                const x = containerRect.left + (pos.x * zoom) + pan.x + offsetX;
-                const y = containerRect.top + (pos.y * zoom) + pan.y + offsetY;
-
-                // Return the bounding box centered on the child node
-                return {
-                    width: 0,
-                    height: 0,
-                    top: y,
-                    left: x,
-                    right: x,
-                    bottom: y,
-                };
-            }
-            return { top: 0, left: 0, right: 0, bottom: 0, width: 0, height: 0 };
-        },
-    };
-        // Function to update the overlay position
-    function updateOverlayPositionAndScale(baseKnobSize) {
-        const zoom = cy.zoom();
-
-        // Update position with Floating UI
-        computePosition(virtualElement, knobInput, {
-            placement: 'top', // Adjust placement as needed
-            middleware: [flip(), shift()], // Ensure it stays visible on screen
-        }).then(({ x, y }) => {
-            knobInput.style.left = `${x}px`;
-            knobInput.style.top = `${y}px`;
-        });
-
-        // Dynamically scale the knob size
-        const scaledSize = baseKnobSize / zoom;
-        knobInput.style.width = `${scaledSize}px`;
-        knobInput.style.height = `${scaledSize}px`;
-        // knobInput.style.transform = `scale(${zoom})`;
+        // Create the label element
+        const labelDiv = document.createElement('div');
+        labelDiv.innerText = param.data.label || `Knob`; // Use parameter label or default
+        labelDiv.style.textAlign = 'center';
+        labelDiv.style.marginBottom = '5px';
+        labelDiv.style.fontSize = '12px';
+        labelDiv.style.color = '#333';
         
+        // Create an input element for jQuery Knob
+        const knobInput = document.createElement('input');
+        knobInput.type = 'text';
+        knobInput.value = param.data.default || param.data.value || 50; // Initial value
+        // knobInput.style.position = 'absolute';
+        knobInput.style.width = `100%`;
+        knobInput.style.height = `100%`;
+        knobInput.id = `knob_${param.data.id}`
+        // knobInput.style.zIndex = '1000';
+        // knobInput.style.pointerEvents = 'auto'; // Ensure interactions are enabled
+
+        // Append the input to the container
+        containerDiv.appendChild(labelDiv);
+        containerDiv.appendChild(knobInput);
+        document.body.appendChild(containerDiv);
+
+
+        
+        
+        // Initialize jQuery Knob on the input
+        $(knobInput).knob({
+            min: param.min || 0,
+            max: param.max || 100,
+            fgColor: "#00aaff",
+            bgColor: "#e6e6e6",
+            inputColor: "#333",
+            thickness: 0.3,
+            angleArc: 270,
+            angleOffset: -135,
+            width: baseKnobSize,          // Set width of the knob
+            height: baseKnobSize,  
+            release: (value) => {
+                console.log(`Knob ${knobInput.id} value: ${value}`);
+            },
+        });
+
+        // Create a virtual element for Floating UI
+        const virtualElement = {
+            getBoundingClientRect: () => {
+                const childNode = cy.getElementById(param.data.id);
+                if (childNode) {
+                    const containerRect = cy.container().getBoundingClientRect();
+                    const zoom = cy.zoom();
+                    const pan = cy.pan();
+
+                    // Get childNode's position scaled with zoom and adjusted for pan
+                    const pos = childNode.position();
+                    const offsetX = (index % 2 === 0 ? knobOffsetAmount : -knobOffsetAmount) / zoom;
+                    const offsetY = (knobVerticalSpacing * index) / zoom;
+
+                    const x = containerRect.left + (pos.x * zoom) + pan.x + offsetX;
+                    const y = containerRect.top + (pos.y * zoom) + pan.y + offsetY;
+
+                    return {
+                        width: 0,
+                        height: 0,
+                        top: y,
+                        left: x,
+                        right: x,
+                        bottom: y,
+                    };
+                }
+                return { top: 0, left: 0, right: 0, bottom: 0, width: 0, height: 0 };
+            },
+        };
+
+        // Function to update the knob's position and scale dynamically
+        function updateKnobPositionAndScale() {
+            const zoom = cy.zoom();
+
+            // Update position with Floating UI
+            computePosition(virtualElement, containerDiv, {
+                placement: 'top', // Adjust placement as needed
+                middleware: [flip(), shift()], // Prevent the knob from leaving the viewport
+            }).then(({ x, y }) => {
+                containerDiv.style.left = `${x}px`;
+                containerDiv.style.top = `${y}px`;
+            });
+
+            // Dynamically scale the knob size
+            const scaledSize = baseKnobSize / zoom;
+            containerDiv.style.width = `${scaledSize}px`;
+            containerDiv.style.height = `${scaledSize}px`;
+        }
+
+        // Initial position and scale update
+        updateKnobPositionAndScale();
+
+        // Cleanup function
+        function removeKnob() {
+            // Remove the container div
+            if (containerDiv.parentNode) {
+                containerDiv.parentNode.removeChild(containerDiv);
+                console.log('Knob container removed');
+            }
+
+            // Remove the event listener
+            cy.off('pan zoom position', updateKnobPositionAndScale);
+
+            // // Clear references
+            // containerDiv = null;
+        }
+        
+
+        // Update position dynamically on pan/zoom
+        cy.on('pan zoom position', updateKnobPositionAndScale);
+
+            // store knobInput div id so we can delete it along with module removals or graph version loads
+        // if(!paramUIOverlays[parentNodeID]){
+        //     paramUIOverlays[parentNodeID] = [knobInput]
+        // } else {
+        //     paramUIOverlays[parentNodeID].push(knobInput)
+        // }
+        return { containerDiv, removeKnob } ;
+        // // knob.style.margin = '5px';
+        // document.body.appendChild(knob);
+
+        // // Add a custom indicator (inside input-knob)
+        // const mark = document.createElement('div');
+        // mark.className = 'mark';
+        // mark.innerHTML = '▲'; // The visual indicator (can customize)
+        // mark.style.position = 'absolute';
+        // mark.style.top = '5%'; // Position near the top
+        // mark.style.left = '50%'; // Center horizontally
+        // mark.style.transform = 'translate(-50%, 0)'; // Align to center
+        // mark.style.fontSize = '150%';
+        // mark.style.color = 'blue'; // Indicator color
+        // mark.style.zIndex = '1001'; // Higher z-index for knob itself
+
+        // knob.appendChild(mark); // Append the mark inside the knob
+
+        // // Add an event listener for knob changes
+        // knob.addEventListener('input', (e) => {
+        //     console.log(`Knob value changed to: ${e.target.value}`);
+        // });
+        // // const overlayDiv = document.createElement('div');
+        // overlayDiv.classList.add('cy-overlay');
+        // overlayDiv.innerHTML = content;
+
+        // // Style the overlay div
+        // overlayDiv.style.position = 'absolute';
+        // overlayDiv.style.background = 'white';
+        // overlayDiv.style.border = '1px solid black';
+        // overlayDiv.style.padding = '5px';
+        // overlayDiv.style.pointerEvents = 'none'; // Prevent interaction issues with Cytoscape
+        // document.body.appendChild(overlayDiv);
+
+        // Virtual element for Floating UI
+        
+        /*
+        const virtualElement = {
+            getBoundingClientRect: () => {
+                const childNode = cy.getElementById(param.data.id);
+                if (childNode) {
+                    const containerRect = cy.container().getBoundingClientRect();
+                    const zoom = cy.zoom();
+                    const pan = cy.pan();
+
+                    // Model position scaled with zoom and adjusted for pan
+                    const pos = childNode.position();
+                    let offsetX = 0;
+
+                    // Adjust horizontal offset: odd => left, even => right
+                    if (index % 2 === 0) {
+                        offsetX = knobOffsetAmount / zoom; // Even knobs to the right
+                    } else {
+                        offsetX = -knobOffsetAmount / zoom; // Odd knobs to the left
+                    }
+                    
+                    const offsetY = knobVerticalSpacing * index / zoom;
+
+                    const x = containerRect.left + (pos.x * zoom) + pan.x + offsetX;
+                    const y = containerRect.top + (pos.y * zoom) + pan.y + offsetY;
+
+                    // Return the bounding box centered on the child node
+                    return {
+                        width: 0,
+                        height: 0,
+                        top: y,
+                        left: x,
+                        right: x,
+                        bottom: y,
+                    };
+                }
+                return { top: 0, left: 0, right: 0, bottom: 0, width: 0, height: 0 };
+            },
+        };
+            // Function to update the overlay position
+        function updateOverlayPositionAndScale(baseKnobSize) {
+            const zoom = cy.zoom();
+
+            // Update position with Floating UI
+            computePosition(virtualElement, knobInput, {
+                placement: 'top', // Adjust placement as needed
+                middleware: [flip(), shift()], // Ensure it stays visible on screen
+            }).then(({ x, y }) => {
+                knobInput.style.left = `${x}px`;
+                knobInput.style.top = `${y}px`;
+            });
+
+            // Dynamically scale the knob size
+            const scaledSize = baseKnobSize / zoom;
+            knobInput.style.width = `${scaledSize}px`;
+            knobInput.style.height = `${scaledSize}px`;
+            // knobInput.style.transform = `scale(${zoom})`;
+            
+        }
+
+        // Update initially and on Cytoscape viewport changes
+        updateOverlayPositionAndScale();
+        cy.on('pan zoom position', updateOverlayPositionAndScale);
+
+        return knobInput; // Return the overlay for further use
+        */
     }
-
-    // Update initially and on Cytoscape viewport changes
-    updateOverlayPositionAndScale();
-    cy.on('pan zoom position', updateOverlayPositionAndScale);
-
-    return knobInput; // Return the overlay for further use
-    */
-}
 
     function removeParamOverlay(containerDiv) {
         if (containerDiv && containerDiv.parentNode) {
@@ -3308,10 +3338,12 @@ function createFloatingOverlay(parentNodeID, param, index) {
                 highlightedNode = null; // Clear the reference after deletion
 
                 // remove the param UI overlays
-                // paramUIOverlays[nodeId].forEach((childDiv)=>{
-                //     childDiv.parentNode.removeChild(childDiv);
-                // })
-                console.log(highlightedNode)
+                paramUIOverlays[nodeId].forEach((childDiv)=>{
+                    childDiv.removeKnob()
+                    
+                    // childDiv.parentNode.removeChild(childDiv);
+                })
+                delete paramUIOverlays[nodeId]
                 // Update the Automerge document to reflect the deletion
 
 
@@ -3728,10 +3760,13 @@ function createFloatingOverlay(parentNodeID, param, index) {
         debugVar = parentNodeData.data.id
         // index determines the left or right positioning of each knob
         let index = 0
+        paramUIOverlays[parentNodeData.data.id] = []
         childrenNodes.forEach((param)=>{
             
             if(param.classes == 'sliderHandle' && paramOverlays){
-                createFloatingOverlay(parentNodeData.data.id, param, index);
+                let uiOverlay = createFloatingOverlay(parentNodeData.data.id, param, index);
+                
+                paramUIOverlays[parentNodeData.data.id].push(uiOverlay)
                 index++
             }
         })
