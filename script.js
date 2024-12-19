@@ -1474,7 +1474,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
 
-
+ 
     /*
 
         HISTORY SEQUENCER 
@@ -2061,6 +2061,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 // set params in audio graph:
                 updateSynthWorklet('paramChange', { parent: param.data.parent, param: param.data.label, value: value})
+
+                // update param in automerge
+                amDoc = applyChange(amDoc, (amDoc) => {
+                    // amDoc.elements[elementIndex].data.value = scaledValue
+                    // amDoc.elements[elementIndex].position = {
+                    //     x: currentHandleNode.position().x,
+                    //     y: currentHandleNode.position().y
+                    // }
+                    // update the web audio graph with the param values. 
+                    amDoc.synth.graph.modules[param.data.parent].params[param.data.label] = value
+                    audioGraphDirty = true
+                }, onChange,  `paramUpdate ${param.data.label} = ${value}`);
             },
             release: (value) => {
                 console.log(`Knob ${knobInput.id} value: ${value}`);
