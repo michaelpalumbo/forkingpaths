@@ -44,7 +44,7 @@ export class ParentNode_WebAudioNode {
         if(this.params){
             for (let i = 0; i<this.params.length; i++){
                 let param = this.moduleSpec.parameters[this.params[i]]
-                param.kind = 'slider'
+                param.kind = 'paramAnchorNode'
                 param.name = this.params[i]
                 
                 this.children.push(param)
@@ -122,7 +122,42 @@ export class ParentNode_WebAudioNode {
         // Arrange the child nodes in a vertical line below the parent node
         const offsetY = index * 60; // Each child node is 60px below the previous one
         const offsetX = 0; // Keep the X position the same for a vertical arrangement
-            if(child.kind === 'slider'){
+        console.log(child.kind)
+        if(child.kind === 'paramAnchorNode'){
+            const paramAnchorNodeID = `${this.moduleName}_${child.name}`
+
+            this.nodeIDs.push(`${paramAnchorNodeID}-anchorNode`)
+
+            return [{                  
+                data: {
+                    id: paramAnchorNodeID,
+                    parent: this.moduleName,
+                    label: child.name || `${this.moduleName}-${paramAnchorNodeID}-${child.name}`,
+                    nameSpace: `${paramAnchorNodeID}.${child.name}`,
+                    kind: child.kind,
+                    // sliderComponent: 'handle',
+                    shape: 'ellipse',
+                    bgcolour: '#CCCCCC',
+                    // set the track dimensions in the handle data for later access
+                    // trackStartX: trackStartX, 
+                    // trackEndX: trackEndX,
+                    // fixedY: config.position.y +10,
+                    hash: `${this.moduleName}_${child.name}`,
+   
+                    min: child.min || child.minimum || 0,
+                    max: child.max || child.maximum || 1,
+                    value: child.default || child.value,
+                    description: child.description
+                    
+                },
+                position: {
+                    x: this.position.x + 20,
+                    y: this.position.y + offsetY + 10// Match Y-position with the track
+                },
+                classes: 'paramAnchorNode'
+            }]
+
+        } else if(child.kind === 'slider'){
                 const sliderId = `${this.moduleName}_${child.name}`
                 
                 //! important to do: the min and maxvalue should reflect the rnbo device's min and max, and so should the initialValue. 
@@ -162,30 +197,30 @@ export class ParentNode_WebAudioNode {
                 
                 return [
                     // slider track
-                    {                  
-                        data: {
-                            id: sliderTrackId,
-                            parent: this.moduleName,
-                            label: child.name || `${this.moduleName}-${sliderTrackId}${index + 1}`,
-                            kind: child.kind,
-                            bgcolour: '#CCCCCC',
-                            length: config.length,
-                            sliderComponent: 'track',
-                            hash: sliderId,
-                            description: child.description
+                    // {                  
+                    //     data: {
+                    //         id: sliderTrackId,
+                    //         parent: this.moduleName,
+                    //         label: child.name || `${this.moduleName}-${sliderTrackId}${index + 1}`,
+                    //         kind: child.kind,
+                    //         bgcolour: '#CCCCCC',
+                    //         length: config.length,
+                    //         sliderComponent: 'track',
+                    //         hash: sliderId,
+                    //         description: child.description
 
 
 
-                            // ghostCableShape: child.kind === 'input' ? 'rectangle' : 'triangle',
-                            // ghostCableColour: child.kind === 'input' ? '#5C9AE3' : '#E68942',
+                    //         // ghostCableShape: child.kind === 'input' ? 'rectangle' : 'triangle',
+                    //         // ghostCableColour: child.kind === 'input' ? '#5C9AE3' : '#E68942',
                             
-                        },
-                        position: {
-                            x: config.position.x,
-                            y: config.position.y + 10 // add 10 to make space for slider label
-                        },
-                        classes: 'sliderTrack'
-                    },
+                    //     },
+                    //     position: {
+                    //         x: config.position.x,
+                    //         y: config.position.y + 10 // add 10 to make space for slider label
+                    //     },
+                    //     classes: 'sliderTrack'
+                    // },
                     {                  
                         data: {
                             id: sliderHandleId,
@@ -215,20 +250,20 @@ export class ParentNode_WebAudioNode {
                         classes: 'sliderHandle'
                     },
                     // Add the text label node
-                    {
-                        data: {
-                            id: sliderTrackLabelId,
-                            parent: this.moduleName,
-                            label: `${child.default}`, // Initial value; will be updated dynamically
-                            kind: 'label',
-                            hash: sliderId,
-                        },
-                        position: {
-                            x: config.position.x + (config.length / 2), // Shift left by half the track length plus some margin (adjust 30 as needed)
-                            y: config.position.y // Adjust Y-position to place it above the slider
-                        },
-                        classes: 'sliderLabel' // Define a class for styling if needed
-                    }
+                    // {
+                    //     data: {
+                    //         id: sliderTrackLabelId,
+                    //         parent: this.moduleName,
+                    //         label: `${child.default}`, // Initial value; will be updated dynamically
+                    //         kind: 'label',
+                    //         hash: sliderId,
+                    //     },
+                    //     position: {
+                    //         x: config.position.x + (config.length / 2), // Shift left by half the track length plus some margin (adjust 30 as needed)
+                    //         y: config.position.y // Adjust Y-position to place it above the slider
+                    //     },
+                    //     classes: 'sliderLabel' // Define a class for styling if needed
+                    // }
 
                 ]
                 
@@ -236,25 +271,6 @@ export class ParentNode_WebAudioNode {
 
                 
             } 
-            // else if (child.kind === 'cv'){
-            //     return {
-                    
-            //         data: {
-            //             id: `${this.moduleName}-cv-${index + 1}`,
-            //             parent: this.moduleName,
-            //             label: child.name || child.tag || `${this.moduleName}-${child.name}${index + 1}`,
-            //             kind: child.kind,
-            //             bgcolour: child.kind === 'input' ? '#FC9A4F' : child.kind === 'output' ? '#6FB1FC' : '#CCCCCC',
-            //             ghostCableShape: 'triangle',
-            //             ghostCableColour: '#5C9AE3'
-                        
-            //         },
-            //         position: {
-            //             x: this.position.x + offsetX,
-            //             y: this.position.y + offsetY
-            //         }
-            //     };
-            // }
             
             else {
                 

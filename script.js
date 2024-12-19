@@ -50,8 +50,8 @@ let synthWorklet; // the audioWorklet for managing and running the audio graph
 
 
 // * UI
-const baseKnobSize = 50; // Default size in pixels
-const knobOffsetAmount = 60; // Horizontal offset for staggering knobs
+const baseKnobSize = 45; // Default size in pixels
+const knobOffsetAmount = 30; // Horizontal offset for staggering knobs
 const knobVerticalSpacing = baseKnobSize * 0.2; // 20% of base knob size for vertical spacing
 const baseDropdownWidth = 100; // Base width of the dropdown
 let paramUIOverlays = {}
@@ -458,30 +458,64 @@ document.addEventListener("DOMContentLoaded", function () {
                     'text-margin-x': 10, // Optional: Move the label slightly up if desired
                 }
             },
+            // {
+            //     selector: '.sliderTrack',
+            //     style: {
+            //         'background-color': '#ddd', // Color for the remote peer's mouse node
+            //         'shape': 'rectangle',
+            //             'width': 'data(length)',
+            //             'height': 10,
+            //             'border-color': '#999',
+            //             'border-width': 1,
+            //             'label': 'data(label)', // Remove label for track
+            //             'text-valign': 'center',    // Vertically center the label
+            //             'text-halign': 'left', 
+            //             'text-margin-y': -20,
+            //             'text-margin-x': 70,
+            //             'text-opacity': 1, // Ensure no text is shown
+            //             'outline-width': 0, // Remove focus outline
+            //             // 'user-select': 'none', // Prevent text selection
+            //             // 'pointer-events': 'none' // Disable pointer events on the track
+            //     }
+            // },
+            // {
+            //     selector: '.sliderHandle',
+            //     style: {
+            //         'background-color': '#4CAF6F',
+            //         'shape': 'ellipse',
+            //         'width': 20,
+            //         'height': 20,
+            //         'label': '', // Remove label for handle
+            //         'text-opacity': 0, // Ensure no text is shown
+            //         'outline-width': 0, // Remove focus outline
+            //         // 'user-select': 'none', // Prevent text selection
+            //         // 'pointer-events': 'auto' // Enable pointer events for handle
+            //     }
+            // },
+            // {
+            //     selector: '.sliderLabel',
+            //     style: {
+            //         'background-color': '#4CAF6F',
+            //         'background-opacity': 0, // Transparent background
+            //         'color': '#333', // Dark text color for good contrast
+            //         'font-size': 12, // Adjust font size as needed
+            //         'text-halign': 'right', // Center the text horizontally
+            //         'text-valign': 'center', // Center the text vertically
+            //         'text-margin-x': -60, // Adjust the margin to position the label above the slider
+            //         'text-margin-y': -10, // Adjust the margin to position the label above the slider
+            //         'font-weight': 'bold', // Make the label stand out
+            //         // 'pointer-events': 'none', // Prevent interaction with the label
+            //         'text-background-opacity': 1, // Background for readability (set to 0 if not needed)
+            //         'text-background-color': '#FFFFFF', // Light background for better visibility
+            //         'text-background-padding': 2, // Add slight padding to the background
+            //         'border-width': 0 // No border around the label
+            //     }
+            // },
             {
-                selector: '.sliderTrack',
+                selector: '.paramAnchorNode',
                 style: {
-                    'background-color': '#ddd', // Color for the remote peer's mouse node
-                    'shape': 'rectangle',
-                        'width': 'data(length)',
-                        'height': 10,
-                        'border-color': '#999',
-                        'border-width': 1,
-                        'label': 'data(label)', // Remove label for track
-                        'text-valign': 'center',    // Vertically center the label
-                        'text-halign': 'left', 
-                        'text-margin-y': -20,
-                        'text-margin-x': 70,
-                        'text-opacity': 1, // Ensure no text is shown
-                        'outline-width': 0, // Remove focus outline
-                        // 'user-select': 'none', // Prevent text selection
-                        // 'pointer-events': 'none' // Disable pointer events on the track
-                }
-            },
-            {
-                selector: '.sliderHandle',
-                style: {
-                    'background-color': '#4CAF6F',
+                    'background-color': '#F5A45D',
+                    'background-opacity': 0.,
                     'shape': 'ellipse',
                     'width': 20,
                     'height': 20,
@@ -490,25 +524,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     'outline-width': 0, // Remove focus outline
                     // 'user-select': 'none', // Prevent text selection
                     // 'pointer-events': 'auto' // Enable pointer events for handle
-                }
-            },
-            {
-                selector: '.sliderLabel',
-                style: {
-                    'background-color': '#4CAF6F',
-                    'background-opacity': 0, // Transparent background
-                    'color': '#333', // Dark text color for good contrast
-                    'font-size': 12, // Adjust font size as needed
-                    'text-halign': 'right', // Center the text horizontally
-                    'text-valign': 'center', // Center the text vertically
-                    'text-margin-x': -60, // Adjust the margin to position the label above the slider
-                    'text-margin-y': -10, // Adjust the margin to position the label above the slider
-                    'font-weight': 'bold', // Make the label stand out
-                    // 'pointer-events': 'none', // Prevent interaction with the label
-                    'text-background-opacity': 1, // Background for readability (set to 0 if not needed)
-                    'text-background-color': '#FFFFFF', // Light background for better visibility
-                    'text-background-padding': 2, // Add slight padding to the background
-                    'border-width': 0 // No border around the label
                 }
             }
 
@@ -1271,8 +1286,8 @@ document.addEventListener("DOMContentLoaded", function () {
         let index = 0
         elements.forEach((node)=>{
             
-            if(node.classes === 'sliderHandle'){
-                console.log(node)
+            if(node.classes === 'paramAnchorNode'){
+                
                 createFloatingOverlay(node.data.parent, node, index)
                 index++
             }
@@ -2004,7 +2019,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Function to create and manage an overlay div
     function createFloatingOverlay(parentNodeID, param, index) {
-
+        console.log(cy.getElementById(parentNodeID).data())
         // !
         // ! don't worry about NaN params appearing. these are params that need to be as dropdown menus (their values are strings and can't be registered as knobs)
         // !
@@ -2023,8 +2038,8 @@ document.addEventListener("DOMContentLoaded", function () {
         // Create the label element
         const labelDiv = document.createElement('div');
         labelDiv.innerText = param.data.label || `Knob`; // Use parameter label or default
-        labelDiv.style.textAlign = 'center';
-        labelDiv.style.marginBottom = '5px';
+        labelDiv.style.textAlign = 'left';
+        labelDiv.style.marginBottom = '2px';
         labelDiv.style.fontSize = '12px';
         labelDiv.style.color = '#333';
         
@@ -2043,7 +2058,7 @@ document.addEventListener("DOMContentLoaded", function () {
         containerDiv.appendChild(labelDiv);
         containerDiv.appendChild(knobInput);
         document.body.appendChild(containerDiv);
-
+        
         // Initialize jQuery Knob on the input
         $(knobInput).knob({
             min: param.data.min || param.data.sliderMin || 0,
@@ -2064,12 +2079,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 // update param in automerge
                 amDoc = applyChange(amDoc, (amDoc) => {
-                    // amDoc.elements[elementIndex].data.value = scaledValue
-                    // amDoc.elements[elementIndex].position = {
-                    //     x: currentHandleNode.position().x,
-                    //     y: currentHandleNode.position().y
-                    // }
-                    // update the web audio graph with the param values. 
                     amDoc.synth.graph.modules[param.data.parent].params[param.data.label] = value
                     audioGraphDirty = true
                 }, onChange,  `paramUpdate ${param.data.label} = ${value}`);
@@ -2083,29 +2092,83 @@ document.addEventListener("DOMContentLoaded", function () {
         const virtualElement = {
             getBoundingClientRect: () => {
                 const childNode = cy.getElementById(param.data.id);
+                const parentNode = cy.getElementById(parentNodeID)
+                const parentParams = cy.getElementById(parentNodeID).data().moduleSpec.paramNames
                 if (childNode) {
                     const containerRect = cy.container().getBoundingClientRect();
                     const zoom = cy.zoom();
                     const pan = cy.pan();
+                    const parentNodeHeight = parentNode.renderedBoundingBox().h; // Get height from style
+                    
+                    // Get parent node's position (base for calculations)
+                    const parentPos = parentNode.position();
 
-                    // Get childNode's position scaled with zoom and adjusted for pan
-                    const pos = childNode.position();
-                    const offsetX = (index % 2 === 0 ? knobOffsetAmount : -knobOffsetAmount) / zoom;
-                    const offsetY = (knobVerticalSpacing * index) / zoom;
+                    // Calculate knob dimensions
+                    const knobWidth = baseKnobSize; // Example knob width (update as needed)
+                    const knobHeight = baseKnobSize; // Example knob height (update as needed)
+                    const rowSpacing = knobHeight * 1.5; // Adjust row spacing
+                    const colSpacing = knobWidth * 1.5; // Adjust column spacing
 
-                    const x = containerRect.left + (pos.x * zoom) + pan.x + offsetX;
-                    const y = containerRect.top + (pos.y * zoom) + pan.y + offsetY;
+                    // Calculate layout based on index
+                    const totalParams = parentParams.length; // Number of parameters
+                    const index = parentParams.findIndex((item)=> item === param.data.label)
+                    const row = Math.floor(index / 2); // Current row (2 items per row)
+                    const col = index % 2; // Left (0) or right (1)
 
+                    // Center the knobs for odd/even layouts
+                    const totalWidth = colSpacing * 2; // Total width for two knobs per row
+                    const offsetX =
+                        col === 0
+                            ? -colSpacing / 2 -20 // Left knob
+                            : colSpacing / 2 - 20; // Right knob
+                    const offsetY = row * rowSpacing - (parentNodeHeight / 4 - 20); // Row offset
+
+                    // console.log(containerRect.top + (parentPos.y * zoom) + pan.y + offsetY)
+                    // Adjust for odd-numbered parameters (center last knob in the last row)
+                    if (totalParams % 2 !== 0 && index === totalParams - 1) {
+                        // Center single knob in last row
+                        return {
+                            width: knobWidth,
+                            height: knobHeight,
+                            top: containerRect.top + (parentPos.y * zoom) + pan.y + offsetY,
+                            left: containerRect.left + (parentPos.x * zoom) + pan.x + offsetX,
+                            right: containerRect.left + (parentPos.x * zoom) + pan.x + knobWidth,
+                            bottom: containerRect.top + (parentPos.y * zoom) + pan.y + knobHeight,
+                        };
+                    }
+
+                    // Default (even layout or regular position)
                     return {
-                        width: 0,
-                        height: 0,
-                        top: y,
-                        left: x,
-                        right: x,
-                        bottom: y,
+                        width: knobWidth,
+                        height: knobHeight,
+                        top: containerRect.top + (parentPos.y * zoom) + pan.y + offsetY,
+                        left: containerRect.left + (parentPos.x * zoom) + pan.x + offsetX,
+                        right: containerRect.left + (parentPos.x * zoom) + pan.x + offsetX + knobWidth,
+                        bottom: containerRect.top + (parentPos.y * zoom) + pan.y + offsetY + knobHeight,
                     };
                 }
+
+                // Fallback if childNode is not found
                 return { top: 0, left: 0, right: 0, bottom: 0, width: 0, height: 0 };
+            
+                //     // Get childNode's position scaled with zoom and adjusted for pan
+                //     const pos = childNode.position();
+                //     const offsetX = (index % 2 === 0 ? knobOffsetAmount : -knobOffsetAmount) - 30 / zoom;
+                //     const offsetY = (knobVerticalSpacing * index) / zoom;
+
+                //     const x = containerRect.left + (pos.x * zoom) + pan.x + offsetX;
+                //     const y = containerRect.top + (pos.y * zoom) + pan.y + offsetY;
+
+                //     return {
+                //         width: 0,
+                //         height: 0,
+                //         top: y,
+                //         left: x,
+                //         right: x,
+                //         bottom: y,
+                //     };
+                // }
+                // return { top: 0, left: 0, right: 0, bottom: 0, width: 0, height: 0 };
             },
         };
 
@@ -2128,8 +2191,10 @@ document.addEventListener("DOMContentLoaded", function () {
             containerDiv.style.height = `${scaledSize}px`;
         }
 
-        // Initial position and scale update
-        updateKnobPositionAndScale();
+        // Initial position and scale update. delay it to wait for cytoscape rendering to complete. 
+        setTimeout(() => {
+            updateKnobPositionAndScale();
+        }, 10); // Wait for the current rendering cycle to complete
 
         // Cleanup function
         function removeKnob() {
@@ -2138,125 +2203,14 @@ document.addEventListener("DOMContentLoaded", function () {
                 containerDiv.parentNode.removeChild(containerDiv);
                 console.log('Knob container removed');
             }
-
             // Remove the event listener
             cy.off('pan zoom position', updateKnobPositionAndScale);
-
-            // // Clear references
-            // containerDiv = null;
         }
         
-
         // Update position dynamically on pan/zoom
         cy.on('pan zoom position', updateKnobPositionAndScale);
 
-            // store knobInput div id so we can delete it along with module removals or graph version loads
-        // if(!paramUIOverlays[parentNodeID]){
-        //     paramUIOverlays[parentNodeID] = [knobInput]
-        // } else {
-        //     paramUIOverlays[parentNodeID].push(knobInput)
-        // }
         return { containerDiv, removeKnob } ;
-        // // knob.style.margin = '5px';
-        // document.body.appendChild(knob);
-
-        // // Add a custom indicator (inside input-knob)
-        // const mark = document.createElement('div');
-        // mark.className = 'mark';
-        // mark.innerHTML = '▲'; // The visual indicator (can customize)
-        // mark.style.position = 'absolute';
-        // mark.style.top = '5%'; // Position near the top
-        // mark.style.left = '50%'; // Center horizontally
-        // mark.style.transform = 'translate(-50%, 0)'; // Align to center
-        // mark.style.fontSize = '150%';
-        // mark.style.color = 'blue'; // Indicator color
-        // mark.style.zIndex = '1001'; // Higher z-index for knob itself
-
-        // knob.appendChild(mark); // Append the mark inside the knob
-
-        // // Add an event listener for knob changes
-        // knob.addEventListener('input', (e) => {
-        //     console.log(`Knob value changed to: ${e.target.value}`);
-        // });
-        // // const overlayDiv = document.createElement('div');
-        // overlayDiv.classList.add('cy-overlay');
-        // overlayDiv.innerHTML = content;
-
-        // // Style the overlay div
-        // overlayDiv.style.position = 'absolute';
-        // overlayDiv.style.background = 'white';
-        // overlayDiv.style.border = '1px solid black';
-        // overlayDiv.style.padding = '5px';
-        // overlayDiv.style.pointerEvents = 'none'; // Prevent interaction issues with Cytoscape
-        // document.body.appendChild(overlayDiv);
-
-        // Virtual element for Floating UI
-        
-        /*
-        const virtualElement = {
-            getBoundingClientRect: () => {
-                const childNode = cy.getElementById(param.data.id);
-                if (childNode) {
-                    const containerRect = cy.container().getBoundingClientRect();
-                    const zoom = cy.zoom();
-                    const pan = cy.pan();
-
-                    // Model position scaled with zoom and adjusted for pan
-                    const pos = childNode.position();
-                    let offsetX = 0;
-
-                    // Adjust horizontal offset: odd => left, even => right
-                    if (index % 2 === 0) {
-                        offsetX = knobOffsetAmount / zoom; // Even knobs to the right
-                    } else {
-                        offsetX = -knobOffsetAmount / zoom; // Odd knobs to the left
-                    }
-                    
-                    const offsetY = knobVerticalSpacing * index / zoom;
-
-                    const x = containerRect.left + (pos.x * zoom) + pan.x + offsetX;
-                    const y = containerRect.top + (pos.y * zoom) + pan.y + offsetY;
-
-                    // Return the bounding box centered on the child node
-                    return {
-                        width: 0,
-                        height: 0,
-                        top: y,
-                        left: x,
-                        right: x,
-                        bottom: y,
-                    };
-                }
-                return { top: 0, left: 0, right: 0, bottom: 0, width: 0, height: 0 };
-            },
-        };
-            // Function to update the overlay position
-        function updateOverlayPositionAndScale(baseKnobSize) {
-            const zoom = cy.zoom();
-
-            // Update position with Floating UI
-            computePosition(virtualElement, knobInput, {
-                placement: 'top', // Adjust placement as needed
-                middleware: [flip(), shift()], // Ensure it stays visible on screen
-            }).then(({ x, y }) => {
-                knobInput.style.left = `${x}px`;
-                knobInput.style.top = `${y}px`;
-            });
-
-            // Dynamically scale the knob size
-            const scaledSize = baseKnobSize / zoom;
-            knobInput.style.width = `${scaledSize}px`;
-            knobInput.style.height = `${scaledSize}px`;
-            // knobInput.style.transform = `scale(${zoom})`;
-            
-        }
-
-        // Update initially and on Cytoscape viewport changes
-        updateOverlayPositionAndScale();
-        cy.on('pan zoom position', updateOverlayPositionAndScale);
-
-        return knobInput; // Return the overlay for further use
-        */
     }
 
     function removeParamOverlay(containerDiv) {
@@ -3779,6 +3733,11 @@ document.addEventListener("DOMContentLoaded", function () {
         childrenNodes.forEach((param)=>{
             
             if(param.classes == 'sliderHandle' && paramOverlays){
+                let uiOverlay = createFloatingOverlay(parentNodeData.data.id, param, index);
+                
+                paramUIOverlays[parentNodeData.data.id].push(uiOverlay)
+                index++
+            } else if (param.classes == 'paramAnchorNode' && paramOverlays){
                 let uiOverlay = createFloatingOverlay(parentNodeData.data.id, param, index);
                 
                 paramUIOverlays[parentNodeData.data.id].push(uiOverlay)
