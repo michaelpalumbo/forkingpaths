@@ -434,18 +434,21 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                     // signalBuffers[id][i] = Math.sin(2 * Math.PI * node.phase) * effectiveGain;
                     // Select the waveform based on node.baseParams['waveform']
                     switch (node.baseParams['type']) {
+                   
                         case 'sine':
                             signalBuffers[id][i] = Math.sin(2 * Math.PI * node.phase) * effectiveGain;
                             break;
                         case 'square':
-                            signalBuffers[id][i] = (node.phase < 0.5 ? 1 : -1) * effectiveGain;
+                            signalBuffers[id][i] = (node.phase < 0.5 ? 1 : -1) * effectiveGain * Math.SQRT1_2; // Scale by 1/sqrt(2)
                             break;
                         case 'sawtooth':
-                            signalBuffers[id][i] = (2 * node.phase - 1) * effectiveGain;
+                            signalBuffers[id][i] = (2 * node.phase - 1) * effectiveGain; // Scale by sqrt(1/3)
                             break;
                         case 'triangle':
-                            signalBuffers[id][i] = (node.phase < 0.5 ? 4 * node.phase - 1 : 3 - 4 * node.phase) * effectiveGain;
+                            signalBuffers[id][i] = (node.phase < 0.5 ? 4 * node.phase - 1 : 3 - 4 * node.phase) * effectiveGain; // Scale by sqrt(1/3)
                             break;
+                    
+                        
                         default:
                             // Fallback to sine wave if the waveform is undefined or unrecognized
                             signalBuffers[id][i] = Math.sin(2 * Math.PI * node.phase) * effectiveGain;

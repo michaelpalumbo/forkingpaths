@@ -1,35 +1,81 @@
- 
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* Prevent scrollbars */
+  width: 100vw; /* Match viewport width */
+  height: 100vh; /* Match viewport height */
+  font-family: Arial, sans-serif;
+  background-color: #222;
+}
+
+
  /* General container layout */
 #container {
   display: grid;
   grid-template-columns: 15% 85%; /* Left, middle, right columns */
   grid-template-rows: auto 1fr; /* Automatically size rows */
-  height: 100vh; /* Full viewport height */
+  height: 100%; /* Match parent height */
+  width: 100%; /* Match parent width */
+  overflow: hidden; /* Prevent content from overflowing */
   gap: 10px; /* Optional: space between columns */
 }
 
-body {
+#leftColumn, #synthAndHistoryController {
   margin: 0;
-  font-family: Arial, sans-serif;
+  padding: 0;
+  box-sizing: border-box; /* Prevent padding from affecting dimensions */
 }
 
 /* Menubar styles */
 .menubar {
   grid-column: 1 / -1; /* Span all columns */
   grid-row: 1; /* First row */
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  display: flex; /* Use flexbox */
+  justify-content: space-between; /* Space items across the menubar */
+  align-items: center; /* Vertically align items */
   background-color: #333;
   padding: 10px;
   color: white;
   height: 20px; /* Fixed height for the menubar */
-  z-index: 2000; /* Ensure it stays on top */
+  z-index: 2005; /* Ensure it stays on top */
+}
+
+.menu-item-container {
+  display: flex; /* Group .menu-item elements */
+  justify-content: flex-start; /* Align to the left */
+  gap: 10px; /* Spacing between items */
 }
 
 .menu-item {
   position: relative;
-  margin: 0 15px;
+  margin: 0; /* Remove excess margin */
+  cursor: pointer;
+}
+
+.menu-buttons {
+  display: flex; /* Use flexbox for buttons */
+  justify-content: flex-end; /* Align buttons to the right */
+  margin-left: auto; /* Push to the far right */
+  align-items: center; /* Vertical alignment */
+  gap: 10px; /* Spacing between buttons */
+}
+
+.menu-buttons .action-button {
+  background-color: #444;
+  color: white;
+  border: 1px solid #555;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.menu-buttons .action-button:hover {
+  background-color: #555;
+}
+
+
+.menu-item {
+  position: relative;
+  margin: 0 5px;
   cursor: pointer;
 }
 
@@ -41,15 +87,16 @@ body {
   display: none;
   position: absolute;
   top: 100%;
+  width: 200px;
   left: 0;
   background-color: #444;
-  border: 1px solid #222;
+  /* border: 1px solid #222; */
   padding: 10px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
-  z-index: 2000
+  z-index: 2006
 }
 
-.dropdown button {
+.dropdown button, .custom-file-button {
   display: block;
   background-color: transparent;
   color: white;
@@ -57,24 +104,32 @@ body {
   padding: 5px 10px;
   text-align: left;
   cursor: pointer;
-  width: 100%;
+  width: auto; /* Ensure width matches content */
+  box-sizing: border-box; /* Include padding and borders in the width calculation */
 }
 
 .dropdown button:hover {
   background-color: #555;
 }
 
+.custom-file-button:hover {
+  background-color: #555;
+}
+
 .menu-buttons .action-button {
+  /* display: flex; */
   background-color: #444;
   color: white;
   border: 1px solid #555;
   padding: 5px 10px;
-  margin-left: 10px;
+  /* margin-left: 10px; */
   cursor: pointer;
+  margin-left: auto; /* Push the entire .menu-buttons group to the right */
 }
 
 .menu-buttons .action-button:hover {
   background-color: #555;
+  margin-left: 10px; /* Keep spacing between buttons */
 }
 
 
@@ -84,7 +139,7 @@ body {
   grid-row: 2; /* Full height */
   display: flex;
   flex-direction: column; /* Stack children vertically */
-  height: calc(95vh - 50px); /* 95% of viewport height minus the menubar height */
+  height: calc(100vh - 50px); /* 95% of viewport height minus the menubar height */
   width: 100%;
   padding: 10px;
   background-color: #f8f8f8; /* Optional for visibility */
@@ -95,7 +150,7 @@ body {
 /* Style the container div */
 #modulesLibraryContainer {
   width: 100%; /* Set the desired width */
-  height: 90%; /* Set the desired height */
+  height: 100%; /* Set the desired height */
   border: 1px solid #ccc; /* Optional: Add a border */
   overflow-y: auto; /* Enable vertical scrolling */
   padding: 1px; /* Optional: Add padding inside the container */
@@ -144,8 +199,9 @@ body {
 #cytoscapeTooltipContainer {
   flex: 0.5; /* 40% of vertical space */
   display: grid;
-
+  background-color: #f8f8f8;
   height: 100%; /* Full height of this row */
+  text-indent: 10px; /* Shift text by 10px */
 }
 /* Container for the row with historySequencer and thirdDiv */
 #rowContainer {
@@ -215,22 +271,7 @@ button {
   font-family: inherit;
 }
 
-/* Style the custom button */
-.custom-file-button {
-  display: inline-block;
-  padding: 2px 6px;
-  background-color: #f0f0f0;
-  color: black;
-  border: 1px solid #000000;
-  border-radius: 2px;
-  cursor: pointer;
-  font-size: 14px;
-  font-family: inherit;
-}
 
-.custom-file-button:hover {
-  background-color: #0056b3;
-}
 
 
 .radio-group {

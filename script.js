@@ -1052,6 +1052,15 @@ document.addEventListener("DOMContentLoaded", function () {
             cmd: 'clearHistoryGraph'
         }))
         
+        // delete all param UI overlays
+        Object.values(paramUIOverlays).forEach((parentNode) => {
+            parentNode.forEach((paramUIDiv) => {
+                // paramUIDiv.parentNode.removeChild(paramUIDiv);
+                paramUIDiv.removeKnob()
+            });
+        });
+        // reset overlays object
+        paramUIOverlays = {}
         // sendMsgToHistoryApp({
         //     appID: 'forkingPathsMain',
         //     cmd: 'clearHistoryGraph'
@@ -1290,8 +1299,8 @@ document.addEventListener("DOMContentLoaded", function () {
         elements.forEach((node)=>{
             
             if(node.classes === 'paramAnchorNode'){
-                
-                createFloatingOverlay(node.data.parent, node, index)
+                let value = amDoc.synth.graph.modules[node.data.parent].params[node.data.label]
+                createFloatingOverlay(node.data.parent, node, index, value)
                 index++
             }
         })
@@ -2066,10 +2075,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     // Function to create and manage an overlay div
-    function createFloatingOverlay(parentNodeID, param, index) {
-        // !
-        // ! don't worry about NaN params appearing. these are params that need to be as dropdown menus (their values are strings and can't be registered as knobs)
-        // !
+    function createFloatingOverlay(parentNodeID, param, index, loadedValue) { // if loadedValue, this is the value from the amDoc to be passed in
 
         const stepSize = determineStepSize(param.min, param.max, 'logarithmic', 100 )
 
@@ -2091,7 +2097,7 @@ document.addEventListener("DOMContentLoaded", function () {
         labelDiv.style.color = '#333';
         
         let paramDiv
-        console.log(param)
+
         if(param.data.ui === 'menu'){
             paramDiv = document.createElement('select');
             paramDiv.style.width = '100%';
@@ -2102,7 +2108,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // Add options to the select menu
             param.data.menuOptions.forEach((option) => {
                 const optionElement = document.createElement('option');
-                optionElement.value = option.value || option;
+                optionElement.value = loadedValue || option.value || option;
                 optionElement.textContent = option.label || option;
                 paramDiv.appendChild(optionElement);
             });
@@ -2110,7 +2116,7 @@ document.addEventListener("DOMContentLoaded", function () {
                    // Create an input element for jQuery Knob
             paramDiv = document.createElement('input');
             paramDiv.type = 'text';
-            paramDiv.value = param.data.default || param.data.value || 50; // Initial value
+            paramDiv.value = loadedValue || param.data.default || param.data.value || 50; // Initial value
             // paramDiv.style.position = 'absolute';
             paramDiv.style.width = `100%`;
             paramDiv.style.height = `100%`;
