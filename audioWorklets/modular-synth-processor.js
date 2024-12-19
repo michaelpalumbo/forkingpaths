@@ -38,7 +38,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                     baseParams: {
                         frequency: parseFloat(params.frequency),
                         gain: parseFloat(1),
-                        freqAttenuverter: parseFloat(params.freqAttenuverter),
+                        "freq cv +/-": parseFloat(params["freq cv +/-"]),
                         type: params.type
                     },
                     modulatedParams: {
@@ -249,7 +249,6 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                 // this.nodes[msg.data.parent][msg.data.param] = msg.data.value
                 // update the baseParam (the value associated with the knob/control)
                 const targetNode = this.nodes[msg.data.parent];
-                console.log(targetNode, msg.data.value)
                 if (targetNode && targetNode.baseParams[msg.data.param] !== undefined) {
                     const newValue = parseFloat(msg.data.value); // Ensure the value is a number
                     if (!isNaN(newValue)) {
@@ -424,7 +423,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
 
             // Process this node
             if (node.node === 'Oscillator') {
-                const effectiveFrequency = getEffectiveParam(node, 'frequency', node.baseParams['freqAttenuverter']);
+                const effectiveFrequency = getEffectiveParam(node, 'frequency', node.baseParams['freq cv +/-']);
                 // const formattedFrequency = parseFloat(effectiveFrequency.toFixed(2));
                 const effectiveGain = getEffectiveParam(node, 'gain');
                 

@@ -44,6 +44,7 @@ export class ParentNode_WebAudioNode {
         if(this.params){
             for (let i = 0; i<this.params.length; i++){
                 let param = this.moduleSpec.parameters[this.params[i]]
+                console.log(param)
                 param.kind = 'paramAnchorNode'
                 param.name = this.params[i]
                 

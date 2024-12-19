@@ -871,7 +871,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 //! highlightNode(historyDAG_cy.getElementById(meta.head.hash))
     
                 // set the document branch (aka title)  in the editor pane
-                document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
+                // document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
                 addSpeaker()
         
                 currentZoom = cy.zoom()
@@ -2101,9 +2101,10 @@ document.addEventListener("DOMContentLoaded", function () {
         if(param.data.ui === 'menu'){
             paramDiv = document.createElement('select');
             paramDiv.style.width = '100%';
-            paramDiv.style.padding = '5px';
+            // paramDiv.style.padding = '5px';
             paramDiv.style.borderRadius = '4px';
-            paramDiv.style.border = '1px solid #ccc';
+            // paramDiv.style.border = '1px solid #ccc';
+            paramDiv.style.fontSize = '12px';
 
             // Add options to the select menu
             param.data.menuOptions.forEach((option) => {
@@ -3952,86 +3953,6 @@ document.addEventListener("DOMContentLoaded", function () {
     //* AUDIO
     //* 
     //*
-
-    const audioGraphMockup = {
-        modules: {
-          osc1: {
-            type: "oscillator",
-            params: {
-              frequency: 440,
-              type: "sine"
-            }
-          },
-          gain1: {
-            type: "gain",
-            params: {
-              gain: 0.5
-            }
-          }
-        },
-        connections: [
-          { source: "osc1", target: "gain1" },
-          { source: "gain1", target: "destination" }
-        ]
-    };
-
-    const audioGraphMockup2 = {
-        modules: {
-            osc1: {
-                type: "oscillator",
-                params: {
-                    frequency: 440,
-                    type: "sine"
-                }
-            },
-            osc2: {
-                type: "oscillator",
-                params: {
-                    frequency: 200, // Modulation frequency (e.g., 2 Hz for vibrato)
-                    type: "square"
-                }
-            },
-            gainMod: {
-                type: "gain",
-                params: { 
-                    gain: 1000 // Modulation depth (e.g., 50 Hz)
-                }
-            },
-            gain1: {
-                type: "gain",
-                params: {
-                    gain: 0.5
-                }
-            }
-        },
-        connections: [
-            { source: "osc1", target: "gain1" }, // osc1 -> gain1
-            { source: "gain1", target: "destination" }, // gain1 -> speakers
-            { source: "osc2", target: "gainMod" }, // osc2 -> gainMod
-            { source: "gainMod", target: "osc1.frequency" } // gainMod -> osc1.frequency
-        ]
-    };
-    
-    
-    
-
-
-
-
-    // setTimeout(() => {
-    //     // Example usage
-    //     // addNode('osc1', 'oscillator', { frequency: 440 });
-    //     // addNode('output', 'output');
-    //     // addCable('osc1', 'outputNode'); // Connect oscillator to output
-
-    //     synthWorklet.port.postMessage({
-    //         cmd: 'connectToOutput',
-    //         id: 'osc1'
-    //     });
-    // }, 2000); // Change frequency after 2 seconds
-
-
-    // setTimeout(() => updateNode('osc1', { frequency: 880 }), 5000); // Change frequency after 2 seconds
 
     function updateSynthWorklet(cmd, data, structure){
         switch (cmd) {

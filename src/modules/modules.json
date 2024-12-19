@@ -67,7 +67,7 @@
           "default": "sawtooth",
           "description": "The waveform shape of the oscillator."
         },
-        "freqAttenuverter": {
+        "freq cv +/-": {
           "min": -1000,
           "max": 1000,
           "default": 100,
@@ -79,8 +79,8 @@
       },
       "paramNames": [
         "frequency",
-        "type",
-        "freqAttenuverter"
+        "freq cv +/-",
+        "type"
       ],
       "cvNames": [
         "frequency"
@@ -223,7 +223,7 @@
           "modulatable": true,
           "modulationDescription": "Audio-rate modulation of the delay time. Connect an AudioNode to modulate this parameter."
         },
-        "timeAttenuverter": {
+        "time cv +/-": {
           "min": -1000,
           "max": 1000,
           "default": 100,
@@ -234,7 +234,7 @@
         }
       },
       "paramNames": [
-        "delayTime, timeAttenuverter"
+        "delayTime, time cv +/-"
       ],
       "cvNames": [
         "delayTime"
@@ -887,7 +887,7 @@
           "default": "sine",
           "description": "The waveform shape of the oscillator."
         },
-        "freqAttenuverter": {
+        "freq cv +/-": {
           "min": -20,
           "max": 20,
           "default": 10,
@@ -899,8 +899,8 @@
       },
       "paramNames": [
         "frequency",
-        "type",
-        "freqAttenuverter"
+        "freq cv +/-",
+        "type"
       ],
       "cvNames": [
         "frequency"
