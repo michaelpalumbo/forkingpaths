@@ -2019,6 +2019,12 @@ document.addEventListener("DOMContentLoaded", function () {
 //* Functions that directly handle updating DOM elements & cytoscape
 //*
 
+    function setSynthToolTip(description){
+        const element = document.getElementById('cytoscapeTooltipText');
+        // Set new text content
+        element.textContent = description;
+        
+    }
     const audioToggleButton = document.getElementById('audioToggleButton');
 
     // Update button text based on Web Audio state
@@ -2127,6 +2133,19 @@ document.addEventListener("DOMContentLoaded", function () {
                 console.log(`Knob ${knobInput.id} value: ${value}`);
             },
         });
+
+        // Add hover events to the knob
+        if(param.data.description){
+            $(knobInput).hover(
+                () => {
+                    setSynthToolTip(param.data.description)
+                },
+                () => {
+                    setSynthToolTip('')
+                }
+            );
+        }
+
 
         // Create a virtual element for Floating UI
         const virtualElement = {
@@ -2553,23 +2572,22 @@ document.addEventListener("DOMContentLoaded", function () {
         // node.style('background-color', 'red');
 
         // Get the element by its ID
-        const element = document.getElementById('cytoscapeTooltipText');
-        let toolTip ='';
+        // const element = document.getElementById('cytoscapeTooltipText');
+        // let toolTip ='';
 
         if (node.data().description){
-            toolTip = node.data().description
+            setSynthToolTip(node.data().description)
         } 
-        // Set new text content
-        element.textContent = toolTip;
+        // // Set new text content
+        // element.textContent = toolTip;
+        // console.log(toolTip)
 
     });
     
     cy.on('mouseout', 'node', (event) => {
-        const node = event.target;
-        const element = document.getElementById('cytoscapeTooltipText');
+        // clear the tooltip
+        setSynthToolTip('')
 
-        // Set new text content
-        element.textContent = '';
     });
     
     // get .forkingpaths files from user's filesystem

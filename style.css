@@ -2,7 +2,7 @@
  /* General container layout */
 #container {
   display: grid;
-  grid-template-columns: 10% 90%; /* Left, middle, right columns */
+  grid-template-columns: 15% 85%; /* Left, middle, right columns */
   grid-template-rows: auto 1fr; /* Automatically size rows */
   height: 100vh; /* Full viewport height */
   gap: 10px; /* Optional: space between columns */
@@ -23,7 +23,7 @@ body {
   background-color: #333;
   padding: 10px;
   color: white;
-  height: 50px; /* Fixed height for the menubar */
+  height: 20px; /* Fixed height for the menubar */
   z-index: 1000; /* Ensure it stays on top */
 }
 
@@ -84,7 +84,7 @@ body {
   grid-row: 2; /* Full height */
   display: flex;
   flex-direction: column; /* Stack children vertically */
-  height: 100%; /* Ensure it uses full height */
+  height: calc(95vh - 50px); /* 95% of viewport height minus the menubar height */
   width: 100%;
   padding: 10px;
   background-color: #f8f8f8; /* Optional for visibility */
@@ -95,7 +95,7 @@ body {
 /* Style the container div */
 #modulesLibraryContainer {
   width: 100%; /* Set the desired width */
-  height: 400px; /* Set the desired height */
+  height: 90%; /* Set the desired height */
   border: 1px solid #ccc; /* Optional: Add a border */
   overflow-y: auto; /* Enable vertical scrolling */
   padding: 1px; /* Optional: Add padding inside the container */
