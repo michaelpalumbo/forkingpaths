@@ -868,9 +868,9 @@
     "LFO": {
       "parameters": {
         "frequency": {
-          "min": 0,
-          "max": 20,
-          "default": 10,
+          "min": 0.01,
+          "max": 10,
+          "default": 1,
           "units": "Hz",
           "description": "The frequency of the low frequency oscillator.",
           "modulatable": true,
@@ -907,9 +907,9 @@
       ],
       "cv": {
         "frequency": {
-          "min": 0,
-          "max": 20,
-          "default": 10,
+          "min": 0.01,
+          "max": 10,
+          "default": 5,
           "units": "Hz",
           "description": "The frequency of the oscillator.",
           "modulatable": true,

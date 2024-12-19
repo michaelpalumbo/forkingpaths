@@ -2080,7 +2080,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Function to create and manage an overlay div
     function createFloatingOverlay(parentNodeID, param, index, loadedValue) { // if loadedValue, this is the value from the amDoc to be passed in
 
-        const stepSize = determineStepSize(param.min, param.max, 'logarithmic', 100 )
+        // const stepSize = determineStepSize(param.min, param.max, 'logarithmic', 100 )
 
         // Create a container div to hold the UI element
         const containerDiv = document.createElement('div');
@@ -2100,9 +2100,8 @@ document.addEventListener("DOMContentLoaded", function () {
         labelDiv.style.color = '#333';
         
         let paramDiv
-
+        
         if(param.data.ui === 'menu'){
-            console.log(loadedValue)
             paramDiv = document.createElement('select');
             paramDiv.style.width = '100%';
             // paramDiv.style.padding = '5px';
@@ -2122,7 +2121,6 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         } else if (param.data.ui === 'knob'){
             // Create an input element for jQuery Knob
-            console.log(loadedValue)
             paramDiv = document.createElement('input');
             paramDiv.type = 'text';
             paramDiv.value = loadedValue || param.data.default || param.data.value || 50; // Initial value
@@ -2134,7 +2132,7 @@ document.addEventListener("DOMContentLoaded", function () {
             console.warn('missing param ui type in param.data.ui', param.data)
         }
         
- 
+        paramDiv.classes = '.paramOverlay'
         // paramDiv.style.zIndex = '1000';
         // paramDiv.style.pointerEvents = 'auto'; // Ensure interactions are enabled
 
@@ -2164,10 +2162,13 @@ document.addEventListener("DOMContentLoaded", function () {
                 }, onChange, `paramUpdate ${param.data.label} = ${selectedValue}`);
             });
         } else if (param.data.ui === 'knob'){
+            const stepSize = determineStepSize(param.data.min, param.data.max, 'logarithmic', 100 )
+            console.log('step', stepSize)
             // Initialize jQuery Knob on the input
             $(paramDiv).knob({
                 min: param.data.min || param.data.sliderMin || 0,
                 max: param.data.max || param.data.sliderMax || 100,
+                step: stepSize,
                 fgColor: "#00aaff",
                 bgColor: "#e6e6e6",
                 inputColor: "#333",
@@ -3411,12 +3412,32 @@ document.addEventListener("DOMContentLoaded", function () {
                 highlightedNode = null; // Clear the reference after deletion
 
                 // remove the param UI overlays
-                paramUIOverlays[nodeId].forEach((childDiv)=>{
-                    childDiv.removeKnob()
+                // paramUIOverlays[nodeId].forEach((childDiv)=>{
+                //     childDiv.removeKnob()
                     
-                    // childDiv.parentNode.removeChild(childDiv);
-                })
-                delete paramUIOverlays[nodeId]
+                //     // childDiv.parentNode.removeChild(childDiv);
+                // })
+                // delete paramUIOverlays[nodeId]
+
+                const matchingDivs = document.querySelectorAll(`div[id^="paramDivContainer_${nodeId}"]`);
+
+                // Iterate over each matching div
+                matchingDivs.forEach(div => {
+                    // Find the specific child element inside the div (e.g., by class or tag)
+                    const specificChild = div.querySelector('.paramOverlay'); // Replace with your criteria
+
+                    if (specificChild) {
+                        specificChild.remove()
+                        console.log('Found child element:', specificChild);
+                    } else {
+                        console.log('Child element not found in this div');
+                    }
+                });
+
+                console.log(nodeId, matchingDivs)
+                // Remove each matching div
+                matchingDivs.forEach(div => div.remove());
+
                 // Update the Automerge document to reflect the deletion
 
 
@@ -4240,8 +4261,9 @@ document.addEventListener("DOMContentLoaded", function () {
         const range = max - min;
     
         if (method === 'logarithmic') {
-            const magnitude = Math.floor(Math.log10(range));
-            return Math.pow(10, magnitude - 1);
+            console.log('snared')
+            const factor = Math.log10(range + 1); // Avoid log10(0)
+            return (Math.pow(10, factor / divisions) - 1); // Base step size for log scaling
         } else if (method === 'linear') {
             return range / divisions;
         } else {
