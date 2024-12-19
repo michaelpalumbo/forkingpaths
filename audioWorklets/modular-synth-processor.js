@@ -38,7 +38,8 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                     baseParams: {
                         frequency: parseFloat(params.frequency),
                         gain: parseFloat(1),
-                        freqAttenuverter: parseFloat(params.freqAttenuverter)
+                        freqAttenuverter: parseFloat(params.freqAttenuverter),
+                        type: params.type
                     },
                     modulatedParams: {
                         // offsets for modulation
@@ -248,12 +249,14 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                 // this.nodes[msg.data.parent][msg.data.param] = msg.data.value
                 // update the baseParam (the value associated with the knob/control)
                 const targetNode = this.nodes[msg.data.parent];
+                console.log(targetNode, msg.data.value)
                 if (targetNode && targetNode.baseParams[msg.data.param] !== undefined) {
                     const newValue = parseFloat(msg.data.value); // Ensure the value is a number
                     if (!isNaN(newValue)) {
                         targetNode.baseParams[msg.data.param] = newValue;
                     } else {
-                        console.warn(`Invalid value for ${msg.data.param}: ${msg.data.value}`);
+                        targetNode.baseParams[msg.data.param] = msg.data.value;
+                        // console.warn(`Invalid value for ${msg.data.param}: ${msg.data.value}`);
                     }
                 } else {
                     
@@ -428,7 +431,25 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                 for (let i = 0; i < signalBuffers[id].length; i++) {
                     node.phase += effectiveFrequency/ sampleRate;
                     if (node.phase >= 1) node.phase -= 1;
-                    signalBuffers[id][i] = Math.sin(2 * Math.PI * node.phase) * effectiveGain;
+                    // signalBuffers[id][i] = Math.sin(2 * Math.PI * node.phase) * effectiveGain;
+                    // Select the waveform based on node.baseParams['waveform']
+                    switch (node.baseParams['type']) {
+                        case 'sine':
+                            signalBuffers[id][i] = Math.sin(2 * Math.PI * node.phase) * effectiveGain;
+                            break;
+                        case 'square':
+                            signalBuffers[id][i] = (node.phase < 0.5 ? 1 : -1) * effectiveGain;
+                            break;
+                        case 'sawtooth':
+                            signalBuffers[id][i] = (2 * node.phase - 1) * effectiveGain;
+                            break;
+                        case 'triangle':
+                            signalBuffers[id][i] = (node.phase < 0.5 ? 4 * node.phase - 1 : 3 - 4 * node.phase) * effectiveGain;
+                            break;
+                        default:
+                            // Fallback to sine wave if the waveform is undefined or unrecognized
+                            signalBuffers[id][i] = Math.sin(2 * Math.PI * node.phase) * effectiveGain;
+                    }
                 }
             } else if (node.node === 'Gain') {
                 const effectiveGain = getEffectiveParam(node, 'gain'); // Combines base and modulated gain
