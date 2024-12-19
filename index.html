@@ -17,34 +17,48 @@
 </head>
 <body>
     <div id="container">
+        <!-- Menubar at the top -->
+        <div class="menubar">
+            <div class="menu-item">
+                File
+                <div class="dropdown">
+                    <button id="newSession">New Session</button> 
+                    <hr>
+                    <button id="saveButton">Save Session</button>
+                    <input type="file" id="fileInput" accept=".fpsynth" />
+                    <label for="fileInput" class="custom-file-button">Load Session</label>
+                    <br>
+                    <br>
+                </div>
+            </div>
+            <div class="menu-item">
+                Edit
+                <div class="dropdown">
+                    <button>Undo</button>
+                    <button>Redo</button>
+                </div>
+            </div>
+            <div class="menu-item">
+                View
+                <div class="dropdown">
+                    <div id="documentName"></div>
+                    <button id="openHistoryWindow">Open History Window</button>
+                </div>
+            </div>
+            <div class="menu-buttons">
+                <button class="action-button" id="audioToggleButton">Resume Audio</button>
+                <button class="action-button" id="clearGraph">Clear Synth</button>
+                <button class="action-button" id="viewReadme">Help</button>
+                
+                <button class="action-button" id="settingsButton">Settings</button>
+            </div>
+        </div>
+
+        
         <div id="leftColumn">
 
-            <button id="viewReadme">View INSTRUCTIONS</button>
-            <hr> 
-            <button id="openHistoryWindow">Open History Window</button>
 
-            <hr>
-            <h3>File System</h3>
 
-            <button id="newSession">New Session</button> 
-            <p>
-            <button id="saveButton">Save Session</button>
-            <p>
-            <input type="file" id="fileInput" accept=".fpsynth" />
-            <!-- Custom button -->
-            <label for="fileInput" class="custom-file-button">Load Session</label>
-            <br>
-            <br>
-            <button id="clearGraph">Clear Synth</button>
-            <hr>
-            <div id="documentName"></div>
-
-            <hr>
-            <p></p>
-            <label for="controlPointDistance">Cable Control Point Distance:</label>
-            <input type="range" id="controlPointDistance" min="0" max="200" step="1" value="20">
-
-            <button id="start-audio">Start Audio</button>
 
             <br>
             <hr>
@@ -60,45 +74,38 @@
             <div id="cy"></div>
             <div id="cytoscapeTooltipContainer">
                 <p id="cytoscapeTooltipText"></p>
-            </div>
-            <!-- <div id="rowContainer">
-                
-                <div id="historySequencer">
-                    <input
-                    type="range"
-                    id="bpmSlider"
-                    min="30"
-                    max="240"
-                    step="1"
-                    value="120"
-                    />
-                    <span id="bpmValue">120</span>
+        </div>
+         
 
-                    <button id="startStopButton">Start Sequencer</button>
-                    <br>
-                    <div class="radio-group">
-                        <label>
-                            <input type="radio" name="traversalMode" value="Sequential" checked>
-                            Sequential
-                        </label><br>
-                        <label>
-                            <input type="radio" name="traversalMode" value="Random">
-                            Random
-                        </label>
-                    </div>
-
+        <div id="settingsOverlay" class="overlay">
+            <div class="overlay-content">
+                <h2>Settings</h2>
+                <button class="close-overlay" id="closeOverlayButton">Close</button>
+                <hr>
+                <div class="settings-options">
+                    <!-- Add settings options here -->
+                    <label for="controlPointDistance">Cable Control Point Distance:</label>
+                    <input type="range" id="controlPointDistance" min="0" max="200" step="1" value="20">
+                    <!-- <label>
+                        <input type="checkbox" id="darkModeToggle" />
+                        Enable Dark Mode
+                    </label>
+                    <label>
+                        <input type="range" id="volumeControl" min="0" max="100" value="50" />
+                        Volume
+                    </label>
+                    <label>
+                        <select id="languageSelect">
+                            <option value="en">English</option>
+                            <option value="es">Spanish</option>
+                            <option value="fr">French</option>
+                        </select>
+                        Language
+                    </label> -->
+                    <!-- Add more settings as needed -->
                 </div>
-                <div id="historySequencerCy"></div>
             </div>
-           
-        </div> -->
-
-
-        <!-- <div id="docHistoryPanel"> -->
-            <!-- <div id="docHistory-cy"></div> -->
-        <!-- </div> -->
-
-
+        </div>
 
     </div>
 

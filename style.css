@@ -2,16 +2,86 @@
  /* General container layout */
 #container {
   display: grid;
-  grid-template-columns: 10% 85% 5%; /* Left, middle, right columns */
-  grid-template-rows: auto; /* Automatically size rows */
+  grid-template-columns: 10% 90%; /* Left, middle, right columns */
+  grid-template-rows: auto 1fr; /* Automatically size rows */
   height: 100vh; /* Full viewport height */
   gap: 10px; /* Optional: space between columns */
 }
 
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+/* Menubar styles */
+.menubar {
+  grid-column: 1 / -1; /* Span all columns */
+  grid-row: 1; /* First row */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #333;
+  padding: 10px;
+  color: white;
+  height: 50px; /* Fixed height for the menubar */
+  z-index: 1000; /* Ensure it stays on top */
+}
+
+.menu-item {
+  position: relative;
+  margin: 0 15px;
+  cursor: pointer;
+}
+
+.menu-item:hover .dropdown {
+  display: block;
+}
+
+.dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: #444;
+  border: 1px solid #222;
+  padding: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+
+.dropdown button {
+  display: block;
+  background-color: transparent;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+}
+
+.dropdown button:hover {
+  background-color: #555;
+}
+
+.menu-buttons .action-button {
+  background-color: #444;
+  color: white;
+  border: 1px solid #555;
+  padding: 5px 10px;
+  margin-left: 10px;
+  cursor: pointer;
+}
+
+.menu-buttons .action-button:hover {
+  background-color: #555;
+}
+
+
 /* Left column */
 #leftColumn {
   grid-column: 1; /* First column */
-  grid-row: 1; /* Full height */
+  grid-row: 2; /* Full height */
   display: flex;
   flex-direction: column; /* Stack children vertically */
   height: 100%; /* Ensure it uses full height */
@@ -57,7 +127,7 @@
 /* Middle column */
 #synthAndHistoryController {
   grid-column: 2; /* Middle column */
-  grid-row: 1; /* Full height */
+  grid-row: 2; /* Full height */
   display: flex;
   flex-direction: column; /* Stack children vertically */
   height: 100%; /* Ensure it uses full height */
@@ -181,3 +251,44 @@ input[type="text"] {
   padding: 0;
   margin: 0;
 }
+
+/* Full-page overlay */
+.overlay {
+  display: none; /* Hidden by default */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent background */
+  z-index: 1000; /* Above other content */
+  justify-content: center;
+  align-items: center;
+}
+
+/* Content inside the overlay */
+.overlay-content {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  width: 80%; /* Width of the settings modal */
+  max-width: 600px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+  text-align: center;
+}
+
+/* Close button */
+.close-overlay {
+  background: #333;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+.close-overlay:hover {
+  background: #555;
+}
+

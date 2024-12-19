@@ -265,11 +265,13 @@ document.addEventListener("DOMContentLoaded", function () {
     audioContext.audioWorklet.addModule('./audioWorklets/modular-synth-processor.js').then(() => {
         synthWorklet = new AudioWorkletNode(audioContext, 'modular-synth-processor');
         synthWorklet.connect(audioContext.destination);
-    
+        console.log('state', audioContext.state)
     }).catch((error) => {
         console.error('Error loading the worklet:', error);
     });
     
+
+
     // on load, check if historySequencer window is already open:
     const historySequencerWindowOpen = localStorage.getItem('historySequencerWindowOpen');
     if (historySequencerWindowOpen) {
@@ -2017,9 +2019,47 @@ document.addEventListener("DOMContentLoaded", function () {
 //* Functions that directly handle updating DOM elements & cytoscape
 //*
 
+    const audioToggleButton = document.getElementById('audioToggleButton');
+
+    // Update button text based on Web Audio state
+    function updateButtonText() {
+        audioToggleButton.textContent = (audioContext.state === 'running') ? 'Pause Audio' : 'Resume Audio';
+    }
+
+    // Add event listener to toggle button
+    audioToggleButton.addEventListener('click', function () {
+        if (audioContext && audioContext.state === 'running') {
+            audioContext.suspend();
+            updateButtonText();
+        } else if (audioContext && audioContext.state === 'suspended'){
+            audioContext.resume();
+            updateButtonText();
+
+        }
+    });
+
+    // Update timer every second
+    const checkAudioStatus = setInterval(() => {
+        // Initialize the button text on load
+        updateButtonText();
+    }, 1000);
+    
+    
+// Toggle the visibility of the settings overlay
+    function toggleSettingsOverlay() {
+        const overlay = document.getElementById('settingsOverlay');
+        overlay.style.display = overlay.style.display === 'flex' ? 'none' : 'flex';
+    }
+
+    // Add event listener for the settings button
+    document.getElementById('settingsButton').addEventListener('click', toggleSettingsOverlay);
+
+    const closeOverlayButton = document.getElementById('closeOverlayButton');
+    closeOverlayButton.addEventListener('click', toggleSettingsOverlay);
+
+
     // Function to create and manage an overlay div
     function createFloatingOverlay(parentNodeID, param, index) {
-        console.log(cy.getElementById(parentNodeID).data())
         // !
         // ! don't worry about NaN params appearing. these are params that need to be as dropdown menus (their values are strings and can't be registered as knobs)
         // !
@@ -2213,14 +2253,6 @@ document.addEventListener("DOMContentLoaded", function () {
         return { containerDiv, removeKnob } ;
     }
 
-    function removeParamOverlay(containerDiv) {
-        if (containerDiv && containerDiv.parentNode) {
-            containerDiv.parentNode.removeChild(containerDiv);
-            console.log('Knob container removed from the DOM');
-        } else {
-            console.error('ContainerDiv not found in the DOM');
-        }
-    }
     let parentConnectedEdges = []
     // highlight all edges connected to a clicked parent node
     function highlightEdges(cmd, node){
@@ -2514,17 +2546,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         }
     });
-
-
-    // Ensure the AudioContext starts on a button click
-    document.getElementById('start-audio').addEventListener('click', () => {
-        if (audioContext.state === 'suspended') {
-            audioContext.resume();
-        } else {
-            audioContext.suspend()
-        }
-    });
-
 
     cy.on('mouseover', 'node', (event) => {
         const node = event.target;
