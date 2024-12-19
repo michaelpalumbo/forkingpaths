@@ -524,8 +524,9 @@ document.addEventListener("DOMContentLoaded", function () {
                     'label': '', // Remove label for handle
                     'text-opacity': 0, // Ensure no text is shown
                     'outline-width': 0, // Remove focus outline
+                    'pointer-events': 'none'
                     // 'user-select': 'none', // Prevent text selection
-                    // 'pointer-events': 'auto' // Enable pointer events for handle
+
                 }
             }
 
