@@ -265,7 +265,6 @@ document.addEventListener("DOMContentLoaded", function () {
     audioContext.audioWorklet.addModule('./audioWorklets/modular-synth-processor.js').then(() => {
         synthWorklet = new AudioWorkletNode(audioContext, 'modular-synth-processor');
         synthWorklet.connect(audioContext.destination);
-        console.log('state', audioContext.state)
     }).catch((error) => {
         console.error('Error loading the worklet:', error);
     });
@@ -524,7 +523,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     'label': '', // Remove label for handle
                     'text-opacity': 0, // Ensure no text is shown
                     'outline-width': 0, // Remove focus outline
-                    'pointer-events': 'none'
+                    'events': 'no' // prevent user from clicking the anchor node
                     // 'user-select': 'none', // Prevent text selection
 
                 }
@@ -1129,7 +1128,7 @@ document.addEventListener("DOMContentLoaded", function () {
             
         });
         // set the document branch (aka title) in the editor pane
-        document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
+        // document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
 
         updateCytoscapeFromDocument(amDoc);
             
@@ -1260,6 +1259,8 @@ document.addEventListener("DOMContentLoaded", function () {
         });
         // reset overlays object
         paramUIOverlays = {}
+        // ensure their container divs are removed too
+        clearparamContainerDivs()
 
         // cy.reset()
         // 3. Add new elements to Cytoscape
@@ -1299,7 +1300,7 @@ document.addEventListener("DOMContentLoaded", function () {
         elements.forEach((node)=>{
             
             if(node.classes === 'paramAnchorNode'){
-                let value = amDoc.synth.graph.modules[node.data.parent].params[node.data.label]
+                let value = forkedDoc.synth.graph.modules[node.data.parent].params[node.data.label]
                 createFloatingOverlay(node.data.parent, node, index, value)
                 index++
             }
@@ -2058,6 +2059,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const checkAudioStatus = setInterval(() => {
         // Initialize the button text on load
         updateButtonText();
+        // const sr = synthWorklet.getSampleRate()
+  
     }, 1000);
     
     
@@ -2099,6 +2102,7 @@ document.addEventListener("DOMContentLoaded", function () {
         let paramDiv
 
         if(param.data.ui === 'menu'){
+            console.log(loadedValue)
             paramDiv = document.createElement('select');
             paramDiv.style.width = '100%';
             // paramDiv.style.padding = '5px';
@@ -2109,12 +2113,16 @@ document.addEventListener("DOMContentLoaded", function () {
             // Add options to the select menu
             param.data.menuOptions.forEach((option) => {
                 const optionElement = document.createElement('option');
-                optionElement.value = loadedValue || option.value || option;
+                optionElement.value = option.value || option;
                 optionElement.textContent = option.label || option;
+                if(loadedValue && loadedValue == optionElement.value){
+                    optionElement.selected = true
+                }
                 paramDiv.appendChild(optionElement);
             });
         } else if (param.data.ui === 'knob'){
-                   // Create an input element for jQuery Knob
+            // Create an input element for jQuery Knob
+            console.log(loadedValue)
             paramDiv = document.createElement('input');
             paramDiv.type = 'text';
             paramDiv.value = loadedValue || param.data.default || param.data.value || 50; // Initial value
@@ -2169,8 +2177,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 width: baseKnobSize,          // Set width of the knob
                 height: baseKnobSize,  
                 change: (value) => {
-                    console.log(`Knob ${paramDiv.id} value while dragging: ${value}`);
-
+                    // console.log(`Knob ${paramDiv.id} value while dragging: ${value}`);
+                    value = Math.round(value * 100) / 100
                     // set params in audio graph:
                     updateSynthWorklet('paramChange', { parent: param.data.parent, param: param.data.label, value: value})
 
@@ -2181,7 +2189,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     }, onChange,  `paramUpdate ${param.data.label} = ${value}`);
                 },
                 release: (value) => {
-                    console.log(`Knob ${paramDiv.id} value: ${value}`);
+                    console.log(`gesture ended. see \/\/! comment in .knob().release() in createFloatingOverlay for how to use this`);
+                    //! could use this to get the start and end of a knob gesture and store it as an array in the history sequence
                 },
             });
         } else {
@@ -3493,7 +3502,7 @@ document.addEventListener("DOMContentLoaded", function () {
     
 
     // modify graph edge control point distance
-    const CPDslider = document.getElementById('controlPointDistance')
+    const CPDslider = document.getElementById('settings_controlPointDistance')
     
     CPDslider.addEventListener('input', function() {
         let x = this.value
@@ -4241,6 +4250,13 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    function clearparamContainerDivs(){
+        // Directly select divs with IDs starting with "paramDivContainer"
+        const matchingDivs = document.querySelectorAll('div[id^="paramDivContainer"]');
+
+        // Remove each matching div
+        matchingDivs.forEach(div => div.remove());
+    }
     //     // Update the position of the overlay div
     //     function updatePosition() {
     //         const node = cy.getElementById(nodeId);

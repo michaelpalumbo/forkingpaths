@@ -47,7 +47,7 @@
       },
       "type": {
         "values": ["sine", "square", "sawtooth", "triangle", "custom"],
-        "default": "sawtooth",
+        "default": "sine",
         "description": "The waveform shape of the oscillator."
       },
       "freq cv +/-": {
