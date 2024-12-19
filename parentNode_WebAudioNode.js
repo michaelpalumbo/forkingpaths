@@ -122,7 +122,13 @@ export class ParentNode_WebAudioNode {
         // Arrange the child nodes in a vertical line below the parent node
         const offsetY = index * 60; // Each child node is 60px below the previous one
         const offsetX = 0; // Keep the X position the same for a vertical arrangement
-        console.log(child.kind)
+        if(typeof child.default === 'string'){
+            // make it a dropdown menu
+            child.ui = 'menu'
+        } else {
+            child.ui = 'knob'
+        }
+
         if(child.kind === 'paramAnchorNode'){
             const paramAnchorNodeID = `${this.moduleName}_${child.name}`
 
@@ -143,10 +149,11 @@ export class ParentNode_WebAudioNode {
                     // trackEndX: trackEndX,
                     // fixedY: config.position.y +10,
                     hash: `${this.moduleName}_${child.name}`,
-   
+                    ui: child.ui,
                     min: child.min || child.minimum || 0,
                     max: child.max || child.maximum || 1,
                     value: child.default || child.value,
+                    menuOptions: child.values || 'none',
                     description: child.description
                     
                 },

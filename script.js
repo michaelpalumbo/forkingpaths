@@ -2089,54 +2089,102 @@ document.addEventListener("DOMContentLoaded", function () {
         labelDiv.style.fontSize = '12px';
         labelDiv.style.color = '#333';
         
-        // Create an input element for jQuery Knob
-        const knobInput = document.createElement('input');
-        knobInput.type = 'text';
-        knobInput.value = param.data.default || param.data.value || 50; // Initial value
-        // knobInput.style.position = 'absolute';
-        knobInput.style.width = `100%`;
-        knobInput.style.height = `100%`;
-        knobInput.id = `knob_${param.data.id}`
-        // knobInput.style.zIndex = '1000';
-        // knobInput.style.pointerEvents = 'auto'; // Ensure interactions are enabled
+        let paramDiv
+        console.log(param)
+        if(param.data.ui === 'menu'){
+            paramDiv = document.createElement('select');
+            paramDiv.style.width = '100%';
+            paramDiv.style.padding = '5px';
+            paramDiv.style.borderRadius = '4px';
+            paramDiv.style.border = '1px solid #ccc';
+
+            // Add options to the select menu
+            param.data.menuOptions.forEach((option) => {
+                const optionElement = document.createElement('option');
+                optionElement.value = option.value || option;
+                optionElement.textContent = option.label || option;
+                paramDiv.appendChild(optionElement);
+            });
+        } else if (param.data.ui === 'knob'){
+                   // Create an input element for jQuery Knob
+            paramDiv = document.createElement('input');
+            paramDiv.type = 'text';
+            paramDiv.value = param.data.default || param.data.value || 50; // Initial value
+            // paramDiv.style.position = 'absolute';
+            paramDiv.style.width = `100%`;
+            paramDiv.style.height = `100%`;
+            paramDiv.id = `knob_${param.data.id}`
+        } else {
+            console.warn('missing param ui type in param.data.ui', param.data)
+        }
+        
+ 
+        // paramDiv.style.zIndex = '1000';
+        // paramDiv.style.pointerEvents = 'auto'; // Ensure interactions are enabled
 
         // Append the input to the container
         containerDiv.appendChild(labelDiv);
-        containerDiv.appendChild(knobInput);
+        containerDiv.appendChild(paramDiv);
         document.body.appendChild(containerDiv);
         
-        // Initialize jQuery Knob on the input
-        $(knobInput).knob({
-            min: param.data.min || param.data.sliderMin || 0,
-            max: param.data.max || param.data.sliderMax || 100,
-            fgColor: "#00aaff",
-            bgColor: "#e6e6e6",
-            inputColor: "#333",
-            thickness: 0.3,
-            angleArc: 270,
-            angleOffset: -135,
-            width: baseKnobSize,          // Set width of the knob
-            height: baseKnobSize,  
-            change: (value) => {
-                console.log(`Knob ${knobInput.id} value while dragging: ${value}`);
 
-                // set params in audio graph:
-                updateSynthWorklet('paramChange', { parent: param.data.parent, param: param.data.label, value: value})
+        if(param.data.ui === 'menu'){
+            // Add event listener for when the value changes
+            paramDiv.addEventListener('change', (event) => {
+                const selectedValue = event.target.value;
+                console.log(`Selected value: ${selectedValue}`);
 
-                // update param in automerge
+                // Example: Update param value in audio graph or Automerge
+                updateSynthWorklet('paramChange', {
+                    parent: param.data.parent,
+                    param: param.data.label,
+                    value: selectedValue,
+                });
+
+                // Update in Automerge
                 amDoc = applyChange(amDoc, (amDoc) => {
-                    amDoc.synth.graph.modules[param.data.parent].params[param.data.label] = value
-                    audioGraphDirty = true
-                }, onChange,  `paramUpdate ${param.data.label} = ${value}`);
-            },
-            release: (value) => {
-                console.log(`Knob ${knobInput.id} value: ${value}`);
-            },
-        });
+                    amDoc.synth.graph.modules[param.data.parent].params[param.data.label] = selectedValue;
+                    audioGraphDirty = true;
+                }, onChange, `paramUpdate ${param.data.label} = ${selectedValue}`);
+            });
+        } else if (param.data.ui === 'knob'){
+            // Initialize jQuery Knob on the input
+            $(paramDiv).knob({
+                min: param.data.min || param.data.sliderMin || 0,
+                max: param.data.max || param.data.sliderMax || 100,
+                fgColor: "#00aaff",
+                bgColor: "#e6e6e6",
+                inputColor: "#333",
+                thickness: 0.3,
+                angleArc: 270,
+                angleOffset: -135,
+                width: baseKnobSize,          // Set width of the knob
+                height: baseKnobSize,  
+                change: (value) => {
+                    console.log(`Knob ${paramDiv.id} value while dragging: ${value}`);
+
+                    // set params in audio graph:
+                    updateSynthWorklet('paramChange', { parent: param.data.parent, param: param.data.label, value: value})
+
+                    // update param in automerge
+                    amDoc = applyChange(amDoc, (amDoc) => {
+                        amDoc.synth.graph.modules[param.data.parent].params[param.data.label] = value
+                        audioGraphDirty = true
+                    }, onChange,  `paramUpdate ${param.data.label} = ${value}`);
+                },
+                release: (value) => {
+                    console.log(`Knob ${paramDiv.id} value: ${value}`);
+                },
+            });
+        } else {
+            console.warn('missing param ui type in param.data.ui', param.data)
+        }
+
+        
 
         // Add hover events to the knob
         if(param.data.description){
-            $(knobInput).hover(
+            $(paramDiv).hover(
                 () => {
                     setSynthToolTip(param.data.description)
                 },
