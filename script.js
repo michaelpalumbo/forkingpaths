@@ -56,6 +56,9 @@ const knobVerticalSpacing = baseKnobSize * 0.2; // 20% of base knob size for ver
 const baseDropdownWidth = 100; // Base width of the dropdown
 let paramUIOverlays = {}
 
+const eventListeners = []; // Array to track event listeners
+
+
 // * History Sequencer
 let currentIndex = 0;
 let historySequencerWindow;
@@ -971,6 +974,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     //     meta.branches[amDoc.title] = { head: null, parent: null, history: [] };
                         
                     // }
+
                     // Update the head property
                     meta.branches[amDoc.title].head = hash;
 
@@ -1059,7 +1063,7 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         });
         // reset overlays object
-        paramUIOverlays = {}
+        //? paramUIOverlays = {}
         // sendMsgToHistoryApp({
         //     appID: 'forkingPathsMain',
         //     cmd: 'clearHistoryGraph'
@@ -1257,8 +1261,25 @@ document.addEventListener("DOMContentLoaded", function () {
                 paramUIDiv.removeKnob()
             });
         });
+  
         // reset overlays object
-        paramUIOverlays = {}
+        //? paramUIOverlays = {}
+        
+        // find all param overlay divs, and remove them
+        const matchingDivs = document.querySelectorAll(`div[id^="paramDivContainer"]`);
+
+        // Iterate over each matching div
+        matchingDivs.forEach(div => {
+
+            // Find all child elements which are param overlays
+            const paramOverlayDiv = div.querySelector('.paramOverlay'); 
+            if (paramOverlayDiv) {
+                paramOverlayDiv.removeKnob()
+            }
+            div.remove()
+        });
+
+
         // ensure their container divs are removed too
         clearparamContainerDivs()
 
@@ -1275,16 +1296,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
             if (node) {
                 // test
-                // console.log('Parent node position:', parentNode.position);
-
                 let pos = {x: parseFloat(parentNode.position.x), y: parseFloat(parentNode.position.y)}
-                // console.log('New position:', typeof pos.x, typeof pos.y);
+              
                 // pos = {x: Math.random() * 100 + 200, y: Math.random() * 100 + 200};
                     // console.log(`Random`, typeof pos.x, typeof pos.y);
                 pos = {x: 273.3788826175895, y: 434.9628649535062};
                 // let clonedPos = {...pos}
                 node.position(pos); // Set the position manually
-                // console.log(`Updated position for parent node ${parentNode.id}:`, pos);
+      
 
                 
                 
@@ -2079,7 +2098,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Function to create and manage an overlay div
     function createFloatingOverlay(parentNodeID, param, index, loadedValue) { // if loadedValue, this is the value from the amDoc to be passed in
-
+       
         // const stepSize = determineStepSize(param.min, param.max, 'logarithmic', 100 )
 
         // Create a container div to hold the UI element
@@ -2099,8 +2118,9 @@ document.addEventListener("DOMContentLoaded", function () {
         labelDiv.style.fontSize = '12px';
         labelDiv.style.color = '#333';
         
+        // add menu or knob
         let paramDiv
-        
+    
         if(param.data.ui === 'menu'){
             paramDiv = document.createElement('select');
             paramDiv.style.width = '100%';
@@ -2146,8 +2166,6 @@ document.addEventListener("DOMContentLoaded", function () {
             // Add event listener for when the value changes
             paramDiv.addEventListener('change', (event) => {
                 const selectedValue = event.target.value;
-                console.log(`Selected value: ${selectedValue}`);
-
                 // Example: Update param value in audio graph or Automerge
                 updateSynthWorklet('paramChange', {
                     parent: param.data.parent,
@@ -2163,7 +2181,6 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         } else if (param.data.ui === 'knob'){
             const stepSize = determineStepSize(param.data.min, param.data.max, 'logarithmic', 100 )
-            console.log('step', stepSize)
             // Initialize jQuery Knob on the input
             $(paramDiv).knob({
                 min: param.data.min || param.data.sliderMin || 0,
@@ -2178,7 +2195,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 width: baseKnobSize,          // Set width of the knob
                 height: baseKnobSize,  
                 change: (value) => {
-                    // console.log(`Knob ${paramDiv.id} value while dragging: ${value}`);
                     value = Math.round(value * 100) / 100
                     // set params in audio graph:
                     updateSynthWorklet('paramChange', { parent: param.data.parent, param: param.data.label, value: value})
@@ -2214,11 +2230,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
         // Create a virtual element for Floating UI
-        const virtualElement = {
+        let virtualElement = {
             getBoundingClientRect: () => {
                 const childNode = cy.getElementById(param.data.id);
                 const parentNode = cy.getElementById(parentNodeID)
-                const parentParams = cy.getElementById(parentNodeID).data().moduleSpec.paramNames
+                // console.log('param.data.id', param.data.id)
+                // console.log('parentNodeID', parentNodeID)
+                // console.log('childNode', childNode.data())
+                // console.log('parentNode', parentNode.data())
+                const parentParams = parentNode.data().moduleSpec.paramNames
                 if (childNode) {
                     const containerRect = cy.container().getBoundingClientRect();
                     const zoom = cy.zoom();
@@ -2248,7 +2268,6 @@ document.addEventListener("DOMContentLoaded", function () {
                             : colSpacing / 2 - 20; // Right knob
                     const offsetY = row * rowSpacing - (parentNodeHeight / 4 - 20); // Row offset
 
-                    // console.log(containerRect.top + (parentPos.y * zoom) + pan.y + offsetY)
                     // Adjust for odd-numbered parameters (center last knob in the last row)
                     if (totalParams % 2 !== 0 && index === totalParams - 1) {
                         // Center single knob in last row
@@ -2275,25 +2294,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 // Fallback if childNode is not found
                 return { top: 0, left: 0, right: 0, bottom: 0, width: 0, height: 0 };
-            
-                //     // Get childNode's position scaled with zoom and adjusted for pan
-                //     const pos = childNode.position();
-                //     const offsetX = (index % 2 === 0 ? knobOffsetAmount : -knobOffsetAmount) - 30 / zoom;
-                //     const offsetY = (knobVerticalSpacing * index) / zoom;
-
-                //     const x = containerRect.left + (pos.x * zoom) + pan.x + offsetX;
-                //     const y = containerRect.top + (pos.y * zoom) + pan.y + offsetY;
-
-                //     return {
-                //         width: 0,
-                //         height: 0,
-                //         top: y,
-                //         left: x,
-                //         right: x,
-                //         bottom: y,
-                //     };
-                // }
-                // return { top: 0, left: 0, right: 0, bottom: 0, width: 0, height: 0 };
             },
         };
 
@@ -2328,10 +2328,17 @@ document.addEventListener("DOMContentLoaded", function () {
                 containerDiv.parentNode.removeChild(containerDiv);
                 console.log('Knob container removed');
             }
+
+            // Nullify the virtual element
+            // virtualElement.getBoundingClientRect = null;
+            
+            virtualElement = null
+            console.log('Knob and virtual element removed');
+
             // Remove the event listener
             cy.off('pan zoom position', updateKnobPositionAndScale);
         }
-        
+
         // Update position dynamically on pan/zoom
         cy.on('pan zoom position', updateKnobPositionAndScale);
 
@@ -2743,15 +2750,15 @@ document.addEventListener("DOMContentLoaded", function () {
     cy.on('mousedown', (event) => {
         // handle slider events
         if(event.target.data().kind && event.target.data().kind === 'slider'){
-            switch(event.target.data().sliderComponent){
-                case 'track':
-                    console.log('slider track clicked')
-                break;
+            // switch(event.target.data().sliderComponent){
+            //     case 'track':
+            //         console.log('slider track clicked')
+            //     break;
 
-                case 'handle':
-                    currentHandleNode = event.target;
-                    isSliderDragging = true;
-            }
+            //     case 'handle':
+            //         currentHandleNode = event.target;
+            //         isSliderDragging = true;
+            // }
             
         } else {
 
@@ -2921,30 +2928,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     console.warn("Edge has an undefined source or target node:", edge.id());
                 }
 
-                // cy.remove(tempEdge)
-            } else {
-                // allowMultiSelect is set to false if cmd or ctrl is held down to allow for multiple selection
-                // if(!allowMultiSelect){
-
-                //     const currentTime = new Date().getTime();
-                //     if (currentTime - lastClickTime < doubleClickDelay) {
-                //         // Double-click detected
-                //         if(hid.key.o){
-                //             addModule(`oscillator`, { x: event.position.x, y: event.position.y }, [    ]);
-                //         }
-                //         else if(hid.key.v){
-                //             addModule(`vca`, { x: event.position.x, y: event.position.y }, [    ]);
-                //         }
-                //         else if(hid.key.s){
-                //             addModule(`simpleSynth`, { x: event.position.x, y: event.position.y }, [    ]);
-                //         } else {
-                //             console.log('must hold down a letter while double-clicking to spawn associated module (temporary):\no: oscillator \nv: vca \ns: simpleSynth')
-                //         }
-                        
-                //         // console.log("Double-clicked on the background\nLow priority ToDo: background clicks open module library");
-                //     }
-                //     lastClickTime = currentTime; // Update the last click time
-                // }
             }
         }
     });
@@ -2953,76 +2936,76 @@ document.addEventListener("DOMContentLoaded", function () {
     cy.on('mousemove', (event) => {
         // if(event.target.data() && event.target.data().sliderComponent === 'handle'){
             
-            if (isSliderDragging) {
+            // if (isSliderDragging) {
                 
-                // Get the new mouse position relative to the Cytoscape container
-                // const cyContainer = cy.container();
-                // const rect = cyContainer.getBoundingClientRect();
-                const newMouseX = event.position.x;
+            //     // Get the new mouse position relative to the Cytoscape container
+            //     // const cyContainer = cy.container();
+            //     // const rect = cyContainer.getBoundingClientRect();
+            //     const newMouseX = event.position.x;
 
-                // Get the track's start and end positions from the handle's data
-                const trackStartX = currentHandleNode.data('trackStartX');
-                const trackEndX = currentHandleNode.data('trackEndX');
-                const fixedY = cy.getElementById(currentHandleNode.data().trackID).position().y;
+            //     // Get the track's start and end positions from the handle's data
+            //     const trackStartX = currentHandleNode.data('trackStartX');
+            //     const trackEndX = currentHandleNode.data('trackEndX');
+            //     const fixedY = cy.getElementById(currentHandleNode.data().trackID).position().y;
 
-                // Ensure trackStartX and trackEndX are numbers before clamping
-                if (typeof trackStartX === 'number' && typeof trackEndX === 'number') {
-                    const newSliderValue = Math.max(trackStartX, Math.min(newMouseX, trackEndX));
-                    currentHandleNode.position({ x: newSliderValue, y: fixedY });
+            //     // Ensure trackStartX and trackEndX are numbers before clamping
+            //     if (typeof trackStartX === 'number' && typeof trackEndX === 'number') {
+            //         const newSliderValue = Math.max(trackStartX, Math.min(newMouseX, trackEndX));
+            //         currentHandleNode.position({ x: newSliderValue, y: fixedY });
 
-                    // Normalize newSliderValue to a range of 0 to 1
-                    const normalizedValue = (newSliderValue - trackStartX) / (trackEndX - trackStartX);
+            //         // Normalize newSliderValue to a range of 0 to 1
+            //         const normalizedValue = (newSliderValue - trackStartX) / (trackEndX - trackStartX);
 
-                    // Scale to the min and max range
-                    const sliderMin = currentHandleNode.data('sliderMin');
-                    const sliderMax = currentHandleNode.data('sliderMax');
-                    const scaledValue = (sliderMin + (normalizedValue * (sliderMax - sliderMin))).toFixed(2);
+            //         // Scale to the min and max range
+            //         const sliderMin = currentHandleNode.data('sliderMin');
+            //         const sliderMax = currentHandleNode.data('sliderMax');
+            //         const scaledValue = (sliderMin + (normalizedValue * (sliderMax - sliderMin))).toFixed(2);
 
-                    // Check if the new scaled value is different from the last emitted value
-                    // Update the node's data and write to Automerge only if the value has changed
-                    if (scaledValue !== currentHandleNode.data('value')) {
-                        // set params in audio graph:
-                        updateSynthWorklet('paramChange', { parent: currentHandleNode.data().parent, param: currentHandleNode.data().label, value: scaledValue})
-                        // updateParameter(currentHandleNode.data().parent, currentHandleNode.data().label, scaledValue)
+            //         // Check if the new scaled value is different from the last emitted value
+            //         // Update the node's data and write to Automerge only if the value has changed
+            //         if (scaledValue !== currentHandleNode.data('value')) {
+            //             // set params in audio graph:
+            //             updateSynthWorklet('paramChange', { parent: currentHandleNode.data().parent, param: currentHandleNode.data().label, value: scaledValue})
+            //             // updateParameter(currentHandleNode.data().parent, currentHandleNode.data().label, scaledValue)
 
-                        currentHandleNode.data('value', scaledValue);
+            //             currentHandleNode.data('value', scaledValue);
                         
-                        // Find the label node and update its displayed text
-                        const labelNode = cy.getElementById(`${currentHandleNode.data('trackID')}-label`);
+            //             // Find the label node and update its displayed text
+            //             const labelNode = cy.getElementById(`${currentHandleNode.data('trackID')}-label`);
                         
-                        labelNode.data('label', scaledValue); // Display the value with 2 decimal places
-                        // const cyHandleNode = cy.getElementById(`${currentHandleNode.data('id')}`)
-                        // cyHandleNode.data('value', scaledValue.toFixed(2) )
-                        // update in automerge
-                        const elementIndex = amDoc.elements.findIndex(el => el.data.id === currentHandleNode.data().id);
+            //             labelNode.data('label', scaledValue); // Display the value with 2 decimal places
+            //             // const cyHandleNode = cy.getElementById(`${currentHandleNode.data('id')}`)
+            //             // cyHandleNode.data('value', scaledValue.toFixed(2) )
+            //             // update in automerge
+            //             const elementIndex = amDoc.elements.findIndex(el => el.data.id === currentHandleNode.data().id);
                         
-                        amDoc = applyChange(amDoc, (amDoc) => {
-                            amDoc.elements[elementIndex].data.value = scaledValue
-                            amDoc.elements[elementIndex].position = {
-                                x: currentHandleNode.position().x,
-                                y: currentHandleNode.position().y
-                            }
-                            // update the web audio graph with the param values. 
-                            amDoc.synth.graph.modules[currentHandleNode.data().parent].params[currentHandleNode.data().label] = scaledValue
-                            audioGraphDirty = true
-                        }, onChange,  `paramUpdate ${currentHandleNode.data().label}`);
+            //             amDoc = applyChange(amDoc, (amDoc) => {
+            //                 amDoc.elements[elementIndex].data.value = scaledValue
+            //                 amDoc.elements[elementIndex].position = {
+            //                     x: currentHandleNode.position().x,
+            //                     y: currentHandleNode.position().y
+            //                 }
+            //                 // update the web audio graph with the param values. 
+            //                 amDoc.synth.graph.modules[currentHandleNode.data().parent].params[currentHandleNode.data().label] = scaledValue
+            //                 audioGraphDirty = true
+            //             }, onChange,  `paramUpdate ${currentHandleNode.data().label}`);
         
 
-                        // Optionally, trigger an Automerge update here if necessary
-                        // handle.change((doc) => {
-                        //     // Update the document with the new value
-                        //     // Example: doc.elements.find(el => el.id === currentHandleNode.id()).data.slidervalue = scaledValue;
-                        // }, {
-                            // message: `paramUpdate ${labelNode.data('label')}` // Set a custom change message here
-                        // });
-                    }
+            //             // Optionally, trigger an Automerge update here if necessary
+            //             // handle.change((doc) => {
+            //             //     // Update the document with the new value
+            //             //     // Example: doc.elements.find(el => el.id === currentHandleNode.id()).data.slidervalue = scaledValue;
+            //             // }, {
+            //                 // message: `paramUpdate ${labelNode.data('label')}` // Set a custom change message here
+            //             // });
+            //         }
 
                 
-                } else {
-                    console.error('Invalid trackStartX or trackEndX:', trackStartX, trackEndX);
-                }
+            //     } else {
+            //         console.error('Invalid trackStartX or trackEndX:', trackStartX, trackEndX);
+            //     }
 
-            }
+            // }
         // }
         // this is for local Ghost cables only
         // Step 2: Update ghost node position to follow the mouse and track collisons
@@ -3423,20 +3406,24 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 // Iterate over each matching div
                 matchingDivs.forEach(div => {
-                    // Find the specific child element inside the div (e.g., by class or tag)
-                    const specificChild = div.querySelector('.paramOverlay'); // Replace with your criteria
-
-                    if (specificChild) {
-                        specificChild.remove()
-                        console.log('Found child element:', specificChild);
-                    } else {
-                        console.log('Child element not found in this div');
+                    // Find all child elements which are param overlays
+                    const paramOverlayDiv = div.querySelector('.paramOverlay'); 
+                    if (paramOverlayDiv) {
+                        paramOverlayDiv.removeKnob()
                     }
+                    div.remove()
                 });
+                paramUIOverlays[nodeId].forEach((childDiv)=>{
+                    childDiv.removeKnob()
+                    
+                    // childDiv.parentNode.removeChild(childDiv);
+                })
+                //? delete paramUIOverlays[nodeId]
+                                // remove the param UI overlays
 
-                console.log(nodeId, matchingDivs)
+
                 // Remove each matching div
-                matchingDivs.forEach(div => div.remove());
+     
 
                 // Update the Automerge document to reflect the deletion
 
@@ -4261,7 +4248,6 @@ document.addEventListener("DOMContentLoaded", function () {
         const range = max - min;
     
         if (method === 'logarithmic') {
-            console.log('snared')
             const factor = Math.log10(range + 1); // Avoid log10(0)
             return (Math.pow(10, factor / divisions) - 1); // Base step size for log scaling
         } else if (method === 'linear') {
