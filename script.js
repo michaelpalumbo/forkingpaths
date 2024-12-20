@@ -5,43 +5,20 @@
 //*
 const ws = new WebSocket('ws://localhost:3000');
 
-import { ParentNode } from './parentNode.js';
-
 import { ParentNode_WebAudioNode } from './parentNode_WebAudioNode.js';
 import modules from './src/modules/modules.json' assert { type: 'json'}
 import { uuidv7 } from "uuidv7";
 import randomColor from 'randomcolor';
-import dagre from 'cytoscape-dagre';
 import { saveDocument, loadDocument, deleteDocument } from './utilities/indexedDB.js';
 import { marked } from 'marked'
-
 import * as Tone from "tone";
-
-import 'input-knob'; // Import input-knob library
-
-// import $ from 'jquery'; // Import jQuery
 import 'jquery-knob';   // Import jQuery Knob plugin
-
-
-
 import * as speaker from "./speaker.json"
-
-// import popper from 'cytoscape-popper';
-// cytoscape.use(popper);
-// console.log('Popper registered:', typeof cytoscape.prototype.popper);
-
 import { computePosition, flip, shift } from '@floating-ui/dom';
-
-
-const historyGraphWorker = new Worker("./workers/historyGraphWorker.js");
-
-const speakerModule = speaker.default
 
 // TODO: look for comments with this: //* old -repo version 
 // TODO: when new automerge implementation is working, remove their related code sections
 
-
-const transport = Tone.getTransport();
 let debugVar
 // * Audio 
 const rnboDeviceCache = new Map(); // Cache device definitions by module type
@@ -131,49 +108,6 @@ let currentPan = { x: 0, y: 0 }
 let currentZoom = 0.8
 let parentNodePositions = []
 
-// double-clicking
-let lastClickTime = 0;
-const doubleClickDelay = 300; // Delay in milliseconds to register a double-click
-
-let graphStyle = 'DAG'
-let graphLayouts = {
-    // https://github.com/dagrejs/dagre/wiki#configuring-the-layout
-    DAG: {
-        name: 'dagre',
-        rankDir: 'BT', // Set the graph direction to top-to-bottom
-        nodeSep: 300, // Optional: adjust node separation
-        edgeSep: 100, // Optional: adjust edge separation
-        rankSep: 50, // Optional: adjust rank separation for vertical spacing,
-        fit: false,
-        padding: 30
-    },
-    breadthfirst: {
-        name: 'breadthfirst',
-
-        fit: false, // whether to fit the viewport to the graph
-        directed: true, // whether the tree is directed downwards (or edges can point in any direction if false)
-        padding: 30, // padding on fit
-        circle: false, // put depths in concentric circles if true, put depths top down if false
-        grid: false, // whether to create an even grid into which the DAG is placed (circle:false only)
-        spacingFactor: 1.75, // positive spacing factor, larger => more space between nodes (N.B. n/a if causes overlap)
-        boundingBox: undefined, // constrain layout bounds; { x1, y1, x2, y2 } or { x1, y1, w, h }
-        avoidOverlap: true, // prevents node overlap, may overflow boundingBox if not enough space
-        nodeDimensionsIncludeLabels: false, // Excludes the label when calculating node bounding boxes for the layout algorithm
-        roots: undefined, // the roots of the trees
-        depthSort: undefined, // a sorting function to order nodes at equal depth. e.g. function(a, b){ return a.data('weight') - b.data('weight') }
-        animate: false, // whether to transition the node positions
-        animationDuration: 500, // duration of animation in ms if enabled
-        animationEasing: undefined, // easing of animation if enabled,
-        animateFilter: function ( node, i ){ return true; }, // a function that determines whether the node should be animated.  All nodes animated by default on animate enabled.  Non-animated nodes are positioned immediately when the layout starts
-        ready: undefined, // callback on layoutready
-        stop: undefined, // callback on layoutstop
-        transform: function (node, position ){ return position; } // transform a given node position. Useful for changing flow direction in discrete layouts
-
-    }
-
-
-}
-
 // * INPUTS
 
 let hid = {
@@ -185,28 +119,6 @@ let hid = {
         s: false
     }
 }
-
-// * old automerge-repo stuff
-// todo: phase out
-
-let handle;
-let history;
-
-// automerge methods made global:
-let applyNewChanges
-let retrieveHistory;
-let automergeInit;
-let automergeEncodeChange;
-let automergeDocument;
-let repo;
-let getClone;
-
-let historyNodes = []
-let previousHistoryLength = 0;
-
-
-
-
 
 let peers = {
     local: {
@@ -221,18 +133,6 @@ let peers = {
     }
 }
 
-let docHistoryGraphStyling = {
-    nodeColours: {
-        connect: "#004cb8",
-        disconnect: "#b85c00",
-        add: "#00b806",
-        remove: "#b8000f",
-        move: "#b89000",
-        paramUpdate: "#6b00b8",
-        clear: "#000000",
-        blank_patch: "#ccc"
-    }
-}
 // temporary cables
 let temporaryCables = {
     local: {
@@ -2234,12 +2134,13 @@ document.addEventListener("DOMContentLoaded", function () {
             getBoundingClientRect: () => {
                 const childNode = cy.getElementById(param.data.id);
                 const parentNode = cy.getElementById(parentNodeID)
+                const parentData = parentNode.data();
                 // console.log('param.data.id', param.data.id)
                 // console.log('parentNodeID', parentNodeID)
                 // console.log('childNode', childNode.data())
                 // console.log('parentNode', parentNode.data())
-                const parentParams = parentNode.data().moduleSpec.paramNames
-                if (childNode) {
+                const parentParams = parentData?.moduleSpec?.paramNames || [];
+                if (childNode && parentParams.length > 0) {
                     const containerRect = cy.container().getBoundingClientRect();
                     const zoom = cy.zoom();
                     const pan = cy.pan();
@@ -2323,6 +2224,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Cleanup function
         function removeKnob() {
+            // remove event listeners
+            $(paramDiv).off('change')
+            $(paramDiv).off('release')
+            $(paramDiv).off('mouseenter mouseleave');
+
             // Remove the container div
             if (containerDiv.parentNode) {
                 containerDiv.parentNode.removeChild(containerDiv);
