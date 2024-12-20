@@ -2228,7 +2228,7 @@ document.addEventListener("DOMContentLoaded", function () {
             $(paramDiv).off('change')
             $(paramDiv).off('release')
             $(paramDiv).off('mouseenter mouseleave');
-
+            $(paramDiv).off()
             // Remove the container div
             if (containerDiv.parentNode) {
                 containerDiv.parentNode.removeChild(containerDiv);
@@ -4171,6 +4171,20 @@ document.addEventListener("DOMContentLoaded", function () {
         // Remove each matching div
         matchingDivs.forEach(div => div.remove());
     }
+    // // this helps to ensure that detached elements are removed
+    // const observer = new MutationObserver((mutations) => {
+    //     mutations.forEach((mutation) => {
+    //         mutation.removedNodes.forEach((node) => {
+    //             if (node instanceof HTMLElement) {
+    //                 // Perform cleanup for detached elements
+    //                 node.removeEventListener('click', handleClick); // Example
+    //             }
+    //         });
+    //     });
+    // });
+    
+    // observer.observe(document.body, { childList: true, subtree: true });
+    
     //     // Update the position of the overlay div
     //     function updatePosition() {
     //         const node = cy.getElementById(nodeId);

@@ -5,7 +5,7 @@ import audioNodes from '../src/modules/modules.json' assert { type: 'json'}
 class ModularSynthProcessor extends AudioWorkletProcessor {
     constructor() {
         super();
-        console.log('Sample rate:', sampleRate); // Logs the sample rate of the audio context
+        // console.log('Sample rate:', sampleRate); // Logs the sample rate of the audio context
 
         this.nodes = {}; // Store all nodes
         this.signalConnections = []; // Store connections between nodes
@@ -18,6 +18,9 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
 
     }
 
+    getSampleRate(){
+        return sampleRate
+    }
     getGraph(){
         const graph = {
             nodes: this.nodes,
@@ -394,7 +397,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                         node.modulatedParams[param] += modulationValue; // Apply modulation
                     } else {
                         
-                        console.warn(`Parameter ${param} not found for node ${id}`);
+                        console.warn(`Parameter ${param} not found for node ${id}\nconn = ${JSON.stringify(conn)}`);
                     }
                 } else {
                     console.warn(`Invalid modulation value for ${id}:`, modulationValue);
