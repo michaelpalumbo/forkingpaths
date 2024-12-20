@@ -14,9 +14,6 @@ export class ParentNode_WebAudioNode {
         this.children = children;
         this.isDraggingEnabled = false; // Flag to track if dragging is enabled
         this.module = module;
-
-        // console.log(modules, module)
-
       
         this.audioGraph = {
             type: module,
@@ -24,11 +21,9 @@ export class ParentNode_WebAudioNode {
             moduleSpec: audioNodes[structure][module],
             nodeIDs: [],
             structure: structure
-
         }
         this.nodeIDs = [] // store parent and child ids for later reference
         // sift through modules.json, construct node
-
         
         this.moduleSpec = audioNodes[structure][module]
         this.structure = structure // whether it is a basic web audio node or a rnboDevice
@@ -164,7 +159,9 @@ export class ParentNode_WebAudioNode {
                 classes: 'paramAnchorNode'
             }]
 
-        } else if(child.kind === 'slider'){
+        } 
+        /*
+        else if(child.kind === 'slider'){
                 const sliderId = `${this.moduleName}_${child.name}`
                 
                 //! important to do: the min and maxvalue should reflect the rnbo device's min and max, and so should the initialValue. 
@@ -278,7 +275,7 @@ export class ParentNode_WebAudioNode {
 
                 
             } 
-            
+            */
             else {
                 
                 const portID = `${this.moduleName}.${child.name}`

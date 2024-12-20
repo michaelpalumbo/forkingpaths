@@ -954,20 +954,9 @@ document.addEventListener("DOMContentLoaded", function () {
         ws.send(JSON.stringify({
             cmd: 'clearHistoryGraph'
         }))
-        
-        // delete all param UI overlays
-        Object.values(paramUIOverlays).forEach((parentNode) => {
-            parentNode.forEach((paramUIDiv) => {
-                // paramUIDiv.parentNode.removeChild(paramUIDiv);
-                paramUIDiv.removeKnob()
-            });
-        });
-        // reset overlays object
-        //? paramUIOverlays = {}
-        // sendMsgToHistoryApp({
-        //     appID: 'forkingPathsMain',
-        //     cmd: 'clearHistoryGraph'
-        // })
+
+        // remove all dynamicly generated UI overlays (knobs, umenus, etc)
+        removeUIOverlay('allNodes')
 
         meta = Automerge.from({
             title: "Forking Paths System",
@@ -1137,32 +1126,9 @@ document.addEventListener("DOMContentLoaded", function () {
         // Clear existing elements from Cytoscape instance
         cy.elements().remove();
 
-        // delete all param UI overlays
-        Object.values(paramUIOverlays).forEach((parentNode) => {
-            parentNode.forEach((paramUIDiv) => {
-                // paramUIDiv.parentNode.removeChild(paramUIDiv);
-                paramUIDiv.removeKnob()
-            });
-        });
-  
-        // reset overlays object
-        //? paramUIOverlays = {}
+        // remove all dynamicly generated UI overlays (knobs, umenus, etc)
+        removeUIOverlay('allNodes')
         
-        // find all param overlay divs, and remove them
-        const matchingDivs = document.querySelectorAll(`div[id^="paramDivContainer"]`);
-
-        // Iterate over each matching div
-        matchingDivs.forEach(div => {
-
-            // Find all child elements which are param overlays
-            const paramOverlayDiv = div.querySelector('.paramOverlay'); 
-            if (paramOverlayDiv) {
-                paramOverlayDiv.removeKnob()
-            }
-            div.remove()
-        });
-
-
         // ensure their container divs are removed too
         clearparamContainerDivs()
 
@@ -1934,7 +1900,57 @@ document.addEventListener("DOMContentLoaded", function () {
 //* UI UPDATES
 //* Functions that directly handle updating DOM elements & cytoscape
 //*
+    // centralize the overlay removal logic
+    function removeUIOverlay(cmd, data){
 
+        switch(cmd){
+            case 'singleNode':
+
+                const matchingDivs = document.querySelectorAll(`div[id^="paramDivContainer_${data}"]`);
+
+                // Iterate over each matching div
+                matchingDivs.forEach(div => {
+                    // Find all child elements which are param overlays
+                    const paramOverlayDiv = div.querySelector('.paramOverlay'); 
+                    if (paramOverlayDiv) {
+                        paramOverlayDiv.removeKnob()
+                    }
+                    div.remove()
+                });
+                paramUIOverlays[data].forEach((childDiv)=>{
+                    childDiv.removeKnob()
+                    
+                    // childDiv.parentNode.removeChild(childDiv);
+                })
+                //? delete paramUIOverlays[nodeId]
+            break
+
+            case 'allNodes':
+                // delete all param UI overlays
+                Object.values(paramUIOverlays).forEach((parentNode) => {
+                    parentNode.forEach((paramUIDiv) => {
+                        // paramUIDiv.parentNode.removeChild(paramUIDiv);
+                        paramUIDiv.removeKnob()
+                    });
+                });
+
+                // find all param overlay divs, and remove them
+                const matchingDivs2 = document.querySelectorAll(`div[id^="paramDivContainer"]`);
+
+                // Iterate over each matching div
+                matchingDivs2.forEach(div => {
+
+                    // Find all child elements which are param overlays
+                    const paramOverlayDiv = div.querySelector('.paramOverlay'); 
+                    if (paramOverlayDiv) {
+                        paramOverlayDiv.removeKnob()
+                    }
+                    div.remove()
+                });
+            break
+        }
+
+    }
     function setSynthToolTip(description){
         const element = document.getElementById('cytoscapeTooltipText');
         // Set new text content
@@ -2211,9 +2227,9 @@ document.addEventListener("DOMContentLoaded", function () {
         // Cleanup function
         function removeKnob() {
             // remove event listeners
-            $(paramDiv).off('change')
-            $(paramDiv).off('release')
-            $(paramDiv).off('mouseenter mouseleave');
+            // $(paramDiv).off('change')
+            // $(paramDiv).off('release')
+            // $(paramDiv).off('mouseenter mouseleave');
             $(paramDiv).off()
             // Remove the container div
             if (containerDiv.parentNode) {
@@ -3286,36 +3302,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 cy.remove(highlightedNode); // Remove the node from the Cytoscape instance
                 highlightedNode = null; // Clear the reference after deletion
 
-                // remove the param UI overlays
-                // paramUIOverlays[nodeId].forEach((childDiv)=>{
-                //     childDiv.removeKnob()
-                    
-                //     // childDiv.parentNode.removeChild(childDiv);
-                // })
-                // delete paramUIOverlays[nodeId]
-
-                const matchingDivs = document.querySelectorAll(`div[id^="paramDivContainer_${nodeId}"]`);
-
-                // Iterate over each matching div
-                matchingDivs.forEach(div => {
-                    // Find all child elements which are param overlays
-                    const paramOverlayDiv = div.querySelector('.paramOverlay'); 
-                    if (paramOverlayDiv) {
-                        paramOverlayDiv.removeKnob()
-                    }
-                    div.remove()
-                });
-                paramUIOverlays[nodeId].forEach((childDiv)=>{
-                    childDiv.removeKnob()
-                    
-                    // childDiv.parentNode.removeChild(childDiv);
-                })
-                //? delete paramUIOverlays[nodeId]
-                                // remove the param UI overlays
-
-
-                // Remove each matching div
-     
+                removeUIOverlay('singleNode', nodeId)
 
                 // Update the Automerge document to reflect the deletion
 
@@ -3737,10 +3724,11 @@ document.addEventListener("DOMContentLoaded", function () {
         childrenNodes.forEach((param)=>{
             
             if(param.classes == 'sliderHandle' && paramOverlays){
-                let uiOverlay = createFloatingOverlay(parentNodeData.data.id, param, index);
+                // let uiOverlay = createFloatingOverlay(parentNodeData.data.id, param, index);
                 
-                paramUIOverlays[parentNodeData.data.id].push(uiOverlay)
-                index++
+                // paramUIOverlays[parentNodeData.data.id].push(uiOverlay)
+                // index++
+                console.log('still firing handle creation')
             } else if (param.classes == 'paramAnchorNode' && paramOverlays){
                 let uiOverlay = createFloatingOverlay(parentNodeData.data.id, param, index);
                 
