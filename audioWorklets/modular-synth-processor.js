@@ -58,7 +58,6 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                     stopTime: null,  // Optional: Scheduled stop time           
     
                 };
-                console.log('node', moduleName, this.nodes[moduleName])
             break
             case 'Gain':
             case 'ModGain':
@@ -142,7 +141,6 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                 })
             break;
             case 'addNode':
-                // console.log(msg.structure)
                 if(msg.structure === 'webAudioNodes'){
                     
                     this.audioNodeBuilder(msg.data.module, msg.data.moduleName, msg.data.audioGraph.params)
@@ -204,9 +202,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
             break;
 
             case 'removeCable':
-                console.log(msg.data)
                 if(msg.data.target.includes('AudioDestination')){
-                    console.log('ad', msg.data.target, this.outputConnections)
                     const index = this.outputConnections.findIndex(
                         (item) => 
  
@@ -239,7 +235,6 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                             item.source === msg.data.source && 
                             item.target === msg.data.target
                     );
-                    console.log(msg.data, this.cvConnections)
                     // Remove the object if it exists
                     if (index !== -1) {
                         this.cvConnections.splice(index, 1);
@@ -351,8 +346,6 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
 
             const node = this.nodes[id];
             if (!node) return;
-
-            // console.log(`Processing node: ${id}, ${node.node}`);
 
             // Sum inputs from connected nodes
             const inputBuffer = new Float32Array(128);
@@ -508,7 +501,6 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
         
         // Normalize the mixed signal
         const numConnections = this.outputConnections.length;
-        // console.log(this.outputConnections)
         if (numConnections > 0) {
             for (let i = 0; i < output.length; i++) {
                 output[i] /= numConnections; // Normalize by the number of contributing nodes
