@@ -1288,6 +1288,7 @@ document.addEventListener("DOMContentLoaded", function () {
         
         // Check if we're on the head; reset clone if true (so we don't trigger opening a new branch with changes made to head)
         if (Automerge.getHeads(historicalView)[0] === Automerge.getHeads(amDoc)[0]){
+            console.log('head same branch')
             automergeDocuments.newClone = false
 
             updateSynthWorklet('loadVersion', historicalView.synth.graph)
@@ -1304,6 +1305,9 @@ document.addEventListener("DOMContentLoaded", function () {
         } 
         // if the head of a branch was clicked, we need to load that branch's full history (which traces all the way back to the blank_patch node (root))
         else if (targetHash === head){
+            console.log('head switch to branch')
+
+
             // retrieve the document from the binary store
             let branchDoc = loadAutomergeDoc(branch)    
             let clonedDoc = Automerge.clone(branchDoc)
@@ -1337,6 +1341,7 @@ document.addEventListener("DOMContentLoaded", function () {
         } 
         // this is necessary for loading a hash on another branch that ISN'T the head
         else if (branch != amDoc.title) {
+            console.log('hash on another branch')
 
             // load this branch's doc
             let branchDoc = loadAutomergeDoc(branch)
@@ -1375,6 +1380,8 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         // the selected hash belongs to the current branch
         else {
+            console.log('hash current branch')
+
             let clonedDoc = Automerge.clone(historicalView)
 
             clonedDoc.title = uuidv7();

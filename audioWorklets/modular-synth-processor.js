@@ -58,7 +58,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                     stopTime: null,  // Optional: Scheduled stop time           
     
                 };
-
+                console.log('node', moduleName, this.nodes[moduleName])
             break
             case 'Gain':
             case 'ModGain':
@@ -135,6 +135,8 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                     } else {
                         // handle CV modulation inputs
                         // Add a modulation connection (source modulates target parameter)
+                        cable.param = cable.target.split('.')[1] // The parameter to modulate
+
                         this.cvConnections.push(cable);
                     }
                 })
@@ -448,15 +450,16 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                             break;
                         case 'triangle':
                             signalBuffers[id][i] = (node.phase < 0.5 ? 4 * node.phase - 1 : 3 - 4 * node.phase) * effectiveGain; // Scale by sqrt(1/3)
-                            break;
-                    
-                        
+                            break;                 
                         default:
                             // Fallback to sine wave if the waveform is undefined or unrecognized
                             signalBuffers[id][i] = Math.sin(2 * Math.PI * node.phase) * effectiveGain;
                     }
                 }
-            } else if (node.node === 'Gain') {
+            }
+            
+            
+            else if (node.node === 'Gain') {
                 const effectiveGain = getEffectiveParam(node, 'gain'); // Combines base and modulated gain
 
                 for (let i = 0; i < signalBuffers[id].length; i++) {
