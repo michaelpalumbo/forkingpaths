@@ -31,6 +31,7 @@ const baseKnobSize = 45; // Default size in pixels
 const knobOffsetAmount = 30; // Horizontal offset for staggering knobs
 const knobVerticalSpacing = baseKnobSize * 0.2; // 20% of base knob size for vertical spacing
 const baseDropdownWidth = 100; // Base width of the dropdown
+// this is session storage of the ui overlays. 
 let paramUIOverlays = {}
 
 const eventListeners = []; // Array to track event listeners
@@ -638,7 +639,7 @@ document.addEventListener("DOMContentLoaded", function () {
         meta = await loadDocument('meta');
         if (!meta) {
             meta = Automerge.from({
-                title: "Forking Paths System",
+                title: "Forking Paths Synth",
                 branches: {},
                 branchOrder: [],
                 docs: {},
@@ -658,6 +659,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 synth: {
                     rnboDeviceCache: null,
                 },
+
 
             })
             
@@ -688,7 +690,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     }
                 });
             }
-            
+
+  
         }
 
         // * synth changes document
@@ -711,9 +714,13 @@ document.addEventListener("DOMContentLoaded", function () {
                         },
                         connections: []
                     }
+                },
+                paramUIOverlays = {
+
                 }
 
             });
+
             let hash = Automerge.getHeads(amDoc)[0]
             previousHash = hash
             branches[amDoc.title] = {
@@ -751,6 +758,13 @@ document.addEventListener("DOMContentLoaded", function () {
         } else {
             // meta does contain at least one document, so grab whichever is the one that was last looked at
             amDoc = Automerge.load(meta.docs[meta.head.branch]);
+
+            if(!amDoc.paramUIOverlays){
+                amDoc = applyChange(amDoc, (amDoc) => {        
+                    amDoc.paramUIOverlays = {}
+                }, onChange, `setup param overlay obj`);
+            }
+            console.log(amDoc)
             // // store previous head in heads obj
             // branchHeads[branchHeads.current] = {}
             // // update current head to this hash
@@ -939,6 +953,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
     };
     
+    function paramChange(parentNode, paramLabel, value){
+        updateSynthWorklet('paramChange', {
+            parent: param.data.parent,
+            param: param.data.label,
+            value: selectedValue,
+        });
+        // Update in Automerge
+        amDoc = applyChange(amDoc, (amDoc) => {
+            amDoc.synth.graph.modules[param.data.parent].params[param.data.label] = selectedValue;
+            audioGraphDirty = true;
+        }, onChange, `paramUpdate ${param.data.label} = ${selectedValue}`);
+    }
+
 
     function createNewSession(){
         // deletes the document in the indexedDB instance
@@ -1917,7 +1944,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     }
                     div.remove()
                 });
-                paramUIOverlays[data].forEach((childDiv)=>{
+                amDoc.paramUIOverlays[data].forEach((childDiv)=>{
                     childDiv.removeKnob()
                     
                     // childDiv.parentNode.removeChild(childDiv);
@@ -1927,7 +1954,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             case 'allNodes':
                 // delete all param UI overlays
-                Object.values(paramUIOverlays).forEach((parentNode) => {
+                Object.values(amDoc.paramUIOverlays).forEach((parentNode) => {
                     parentNode.forEach((paramUIDiv) => {
                         // paramUIDiv.parentNode.removeChild(paramUIDiv);
                         paramUIDiv.removeKnob()
@@ -2069,17 +2096,8 @@ document.addEventListener("DOMContentLoaded", function () {
             paramDiv.addEventListener('change', (event) => {
                 const selectedValue = event.target.value;
                 // Example: Update param value in audio graph or Automerge
-                updateSynthWorklet('paramChange', {
-                    parent: param.data.parent,
-                    param: param.data.label,
-                    value: selectedValue,
-                });
+                paramChange(parenparam.data.parenttNode, param.data.label, selectedValue)
 
-                // Update in Automerge
-                amDoc = applyChange(amDoc, (amDoc) => {
-                    amDoc.synth.graph.modules[param.data.parent].params[param.data.label] = selectedValue;
-                    audioGraphDirty = true;
-                }, onChange, `paramUpdate ${param.data.label} = ${selectedValue}`);
             });
         } else if (param.data.ui === 'knob'){
             const stepSize = determineStepSize(param.data.min, param.data.max, 'logarithmic', 100 )
@@ -2099,13 +2117,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 change: (value) => {
                     value = Math.round(value * 100) / 100
                     // set params in audio graph:
-                    updateSynthWorklet('paramChange', { parent: param.data.parent, param: param.data.label, value: value})
-
-                    // update param in automerge
-                    amDoc = applyChange(amDoc, (amDoc) => {
-                        amDoc.synth.graph.modules[param.data.parent].params[param.data.label] = value
-                        audioGraphDirty = true
-                    }, onChange,  `paramUpdate ${param.data.label} = ${value}`);
+                    paramChange(parenparam.data.parenttNode, param.data.label, value)
                 },
                 release: (value) => {
                     console.log(`gesture ended. see \/\/! comment in .knob().release() in createFloatingOverlay for how to use this`);
@@ -3720,78 +3732,30 @@ document.addEventListener("DOMContentLoaded", function () {
         debugVar = parentNodeData.data.id
         // index determines the left or right positioning of each knob
         let index = 0
-        paramUIOverlays[parentNodeData.data.id] = []
+        // paramUIOverlays[parentNodeData.data.id] = []
+
+        let tempOverlayArray = [ ]
         childrenNodes.forEach((param)=>{
             
-            if(param.classes == 'sliderHandle' && paramOverlays){
-                // let uiOverlay = createFloatingOverlay(parentNodeData.data.id, param, index);
-                
-                // paramUIOverlays[parentNodeData.data.id].push(uiOverlay)
-                // index++
-                console.log('still firing handle creation')
-            } else if (param.classes == 'paramAnchorNode' && paramOverlays){
+            if (param.classes == 'paramAnchorNode' && paramOverlays){
                 let uiOverlay = createFloatingOverlay(parentNodeData.data.id, param, index);
                 
-                paramUIOverlays[parentNodeData.data.id].push(uiOverlay)
+                tempOverlayArray.push(serializeDivToBase64(uiOverlay))
                 index++
             }
         })
-        
-        // createFloatingOverlay('node2', 'Overlay for Node 2');
-        /*
-        // Create a floating `div` element
-        const floatingDiv = document.createElement('div');
-        floatingDiv.innerText = 'testDiv'; // Add your custom content here
-        floatingDiv.style.position = 'absolute';
-        floatingDiv.style.backgroundColor = 'white';
-        floatingDiv.style.border = '1px solid black';
-        floatingDiv.style.padding = '5px';
-        floatingDiv.style.pointerEvents = 'none'; // Prevent interference with Cytoscape events
-
-        document.body.appendChild(floatingDiv);
-
-        // Function to update the position of the floating div
-        const updateFloatingDivPosition = (node) => {
-            const nodeRenderedPosition = node.renderedPosition();
-
-            // Compute the floating position using Floating UI
-            computePosition(
-                {
-                    getBoundingClientRect: () => ({
-                        width: 0,
-                        height: 0,
-                        top: nodeRenderedPosition.y,
-                        left: nodeRenderedPosition.x,
-                        right: nodeRenderedPosition.x,
-                        bottom: nodeRenderedPosition.y,
-                    }),
-                },
-                floatingDiv,
-                {
-                    middleware: [offset(10), flip(), shift()],
-                    placement: 'top', // Placement relative to the node
-                }
-            ).then(({ x, y }) => {
-                floatingDiv.style.left = `${x}px`;
-                floatingDiv.style.top = `${y}px`;
-            });
-        };
-
-        // Auto-update the floating div position when the viewport or node position changes
-        autoUpdate(
-            parentNodeData, // The reference node
-            floatingDiv, // The floating div
-            updateFloatingDivPosition(cy.getElementById(parentNodeData.data.id)) // The callback to update position
-        );
-        */
-
+        console.log(tempOverlayArray)
         // * automerge version:        
         amDoc = applyChange(amDoc, (amDoc) => {
             amDoc.elements.push(parentNodeData);
             amDoc.elements.push(...childrenNodes);
             amDoc.synth.graph.modules[parentNodeData.data.id] = audioGraph
             audioGraphDirty = true
+
+            amDoc.paramUIOverlays[parentNodeData.data.id] = tempOverlayArray
         }, onChange, `add ${parentNodeData.data.id}`);
+
+        console.log(amDoc.paramUIOverlays)
         // update the synthWorklet
         updateSynthWorklet('addNode', parentNode, structure )
 
@@ -4145,6 +4109,17 @@ document.addEventListener("DOMContentLoaded", function () {
         // Remove each matching div
         matchingDivs.forEach(div => div.remove());
     }
+
+    function serializeDivToBase64(div) {
+        console.log(div)
+        const htmlString = div.containerDiv.outerHTML; // Get the full HTML of the div
+        console.log(htmlString)
+        const encoder = new TextEncoder(); // Convert string to binary
+        const binaryData = encoder.encode(htmlString);
+        const base64Data = btoa(String.fromCharCode(...binaryData));
+        return { base64Div: base64Data, removeKnob: div.removeKnob }
+    }
+    
     // // this helps to ensure that detached elements are removed
     // const observer = new MutationObserver((mutations) => {
     //     mutations.forEach((mutation) => {
