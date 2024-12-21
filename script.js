@@ -35,7 +35,7 @@ const baseDropdownWidth = 100; // Base width of the dropdown
 let paramUIOverlays = {}
 
 const eventListeners = []; // Array to track event listeners
-
+let virtualElements = {}
 
 // * History Sequencer
 let currentIndex = 0;
@@ -1197,6 +1197,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if(node.classes === 'paramAnchorNode'){
                 let value = forkedDoc.synth.graph.modules[node.data.parent].params[node.data.label]
                 createFloatingOverlay(node.data.parent, node, index, value)
+                updateKnobPositionAndScale('all')
                 index++
             }
         })
@@ -1954,6 +1955,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             case 'allNodes':
                 // delete all param UI overlays
+                /*
                 Object.values(amDoc.paramUIOverlays).forEach((parentNode) => {
                     parentNode.forEach((paramUIDiv) => {
                         // paramUIDiv.parentNode.removeChild(paramUIDiv);
@@ -1974,6 +1976,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     }
                     div.remove()
                 });
+                */
             break
         }
 
@@ -2029,7 +2032,12 @@ document.addEventListener("DOMContentLoaded", function () {
     function createFloatingOverlay(parentNodeID, param, index, loadedValue) { // if loadedValue, this is the value from the amDoc to be passed in
        
         // const stepSize = determineStepSize(param.min, param.max, 'logarithmic', 100 )
-
+        if(!virtualElements[parentNodeID]){
+            virtualElements[parentNodeID] = {
+                elements: [],
+                containerDivs: []
+            }
+        }
         // Create a container div to hold the UI element
         const containerDiv = document.createElement('div');
         containerDiv.style.position = 'absolute';
@@ -2212,24 +2220,9 @@ document.addEventListener("DOMContentLoaded", function () {
             },
         };
 
-        // Function to update the knob's position and scale dynamically
-        function updateKnobPositionAndScale() {
-            const zoom = cy.zoom();
-
-            // Update position with Floating UI
-            computePosition(virtualElement, containerDiv, {
-                placement: 'top', // Adjust placement as needed
-                middleware: [flip(), shift()], // Prevent the knob from leaving the viewport
-            }).then(({ x, y }) => {
-                containerDiv.style.left = `${x}px`;
-                containerDiv.style.top = `${y}px`;
-            });
-
-            // Dynamically scale the knob size
-            const scaledSize = baseKnobSize / zoom;
-            containerDiv.style.width = `${scaledSize}px`;
-            containerDiv.style.height = `${scaledSize}px`;
-        }
+        virtualElements[parentNodeID].elements.push(virtualElement)
+        virtualElements[parentNodeID].containerDivs.push(containerDiv)
+        
 
         // Initial position and scale update. delay it to wait for cytoscape rendering to complete. 
         setTimeout(() => {
@@ -2260,9 +2253,61 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         // Update position dynamically on pan/zoom
-        cy.on('pan zoom position', updateKnobPositionAndScale);
+        // cy.on('pan zoom position', updateKnobPositionAndScale);
 
         return { containerDiv, removeKnob } ;
+    }
+
+
+    // dynamically update all floating ui elements' position and scale 
+    function updateKnobPositionAndScale(cmd, node) {
+        console.log('yes', cmd)
+        const zoom = cy.zoom();
+        switch(cmd){
+            case 'all':
+                // get all virtual elements in the DOM
+                Object.values(virtualElements).forEach((node) => {
+                    node.elements.forEach((virtualElement, index) => {
+                        let containerDiv = node.containerDivs[index]
+                        // Update position with Floating UI
+                        computePosition(virtualElement, containerDiv, {
+                            placement: 'top', // Adjust placement as needed
+                            middleware: [flip(), shift()], // Prevent the knob from leaving the viewport
+                        }).then(({ x, y }) => {
+                            
+                            containerDiv.style.left = `${x}px`;
+                            containerDiv.style.top = `${y}px`;
+                            // Dynamically scale the knob size
+                            const scaledSize = baseKnobSize / zoom;
+                            containerDiv.style.width = `${scaledSize}px`;
+                            containerDiv.style.height = `${scaledSize}px`;
+                        });
+                    });            
+                });
+            break
+
+            case 'node':
+                console.log(node)
+
+                virtualElements[node].elements.forEach((virtualElement, index) => {
+                    let containerDiv = virtualElements[node].containerDivs[index]
+                    // Update position with Floating UI
+                    computePosition(virtualElement, containerDiv, {
+                        placement: 'top', // Adjust placement as needed
+                        middleware: [flip(), shift()], // Prevent the knob from leaving the viewport
+                    }).then(({ x, y }) => {
+                        
+                        containerDiv.style.left = `${x}px`;
+                        containerDiv.style.top = `${y}px`;
+                        // Dynamically scale the knob size
+                        const scaledSize = baseKnobSize / zoom;
+                        containerDiv.style.width = `${scaledSize}px`;
+                        containerDiv.style.height = `${scaledSize}px`;
+                    });
+                })
+            break
+        }
+        
     }
 
     let parentConnectedEdges = []
@@ -2506,14 +2551,28 @@ document.addEventListener("DOMContentLoaded", function () {
 //* EVENT HANDLERS
 //* Functions that directly handle UI interactions
 //*
-    
+    // use this to update UI overlay positions
+    cy.on('pan zoom', function (){
+        updateKnobPositionAndScale('all')
+    } );
+
+    cy.on('position', 'node', function (event) {
+        const node = event.target.data().parent;
+        // ignore modules that don't have UI overlays
+        if(!virtualElements[node]){
+            return
+        }
+        updateKnobPositionAndScale('node', node)
+    });
+
+
     cy.off('add');
 
-    window.addEventListener('wheel', (event) => {
-        currentZoom = cy.zoom()
+    // window.addEventListener('wheel', (event) => {
+    //     currentZoom = cy.zoom()
 
 
-    });
+    // });
 
     // Open the history sequencer in a new tab
     document.getElementById('openHistoryWindow').addEventListener('click', () => {
@@ -3744,6 +3803,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 index++
             }
         })
+        updateKnobPositionAndScale('all')
         console.log(tempOverlayArray)
         // * automerge version:        
         amDoc = applyChange(amDoc, (amDoc) => {
@@ -3752,7 +3812,7 @@ document.addEventListener("DOMContentLoaded", function () {
             amDoc.synth.graph.modules[parentNodeData.data.id] = audioGraph
             audioGraphDirty = true
 
-            amDoc.paramUIOverlays[parentNodeData.data.id] = tempOverlayArray
+            // amDoc.paramUIOverlays[parentNodeData.data.id] = tempOverlayArray
         }, onChange, `add ${parentNodeData.data.id}`);
 
         console.log(amDoc.paramUIOverlays)
@@ -4119,6 +4179,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const base64Data = btoa(String.fromCharCode(...binaryData));
         return { base64Div: base64Data, removeKnob: div.removeKnob }
     }
+    
     
     // // this helps to ensure that detached elements are removed
     // const observer = new MutationObserver((mutations) => {

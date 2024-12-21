@@ -47,6 +47,7 @@ export class ParentNode_WebAudioNode {
                 this.audioGraph.params[this.params[i]] = param.default
 
                 this.paramOverlays.push(param)
+                console.log(param)
             }
         }
         if(this.cv){
