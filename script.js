@@ -764,7 +764,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     amDoc.paramUIOverlays = {}
                 }, onChange, `setup param overlay obj`);
             }
-            console.log(amDoc)
             // // store previous head in heads obj
             // branchHeads[branchHeads.current] = {}
             // // update current head to this hash
@@ -954,16 +953,17 @@ document.addEventListener("DOMContentLoaded", function () {
     };
     
     function paramChange(parentNode, paramLabel, value){
+        console.log(parentNode)
         updateSynthWorklet('paramChange', {
-            parent: param.data.parent,
-            param: param.data.label,
-            value: selectedValue,
+            parent: parentNode,
+            param: paramLabel,
+            value: value,
         });
         // Update in Automerge
         amDoc = applyChange(amDoc, (amDoc) => {
-            amDoc.synth.graph.modules[param.data.parent].params[param.data.label] = selectedValue;
+            amDoc.synth.graph.modules[parentNode].params[paramLabel] = value;
             audioGraphDirty = true;
-        }, onChange, `paramUpdate ${param.data.label} = ${selectedValue}`);
+        }, onChange, `paramUpdate ${paramLabel} = ${value}`);
     }
 
 
@@ -1197,10 +1197,14 @@ document.addEventListener("DOMContentLoaded", function () {
             if(node.classes === 'paramAnchorNode'){
                 let value = forkedDoc.synth.graph.modules[node.data.parent].params[node.data.label]
                 createFloatingOverlay(node.data.parent, node, index, value)
-                updateKnobPositionAndScale('all')
+        
                 index++
             }
         })
+        // Initial position and scale update. delay it to wait for cytoscape rendering to complete. 
+        setTimeout(() => {
+            updateKnobPositionAndScale('all');
+        }, 10); // Wait for the current rendering cycle to complete
     }    
     
 
@@ -2057,9 +2061,13 @@ document.addEventListener("DOMContentLoaded", function () {
         
         // add menu or knob
         let paramDiv
-    
+        console.log(param)
         if(param.data.ui === 'menu'){
             paramDiv = document.createElement('select');
+            // store contextual info about the param
+            paramDiv.dataset.parentNodeID = parentNodeID
+            paramDiv.dataset.param = param.data.label
+
             paramDiv.style.width = '100%';
             // paramDiv.style.padding = '5px';
             paramDiv.style.borderRadius = '4px';
@@ -2089,7 +2097,7 @@ document.addEventListener("DOMContentLoaded", function () {
             console.warn('missing param ui type in param.data.ui', param.data)
         }
         
-        paramDiv.classes = '.paramOverlay'
+        paramDiv.className = '.paramOverlay'
         // paramDiv.style.zIndex = '1000';
         // paramDiv.style.pointerEvents = 'auto'; // Ensure interactions are enabled
 
@@ -2101,12 +2109,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if(param.data.ui === 'menu'){
             // Add event listener for when the value changes
-            paramDiv.addEventListener('change', (event) => {
-                const selectedValue = event.target.value;
-                // Example: Update param value in audio graph or Automerge
-                paramChange(parenparam.data.parenttNode, param.data.label, selectedValue)
+            // paramDiv.addEventListener('change', (event) => {
+            //     const selectedValue = event.target.value;
+            //     // Example: Update param value in audio graph or Automerge
+            //     paramChange(param.data.parentNode, param.data.label, selectedValue)
 
-            });
+            // });
         } else if (param.data.ui === 'knob'){
             const stepSize = determineStepSize(param.data.min, param.data.max, 'logarithmic', 100 )
             // Initialize jQuery Knob on the input
@@ -2125,7 +2133,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 change: (value) => {
                     value = Math.round(value * 100) / 100
                     // set params in audio graph:
-                    paramChange(parenparam.data.parenttNode, param.data.label, value)
+                    paramChange(param.data.parentNode, param.data.label, value)
                 },
                 release: (value) => {
                     console.log(`gesture ended. see \/\/! comment in .knob().release() in createFloatingOverlay for how to use this`);
@@ -2222,12 +2230,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         virtualElements[parentNodeID].elements.push(virtualElement)
         virtualElements[parentNodeID].containerDivs.push(containerDiv)
-        
 
-        // Initial position and scale update. delay it to wait for cytoscape rendering to complete. 
-        setTimeout(() => {
-            updateKnobPositionAndScale();
-        }, 10); // Wait for the current rendering cycle to complete
 
         // Cleanup function
         function removeKnob() {
@@ -2248,8 +2251,6 @@ document.addEventListener("DOMContentLoaded", function () {
             virtualElement = null
             console.log('Knob and virtual element removed');
 
-            // Remove the event listener
-            cy.off('pan zoom position', updateKnobPositionAndScale);
         }
 
         // Update position dynamically on pan/zoom
@@ -2261,7 +2262,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // dynamically update all floating ui elements' position and scale 
     function updateKnobPositionAndScale(cmd, node) {
-        console.log('yes', cmd)
         const zoom = cy.zoom();
         switch(cmd){
             case 'all':
@@ -2287,8 +2287,6 @@ document.addEventListener("DOMContentLoaded", function () {
             break
 
             case 'node':
-                console.log(node)
-
                 virtualElements[node].elements.forEach((virtualElement, index) => {
                     let containerDiv = virtualElements[node].containerDivs[index]
                     // Update position with Floating UI
@@ -2551,6 +2549,17 @@ document.addEventListener("DOMContentLoaded", function () {
 //* EVENT HANDLERS
 //* Functions that directly handle UI interactions
 //*
+    
+    // $(document).on('change', '.paramOverlay', function (event) {
+    //     const selectedValue = $(this).val();
+    //     console.log('Selectmenu changed:', selectedValue);
+    // });
+
+    $(document).on('change', 'select', function () {
+        paramChange($(this).data('parentNodeID'), $(this).data('param'), $(this).val())
+        // console.log('Dynamic selectmenu changed:', $(this).val(), $(this).data('parentNodeID'));
+      });
+
     // use this to update UI overlay positions
     cy.on('pan zoom', function (){
         updateKnobPositionAndScale('all')
@@ -3803,7 +3812,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 index++
             }
         })
-        updateKnobPositionAndScale('all')
+        // Initial position and scale update. delay it to wait for cytoscape rendering to complete. 
+        setTimeout(() => {
+            updateKnobPositionAndScale('all');
+        }, 10); // Wait for the current rendering cycle to complete
         console.log(tempOverlayArray)
         // * automerge version:        
         amDoc = applyChange(amDoc, (amDoc) => {
