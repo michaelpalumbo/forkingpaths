@@ -13,7 +13,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
         this.outputConnections = []; // Nodes explicitly connected to the audio output
         this.cvConnections = [ ] 
         this.port.onmessage = (event) => this.handleMessage(event.data);
-
+      
 
 
     }
@@ -93,8 +93,10 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                     node: 'BiquadFilter',
                     baseParams: {
                         frequency: parseFloat(params.frequency) || 350,
+                        "freq cv +/-": parseFloat(params["freq cv +/-"]),
                         detune: parseFloat(params.detune) || 0,
                         Q: parseFloat(params.Q) || 1,
+                        "Q cv +/-": parseFloat(params["Q cv +/-"]),
                         gain: parseFloat(params.gain) || 0,
                         type: params.type
                     },
@@ -117,6 +119,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
 
     }
     
+
     handleMessage(msg) {
         
         switch (msg.cmd){
@@ -438,6 +441,9 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                 return result;
             };
 
+            const clamp = (value, min, max) => {
+                return Math.min(Math.max(value, min), max)
+            }
             // Process this node
             if (node.node === 'Oscillator') {
                 const effectiveFrequency = getEffectiveParam(node, 'frequency', node.baseParams['freq cv +/-']);
@@ -472,12 +478,28 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
             
             
             else if (node.node === 'Gain') {
-                const effectiveGain = getEffectiveParam(node, 'gain'); // Combines base and modulated gain
+                const effectiveGain = getEffectiveParam(node, 'gain', node.baseParams['gain']); // Combines base and modulated gain
 
                 for (let i = 0; i < signalBuffers[id].length; i++) {
                     signalBuffers[id][i] = inputBuffer[i] * effectiveGain;
                 }
-            } else if (node.node === 'Delay') {
+            } 
+            // else if (node.node === 'VCA') {
+            //     // Retrieve effective gain, combining base gain and modulation
+            //     const effectiveGain = getEffectiveParam(node, 'gain', node.baseParams['gain cv +/-']); // Includes base gain and CV modulation
+            //     const baseGain = params.baseGain || 1; // Gain knob (default: 1)
+            //     const gainCVAttenuator = params.gainCVAttenuator || 1; // Gain CV attenuator knob (default: 1)
+
+
+            //     for (let i = 0; i < signalBuffers[id].length; i++) {
+            //                 // Calculate effective gain
+            //         const gainCV = gainCVBuffer[i] || 0; // Gain CV input
+            //         const effectiveGain = baseGain + gainCV * gainCVAttenuator;
+            //         signalBuffers[id][i] = inputBuffer[i] * effectiveGain;
+            //     }
+            // }
+            
+            else if (node.node === 'Delay') {
                 if (!node.delayBuffer) {
                     const effectiveDelayTime = getEffectiveParam(node, 'delayTime', node.baseParams['timeAttenuverter']);
                     const delayTime = Math.round(effectiveDelayTime * sampleRate / 1000)
@@ -494,10 +516,29 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
             } 
 
             if (node.node === 'BiquadFilter') {
-                const effectiveFrequency = getEffectiveParam(node, 'frequency', node.baseParams['freq cv +/-']);
-                const effectiveDetune = getEffectiveParam(node, 'detune', node.baseParams['detune cv +/-']);
-                const effectiveQ = getEffectiveParam(node, 'Q', node.baseParams['Q cv +/-']);
-                const effectiveGain = getEffectiveParam(node, 'gain', node.baseParams['gain cv +/-']);
+                const effectiveFrequency = clamp(
+                    getEffectiveParam(node, 'frequency', node.baseParams['freq cv +/-']),
+                    10, 
+                    (sampleRate/2)
+                );
+
+                const effectiveDetune = clamp(
+                    getEffectiveParam(node, 'detune', node.baseParams['detune cv +/-']),
+                    -1000,
+                    1000
+                )
+
+                const effectiveQ = clamp(
+                    getEffectiveParam(node, 'Q', node.baseParams['Q cv +/-']),
+                    0.0001,
+                    1000
+                )
+                const effectiveGain = clamp(
+                    node.baseParams['gain'], // getEffectiveParam(node, 'gain', node.baseParams['gain cv +/-']);
+                    -40,
+                    40,
+                )
+                    
                 const filterType = node.baseParams['type'] || 'lowpass';
         
                 // Convert detune to frequency adjustment
@@ -550,7 +591,39 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                         a1 = -2 * Math.cos(omega);
                         a2 = 1 - alpha / A;
                         break;
-                    // Add cases for 'lowshelf', 'highshelf', 'notch', 'allpass' as needed
+                    case 'notch':
+                        b0 = 1;
+                        b1 = -2 * Math.cos(omega);
+                        b2 = 1;
+                        a0 = 1 + alpha;
+                        a1 = -2 * Math.cos(omega);
+                        a2 = 1 - alpha;
+                        break;
+                    case 'allpass':
+                        b0 = 1 - alpha;
+                        b1 = -2 * Math.cos(omega);
+                        b2 = 1 + alpha;
+                        a0 = 1 + alpha;
+                        a1 = -2 * Math.cos(omega);
+                        a2 = 1 - alpha;
+                        break;
+                    case 'lowshelf':
+                        b0 = A * ((A + 1) - (A - 1) * Math.cos(omega) + 2 * Math.sqrt(A) * alpha);
+                        b1 = 2 * A * ((A - 1) - (A + 1) * Math.cos(omega));
+                        b2 = A * ((A + 1) - (A - 1) * Math.cos(omega) - 2 * Math.sqrt(A) * alpha);
+                        a0 = (A + 1) + (A - 1) * Math.cos(omega) + 2 * Math.sqrt(A) * alpha;
+                        a1 = -2 * ((A - 1) + (A + 1) * Math.cos(omega));
+                        a2 = (A + 1) + (A - 1) * Math.cos(omega) - 2 * Math.sqrt(A) * alpha;
+                        break;
+                    case 'highshelf':
+                        b0 = A * ((A + 1) + (A - 1) * Math.cos(omega) + 2 * Math.sqrt(A) * alpha);
+                        b1 = -2 * A * ((A - 1) + (A + 1) * Math.cos(omega));
+                        b2 = A * ((A + 1) + (A - 1) * Math.cos(omega) - 2 * Math.sqrt(A) * alpha);
+                        a0 = (A + 1) - (A - 1) * Math.cos(omega) + 2 * Math.sqrt(A) * alpha;
+                        a1 = 2 * ((A - 1) - (A + 1) * Math.cos(omega));
+                        a2 = (A + 1) - (A - 1) * Math.cos(omega) - 2 * Math.sqrt(A) * alpha;
+                        break;
+                        
                     default:
                         console.warn(`Unsupported filter type: ${filterType}`);
                         return;

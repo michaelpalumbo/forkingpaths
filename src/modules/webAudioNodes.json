@@ -34,6 +34,44 @@
     "inputs": ["IN"],
     "outputs": ["OUT"]
   },
+  "VCA": {
+    "parameters": {
+      "gain": {
+        "min": 0,
+        "max": 1,
+        "default": 1,
+        "units": "linear gain",
+        "description": "Sets the base gain applied to the input signal.",
+        "modulatable": true,
+        "modulationDescription": "Audio-rate modulation of gain for tremolo or dynamic volume changes."
+      },
+      "gain cv +/-": {
+        "min": 0,
+        "max": 1,
+        "default": 0.5,
+        "units": "linear scale",
+        "description": "Attenuates the effect of the CV input on gain modulation.",
+        "modulatable": false,
+        "modulationDescription": "N/A"
+      }
+    },
+    "paramNames": ["gain", "gain cv +/-"],
+    "cvNames": ["gain"],
+    "cv": {
+      "gain": {
+        "min": 0,
+        "max": 1,
+        "default": 0,
+        "units": "linear gain",
+        "description": "Control Voltage input for dynamic gain modulation.",
+        "modulatable": true,
+        "modulationDescription": "Audio-rate modulation to control gain dynamically."
+      }
+    },
+    "inputs": ["IN"],
+    "outputs": ["OUT"]
+  },
+
   "Oscillator": {
     "parameters": {
       "frequency": {
@@ -87,6 +125,15 @@
         "modulatable": true,
         "modulationDescription": "Audio-rate modulation of frequency for dynamic filtering effects."
       },
+      "freq cv +/-": {
+        "min": -1000,
+        "max": 1000,
+        "default": 0,
+        "units": "hz",
+        "description": "Adjusts the frequency by detuning.",
+        "modulatable": true,
+        "modulationDescription": "Audio-rate modulation of detune to create evolving filter effects."
+      },
       "detune": {
         "min": -1200,
         "max": 1200,
@@ -104,6 +151,15 @@
         "description": "Controls the sharpness of the filter's frequency cutoff.",
         "modulatable": true,
         "modulationDescription": "Audio-rate modulation of Q for dynamic resonance changes."
+      },
+      "Q cv +/-": {
+        "min": -1000,
+        "max": 1000,
+        "default": 0,
+        "units": "hz",
+        "description": "Adjusts the frequency by detuning.",
+        "modulatable": true,
+        "modulationDescription": "Audio-rate modulation of detune to create evolving filter effects."
       },
       "gain": {
         "min": -40,
@@ -129,10 +185,10 @@
         "description": "The type of filtering applied."
       }
     },
-    "paramNames": ["frequency", "detune", "Q", "gain", "type"],
-    "cvNames": ["frequency", "detune", "Q", "gain"],
+    "paramNames": ["frequency", "freq cv +/-", "detune", "Q", "Q cv +/-", "gain", "type"],
+    "cvNames": ["frequency", "Q", "gain"],
     "cv": {
-      "frequency": {
+      "freq": {
         "min": 10,
         "max": 22050,
         "default": 350,
@@ -140,15 +196,6 @@
         "description": "The frequency at which the filter operates.",
         "modulatable": true,
         "modulationDescription": "Audio-rate modulation of frequency for dynamic filtering effects."
-      },
-      "detune": {
-        "min": -1200,
-        "max": 1200,
-        "default": 0,
-        "units": "cents",
-        "description": "Adjusts the frequency by detuning.",
-        "modulatable": true,
-        "modulationDescription": "Audio-rate modulation of detune to create evolving filter effects."
       },
       "Q": {
         "min": 0.0001,

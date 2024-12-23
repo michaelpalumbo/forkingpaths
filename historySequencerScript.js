@@ -565,6 +565,17 @@ document.addEventListener("DOMContentLoaded", function () {
     // * 
     // *
 
+    // Listen for changes to the radio buttons
+    const radioButtons = document.querySelectorAll('input[name="traversalMode"]');
+    console.warn('need to setup the sequencer meta control see the associated code')
+    radioButtons.forEach((radio) => {
+        radio.addEventListener('change', (event) => {
+            meta = Automerge.change(meta, (meta) =>{
+                meta.sequencer.traversalMode = event.target.value  
+            })
+        });
+    });
+    
     // cmd + scroll = scroll vertically through history graph
     document.addEventListener('wheel', function(event) {
         if(allowPan){
