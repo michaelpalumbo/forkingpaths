@@ -32,7 +32,6 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
     }
 
     audioNodeBuilder(type, moduleName, params){
-        console.log(type, moduleName, params)
         switch (type){
                 
             case 'LFO':
@@ -163,7 +162,6 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
             break;
             case 'addNode':
                 if(msg.structure === 'webAudioNodes'){
-                    console.log(msg.data.module, msg.data.moduleName, msg.data.audioGraph.params)
                     this.audioNodeBuilder(msg.data.module, msg.data.moduleName, msg.data.audioGraph.params)
    
                 } else {

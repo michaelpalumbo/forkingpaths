@@ -58,7 +58,7 @@ export class ParentNode_WebAudioNode {
 
             default: this.moduleColour = moduleBackgrounds.purple
         }
-        console.log(this.moduleColour)
+
         if(this.params){
             for (let i = 0; i<this.params.length; i++){
                 let param = this.moduleSpec.parameters[this.params[i]]
@@ -185,122 +185,6 @@ export class ParentNode_WebAudioNode {
             }]
 
         } 
-        /*
-        else if(child.kind === 'slider'){
-                const sliderId = `${this.moduleName}_${child.name}`
-                
-                //! important to do: the min and maxvalue should reflect the rnbo device's min and max, and so should the initialValue. 
-                //! but for this to work we also need to update the slider updates scaling in on.mousemove. 
-                const defaultOptions = {
-                    length: 127, // Length of the slider track in pixels
-                    minValue: 0, // Minimum slider value
-                    maxValue: 100, // Maximum slider value
-                    initialValue: 64, // Initial slider value
-                    position: { x: this.position.x + offsetX, y: this.position.y + offsetY }, // Default position
-                };
-  
-                const config = { ...defaultOptions };
-                    // Define the track and handle nodes for the slider
-                const sliderTrackId = `${sliderId}-track`;
-                const sliderTrackLabelId = `${sliderTrackId}-label`;
-                const sliderHandleId = `${sliderId}-handle`;
-                
-                
-                this.nodeIDs.push(sliderTrackId, sliderTrackLabelId, sliderHandleId)
-                const trackStartX = config.position.x - config.length / 2;
-                const trackEndX = config.position.x + config.length / 2;
-
-                const fixedY = config.position.y;
-
-                let isDragging = false;
-                let isDraggingEnabled = false; // Tracks if 'e' is pressed for repositioning
-            
-                // Calculate initial handle position within the track
-                const initialHandleX = config.position.x - config.length / 2 + (config.length * (config.initialValue - config.minValue)) / (config.maxValue - config.minValue);
-               
-                // this is a parameter with strings for steps, i.e. ["sine", "square", "sawtooth", "triangle", "custom"],
-                if(child.name === 'type'){
-                    child.min = child.values[0],
-                    child.max = child.values[child.values.length - 1]
-                }
-                
-                return [
-                    // slider track
-                    // {                  
-                    //     data: {
-                    //         id: sliderTrackId,
-                    //         parent: this.moduleName,
-                    //         label: child.name || `${this.moduleName}-${sliderTrackId}${index + 1}`,
-                    //         kind: child.kind,
-                    //         bgcolour: '#CCCCCC',
-                    //         length: config.length,
-                    //         sliderComponent: 'track',
-                    //         hash: sliderId,
-                    //         description: child.description
-
-
-
-                    //         // ghostCableShape: child.kind === 'input' ? 'rectangle' : 'triangle',
-                    //         // ghostCableColour: child.kind === 'input' ? '#5C9AE3' : '#E68942',
-                            
-                    //     },
-                    //     position: {
-                    //         x: config.position.x,
-                    //         y: config.position.y + 10 // add 10 to make space for slider label
-                    //     },
-                    //     classes: 'sliderTrack'
-                    // },
-                    {                  
-                        data: {
-                            id: sliderHandleId,
-                            parent: this.moduleName,
-                            label: child.name || `${this.moduleName}-${sliderHandleId}${child.name}`,
-                            nameSpace: `${sliderHandleId}.${child.name}`,
-                            kind: child.kind,
-                            sliderComponent: 'handle',
-                            shape: 'ellipse',
-                            bgcolour: '#CCCCCC',
-                            // set the track dimensions in the handle data for later access
-                            trackStartX: trackStartX, 
-                            trackEndX: trackEndX,
-                            fixedY: config.position.y +10,
-                            hash: sliderId,
-                            trackID: sliderTrackId,
-                            sliderMin: child.min || child.minimum || 0,
-                            sliderMax: child.max || child.maximum,
-                            value: child.default,
-                            description: child.description
-                            
-                        },
-                        position: {
-                            x: initialHandleX,
-                            y: config.position.y + 10 // Match Y-position with the track
-                        },
-                        classes: 'sliderHandle'
-                    },
-                    // Add the text label node
-                    // {
-                    //     data: {
-                    //         id: sliderTrackLabelId,
-                    //         parent: this.moduleName,
-                    //         label: `${child.default}`, // Initial value; will be updated dynamically
-                    //         kind: 'label',
-                    //         hash: sliderId,
-                    //     },
-                    //     position: {
-                    //         x: config.position.x + (config.length / 2), // Shift left by half the track length plus some margin (adjust 30 as needed)
-                    //         y: config.position.y // Adjust Y-position to place it above the slider
-                    //     },
-                    //     classes: 'sliderLabel' // Define a class for styling if needed
-                    // }
-
-                ]
-                
-                    
-
-                
-            } 
-            */
             else {
                 
                 const portID = `${this.moduleName}.${child.name}`
