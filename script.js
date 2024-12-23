@@ -2366,14 +2366,18 @@ document.addEventListener("DOMContentLoaded", function () {
         // Loop through the array and create list items
         webAudioNodeNames.forEach(item => {
             if(item != 'AudioDestination' && item != 'AudioWorklet' && item != "OutputLimiter"){
-                // Create a new <li> element
-                const listItem = document.createElement('li');
-                // Set the text of the <li> to the current item
-                listItem.textContent = item;
+                // all that are available at the moment
+                if(item === 'BiquadFilter' || item === 'Delay' || item === 'LFO' || item === 'Oscillator' || item === 'Gain' || item === 'ModGain'){
+                    // Create a new <li> element
+                    const listItem = document.createElement('li');
+                    // Set the text of the <li> to the current item
+                    listItem.textContent = item;
 
-                listItem.dataset.structure = 'webAudioNodes'
-                // Append the <li> to the list
-                listElement.appendChild(listItem);
+                    listItem.dataset.structure = 'webAudioNodes'
+                    // Append the <li> to the list
+                    listElement.appendChild(listItem);
+                }
+      
             }
 
         });
