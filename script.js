@@ -284,8 +284,8 @@ document.addEventListener("DOMContentLoaded", function () {
             {
                 selector: ':parent',
                 style: {
-                    'background-opacity': 0.333,
-                    'background-color': '#F5A45D',
+                    'background-opacity': 0.5,
+                    'background-color': 'data(bgcolour)',
                     'border-color': '#F57A41',
                     'border-width': 1,
                     'label': 'data(label)', // Use the node id or any data field as the label
@@ -953,7 +953,7 @@ document.addEventListener("DOMContentLoaded", function () {
     };
     
     function paramChange(parentNode, paramLabel, value){
-        console.log(parentNode)
+
         updateSynthWorklet('paramChange', {
             parent: parentNode,
             param: paramLabel,
@@ -2044,6 +2044,8 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         // Create a container div to hold the UI element
         const containerDiv = document.createElement('div');
+        containerDiv.dataset.description = param.data.description || 'no description'
+        containerDiv.className = '.paramUIOverlayContainer'
         containerDiv.style.position = 'absolute';
         containerDiv.style.zIndex = '1000';
         containerDiv.style.width = `${baseKnobSize}px`;
@@ -2061,7 +2063,6 @@ document.addEventListener("DOMContentLoaded", function () {
         
         // add menu or knob
         let paramDiv
-        console.log(param)
         if(param.data.ui === 'menu'){
             paramDiv = document.createElement('select');
             // store contextual info about the param
@@ -2087,6 +2088,11 @@ document.addEventListener("DOMContentLoaded", function () {
         } else if (param.data.ui === 'knob'){
             // Create an input element for jQuery Knob
             paramDiv = document.createElement('input');
+            // store contextual info about the param
+            paramDiv.dataset.parentNodeID = parentNodeID
+            paramDiv.dataset.param = param.data.label
+            // paramDiv.dataset.description = param.data.description
+            
             paramDiv.type = 'text';
             paramDiv.value = loadedValue || param.data.default || param.data.value || 50; // Initial value
             // paramDiv.style.position = 'absolute';
@@ -2107,15 +2113,7 @@ document.addEventListener("DOMContentLoaded", function () {
         document.body.appendChild(containerDiv);
         
 
-        if(param.data.ui === 'menu'){
-            // Add event listener for when the value changes
-            // paramDiv.addEventListener('change', (event) => {
-            //     const selectedValue = event.target.value;
-            //     // Example: Update param value in audio graph or Automerge
-            //     paramChange(param.data.parentNode, param.data.label, selectedValue)
-
-            // });
-        } else if (param.data.ui === 'knob'){
+        if (param.data.ui === 'knob'){
             const stepSize = determineStepSize(param.data.min, param.data.max, 'logarithmic', 100 )
             // Initialize jQuery Knob on the input
             $(paramDiv).knob({
@@ -2130,34 +2128,25 @@ document.addEventListener("DOMContentLoaded", function () {
                 angleOffset: -135,
                 width: baseKnobSize,          // Set width of the knob
                 height: baseKnobSize,  
+                // change: function (value) {
+                //     $(this.$).trigger('knobChange', [parentNodeID, param.data.label, value]);
+                // },
                 change: (value) => {
                     value = Math.round(value * 100) / 100
                     // set params in audio graph:
-                    paramChange(param.data.parentNode, param.data.label, value)
+                    paramChange(parentNodeID, param.data.label, value)
                 },
                 release: (value) => {
                     console.log(`gesture ended. see \/\/! comment in .knob().release() in createFloatingOverlay for how to use this`);
                     //! could use this to get the start and end of a knob gesture and store it as an array in the history sequence
                 },
             });
+        } else if (param.data.ui === 'menu'){
+            // ignore
         } else {
             console.warn('missing param ui type in param.data.ui', param.data)
+
         }
-
-        
-
-        // Add hover events to the knob
-        if(param.data.description){
-            $(paramDiv).hover(
-                () => {
-                    setSynthToolTip(param.data.description)
-                },
-                () => {
-                    setSynthToolTip('')
-                }
-            );
-        }
-
 
         // Create a virtual element for Floating UI
         let virtualElement = {
@@ -2234,10 +2223,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Cleanup function
         function removeKnob() {
-            // remove event listeners
-            // $(paramDiv).off('change')
-            // $(paramDiv).off('release')
-            // $(paramDiv).off('mouseenter mouseleave');
             $(paramDiv).off()
             // Remove the container div
             if (containerDiv.parentNode) {
@@ -2549,16 +2534,31 @@ document.addEventListener("DOMContentLoaded", function () {
 //* EVENT HANDLERS
 //* Functions that directly handle UI interactions
 //*
-    
-    // $(document).on('change', '.paramOverlay', function (event) {
-    //     const selectedValue = $(this).val();
-    //     console.log('Selectmenu changed:', selectedValue);
-    // });
 
+    // listen for changes on module selectmenu elements
     $(document).on('change', 'select', function () {
-        paramChange($(this).data('parentNodeID'), $(this).data('param'), $(this).val())
-        // console.log('Dynamic selectmenu changed:', $(this).val(), $(this).data('parentNodeID'));
-      });
+        // only pass inputs that are actually module inputs
+        if($(this).data('parentNodeID')){
+            paramChange($(this).data('parentNodeID'), $(this).data('param'), $(this).val())
+        }
+     });
+
+    $(document).on('mouseover', '.paramUIOverlayContainer', function () {
+        setSynthToolTip($(this).data('description'))
+    });
+    
+    $(document).on('mouseout', '.paramUIOverlayContainer', function () {
+        console.log('Mouseover knob or menu for description...');
+    });
+    // // listen for changes on module selectmenu elements
+    // $(document).on('knobChange', '.knob', function (event, data) {
+    //     console.log(data)
+    //     // only pass values that are actually module knobs
+    //     if($(this).data('parentNodeID')){
+    //         const value = Math.round($(this).val() * 100) / 100
+    //         paramChange($(this).data('parentNodeID'), $(this).data('param'), value)
+    //     }
+    // });
 
     // use this to update UI overlay positions
     cy.on('pan zoom', function (){
@@ -3800,15 +3800,15 @@ document.addEventListener("DOMContentLoaded", function () {
         debugVar = parentNodeData.data.id
         // index determines the left or right positioning of each knob
         let index = 0
-        // paramUIOverlays[parentNodeData.data.id] = []
+        paramUIOverlays[parentNodeData.data.id] = []
 
-        let tempOverlayArray = [ ]
+        // let tempOverlayArray = [ ]
         childrenNodes.forEach((param)=>{
             
             if (param.classes == 'paramAnchorNode' && paramOverlays){
                 let uiOverlay = createFloatingOverlay(parentNodeData.data.id, param, index);
-                
-                tempOverlayArray.push(serializeDivToBase64(uiOverlay))
+                paramUIOverlays[parentNodeData.data.id].push(uiOverlay)
+                // tempOverlayArray.push(serializeDivToBase64(uiOverlay))
                 index++
             }
         })
@@ -3816,7 +3816,6 @@ document.addEventListener("DOMContentLoaded", function () {
         setTimeout(() => {
             updateKnobPositionAndScale('all');
         }, 10); // Wait for the current rendering cycle to complete
-        console.log(tempOverlayArray)
         // * automerge version:        
         amDoc = applyChange(amDoc, (amDoc) => {
             amDoc.elements.push(parentNodeData);
@@ -3827,7 +3826,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // amDoc.paramUIOverlays[parentNodeData.data.id] = tempOverlayArray
         }, onChange, `add ${parentNodeData.data.id}`);
 
-        console.log(amDoc.paramUIOverlays)
+        console.log(paramUIOverlays)
         // update the synthWorklet
         updateSynthWorklet('addNode', parentNode, structure )
 
@@ -4183,9 +4182,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function serializeDivToBase64(div) {
-        console.log(div)
         const htmlString = div.containerDiv.outerHTML; // Get the full HTML of the div
-        console.log(htmlString)
         const encoder = new TextEncoder(); // Convert string to binary
         const binaryData = encoder.encode(htmlString);
         const base64Data = btoa(String.fromCharCode(...binaryData));

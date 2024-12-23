@@ -85,3 +85,6 @@ am throttling updates sent from main app to history-tab at a rate of 1000ms. (on
 note that the audio worklet doesn't process at the sample-level, but the block size. most browsers have a block size of 128 samples. 
 
 using floatingUI to overlay knobs and drop-down menus onto the modules
+  - might talk about how this is a limitation to using cytoscape, where the first version of forking paths used cy nodes to make sliders but it was really clunky. the latest version uses floatingUI to position and maintain position of html elements over modules
+
+todo: use the release() method in the .knob() to get the start and end of a knob gesture and store it as an array in the history sequence

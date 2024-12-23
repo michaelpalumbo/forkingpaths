@@ -32,6 +32,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
     }
 
     audioNodeBuilder(type, moduleName, params){
+        console.log(type, moduleName, params)
         switch (type){
                 
             case 'LFO':
@@ -87,6 +88,26 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                     output: new Float32Array(128),
                 }
             break;
+
+            case 'BiquadFilter':
+                this.nodes[moduleName] = {
+                    node: 'BiquadFilter',
+                    baseParams: {
+                        frequency: parseFloat(params.frequency) || 350,
+                        detune: parseFloat(params.detune) || 0,
+                        Q: parseFloat(params.Q) || 1,
+                        gain: parseFloat(params.gain) || 0,
+                        type: params.type
+                    },
+                    modulatedParams: {
+                        frequency: 0,
+                        detune: 0,
+                        Q: 0,
+                        gain: 0
+                    },
+                    output: new Float32Array(128),
+                }
+            break
             default: 
         }
 
@@ -142,7 +163,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
             break;
             case 'addNode':
                 if(msg.structure === 'webAudioNodes'){
-                    
+                    console.log(msg.data.module, msg.data.moduleName, msg.data.audioGraph.params)
                     this.audioNodeBuilder(msg.data.module, msg.data.moduleName, msg.data.audioGraph.params)
    
                 } else {
@@ -472,7 +493,102 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                     node.delayBuffer[node.delayIndex] = signalBuffers[id][i];
                     node.delayIndex = (node.delayIndex + 1) % node.delayBuffer.length;
                 }
+            } 
+
+            if (node.node === 'BiquadFilter') {
+                const effectiveFrequency = getEffectiveParam(node, 'frequency', node.baseParams['freq cv +/-']);
+                const effectiveDetune = getEffectiveParam(node, 'detune', node.baseParams['detune cv +/-']);
+                const effectiveQ = getEffectiveParam(node, 'Q', node.baseParams['Q cv +/-']);
+                const effectiveGain = getEffectiveParam(node, 'gain', node.baseParams['gain cv +/-']);
+                const filterType = node.baseParams['type'] || 'lowpass';
+        
+                // Convert detune to frequency adjustment
+                const detunedFrequency = effectiveFrequency * Math.pow(2, effectiveDetune / 1200);
+        
+                // Initialize filter coefficients if not done already
+                if (!node.coefficients) {
+                    node.coefficients = { a0: 0, a1: 0, a2: 0, b0: 0, b1: 0, b2: 0 };
+                    node.inputHistory = [0, 0];
+                    node.outputHistory = [0, 0];
+                }
+        
+                // Calculate filter coefficients based on filter type
+                const omega = (2 * Math.PI * detunedFrequency) / sampleRate;
+                const alpha = Math.sin(omega) / (2 * effectiveQ);
+                const A = Math.pow(10, effectiveGain / 40);
+        
+                let b0, b1, b2, a0, a1, a2;
+        
+                switch (filterType) {
+                    case 'lowpass':
+                        b0 = (1 - Math.cos(omega)) / 2;
+                        b1 = 1 - Math.cos(omega);
+                        b2 = (1 - Math.cos(omega)) / 2;
+                        a0 = 1 + alpha;
+                        a1 = -2 * Math.cos(omega);
+                        a2 = 1 - alpha;
+                        break;
+                    case 'highpass':
+                        b0 = (1 + Math.cos(omega)) / 2;
+                        b1 = -(1 + Math.cos(omega));
+                        b2 = (1 + Math.cos(omega)) / 2;
+                        a0 = 1 + alpha;
+                        a1 = -2 * Math.cos(omega);
+                        a2 = 1 - alpha;
+                        break;
+                    case 'bandpass':
+                        b0 = alpha;
+                        b1 = 0;
+                        b2 = -alpha;
+                        a0 = 1 + alpha;
+                        a1 = -2 * Math.cos(omega);
+                        a2 = 1 - alpha;
+                        break;
+                    case 'peaking':
+                        b0 = 1 + alpha * A;
+                        b1 = -2 * Math.cos(omega);
+                        b2 = 1 - alpha * A;
+                        a0 = 1 + alpha / A;
+                        a1 = -2 * Math.cos(omega);
+                        a2 = 1 - alpha / A;
+                        break;
+                    // Add cases for 'lowshelf', 'highshelf', 'notch', 'allpass' as needed
+                    default:
+                        console.warn(`Unsupported filter type: ${filterType}`);
+                        return;
+                }
+        
+                // Normalize coefficients
+                b0 /= a0;
+                b1 /= a0;
+                b2 /= a0;
+                a1 /= a0;
+                a2 /= a0;
+        
+                // Update coefficients
+                node.coefficients = { b0, b1, b2, a0: 1, a1, a2 };
+        
+                // Process input signal
+                for (let i = 0; i < signalBuffers[id].length; i++) {
+                    const input = inputBuffer[i];
+        
+                    const output =
+                        b0 * input +
+                        b1 * node.inputHistory[0] +
+                        b2 * node.inputHistory[1] -
+                        a1 * node.outputHistory[0] -
+                        a2 * node.outputHistory[1];
+        
+                    // Update histories
+                    node.inputHistory[1] = node.inputHistory[0];
+                    node.inputHistory[0] = input;
+                    node.outputHistory[1] = node.outputHistory[0];
+                    node.outputHistory[0] = output;
+        
+                    signalBuffers[id][i] = output;
+                }
             }
+        
 
             // Add processed signal to the node's output buffer
             for (let i = 0; i < signalBuffers[id].length; i++) {

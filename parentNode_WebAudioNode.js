@@ -3,6 +3,15 @@ import {uuidv7} from 'uuidv7'
 import Chance from 'chance';
 const chance = new Chance();
 
+const moduleBackgrounds = {
+    blue: "#99CCFF",
+    green: "#B3FFB3",
+    red: "#FFCCCC",
+    yellow: "#FFFFCC",
+    purple: "#E6CCFF",
+    orange: "#CCCCCC"
+}
+
 // const modules = audioNodes.webAudioNodes
 export class ParentNode_WebAudioNode {
     constructor(module, position, children, structure) {
@@ -33,9 +42,23 @@ export class ParentNode_WebAudioNode {
 
         this.paramOverlays = []
         this.cv = this.moduleSpec.cvNames        
-        
+        this. moduleColour = null
         this.knobs = []
 
+        // module background colour:
+        switch(this.module){
+            case 'Oscillator':
+            case 'LFO':
+                this.moduleColour = moduleBackgrounds.orange
+            break
+            case 'BiquadFilter':
+                this.moduleColour = moduleBackgrounds.green
+
+            break
+
+            default: this.moduleColour = moduleBackgrounds.purple
+        }
+        console.log(this.moduleColour)
         if(this.params){
             for (let i = 0; i<this.params.length; i++){
                 let param = this.moduleSpec.parameters[this.params[i]]
@@ -108,7 +131,7 @@ export class ParentNode_WebAudioNode {
 
         // Returns the structure of the parent node and its children
         const parentNode = {
-            data: { id: this.moduleName, label: `${this.module} ${this.animal}`, kind: 'module', rnboName: this.module, moduleSpec: this.moduleSpec, structure: this.structure },
+            data: { id: this.moduleName, label: `${this.module} ${this.animal}`, kind: 'module', rnboName: this.module, moduleSpec: this.moduleSpec, structure: this.structure, bgcolour: this.moduleColour },
             position: this.position,
             classes: ':parent',
         };
@@ -129,7 +152,8 @@ export class ParentNode_WebAudioNode {
             const paramAnchorNodeID = `${this.moduleName}_${child.name}`
 
             this.nodeIDs.push(`${paramAnchorNodeID}-anchorNode`)
-
+            console.log(child.name, child.default, child.value)
+            let thisValue
             return [{                  
                 data: {
                     id: paramAnchorNodeID,
@@ -148,7 +172,7 @@ export class ParentNode_WebAudioNode {
                     ui: child.ui,
                     min: child.min || child.minimum || 0,
                     max: child.max || child.maximum || 1,
-                    value: child.default || child.value,
+                    value: child.default || child.value || 0,
                     menuOptions: child.values || 'none',
                     description: child.description
                     
@@ -310,7 +334,7 @@ export class ParentNode_WebAudioNode {
         if(paramOverlays.length === 0){
             paramOverlays = false
         }
-        
+        console.log(parentNode, childrenNodes, audioGraph, paramOverlays)
         return { parentNode, childrenNodes, audioGraph, paramOverlays };
     }
 }
