@@ -16,6 +16,10 @@ import 'jquery-knob';   // Import jQuery Knob plugin
 import * as speaker from "./speaker.json"
 import { computePosition, flip, shift } from '@floating-ui/dom';
 
+
+
+
+
 // TODO: look for comments with this: //* old -repo version 
 // TODO: when new automerge implementation is working, remove their related code sections
 
@@ -37,9 +41,9 @@ let paramUIOverlays = {}
 const eventListeners = []; // Array to track event listeners
 let virtualElements = {}
 
-// * History Sequencer
-let currentIndex = 0;
-let historySequencerWindow;
+// // * History Sequencer
+// let currentIndex = 0;
+// let historySequencerWindow;
 
 // * new automerge implementation
 let Automerge;
@@ -162,7 +166,7 @@ let temporaryCables = {
 // *
 
 document.addEventListener("DOMContentLoaded", function () {
-
+    // Register the grid-guide extension
     // Audio context
     const audioContext = new window.AudioContext();
 
@@ -174,26 +178,26 @@ document.addEventListener("DOMContentLoaded", function () {
     });
     
 
-
-    // on load, check if historySequencer window is already open:
-    const historySequencerWindowOpen = localStorage.getItem('historySequencerWindowOpen');
-    if (historySequencerWindowOpen) {
-        // Try to reconnect to the graph window
-        historySequencerWindow = window.open('', 'HistoryGraph'); // Reuse the named window
-        if (!historySequencerWindow || historySequencerWindow.closed) {
-            openGraphWindow();
-        }
-    } else {
-        openGraphWindow();
-    }
-
+    //!
+    // // on load, check if historySequencer window is already open:
+    // const historySequencerWindowOpen = localStorage.getItem('historySequencerWindowOpen');
+    // if (historySequencerWindowOpen) {
+    //     // Try to reconnect to the graph window
+    //     historySequencerWindow = window.open('', 'HistoryGraph'); // Reuse the named window
+    //     if (!historySequencerWindow || historySequencerWindow.closed) {
+    //         openGraphWindow();
+    //     }
+    // } else {
+    //     openGraphWindow();
+    // }
+    //!
     // Remove the flag when the graph window is closed
-    window.addEventListener('beforeunload', () => {
-        if (historySequencerWindow) {
-            historySequencerWindow.close();
-        }
-        localStorage.removeItem('historySequencerWindowOpen');
-    });
+    // window.addEventListener('beforeunload', () => {
+    //     if (historySequencerWindow) {
+    //         historySequencerWindow.close();
+    //     }
+    //     localStorage.removeItem('historySequencerWindowOpen');
+    // });
     document.getElementById('viewReadme').addEventListener('click', () => {
         fetch('./README.md') // Fetch the README file
             .then(response => response.text())
@@ -233,6 +237,8 @@ document.addEventListener("DOMContentLoaded", function () {
     //* 
     //*
     
+    // cytoscape.use(cytoscapeGridGuide);
+
     const cy = cytoscape({
         container: document.getElementById('cy'),
 
@@ -242,9 +248,10 @@ document.addEventListener("DOMContentLoaded", function () {
             name: 'preset', // Preset layout allows manual positioning
             
         },
-        fit: false,
+        fit: true,
         resize: false,
         userZoomingEnabled: false, // Disable zooming
+        userPanningEnabled: false,
 
         style: [
             {
@@ -452,6 +459,15 @@ document.addEventListener("DOMContentLoaded", function () {
         ]
     });
 
+
+    // Enable Grid-Guide Extension
+    cy.gridGuide({
+        drawGrid: true,
+        snapToGrid: true,
+        gridSpacing: 20,
+        gridColor: '#dedede',
+        lineWidth: 1
+    });
 
     /*
         DOCUMENT HISTORY CYTOSCAPE INSTANCE
@@ -752,7 +768,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             await saveDocument('meta', Automerge.save(meta));
 
-            addSpeaker()
+            // addSpeaker()
         
             currentZoom = cy.zoom()
         } else {
@@ -787,7 +803,7 @@ document.addEventListener("DOMContentLoaded", function () {
     
                 // set the document branch (aka title)  in the editor pane
                 // document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
-                addSpeaker()
+                // addSpeaker()
         
                 currentZoom = cy.zoom()
 
@@ -914,13 +930,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 
                 // panToBranch(historyDAG_cy.getElementById(hash)) //! remove this line when 2nd window is working fully
-                
-                sendMsgToHistoryApp({
-                    appID: 'forkingPathsMain',
-                    cmd: 'panToBranch',
-                    data: hash
+                // !
+                // sendMsgToHistoryApp({
+                //     appID: 'forkingPathsMain',
+                //     cmd: 'panToBranch',
+                //     data: hash
                         
-                })
+                // })
             }
             
             return amDoc;
@@ -952,19 +968,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
     };
     
-    function paramChange(parentNode, paramLabel, value){
+    // function paramChange(parentNode, paramLabel, value){
 
-        updateSynthWorklet('paramChange', {
-            parent: parentNode,
-            param: paramLabel,
-            value: value,
-        });
-        // Update in Automerge
-        amDoc = applyChange(amDoc, (amDoc) => {
-            amDoc.synth.graph.modules[parentNode].params[paramLabel] = value;
-            audioGraphDirty = true;
-        }, onChange, `paramUpdate ${paramLabel} = ${value}`);
-    }
+    //     updateSynthWorklet('paramChange', {
+    //         parent: parentNode,
+    //         param: paramLabel,
+    //         value: value,
+    //     });
+    //     // Update in Automerge
+    //     amDoc = applyChange(amDoc, (amDoc) => {
+    //         amDoc.synth.graph.modules[parentNode].params[paramLabel] = value;
+    //         audioGraphDirty = true;
+    //     }, onChange, `paramUpdate ${paramLabel} = ${value}`);
+    // }
 
 
     function createNewSession(){
@@ -973,11 +989,11 @@ document.addEventListener("DOMContentLoaded", function () {
         deleteDocument('meta')
         updateSynthWorklet('clearGraph')
         // clear the sequences
-        sendMsgToHistoryApp({
-            appID: 'forkingPathsMain',
-            cmd: 'newSession'
+        // sendMsgToHistoryApp({
+        //     appID: 'forkingPathsMain',
+        //     cmd: 'newSession'
                 
-        })
+        // })
         ws.send(JSON.stringify({
             cmd: 'clearHistoryGraph'
         }))
@@ -1056,15 +1072,15 @@ document.addEventListener("DOMContentLoaded", function () {
         // send doc to history app
         reDrawHistoryGraph()
 
-        addSpeaker()
+        // addSpeaker()
     }
-    // save forking paths doc (meta) to disk
-    function saveAutomergeDocument(fileName) {
-        // Generate the binary format of the Automerge document
-        const binaryData = Automerge.save(meta);
+    // save synth to disk
+    function saveSynth(fileName) {
+        // generate the data
+        const data = JSON.stringify(cy.json(), null, 2)
 
         // Create a Blob object for the binary data
-        const blob = new Blob([binaryData], { type: 'application/octet-stream' });
+        const blob = new Blob([data], { type: 'application/json' });
 
         // Create a URL for the Blob
         const url = URL.createObjectURL(blob);
@@ -1085,19 +1101,21 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // save meta to user's computer as .forkingpaths
     async function saveFile(suggestedFilename) {
+        
         // Show the file save dialog
         const fileName = await window.showSaveFilePicker({
             suggestedName: suggestedFilename,
             types: [
                 {
-                    description: "Forking Paths CRDT Files",
-                    accept: { "application/x-fpsynth": [".fpsynth"] }
+                    description: "Forking Paths Synth File",
+                    accept: { "application/x-fpsynth": [".forkingPaths"] }
                 },
             ],
         });
+        let cytoscapeSynthGraph = JSON.stringify(cy.json(), null, 2)
         
         // Create a Blob object for the binary data
-        const blob = new Blob([Automerge.save(meta)], { type: 'application/octet-stream' });
+        const blob = new Blob([cytoscapeSynthGraph], { type: 'application/json' });
 
         // Create a URL for the Blob
         const url = URL.createObjectURL(blob);
@@ -1126,6 +1144,86 @@ document.addEventListener("DOMContentLoaded", function () {
         SYNTH CYTOSCAPE
 
     */
+
+    function loadSynthGraphFromFile(graphJSON) {
+    
+        console.log(graphJSON)
+        parentNodePositions = []; // Array to store positions of all parent nodes
+
+        // Step 1: Extract all parent nodes from the given document
+        const parentNodes = forkedDoc.elements.filter(el => el.classes === ':parent'); // Adjust based on your schema
+        parentNodes.forEach(parentNode => {
+            if (parentNode.position) {
+                parentNodePositions.push({
+                    id: parentNode.data.id,
+                    position: parentNode.position
+                });
+            }
+        });
+    
+        let elements = graphJSON.elements
+    
+        
+
+        // // Sync the positions in `elements`
+        // const syncedElements = syncPositions(forkedDoc);
+        
+        // Clear existing elements from Cytoscape instance
+        cy.elements().remove();
+
+        // remove all dynamicly generated UI overlays (knobs, umenus, etc)
+        removeUIOverlay('allNodes')
+        
+        // ensure their container divs are removed too
+        clearparamContainerDivs()
+
+        cy.json(graphJSON);
+
+    
+        // Finally, run layout
+        // cy.layout({ name: 'preset', fit: false}).run(); // `preset` uses the position data directly  
+
+        parentNodePositions.forEach(parentNode => {
+            const node = cy.getElementById(parentNode.id);
+
+            if (node) {
+                // test
+                let pos = {x: parseFloat(parentNode.position.x), y: parseFloat(parentNode.position.y)}
+                
+                // pos = {x: Math.random() * 100 + 200, y: Math.random() * 100 + 200};
+                    // console.log(`Random`, typeof pos.x, typeof pos.y);
+                pos = {x: 273.3788826175895, y: 434.9628649535062};
+                // let clonedPos = {...pos}
+                node.position(pos); // Set the position manually
+        
+
+                
+                
+            }
+        });
+        // make sure viewport is set back to user's position and zoom
+        cy.zoom(currentZoom)
+        cy.pan(currentPan)
+
+        
+        // add overlay UI elements
+        let index = 0
+        elements.forEach((node)=>{
+            
+            if(node.classes === 'paramAnchorNode'){
+                let value = forkedDoc.synth.graph.modules[node.data.parent].params[node.data.label]
+                createFloatingOverlay(node.data.parent, node, index, value)
+        
+                index++
+            }
+        })
+        // Initial position and scale update. delay it to wait for cytoscape rendering to complete. 
+        setTimeout(() => {
+            updateKnobPositionAndScale('all');
+        }, 10); // Wait for the current rendering cycle to complete
+    }    
+
+    
     // Function to update Cytoscape with the state from forkedDoc
     function updateCytoscapeFromDocument(forkedDoc) {
         
@@ -1215,16 +1313,16 @@ document.addEventListener("DOMContentLoaded", function () {
  
     function reDrawHistoryGraph(){
         metaIsDirty = true
-        if(!throttleSend){
+        // if(!throttleSend){
             
-            sendMsgToHistoryApp({
-                appID: 'forkingPathsMain',
-                cmd: 'reDrawHistoryGraph',
-                data: meta
+        //     sendMsgToHistoryApp({
+        //         appID: 'forkingPathsMain',
+        //         cmd: 'reDrawHistoryGraph',
+        //         data: meta
                     
-            })
-            throttleSend = true
-        }
+        //     })
+        //     throttleSend = true
+        // }
 
 
         /* 
@@ -2130,16 +2228,16 @@ document.addEventListener("DOMContentLoaded", function () {
                 height: baseKnobSize,  
                 // change: function (value) {
                 //     $(this.$).trigger('knobChange', [parentNodeID, param.data.label, value]);
+                // // },
+                // change: (value) => {
+                //     value = Math.round(value * 100) / 100
+                //     // set params in audio graph:
+                //     paramChange(parentNodeID, param.data.label, value)
                 // },
-                change: (value) => {
-                    value = Math.round(value * 100) / 100
-                    // set params in audio graph:
-                    paramChange(parentNodeID, param.data.label, value)
-                },
-                release: (value) => {
-                    console.log(`gesture ended. see \/\/! comment in .knob().release() in createFloatingOverlay for how to use this`);
-                    //! could use this to get the start and end of a knob gesture and store it as an array in the history sequence
-                },
+                // release: (value) => {
+                //     console.log(`gesture ended. see \/\/! comment in .knob().release() in createFloatingOverlay for how to use this`);
+                //     //! could use this to get the start and end of a knob gesture and store it as an array in the history sequence
+                // },
             });
         } else if (param.data.ui === 'menu'){
             // ignore
@@ -2390,7 +2488,10 @@ document.addEventListener("DOMContentLoaded", function () {
         const nodeIds = cy.nodes().map(node => node.id());
         const AudioDestinationExists = nodeIds.some(id => id.includes('AudioDestination'));
         if(!AudioDestinationExists){
-            addModule('AudioDestination', { x: 50, y: 50}, [   ], 'webAudioNodes')
+            const x = cy.width() - 50;
+            const y = cy.height() - 20;
+
+            addModule('AudioDestination', { x: x, y: y}, [   ], 'webAudioNodes')
             // OutputLimiter.connect(audioContext.destination);
 
         }
@@ -2443,48 +2544,48 @@ document.addEventListener("DOMContentLoaded", function () {
 //* APP COMMUNICATION
 //* Functions that communicate between main app and history app 
 //*
-
-
-    function openGraphWindow() {
-        historySequencerWindow = window.open('historySequencer.html', 'HistoryGraph');
-        localStorage.setItem('historySequencerWindowOpen', true);
+    //!
+    // function openGraphWindow() {
+    //     historySequencerWindow = window.open('historySequencer.html', 'HistoryGraph');
+    //     localStorage.setItem('historySequencerWindowOpen', true);
         
-    }
+    // }
     // Example: Send graph data to the history tab
-    function sendMsgToHistoryApp(data) {
-        if (historySequencerWindow && !historySequencerWindow.closed) {
-            historySequencerWindow.postMessage(data, '*');
-        } else {
-            // console.error('Graph window is not open or has been closed.');
-            openGraphWindow()
-        }
-    }
+    // function sendMsgToHistoryApp(data) {
+    //     if (historySequencerWindow && !historySequencerWindow.closed) {
+    //         historySequencerWindow.postMessage(data, '*');
+    //     } else {
+    //         // console.error('Graph window is not open or has been closed.');
+    //         openGraphWindow()
+    //     }
+    // }
 
+    //!
     // Listen for the historySequencerReady message
-    window.addEventListener('message', (event) => {
+    // window.addEventListener('message', (event) => {
 
-        switch(event.data.cmd){
+    //     switch(event.data.cmd){
 
-            case 'historySequencerReady':
-                sendMsgToHistoryApp({
-                    appID: 'forkingPathsMain',
-                    cmd: 'reDrawHistoryGraph',
-                    data: meta
+    //         case 'historySequencerReady':
+    //             sendMsgToHistoryApp({
+    //                 appID: 'forkingPathsMain',
+    //                 cmd: 'reDrawHistoryGraph',
+    //                 data: meta
                         
-                })
-            break
-            case 'loadVersion':
-                loadVersion(event.data.data.hash, event.data.data.branch)
-            break
+    //             })
+    //         break
+    //         case 'loadVersion':
+    //             loadVersion(event.data.data.hash, event.data.data.branch)
+    //         break
 
-            case 'updateBPM':
-                meta = Automerge.change(meta, (meta) => {
-                    meta.sequencer.bpm = event.data.bpm
-                });
-            break
-        }
+    //         case 'updateBPM':
+    //             meta = Automerge.change(meta, (meta) => {
+    //                 meta.sequencer.bpm = event.data.bpm
+    //             });
+    //         break
+    //     }
 
-    });
+    // });
 
 //*
 //*
@@ -2524,18 +2625,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     cy.off('add');
-
-    document.getElementById('openSynthDesigner').addEventListener('click', () => {
-        window.open('synthDesigner.html')
-
-    });
-
+    
+    //!
     // Open the history sequencer in a new tab
-    document.getElementById('openHistoryWindow').addEventListener('click', () => {
-        historySequencerWindow = window.open('historySequencer.html', 'HistoryGraph');
-        localStorage.setItem('historySequencerWindowOpen', true); 
+    // document.getElementById('openHistoryWindow').addEventListener('click', () => {
+    //     historySequencerWindow = window.open('historySequencer.html', 'HistoryGraph');
+    //     localStorage.setItem('historySequencerWindowOpen', true); 
 
-    });
+    // });
 
     // Reference the module library list element
     const moduleList = document.getElementById('moduleList');
@@ -2592,27 +2689,30 @@ document.addEventListener("DOMContentLoaded", function () {
     
         // Read the file as an ArrayBuffer
         reader.onload = function (e) {
-            const binaryData = new Uint8Array(e.target.result); // Convert to Uint8Array
+            console.log(e)
+            const synthFile = JSON.parse(e.target.result[0]); // Convert to Uint8Array
             try {
-                // Load the Automerge document
-                meta = Automerge.load(binaryData);
-                amDoc = Automerge.load(meta.docs.main)
 
-                updateCytoscapeFromDocument(amDoc);
+                loadSynthGraphFromFile(synthFile)
+                // // Load the Automerge document
+                // meta = Automerge.load(binaryData);
+                // amDoc = Automerge.load(meta.docs.main)
+
+                // updateCytoscapeFromDocument(amDoc);
             
-                previousHash = meta.head.hash
+                // previousHash = meta.head.hash
                 
-                //! historyDAG_cy.elements().remove()
+                // //! historyDAG_cy.elements().remove()
 
-                reDrawHistoryGraph()
+                // reDrawHistoryGraph()
     
-                // ion this case we want the highlighted node to be on the current branch
-                // ! highlightNode(historyDAG_cy.getElementById(meta.head.hash))
+                // // ion this case we want the highlighted node to be on the current branch
+                // // ! highlightNode(historyDAG_cy.getElementById(meta.head.hash))
     
-                // set the document branch (aka title)  in the editor pane
-                document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
+                // // set the document branch (aka title)  in the editor pane
+                // document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
 
-                saveDocument('meta', Automerge.save(meta));
+                // saveDocument('meta', Automerge.save(meta));
             } catch (err) {
                 console.error('Failed to load Automerge document:', err);
                 alert('Failed to load Automerge document. The file may be corrupted.');
@@ -2634,10 +2734,11 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("saveButton").addEventListener("click", () => {
         // check if browser supports the File System Access API
         if(!!window.showSaveFilePicker){
-            
+            console.log('here')
             saveFile("filename.forkingpaths");
         } else {
-            saveAutomergeDocument('session.forkingpaths');
+            
+            saveSynth('session.forkingpaths');
         }
         
     });
@@ -3912,20 +4013,21 @@ document.addEventListener("DOMContentLoaded", function () {
         return numerator / denominator;
     }
 
+    //!
     // messages to historyCy throttling
-    setInterval(() => {
-        throttleSend = false
-        if(metaIsDirty){
-            sendMsgToHistoryApp({
-                appID: 'forkingPathsMain',
-                cmd: 'reDrawHistoryGraph',
-                data: meta
+    // setInterval(() => {
+    //     throttleSend = false
+    //     if(metaIsDirty){
+    //         sendMsgToHistoryApp({
+    //             appID: 'forkingPathsMain',
+    //             cmd: 'reDrawHistoryGraph',
+    //             data: meta
                     
-            })
-        }
+    //         })
+    //     }
 
-        metaIsDirty = false
-    }, THROTTLE_INTERVAL); // Attempt to send updates every interval
+    //     metaIsDirty = false
+    // }, THROTTLE_INTERVAL); // Attempt to send updates every interval
 
 
     function syncPositions(forkedDoc) {

@@ -186,7 +186,7 @@
       }
     },
     "paramNames": ["frequency", "freq cv +/-", "detune", "Q", "Q cv +/-", "gain", "type"],
-    "cvNames": ["frequency", "Q", "gain"],
+    "cvNames": ["freq", "Q", "gain"],
     "cv": {
       "freq": {
         "min": 10,

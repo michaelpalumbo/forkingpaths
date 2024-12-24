@@ -7,7 +7,13 @@
 
     <title>Forking Paths</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.30.3/cytoscape.min.js"></script>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.30.3/cytoscape.min.js"></script> -->
+  <!-- Cytoscape Grid Guide Extension
+
+  
+  <script src="lib/cytoscape-grid-guide.js"></script> -->
+    <script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
+    <script src="lib/cytoscape-grid-guide.js"></script>
     <!-- jQuery Library -->
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 
@@ -22,11 +28,11 @@
             <div class="menu-item">
                 File
                 <div class="dropdown">
-                    <button id="newSession">New Session</button> 
+                    <button id="newSession">New Synth</button> 
                     <hr>
-                    <button id="saveButton">Save Session</button>
-                    <input type="file" id="fileInput" accept=".fpsynth" />
-                    <label for="fileInput" class="custom-file-button">Load Session</label>
+                    <button id="saveButton">Save Synth</button>
+                    <input type="file" id="fileInput" accept=".forkingpaths" />
+                    <label for="fileInput" class="custom-file-button">Load Synth</label>
              
                 </div>
             </div>
@@ -43,7 +49,6 @@
                 <div class="dropdown">
                     <!-- <div id="documentName"></div> -->
                     <button id="openHistoryWindow">Open History Window</button>
-                    <button id="openSynthDesigner">Open Synth Designer</button>
                 </div>
             </div>
             <div class="menu-buttons">
@@ -106,6 +111,6 @@
 
     </div>
 
-    <script type="module" src="script.js"></script>
+    <script type="module" src="synthDesigner.js"></script>
 </body>
 </html>

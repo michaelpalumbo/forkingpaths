@@ -45,6 +45,52 @@
         "OUT"
       ]
     },
+    "VCA": {
+      "parameters": {
+        "gain": {
+          "min": 0,
+          "max": 1,
+          "default": 1,
+          "units": "linear gain",
+          "description": "Sets the base gain applied to the input signal.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of gain for tremolo or dynamic volume changes."
+        },
+        "gain cv +/-": {
+          "min": 0,
+          "max": 1,
+          "default": 0.5,
+          "units": "linear scale",
+          "description": "Attenuates the effect of the CV input on gain modulation.",
+          "modulatable": false,
+          "modulationDescription": "N/A"
+        }
+      },
+      "paramNames": [
+        "gain",
+        "gain cv +/-"
+      ],
+      "cvNames": [
+        "gain"
+      ],
+      "cv": {
+        "gain": {
+          "min": 0,
+          "max": 1,
+          "default": 0,
+          "units": "linear gain",
+          "description": "Control Voltage input for dynamic gain modulation.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation to control gain dynamically."
+        }
+      },
+      "inputs": [
+        "IN"
+      ],
+      "outputs": [
+        "OUT"
+      ]
+    },
     "Oscillator": {
       "parameters": {
         "frequency": {
@@ -121,6 +167,15 @@
           "modulatable": true,
           "modulationDescription": "Audio-rate modulation of detune to create evolving filter effects."
         },
+        "detune": {
+          "min": -1200,
+          "max": 1200,
+          "default": 0,
+          "units": "cents",
+          "description": "Adjusts the frequency by detuning.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of detune to create evolving filter effects."
+        },
         "Q": {
           "min": 0.0001,
           "max": 1000,
@@ -166,18 +221,19 @@
       "paramNames": [
         "frequency",
         "freq cv +/-",
+        "detune",
         "Q",
         "Q cv +/-",
         "gain",
         "type"
       ],
       "cvNames": [
-        "frequency",
+        "freq",
         "Q",
         "gain"
       ],
       "cv": {
-        "frequency": {
+        "freq": {
           "min": 10,
           "max": 22050,
           "default": 350,

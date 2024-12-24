@@ -74,8 +74,10 @@ export class ParentNode_WebAudioNode {
             }
         }
         if(this.cv){
+            console.log(this.cv)
             for (let i = 0; i<this.cv.length; i++){
                 let cv = this.moduleSpec.cv[this.cv[i]]
+                console.log(this.cv[i], cv, this.moduleSpec.cv)
                 cv.kind = 'input'
                 cv.name = this.cv[i]
                 
