@@ -1,0 +1,336 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* Prevent scrollbars */
+  width: 100vw; /* Match viewport width */
+  height: 100vh; /* Match viewport height */
+  font-family: Arial, sans-serif;
+  background-color: #222;
+}
+
+
+ /* General container layout */
+#container {
+  display: grid;
+  grid-template-columns: 15% 85%; /* Left, middle, right columns */
+  grid-template-rows: auto 1fr; /* Automatically size rows */
+  height: 100%; /* Match parent height */
+  width: 100%; /* Match parent width */
+  overflow: hidden; /* Prevent content from overflowing */
+  gap: 10px; /* Optional: space between columns */
+}
+
+#leftColumn, #synthAndHistoryController {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box; /* Prevent padding from affecting dimensions */
+}
+
+/* Menubar styles */
+.menubar {
+  grid-column: 1 / -1; /* Span all columns */
+  grid-row: 1; /* First row */
+  display: flex; /* Use flexbox */
+  justify-content: space-between; /* Space items across the menubar */
+  align-items: center; /* Vertically align items */
+  background-color: #333;
+  padding: 10px;
+  color: white;
+  height: 20px; /* Fixed height for the menubar */
+  z-index: 2005; /* Ensure it stays on top */
+}
+
+.menu-item-container {
+  display: flex; /* Group .menu-item elements */
+  justify-content: flex-start; /* Align to the left */
+  gap: 10px; /* Spacing between items */
+}
+
+.menu-item {
+  position: relative;
+  margin: 0; /* Remove excess margin */
+  cursor: pointer;
+}
+
+.menu-buttons {
+  display: flex; /* Use flexbox for buttons */
+  justify-content: flex-end; /* Align buttons to the right */
+  margin-left: auto; /* Push to the far right */
+  align-items: center; /* Vertical alignment */
+  gap: 10px; /* Spacing between buttons */
+  padding: 40px;
+}
+
+.menu-buttons .action-button {
+  background-color: #444;
+  color: white;
+  border: 1px solid #555;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.menu-buttons .action-button:hover {
+  background-color: #555;
+}
+
+
+.menu-item {
+  position: relative;
+  margin: 0 5px;
+  cursor: pointer;
+}
+
+.menu-item:hover .dropdown {
+  display: block;
+}
+
+.dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  width: 200px;
+  left: 0;
+  background-color: #444;
+  /* border: 1px solid #222; */
+  padding: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+  z-index: 2006
+}
+
+.dropdown button, .custom-file-button {
+  display: block;
+  background-color: transparent;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  text-align: left;
+  cursor: pointer;
+  width: auto; /* Ensure width matches content */
+  box-sizing: border-box; /* Include padding and borders in the width calculation */
+}
+
+.dropdown button:hover {
+  background-color: #555;
+}
+
+.custom-file-button:hover {
+  background-color: #555;
+}
+
+.menu-buttons .action-button {
+  /* display: flex; */
+  background-color: #444;
+  color: white;
+  border: 1px solid #555;
+  padding: 5px 10px;
+  /* margin-left: 10px; */
+  cursor: pointer;
+  margin-left: auto; /* Push the entire .menu-buttons group to the right */
+}
+
+.menu-buttons .action-button:hover {
+  background-color: #555;
+  margin-left: 10px; /* Keep spacing between buttons */
+}
+
+
+/* Left column */
+#leftColumn {
+  grid-column: 1; /* First column */
+  grid-row: 2; /* Full height */
+  display: flex;
+  flex-direction: column; /* Stack children vertically */
+  height: calc(100vh - 50px); /* 95% of viewport height minus the menubar height */
+  width: 100%;
+  padding: 10px;
+  background-color: #f8f8f8; /* Optional for visibility */
+  z-index: 2000
+
+}
+
+/* Style the container div */
+#modulesLibraryContainer {
+  width: 100%; /* Set the desired width */
+  height: 100%; /* Set the desired height */
+  border: 1px solid #ccc; /* Optional: Add a border */
+  overflow-y: auto; /* Enable vertical scrolling */
+  padding: 1px; /* Optional: Add padding inside the container */
+}
+#moduleList {
+  list-style-type: none;
+  padding: 0; /* Optional: Removes left padding of the list */
+  margin: 0;  /* Optional: Removes default margin */
+}
+
+/* Style odd items */
+#moduleList li:nth-child(odd) {
+  background-color: #f8f8f8; /* Off-white */
+}
+
+/* Style even items */
+#moduleList li:nth-child(even) {
+    background-color: #dcdcdc; /* Light grey */
+}
+
+/* Optional: Add padding for better visuals */
+#moduleList li {
+    padding: 5px;
+    cursor: pointer; /* Ensures pointer cursor on hover */
+}
+
+
+
+/* Middle column */
+#synthAndHistoryController {
+  grid-column: 2; /* Middle column */
+  grid-row: 2; /* Full height */
+  display: flex;
+  flex-direction: column; /* Stack children vertically */
+  height: 100%; /* Ensure it uses full height */
+  width: 100%;
+}
+
+/* Inner layout: Vertical split for cy and historySequencer */
+#cy {
+  flex: 8; /* 55% of vertical space */
+  background-color: #f0f0f0; /* Optional for visibility */
+  
+}
+
+#cytoscapeTooltipContainer {
+  flex: 0.5; /* 40% of vertical space */
+  display: grid;
+  background-color: #f8f8f8;
+  height: 100%; /* Full height of this row */
+  text-indent: 10px; /* Shift text by 10px */
+}
+/* Container for the row with historySequencer and thirdDiv */
+#rowContainer {
+  flex: 1.5; /* 40% of vertical space */
+  display: grid;
+  grid-template-columns: 50% 50%; /* 70% for historySequencer, 30% for selectedHistory,  */
+  height: 100%; /* Full height of this row */
+}
+
+/* HistorySequencer styling */
+#historySequencer {
+  background-color: #e0e0e0; /* Optional for visibility */
+  width: 100%; /* Takes 70% width defined by grid */
+}
+
+/* selectedHistory styling */
+#historySequencerCy {
+  background-color: #000000; /* Optional for visibility */
+  width: 100%; /* Takes 30% width defined by grid */
+}
+
+/* Right column (docHistoryPanel) */
+#docHistoryCy {
+  grid-column: 3; /* Right column */
+  grid-row: 1; /* Full height */
+  padding: 10px;
+  background-color: #f8f8f8; /* Optional for visibility */
+  height: 100%; /* Full height */
+  width: 100%;  /* Full width */
+}
+#docHistoryPanel {
+  display: flex;
+  width: 22%;
+  flex-direction: column;
+  height: 100%; /* Adjust this if needed */
+}
+
+
+
+/* file input button */
+#fileInput {
+  display: none;
+}
+
+.bottom-button {
+  position: absolute;
+  bottom: 5%;
+  /* left: 100%; */
+  /* transform: translateX(-50%); Centers the button horizontally */
+}
+
+.highlighted {
+  background-color: yellow; /* Highlight color */
+  font-weight: bold;
+}
+
+
+button {
+  display: inline-block;
+  padding: 2px 6px;
+  background-color: #f0f0f0;
+  color: black;
+  border: 1px solid #000000;
+  border-radius: 2px;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+
+
+
+.radio-group {
+  margin-bottom: 10px;
+}
+
+.radio-group label {
+  margin-right: 20px;
+  font-size: 16px;
+}
+
+input[type="text"] {
+  border: none;
+  background: transparent;
+  text-align: center;
+  font-size: 10; 
+  outline: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* Full-page overlay */
+.overlay {
+  display: none; /* Hidden by default */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent background */
+  z-index: 2000; /* Above other content */
+  justify-content: center;
+  align-items: center;
+}
+
+/* Content inside the overlay */
+.overlay-content {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  width: 80%; /* Width of the settings modal */
+  max-width: 600px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+  text-align: center;
+}
+
+/* Close button */
+.close-overlay {
+  background: #333;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+.close-overlay:hover {
+  background: #555;
+}
+

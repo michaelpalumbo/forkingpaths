@@ -20,7 +20,7 @@ let paramUIOverlays = {}
 
 let virtualElements = {}
 
-let debugVar
+let debugVar;
 
 let isDraggingEnabled = false;
 
@@ -326,22 +326,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     console.warn('gridGuide is being used but not appearing. see code just above this message')
 
-    function createNewSession(){
-        // deletes the document in the indexedDB instance
-        // deleteDocument(docID)
-        // deleteDocument('meta')
-        // updateSynthWorklet('clearGraph')
-        // clear the sequences
-        // sendMsgToHistoryApp({
-        //     appID: 'forkingPathsMain',
-        //     cmd: 'newSession'
-                
-        // })
-        // ws.send(JSON.stringify({
-        //     cmd: 'clearHistoryGraph'
-        // }))
+    function createNewSynth(){
 
-        // Clear existing elements from Cytoscape instance
         cy.elements().remove();
 
         // remove all dynamicly generated UI overlays (knobs, umenus, etc)
@@ -350,79 +336,10 @@ document.addEventListener("DOMContentLoaded", function () {
         // ensure their container divs are removed too
         clearparamContainerDivs()
 
-        // meta = Automerge.from({
-        //     title: "Forking Paths System",
-        //     branches: {},
-        //     branchOrder: [],
-        //     docs: {},
-        //     head: {
-        //         hash: null,
-        //         branch: null
-        //     },
-            
-        //     userSettings: {
-        //         focusNewBranch:false 
-        //     },
-        //     sequencer: {
-        //         bpm: 120,
-        //         ms: 500,
-        //         traversalMode: 'Sequential'
-        //     },
-        //     synth: {
-        //         rnboDeviceCache: null,
-        //     },
-
-        // })
-
-        // amDoc = Automerge.init();
-        // let amMsg = makeChangeMessage(firstBranchName, 'blank_patch')
-        // // Apply initial changes to the new document
-        // amDoc = Automerge.change(amDoc, amMsg, (amDoc) => {
-        //     amDoc.title = firstBranchName;
-        //     amDoc.elements = [],
-        //     amDoc.synth = {
-        //         graph:{
-        //             modules: {
-        //             },
-        //             connections: []
-        //         }
-        //     }
-
-        // });
-        // let hash = Automerge.getHeads(amDoc)[0]
-        // previousHash = hash
-        // branches[amDoc.title] = {
-        //     head: hash,
-        //     root: hash
-        // }
-        
-        // meta = Automerge.change(meta, (meta) => {
-        //     meta.branches[amDoc.title] = {
-        //         head: hash,
-        //         root: null,
-        //         parent: null,
-        //         // doc: amDoc,
-        //         history: [ {hash: hash, parent: null, msg: 'blank_patch'} ] 
-        //     }
-            
-        //     // encode the doc as a binary object for efficiency
-        //     meta.docs[amDoc.title] = Automerge.save(amDoc)
-        //     meta.head.branch = firstBranchName
-        //     meta.head.hash = hash 
-        //     meta.branchOrder.push(amDoc.title)
-            
-        // });
-        // // set the document branch (aka title) in the editor pane
-        // // document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
-
-        // updateCytoscapeFromDocument(amDoc);
-            
-        // previousHash = meta.head.hash
-        // // send doc to history app
-        // reDrawHistoryGraph()
-
-        // addSpeaker()
+        addSpeaker()
     }
+
+    createNewSynth()
     // save synth to disk
     function saveSynth(fileName) {
         // generate the data
@@ -1015,8 +932,8 @@ document.addEventListener("DOMContentLoaded", function () {
         const nodeIds = cy.nodes().map(node => node.id());
         const AudioDestinationExists = nodeIds.some(id => id.includes('AudioDestination'));
         if(!AudioDestinationExists){
-            const x = cy.width() - 50;
-            const y = cy.height() - 20;
+            const x = cy.width() - 100;
+            const y = cy.height() - 50;
 
             addModule('AudioDestination', { x: x, y: y}, [   ], 'webAudioNodes')
             // OutputLimiter.connect(audioContext.destination);
@@ -1261,35 +1178,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
      // Handle keydown event to delete a highlighted edge on backspace or delete
      document.addEventListener('keydown', (event) => {
-
-        /*
-        if (highlightedEdge && (event.key === 'Backspace' || event.key === 'Delete')) {
-            
-            updateSynthWorklet('removeCable', { source: highlightedEdge.data().source, target: highlightedEdge.data().target})
-
-            amDoc = applyChange(amDoc, (amDoc) => {
-                // Find the index of the object that matches the condition
-                const index = amDoc.elements.findIndex(el => el.id === highlightedEdge.data().id);
-
-                // If a match is found, remove the object from the array
-                if (index !== -1) {
-                    amDoc.elements.splice(index, 1);
-                }
-
-                // remove connection from audio graph
-                // Find the index of the object that matches the condition
-                const graphIndex = amDoc.synth.graph.connections.findIndex(el => el.id === highlightedEdge.data().id);
-
-                // If a match is found, remove the object from the array
-                if (graphIndex !== -1) {
-                    amDoc.synth.graph.connections.splice(graphIndex, 1);
-                }
-            }, onChange, `disconnect ${highlightedEdge.data().target} from ${highlightedEdge.data().source}`);
-
-            cy.remove(highlightedEdge)
-            highlightedEdge = null; // Clear the reference after deletion
-        } else 
-        */
         if (highlightedNode && (event.key === 'Backspace' || event.key === 'Delete')){
             if (highlightedNode.isParent()) {
                 const nodeId = highlightedNode.id();
@@ -1303,25 +1191,11 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     // Select the button element by its ID
-    const clearGraphButton = document.getElementById('clearGraph');
-
-    // Add an event listener to the button for the 'click' event
-    clearGraphButton.addEventListener('click', function() {
-        cy.elements().remove()
-
-    });
-
-    // Select the button element by its ID
     const newSession = document.getElementById('newSession');
 
     // open a new session (with empty document)
     newSession.addEventListener('click', function() {
-
-        
-        createNewSession()
-
-        // Reload the page with the new URL
-        // window.location.href = window.location.origin
+        createNewSynth()
     });
 
     
