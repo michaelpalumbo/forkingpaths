@@ -2527,7 +2527,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     document.getElementById('openSynthDesigner').addEventListener('click', () => {
         window.open('synthDesigner.html')
-
     });
 
     // Open the history sequencer in a new tab
