@@ -70,14 +70,13 @@ export class ParentNode_WebAudioNode {
                 this.audioGraph.params[this.params[i]] = param.default
 
                 this.paramOverlays.push(param)
-                console.log(param)
             }
         }
         if(this.cv){
-            console.log(this.cv)
+   
             for (let i = 0; i<this.cv.length; i++){
                 let cv = this.moduleSpec.cv[this.cv[i]]
-                console.log(this.cv[i], cv, this.moduleSpec.cv)
+
                 cv.kind = 'input'
                 cv.name = this.cv[i]
                 

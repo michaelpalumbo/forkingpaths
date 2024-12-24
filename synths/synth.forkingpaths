@@ -313,8 +313,8 @@
           "bgcolour": "#CCCCCC"
         },
         "position": {
-          "x": 332,
-          "y": 182.5
+          "x": 412,
+          "y": 202.5
         },
         "group": "nodes",
         "removed": false,
@@ -343,8 +343,8 @@
           "description": "The frequency of the low frequency oscillator."
         },
         "position": {
-          "x": 390,
-          "y": 70
+          "x": 470,
+          "y": 90
         },
         "group": "nodes",
         "removed": false,
@@ -373,8 +373,8 @@
           "description": "The attenuverter of the frequency CV input"
         },
         "position": {
-          "x": 390,
-          "y": 130
+          "x": 470,
+          "y": 150
         },
         "group": "nodes",
         "removed": false,
@@ -409,8 +409,8 @@
           "description": "The waveform shape of the oscillator."
         },
         "position": {
-          "x": 390,
-          "y": 190
+          "x": 470,
+          "y": 210
         },
         "group": "nodes",
         "removed": false,
@@ -433,8 +433,8 @@
           "description": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects."
         },
         "position": {
-          "x": 370,
-          "y": 230
+          "x": 450,
+          "y": 250
         },
         "group": "nodes",
         "removed": false,
@@ -457,8 +457,8 @@
           "description": null
         },
         "position": {
-          "x": 370,
-          "y": 290
+          "x": 450,
+          "y": 310
         },
         "group": "nodes",
         "removed": false,
@@ -1439,240 +1439,6 @@
         "position": {
           "x": 710,
           "y": 750
-        },
-        "group": "nodes",
-        "removed": false,
-        "selected": false,
-        "selectable": true,
-        "locked": false,
-        "grabbable": true,
-        "pannable": false,
-        "classes": ""
-      },
-      {
-        "data": {
-          "id": "LFO_Pangolin_fb11c6726add",
-          "label": "LFO Pangolin",
-          "kind": "module",
-          "rnboName": "LFO",
-          "moduleSpec": {
-            "parameters": {
-              "frequency": {
-                "min": 0.01,
-                "max": 10,
-                "default": 1,
-                "units": "Hz",
-                "description": "The frequency of the low frequency oscillator.",
-                "modulatable": true,
-                "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects.",
-                "kind": "paramAnchorNode",
-                "name": "frequency",
-                "ui": "knob"
-              },
-              "type": {
-                "values": [
-                  "sine",
-                  "square",
-                  "sawtooth",
-                  "triangle",
-                  "custom"
-                ],
-                "default": "sine",
-                "description": "The waveform shape of the oscillator.",
-                "kind": "paramAnchorNode",
-                "name": "type",
-                "ui": "menu"
-              },
-              "freq cv +/-": {
-                "min": -20,
-                "max": 20,
-                "default": 10,
-                "units": "Hz",
-                "description": "The attenuverter of the frequency CV input",
-                "modulatable": false,
-                "modulationDescription": "The attenuverter of the frequency CV input",
-                "kind": "paramAnchorNode",
-                "name": "freq cv +/-",
-                "ui": "knob"
-              }
-            },
-            "paramNames": [
-              "frequency",
-              "freq cv +/-",
-              "type"
-            ],
-            "cvNames": [
-              "frequency"
-            ],
-            "cv": {
-              "frequency": {
-                "min": 0.01,
-                "max": 10,
-                "default": 5,
-                "units": "Hz",
-                "description": "The frequency of the oscillator.",
-                "modulatable": true,
-                "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects.",
-                "kind": "input",
-                "name": "frequency",
-                "ui": "knob"
-              }
-            },
-            "inputs": [],
-            "outputs": [
-              "OUT"
-            ]
-          },
-          "structure": "webAudioNodes",
-          "bgcolour": "#CCCCCC"
-        },
-        "position": {
-          "x": 512,
-          "y": 192.5
-        },
-        "group": "nodes",
-        "removed": false,
-        "selected": false,
-        "selectable": true,
-        "locked": false,
-        "grabbable": true,
-        "pannable": false,
-        "classes": ":parent"
-      },
-      {
-        "data": {
-          "id": "LFO_Pangolin_fb11c6726add_frequency",
-          "parent": "LFO_Pangolin_fb11c6726add",
-          "label": "frequency",
-          "nameSpace": "LFO_Pangolin_fb11c6726add_frequency.frequency",
-          "kind": "paramAnchorNode",
-          "shape": "ellipse",
-          "bgcolour": "#CCCCCC",
-          "hash": "LFO_Pangolin_fb11c6726add_frequency",
-          "ui": "knob",
-          "min": 0.01,
-          "max": 10,
-          "value": 1,
-          "menuOptions": "none",
-          "description": "The frequency of the low frequency oscillator."
-        },
-        "position": {
-          "x": 570,
-          "y": 70
-        },
-        "group": "nodes",
-        "removed": false,
-        "selected": false,
-        "selectable": true,
-        "locked": false,
-        "grabbable": true,
-        "pannable": false,
-        "classes": "paramAnchorNode"
-      },
-      {
-        "data": {
-          "id": "LFO_Pangolin_fb11c6726add_freq cv +/-",
-          "parent": "LFO_Pangolin_fb11c6726add",
-          "label": "freq cv +/-",
-          "nameSpace": "LFO_Pangolin_fb11c6726add_freq cv +/-.freq cv +/-",
-          "kind": "paramAnchorNode",
-          "shape": "ellipse",
-          "bgcolour": "#CCCCCC",
-          "hash": "LFO_Pangolin_fb11c6726add_freq cv +/-",
-          "ui": "knob",
-          "min": -20,
-          "max": 20,
-          "value": 10,
-          "menuOptions": "none",
-          "description": "The attenuverter of the frequency CV input"
-        },
-        "position": {
-          "x": 570,
-          "y": 130
-        },
-        "group": "nodes",
-        "removed": false,
-        "selected": false,
-        "selectable": true,
-        "locked": false,
-        "grabbable": true,
-        "pannable": false,
-        "classes": "paramAnchorNode"
-      },
-      {
-        "data": {
-          "id": "LFO_Pangolin_fb11c6726add_type",
-          "parent": "LFO_Pangolin_fb11c6726add",
-          "label": "type",
-          "nameSpace": "LFO_Pangolin_fb11c6726add_type.type",
-          "kind": "paramAnchorNode",
-          "shape": "ellipse",
-          "bgcolour": "#CCCCCC",
-          "hash": "LFO_Pangolin_fb11c6726add_type",
-          "ui": "menu",
-          "min": 0,
-          "max": 1,
-          "value": "sine",
-          "menuOptions": [
-            "sine",
-            "square",
-            "sawtooth",
-            "triangle",
-            "custom"
-          ],
-          "description": "The waveform shape of the oscillator."
-        },
-        "position": {
-          "x": 570,
-          "y": 190
-        },
-        "group": "nodes",
-        "removed": false,
-        "selected": false,
-        "selectable": true,
-        "locked": false,
-        "grabbable": true,
-        "pannable": false,
-        "classes": "paramAnchorNode"
-      },
-      {
-        "data": {
-          "id": "LFO_Pangolin_fb11c6726add.frequency",
-          "parent": "LFO_Pangolin_fb11c6726add",
-          "label": "frequency",
-          "kind": "input",
-          "bgcolour": "#FC9A4F",
-          "ghostCableShape": "rectangle",
-          "ghostCableColour": "#5C9AE3",
-          "description": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects."
-        },
-        "position": {
-          "x": 550,
-          "y": 250
-        },
-        "group": "nodes",
-        "removed": false,
-        "selected": false,
-        "selectable": true,
-        "locked": false,
-        "grabbable": true,
-        "pannable": false,
-        "classes": ""
-      },
-      {
-        "data": {
-          "id": "LFO_Pangolin_fb11c6726add.OUT",
-          "parent": "LFO_Pangolin_fb11c6726add",
-          "label": "OUT",
-          "kind": "output",
-          "bgcolour": "#6FB1FC",
-          "ghostCableShape": "triangle",
-          "ghostCableColour": "#E68942",
-          "description": null
-        },
-        "position": {
-          "x": 550,
-          "y": 310
         },
         "group": "nodes",
         "removed": false,

@@ -1103,7 +1103,7 @@ document.addEventListener("DOMContentLoaded", function () {
     async function saveFile(suggestedFilename) {
         
         // Show the file save dialog
-        const fileName = await window.showSaveFilePicker({
+        const fileHandle = await window.showSaveFilePicker({
             suggestedName: suggestedFilename,
             types: [
                 {
@@ -1114,24 +1114,35 @@ document.addEventListener("DOMContentLoaded", function () {
         });
         let cytoscapeSynthGraph = JSON.stringify(cy.json(), null, 2)
         
-        // Create a Blob object for the binary data
-        const blob = new Blob([cytoscapeSynthGraph], { type: 'application/json' });
+        // Create a writable stream for the file
+        const writableStream = await fileHandle.createWritable();
 
-        // Create a URL for the Blob
-        const url = URL.createObjectURL(blob);
+        // Write the data to the file
+        await writableStream.write(cytoscapeSynthGraph);
 
-        // Create a download link
-        const downloadLink = document.createElement('a');
-        downloadLink.href = url;
-        downloadLink.download = fileName.name;
+        // Close the writable stream
+        await writableStream.close();
 
-        // Optionally, add the link to the DOM and simulate a click
-        document.body.appendChild(downloadLink);
-        downloadLink.click();
+        console.log("File saved successfully!");
 
-        // Clean up
-        document.body.removeChild(downloadLink);
-        URL.revokeObjectURL(url); // Release memory
+        // // Create a Blob object for the binary data
+        // const blob = new Blob([cytoscapeSynthGraph], { type: 'application/json' });
+
+        // // Create a URL for the Blob
+        // const url = URL.createObjectURL(blob);
+
+        // // Create a download link
+        // const downloadLink = document.createElement('a');
+        // downloadLink.href = url;
+        // downloadLink.download = fileName.name;
+
+        // // Optionally, add the link to the DOM and simulate a click
+        // document.body.appendChild(downloadLink);
+        // downloadLink.click();
+
+        // // Clean up
+        // document.body.removeChild(downloadLink);
+        // URL.revokeObjectURL(url); // Release memory
 
         // // Write the content to the file
         // const writable = await fileHandle.createWritable();
@@ -1151,7 +1162,7 @@ document.addEventListener("DOMContentLoaded", function () {
         parentNodePositions = []; // Array to store positions of all parent nodes
 
         // Step 1: Extract all parent nodes from the given document
-        const parentNodes = forkedDoc.elements.filter(el => el.classes === ':parent'); // Adjust based on your schema
+        const parentNodes = graphJSON.elements.nodes.filter(el => el.classes === ':parent'); // Adjust based on your schema
         parentNodes.forEach(parentNode => {
             if (parentNode.position) {
                 parentNodePositions.push({
@@ -1161,7 +1172,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     
-        let elements = graphJSON.elements
+        let elements = graphJSON.elements.nodes
     
         
 
@@ -1202,8 +1213,8 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
         // make sure viewport is set back to user's position and zoom
-        cy.zoom(currentZoom)
-        cy.pan(currentPan)
+        // cy.zoom(currentZoom)
+        // cy.pan(currentPan)
 
         
         // add overlay UI elements
@@ -1211,8 +1222,8 @@ document.addEventListener("DOMContentLoaded", function () {
         elements.forEach((node)=>{
             
             if(node.classes === 'paramAnchorNode'){
-                let value = forkedDoc.synth.graph.modules[node.data.parent].params[node.data.label]
-                createFloatingOverlay(node.data.parent, node, index, value)
+                // let value = graphJSON.synth.graph.modules[node.data.parent].params[node.data.label]
+                createFloatingOverlay(node.data.parent, node, index)
         
                 index++
             }
@@ -2687,45 +2698,75 @@ document.addEventListener("DOMContentLoaded", function () {
     
         const reader = new FileReader();
     
-        // Read the file as an ArrayBuffer
-        reader.onload = function (e) {
-            console.log(e)
-            const synthFile = JSON.parse(e.target.result[0]); // Convert to Uint8Array
+        reader.onload = () => {
             try {
+                // Parse the JSON data
+                const jsonData = JSON.parse(reader.result);
+                console.log("Parsed JSON Data:", jsonData);
 
-                loadSynthGraphFromFile(synthFile)
-                // // Load the Automerge document
-                // meta = Automerge.load(binaryData);
-                // amDoc = Automerge.load(meta.docs.main)
+                loadSynthGraphFromFile(jsonData)
 
-                // updateCytoscapeFromDocument(amDoc);
-            
-                // previousHash = meta.head.hash
-                
-                // //! historyDAG_cy.elements().remove()
-
-                // reDrawHistoryGraph()
-    
-                // // ion this case we want the highlighted node to be on the current branch
-                // // ! highlightNode(historyDAG_cy.getElementById(meta.head.hash))
-    
-                // // set the document branch (aka title)  in the editor pane
-                // document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
-
-                // saveDocument('meta', Automerge.save(meta));
-            } catch (err) {
-                console.error('Failed to load Automerge document:', err);
-                alert('Failed to load Automerge document. The file may be corrupted.');
+            } catch (error) {
+                console.error("Failed to parse JSON:", error);
             }
         };
-    
-        // Handle file reading errors
-        reader.onerror = function () {
-            console.error('Error reading file:', reader.error);
-            alert('Failed to read the file.');
+        reader.onerror = () => {
+            console.error("Error reading the file:", reader.error);
         };
+
+        // Start reading the file
+        reader.readAsText(file);
+        
+        // // Read the file as an ArrayBuffer
+        // reader.onload = function (e) {
+
+        //     try {
+        //         // Parse the JSON data
+        //         const jsonData = JSON.parse(reader.result);
+        //         console.log("Parsed JSON Data:", jsonData);
+        //     } catch (error) {
+        //         console.error("Failed to parse JSON:", error);
+        //     }
+
+        //     console.log(e.target.result)
+        //     const synthFile = JSON.parse(e.target.result); 
+
+        //     console.log(synthFile)
+        //     try {
+
+        //         loadSynthGraphFromFile(synthFile)
+        //         // // Load the Automerge document
+        //         // meta = Automerge.load(binaryData);
+        //         // amDoc = Automerge.load(meta.docs.main)
+
+        //         // updateCytoscapeFromDocument(amDoc);
+            
+        //         // previousHash = meta.head.hash
+                
+        //         // //! historyDAG_cy.elements().remove()
+
+        //         // reDrawHistoryGraph()
     
-        reader.readAsArrayBuffer(file); // Start reading the file
+        //         // // ion this case we want the highlighted node to be on the current branch
+        //         // // ! highlightNode(historyDAG_cy.getElementById(meta.head.hash))
+    
+        //         // // set the document branch (aka title)  in the editor pane
+        //         // document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
+
+        //         // saveDocument('meta', Automerge.save(meta));
+        //     } catch (err) {
+        //         console.error('Failed to load Automerge document:', err);
+        //         alert('Failed to load Automerge document. The file may be corrupted.');
+        //     }
+        // };
+    
+        // // Handle file reading errors
+        // reader.onerror = function () {
+        //     console.error('Error reading file:', reader.error);
+        //     alert('Failed to read the file.');
+        // };
+    
+        // reader.readAsArrayBuffer(file); // Start reading the file
     });
 
     
