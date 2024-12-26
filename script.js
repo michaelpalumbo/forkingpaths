@@ -242,10 +242,10 @@ document.addEventListener("DOMContentLoaded", function () {
             name: 'preset', // Preset layout allows manual positioning
             
         },
-        fit: false,
-        resize: false,
+        fit: true,
+        resize: true,
         userZoomingEnabled: false, // Disable zooming
-
+        
         style: [
             {
                 selector: 'node',
@@ -2686,7 +2686,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // get .fpsynth files from user's filesystem
     document.getElementById('loadSynthButton').addEventListener('change', async (event) => {
         const file = event.target.files[0];
-        console.log('snared')
+        // console.log('snared')
     
         if (!file) {
             alert('No file selected');
@@ -2703,10 +2703,34 @@ document.addEventListener("DOMContentLoaded", function () {
     
         reader.onload = () => {
             try {
+                // Clear existing elements from Cytoscape instance
+                cy.elements().remove();
+
+                // remove all dynamicly generated UI overlays (knobs, umenus, etc)
+                removeUIOverlay('allNodes')
+                
+                // ensure their container divs are removed too
+                clearparamContainerDivs()
                 // Parse the JSON data
                 const jsonData = JSON.parse(reader.result);
+                console.log(jsonData)
 
-                loadSynthGraphFromFile(jsonData)
+                // loop through elements, get parents, pass to addModule
+                jsonData.elements.nodes.forEach((node) => {
+                    if(node.classes === ':parent'){
+                        console.log(node.position)
+                        // pass name, position, children, an
+                        // console.log(node.position)d structure into addModule()
+                        addModule(node.data.rnboName, node.position, [ ], node.data.structure)
+                    }
+                })
+                // loadSynthGraphFromFile(jsonData)
+
+                // build synth.graph
+
+                // send synth.graph to audioWorklet
+
+                // update amDoc with synth.graph and cy.elements
 
             } catch (error) {
                 console.error("Failed to parse JSON:", error);
