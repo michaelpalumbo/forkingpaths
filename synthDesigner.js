@@ -340,6 +340,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     createNewSynth()
+    
     // save synth to disk
     function saveSynth(fileName) {
         // generate the data
@@ -1143,8 +1144,8 @@ document.addEventListener("DOMContentLoaded", function () {
             //! historyDAG_cy.zoomingEnabled(true)
         }
         if (event.key === 'Meta' || event.key === 'Control') {
-            allowMultiSelect = false
-            allowPan = true
+            // allowMultiSelect = false
+            // allowPan = true
             // ! historyDAG_cy.userZoomingEnabled(false)
             hid.key.cmd = true
 
@@ -1162,7 +1163,7 @@ document.addEventListener("DOMContentLoaded", function () {
             isDraggingEnabled = false;
         }
         if (event.key === 'Meta' || event.key === 'Control') {
-            allowMultiSelect = false
+            // allowMultiSelect = false
             //! historyDAG_cy.userZoomingEnabled(true)
             hid.key.cmd = false
             // Hide a node by setting display to none
