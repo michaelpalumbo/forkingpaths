@@ -242,7 +242,11 @@ html, body {
 
 
 /* file input button */
-#fileInput {
+#loadSessionButton {
+  display: none;
+}
+
+#loadSynthButton {
   display: none;
 }
 

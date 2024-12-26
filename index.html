@@ -22,12 +22,13 @@
             <div class="menu-item">
                 File
                 <div class="dropdown">
-                    <button id="newSession">New Session</button> 
+                    <button id="newSession">New Patch History</button> 
+                    <input type="file" id="loadSessionButton" accept=".forkingpaths" />
+                    <label for="loadSessionButton" class="custom-file-button">Load Patch History</label>
+                    <button id="saveButton">Save Patch History</button>
                     <hr>
-                    <button id="saveButton">Save Session</button>
-                    <input type="file" id="fileInput" accept=".fpsynth" />
-                    <label for="fileInput" class="custom-file-button">Load Session</label>
-             
+                    <input type="file" id="loadSynthButton" accept=".fpsynth" />
+                    <label for="loadSynthButton" class="custom-file-button">Load Synth</label>     
                 </div>
             </div>
             <div class="menu-item">

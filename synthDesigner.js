@@ -225,59 +225,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     'text-margin-x': 10, // Optional: Move the label slightly up if desired
                 }
             },
-            // {
-            //     selector: '.sliderTrack',
-            //     style: {
-            //         'background-color': '#ddd', // Color for the remote peer's mouse node
-            //         'shape': 'rectangle',
-            //             'width': 'data(length)',
-            //             'height': 10,
-            //             'border-color': '#999',
-            //             'border-width': 1,
-            //             'label': 'data(label)', // Remove label for track
-            //             'text-valign': 'center',    // Vertically center the label
-            //             'text-halign': 'left', 
-            //             'text-margin-y': -20,
-            //             'text-margin-x': 70,
-            //             'text-opacity': 1, // Ensure no text is shown
-            //             'outline-width': 0, // Remove focus outline
-            //             // 'user-select': 'none', // Prevent text selection
-            //             // 'pointer-events': 'none' // Disable pointer events on the track
-            //     }
-            // },
-            // {
-            //     selector: '.sliderHandle',
-            //     style: {
-            //         'background-color': '#4CAF6F',
-            //         'shape': 'ellipse',
-            //         'width': 20,
-            //         'height': 20,
-            //         'label': '', // Remove label for handle
-            //         'text-opacity': 0, // Ensure no text is shown
-            //         'outline-width': 0, // Remove focus outline
-            //         // 'user-select': 'none', // Prevent text selection
-            //         // 'pointer-events': 'auto' // Enable pointer events for handle
-            //     }
-            // },
-            // {
-            //     selector: '.sliderLabel',
-            //     style: {
-            //         'background-color': '#4CAF6F',
-            //         'background-opacity': 0, // Transparent background
-            //         'color': '#333', // Dark text color for good contrast
-            //         'font-size': 12, // Adjust font size as needed
-            //         'text-halign': 'right', // Center the text horizontally
-            //         'text-valign': 'center', // Center the text vertically
-            //         'text-margin-x': -60, // Adjust the margin to position the label above the slider
-            //         'text-margin-y': -10, // Adjust the margin to position the label above the slider
-            //         'font-weight': 'bold', // Make the label stand out
-            //         // 'pointer-events': 'none', // Prevent interaction with the label
-            //         'text-background-opacity': 1, // Background for readability (set to 0 if not needed)
-            //         'text-background-color': '#FFFFFF', // Light background for better visibility
-            //         'text-background-padding': 2, // Add slight padding to the background
-            //         'border-width': 0 // No border around the label
-            //     }
-            // },
             {
                 selector: '.paramAnchorNode',
                 style: {
@@ -294,23 +241,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 }
             }
-
-            // .selector(`#${sliderTrackId}`)
-            // .style({
-            //     'background-color': '#ddd',
-            //     'shape': 'rectangle',
-            //     'width': config.length,
-            //     'height': 10,
-            //     'border-color': '#999',
-            //     'border-width': 1,
-            //     'label': '', // Remove label for track
-            //     'text-opacity': 0, // Ensure no text is shown
-            //     'outline-width': 0, // Remove focus outline
-            //     'user-select': 'none', // Prevent text selection
-            //     'pointer-events': 'none' // Disable pointer events on the track
-            // })
-
-
         ]
     });
 
@@ -367,7 +297,7 @@ document.addEventListener("DOMContentLoaded", function () {
         URL.revokeObjectURL(url); // Release memory
     }
 
-    // save meta to user's computer as .forkingpaths
+    // save synth to user's computer as .fpsynth
     async function saveFile(suggestedFilename) {
         console.log('save', cy.json())
         // Show the file save dialog
@@ -376,7 +306,7 @@ document.addEventListener("DOMContentLoaded", function () {
             types: [
                 {
                     description: "Forking Paths Synth File",
-                    accept: { "application/x-fpsynth": [".forkingPaths"] }
+                    accept: { "application/x-fpsynth": [".fpsynth"] }
                 },
             ],
         });
@@ -390,32 +320,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Close the writable stream
         await writableStream.close();
-
-
-
-        // // Create a Blob object for the binary data
-        // const blob = new Blob([cytoscapeSynthGraph], { type: 'application/json' });
-
-        // // Create a URL for the Blob
-        // const url = URL.createObjectURL(blob);
-
-        // // Create a download link
-        // const downloadLink = document.createElement('a');
-        // downloadLink.href = url;
-        // downloadLink.download = fileName.name;
-
-        // // Optionally, add the link to the DOM and simulate a click
-        // document.body.appendChild(downloadLink);
-        // downloadLink.click();
-
-        // // Clean up
-        // document.body.removeChild(downloadLink);
-        // URL.revokeObjectURL(url); // Release memory
-
-        // // Write the content to the file
-        // const writable = await fileHandle.createWritable();
-        // await writable.write(Automerge.save(meta));
-        // await writable.close();
     }
 
     /* 
@@ -1031,7 +935,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     });
     
-    // get .forkingpaths files from user's filesystem
+    // get .fpsynth files from user's filesystem
     document.getElementById('fileInput').addEventListener('change', async (event) => {
         const file = event.target.files[0];
     
@@ -1041,8 +945,8 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     
         // Ensure the file is a valid Automerge binary (based on extension or type)
-        if (!file.name.endsWith('.forkingpaths')) {
-            alert('Invalid file type. Please select a .forkingpaths file.');
+        if (!file.name.endsWith('.fpsynth')) {
+            alert('Invalid file type. Please select a .fpsynth file.');
             return;
         }
     
@@ -1074,10 +978,10 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("saveButton").addEventListener("click", () => {
         // check if browser supports the File System Access API
         if(!!window.showSaveFilePicker){
-            saveFile("filename.forkingpaths");
+            saveFile("filename.fpsynth");
         } else {
             
-            saveSynth('session.forkingpaths');
+            saveSynth('filename.fpsynth');
         }
         
     });

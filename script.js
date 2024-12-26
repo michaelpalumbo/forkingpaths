@@ -1126,7 +1126,68 @@ document.addEventListener("DOMContentLoaded", function () {
         SYNTH CYTOSCAPE
 
     */
-    // Function to update Cytoscape with the state from forkedDoc
+    function loadSynthGraphFromFile(graphJSON) {
+        console.log(graphJSON)
+        parentNodePositions = []; // Array to store positions of all parent nodes
+
+        // Extract all parent nodes from the given document
+        const parentNodes = graphJSON.elements.nodes.filter(el => el.classes === ':parent');
+        parentNodes.forEach(parentNode => {
+            if (parentNode.position) {
+                parentNodePositions.push({
+                    id: parentNode.data.id,
+                    position: parentNode.position
+                });
+            }
+        });
+    
+        let elements = graphJSON.elements.nodes
+
+        // Clear existing elements from Cytoscape instance
+        cy.elements().remove();
+
+        // remove all dynamicly generated UI overlays (knobs, umenus, etc)
+        removeUIOverlay('allNodes')
+        
+        // ensure their container divs are removed too
+        clearparamContainerDivs()
+
+        cy.json(graphJSON);
+        // cy.add(elements)
+
+        parentNodePositions.forEach(parentNode => {
+            const node = cy.getElementById(parentNode.id);
+
+            if (node) {
+                // test
+                let pos = {x: parseFloat(parentNode.position.x), y: parseFloat(parentNode.position.y)}
+                
+                // pos = {x: Math.random() * 100 + 200, y: Math.random() * 100 + 200};
+                    // console.log(`Random`, typeof pos.x, typeof pos.y);
+                // pos = {x: 273.3788826175895, y: 434.9628649535062};
+                // let clonedPos = {...pos}
+                node.position(pos); // Set the position manually  
+            }
+        });
+        
+        // add overlay UI elements
+        let index = 0
+        elements.forEach((node)=>{
+            
+            if(node.classes === 'paramAnchorNode'){
+                // let value = graphJSON.synth.graph.modules[node.data.parent].params[node.data.label]
+                createFloatingOverlay(node.data.parent, node, index)
+        
+                index++
+            }
+        })
+        // Initial position and scale update. delay it to wait for cytoscape rendering to complete. 
+        setTimeout(() => {
+            updateKnobPositionAndScale('all');
+        }, 10); // Wait for the current rendering cycle to complete
+    } 
+    
+        // Function to update Cytoscape with the state from forkedDoc
     function updateCytoscapeFromDocument(forkedDoc) {
         
         
@@ -2573,7 +2634,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
     
     // get .forkingpaths files from user's filesystem
-    document.getElementById('fileInput').addEventListener('change', async (event) => {
+    document.getElementById('loadSessionButton').addEventListener('change', async (event) => {
         const file = event.target.files[0];
     
         if (!file) {
@@ -2601,12 +2662,7 @@ document.addEventListener("DOMContentLoaded", function () {
             
                 previousHash = meta.head.hash
                 
-                //! historyDAG_cy.elements().remove()
-
                 reDrawHistoryGraph()
-    
-                // ion this case we want the highlighted node to be on the current branch
-                // ! highlightNode(historyDAG_cy.getElementById(meta.head.hash))
     
                 // set the document branch (aka title)  in the editor pane
                 document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
@@ -2626,6 +2682,45 @@ document.addEventListener("DOMContentLoaded", function () {
     
         reader.readAsArrayBuffer(file); // Start reading the file
     });
+
+    // get .fpsynth files from user's filesystem
+    document.getElementById('loadSynthButton').addEventListener('change', async (event) => {
+        const file = event.target.files[0];
+        console.log('snared')
+    
+        if (!file) {
+            alert('No file selected');
+            return;
+        }
+    
+        // Ensure the file is a valid Automerge binary (based on extension or type)
+        if (!file.name.endsWith('.fpsynth')) {
+            alert('Invalid file type. Please select a .fpsynth file.');
+            return;
+        }
+    
+        const reader = new FileReader();
+    
+        reader.onload = () => {
+            try {
+                // Parse the JSON data
+                const jsonData = JSON.parse(reader.result);
+
+                loadSynthGraphFromFile(jsonData)
+
+            } catch (error) {
+                console.error("Failed to parse JSON:", error);
+            }
+        };
+        reader.onerror = () => {
+            console.error("Error reading the file:", reader.error);
+        };
+
+        // Start reading the file
+        reader.readAsText(file);
+        
+    });
+    
 
     
     
