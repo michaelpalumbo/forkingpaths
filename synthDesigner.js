@@ -104,7 +104,7 @@ document.addEventListener("DOMContentLoaded", function () {
             
         },
         fit: true,
-        resize: false,
+        resize: true,
         userZoomingEnabled: false, // Disable zooming
         userPanningEnabled: false,
 
@@ -343,6 +343,7 @@ document.addEventListener("DOMContentLoaded", function () {
     
     // save synth to disk
     function saveSynth(fileName) {
+        
         // generate the data
         const data = JSON.stringify(cy.json(), null, 2)
 
@@ -368,7 +369,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // save meta to user's computer as .forkingpaths
     async function saveFile(suggestedFilename) {
-        
+        console.log('save', cy.json())
         // Show the file save dialog
         const fileHandle = await window.showSaveFilePicker({
             suggestedName: suggestedFilename,
@@ -380,7 +381,7 @@ document.addEventListener("DOMContentLoaded", function () {
             ],
         });
         let cytoscapeSynthGraph = JSON.stringify(cy.json(), null, 2)
-        
+
         // Create a writable stream for the file
         const writableStream = await fileHandle.createWritable();
 
@@ -424,7 +425,7 @@ document.addEventListener("DOMContentLoaded", function () {
     */
 
     function loadSynthGraphFromFile(graphJSON) {
-    
+        console.log(graphJSON)
         parentNodePositions = []; // Array to store positions of all parent nodes
 
         // Step 1: Extract all parent nodes from the given document
@@ -455,7 +456,7 @@ document.addEventListener("DOMContentLoaded", function () {
         clearparamContainerDivs()
 
         cy.json(graphJSON);
-
+        // cy.add(elements)
     
         // Finally, run layout
         // cy.layout({ name: 'preset', fit: false}).run(); // `preset` uses the position data directly  
@@ -469,7 +470,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 
                 // pos = {x: Math.random() * 100 + 200, y: Math.random() * 100 + 200};
                     // console.log(`Random`, typeof pos.x, typeof pos.y);
-                pos = {x: 273.3788826175895, y: 434.9628649535062};
+                // pos = {x: 273.3788826175895, y: 434.9628649535062};
                 // let clonedPos = {...pos}
                 node.position(pos); // Set the position manually
         
