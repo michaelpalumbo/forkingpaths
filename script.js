@@ -969,30 +969,33 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     function removeAllCables(){
-        
-        console.warn(`this feature isn't setup yet, see function removeAllCables`)
-        // updateSynthWorklet('removeCable', { source: highlightedEdge.data().source, target: highlightedEdge.data().target})
+        console.warn(`nope, this isn't ready yet. see function removeAllCables. \nits almost ready, but the way that automerge handles array manipulation is super annoying...`)
+        /*
+        let indexes = []
+        const newElements = [];
 
-        // amDoc = applyChange(amDoc, (amDoc) => {
-        //     // Find the index of the object that matches the condition
-        //     const index = amDoc.elements.findIndex(el => el.id === highlightedEdge.data().id);
+        amDoc.elements.forEach((el, index)=>{
+            if(el.type && el.type == 'edge'){
+                newElements.push(el);
+                // update audio
+                updateSynthWorklet('removeCable', { source: el.data.source, target: el.data.target})
 
-        //     // If a match is found, remove the object from the array
-        //     if (index !== -1) {
-        //         amDoc.elements.splice(index, 1);
-        //     }
 
-        //     // remove connection from audio graph
-        //     // Find the index of the object that matches the condition
-        //     const graphIndex = amDoc.synth.graph.connections.findIndex(el => el.id === highlightedEdge.data().id);
+            }
+        })        
 
-        //     // If a match is found, remove the object from the array
-        //     if (graphIndex !== -1) {
-        //         amDoc.synth.graph.connections.splice(graphIndex, 1);
-        //     }
-        // }, onChange, `disconnect ${highlightedEdge.data().target} from ${highlightedEdge.data().source}`);
+        amDoc = applyChange(amDoc, (amDoc) => {
+            // Create a new array for elements without 'edge' type
+            // Remove all elements in-place
+            filterAutomergeArray(amDoc, "elements", (el) => el.type !== 'edge');
+            
+            amDoc.synth.graph.connections = []
 
-        // cy.edges().remove();
+
+        }, onChange, `clear cables`);
+        console.log(amDoc.elements)
+        cy.edges().remove();
+        */
     }
     function createNewSession(synthFile){
         
@@ -4349,6 +4352,11 @@ document.addEventListener("DOMContentLoaded", function () {
             updateKnobPositionAndScale('all');
         }, 10); // Wait for the current rendering cycle to complete
     }  
+
+    function filterAutomergeArray(doc, arrayKey, condition) {
+        const filtered = doc[arrayKey].filter(condition);
+        doc[arrayKey] = filtered; // Replace the array
+    }
 });
 
 
