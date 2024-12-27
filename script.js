@@ -1072,6 +1072,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             cy.json(synthFile.visualGraph)
             
+            
             let index = 0
             synthFile.visualGraph.elements.nodes.forEach((node)=>{
                 
