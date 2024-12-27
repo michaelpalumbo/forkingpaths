@@ -278,7 +278,9 @@ document.addEventListener("DOMContentLoaded", function () {
     // save synth to disk
     function saveSynth(fileName) {
         const synthDef = {
+            filename: fileName,
             visualGraph: cy.json(),
+            paramUIOverlays: paramUIOverlays,
             audioGraph: synthGraph
         }
         // generate the data
@@ -305,14 +307,16 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // save synth to user's computer as .fpsynth
-    async function saveFile(suggestedFilename) {
+    async function saveFile(fileName) {
         const synthDef = {
+            filename: fileName,
             visualGraph: cy.json(),
+            paramUIOverlays: paramUIOverlays,
             audioGraph: synthGraph
         }
         // Show the file save dialog
         const fileHandle = await window.showSaveFilePicker({
-            suggestedName: suggestedFilename,
+            suggestedName: fileName,
             types: [
                 {
                     description: "Forking Paths Synth File",
@@ -1138,7 +1142,7 @@ document.addEventListener("DOMContentLoaded", function () {
             updateKnobPositionAndScale('all');
         }, 10); // Wait for the current rendering cycle to complete
         synthGraph.modules[parentNodeData.data.id] = audioGraph
-    }
+    }  
 
 
     

@@ -752,7 +752,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             await saveDocument('meta', Automerge.save(meta));
 
-            addSpeaker()
+            // addSpeaker()
         
             currentZoom = cy.zoom()
         } else {
@@ -787,7 +787,7 @@ document.addEventListener("DOMContentLoaded", function () {
     
                 // set the document branch (aka title)  in the editor pane
                 // document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
-                addSpeaker()
+                // addSpeaker()
         
                 currentZoom = cy.zoom()
 
@@ -943,6 +943,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         branchHeads.current = Automerge.getHeads(amDoc)[0]
        
+        console.log(amDoc.elements)
         // update the historyGraph
         reDrawHistoryGraph()
 
@@ -1010,25 +1011,70 @@ document.addEventListener("DOMContentLoaded", function () {
         })
 
         amDoc = Automerge.init();
-        let amMsg = makeChangeMessage(firstBranchName, 'blank_patch')
-        // Apply initial changes to the new document
-        amDoc = Automerge.change(amDoc, amMsg, (amDoc) => {
-            amDoc.title = firstBranchName;
-            if(synthFile){
-                amDoc.elements = synthFile.elements
-            } else { 
-                amDoc.elements = []
-            }
+
+        if(synthFile){
+            // loop through elements, get parents, pass to addModule
+            // synthFile.visualGraph.elements.nodes.forEach((node) => {
+            //     if(node.classes === ':parent'){
+            //         // pass name, position, children, an
+            //         // console.log(node.position)d structure into addModule()
+            //         addModule(node.data.rnboName, node.position, [ ], node.data.structure)
+            //     }
+            // })
             
-            amDoc.synth = {
-                graph:{
-                    modules: {
-                    },
+            let amMsg = makeChangeMessage(firstBranchName, `loaded${synthFile.filename}`)
+            // Apply initial changes to the new document
+            amDoc = Automerge.change(amDoc, amMsg, (amDoc) => {
+                amDoc.title = firstBranchName;
+                amDoc.elements = [ ] 
+                synthFile.visualGraph.elements.nodes.forEach((node)=>{
+                    amDoc.elements.push(node)
+                })
+                
+                amDoc.synth = {
+                    graph: synthFile.audioGraph,
                     connections: []
                 }
-            }
+                
+                audioGraphDirty = true
+            }, onChange, `loaded ${synthFile.filename}`);
 
-        });
+            updateSynthWorklet('loadVersion', amDoc.synth.graph)
+            
+            cy.json(synthFile.visualGraph)
+            console.log(amDoc)
+            let index = 0
+            synthFile.visualGraph.elements.nodes.forEach((node)=>{
+                
+                if(node.classes === 'paramAnchorNode'){
+                    let value = synthFile.audioGraph.modules[node.data.parent].params[node.data.label]
+                    createFloatingOverlay(node.data.parent, node, index, value)
+            
+                    index++
+                }
+            })
+            setTimeout(() => {
+                updateKnobPositionAndScale('all');
+            }, 10); // Wait for the current rendering cycle to complete
+        } else { 
+            let amMsg = makeChangeMessage(firstBranchName, 'blank_patch')
+            // Apply initial changes to the new document
+            amDoc = Automerge.change(amDoc, amMsg, (amDoc) => {
+                amDoc.title = firstBranchName;
+                amDoc.elements = []
+                amDoc.synth = {
+                    graph:{
+                        modules: {
+                        },
+                        connections: []
+                    }
+                }
+            });
+
+            updateCytoscapeFromDocument(amDoc);
+            
+        }
+
         let hash = Automerge.getHeads(amDoc)[0]
         previousHash = hash
         branches[amDoc.title] = {
@@ -1055,13 +1101,13 @@ document.addEventListener("DOMContentLoaded", function () {
         // set the document branch (aka title) in the editor pane
         // document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
 
-        updateCytoscapeFromDocument(amDoc);
+        
             
         previousHash = meta.head.hash
         // send doc to history app
         reDrawHistoryGraph()
 
-        addSpeaker()
+        // addSpeaker()
     }
     // save forking paths doc (meta) to disk
     function saveAutomergeDocument(fileName) {
@@ -2717,21 +2763,17 @@ document.addEventListener("DOMContentLoaded", function () {
                 const jsonData = JSON.parse(reader.result);
                 const visualGraph = jsonData.visualGraph
                 const audioGraph = jsonData.audioGraph
+                createNewSession(jsonData)
+                
                 // loop through elements, get parents, pass to addModule
-                visualGraph.elements.nodes.forEach((node) => {
-                    if(node.classes === ':parent'){
-                        // pass name, position, children, an
-                        // console.log(node.position)d structure into addModule()
-                        addModule(node.data.rnboName, node.position, [ ], node.data.structure)
-                    }
-                })
-                // loadSynthGraphFromFile(jsonData)
+                // visualGraph.elements.nodes.forEach((node) => {
+                //     if(node.classes === ':parent'){
+                //         // pass name, position, children, an
+                //         // console.log(node.position)d structure into addModule()
+                //         addModule(node.data.rnboName, node.position, [ ], node.data.structure)
+                //     }
+                // })
 
-                // build synth.graph
-
-                // send synth.graph to audioWorklet
-
-                // update amDoc with synth.graph and cy.elements
 
             } catch (error) {
                 console.error("Failed to parse JSON:", error);
