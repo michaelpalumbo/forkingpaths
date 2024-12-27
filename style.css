@@ -12,7 +12,7 @@ html, body {
  /* General container layout */
 #container {
   display: grid;
-  grid-template-columns: 15% 85%; /* Left, middle, right columns */
+  /* grid-template-columns: 5% 95%;  */
   grid-template-rows: auto 1fr; /* Automatically size rows */
   height: 100%; /* Match parent height */
   width: 100%; /* Match parent width */
@@ -134,18 +134,18 @@ html, body {
 
 
 /* Left column */
-#leftColumn {
-  grid-column: 1; /* First column */
-  grid-row: 2; /* Full height */
+/* #leftColumn {
+  grid-column: 1;
+  grid-row: 2; 
   display: flex;
-  flex-direction: column; /* Stack children vertically */
-  height: calc(100vh - 50px); /* 95% of viewport height minus the menubar height */
+  flex-direction: column; 
+  height: calc(100vh - 50px); 
   width: 100%;
   padding: 10px;
-  background-color: #f8f8f8; /* Optional for visibility */
+  background-color: #f8f8f8; 
   z-index: 2000
 
-}
+} */
 
 /* Style the container div */
 #modulesLibraryContainer {
@@ -181,7 +181,7 @@ html, body {
 
 /* Middle column */
 #synthAndHistoryController {
-  grid-column: 2; /* Middle column */
+  /* grid-column: 2; */ /* Middle column */
   grid-row: 2; /* Full height */
   display: flex;
   flex-direction: column; /* Stack children vertically */

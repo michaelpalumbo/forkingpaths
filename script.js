@@ -245,7 +245,7 @@ document.addEventListener("DOMContentLoaded", function () {
         fit: true,
         resize: true,
         userZoomingEnabled: false, // Disable zooming
-        
+        userPanningEnabled: false,
         style: [
             {
                 selector: 'node',
@@ -968,11 +968,40 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
 
+    function removeAllCables(){
+        
+        console.warn(`this feature isn't setup yet, see function removeAllCables`)
+        // updateSynthWorklet('removeCable', { source: highlightedEdge.data().source, target: highlightedEdge.data().target})
+
+        // amDoc = applyChange(amDoc, (amDoc) => {
+        //     // Find the index of the object that matches the condition
+        //     const index = amDoc.elements.findIndex(el => el.id === highlightedEdge.data().id);
+
+        //     // If a match is found, remove the object from the array
+        //     if (index !== -1) {
+        //         amDoc.elements.splice(index, 1);
+        //     }
+
+        //     // remove connection from audio graph
+        //     // Find the index of the object that matches the condition
+        //     const graphIndex = amDoc.synth.graph.connections.findIndex(el => el.id === highlightedEdge.data().id);
+
+        //     // If a match is found, remove the object from the array
+        //     if (graphIndex !== -1) {
+        //         amDoc.synth.graph.connections.splice(graphIndex, 1);
+        //     }
+        // }, onChange, `disconnect ${highlightedEdge.data().target} from ${highlightedEdge.data().source}`);
+
+        // cy.edges().remove();
+    }
     function createNewSession(synthFile){
+        
         // deletes the document in the indexedDB instance
         deleteDocument(docID)
         deleteDocument('meta')
         updateSynthWorklet('clearGraph')
+        // ensure their container divs are removed too
+        clearparamContainerDivs()
         // clear the sequences
         sendMsgToHistoryApp({
             appID: 'forkingPathsMain',
@@ -983,8 +1012,14 @@ document.addEventListener("DOMContentLoaded", function () {
             cmd: 'clearHistoryGraph'
         }))
 
+        // Clear existing elements from Cytoscape instance
+        cy.elements().remove();
+        
         // remove all dynamicly generated UI overlays (knobs, umenus, etc)
         removeUIOverlay('allNodes')
+        // ensure their container divs are removed too
+        clearparamContainerDivs()
+
 
         meta = Automerge.from({
             title: "Forking Paths System",
@@ -1013,15 +1048,6 @@ document.addEventListener("DOMContentLoaded", function () {
         amDoc = Automerge.init();
 
         if(synthFile){
-            // loop through elements, get parents, pass to addModule
-            // synthFile.visualGraph.elements.nodes.forEach((node) => {
-            //     if(node.classes === ':parent'){
-            //         // pass name, position, children, an
-            //         // console.log(node.position)d structure into addModule()
-            //         addModule(node.data.rnboName, node.position, [ ], node.data.structure)
-            //     }
-            // })
-            
             let amMsg = makeChangeMessage(firstBranchName, `loaded${synthFile.filename}`)
             // Apply initial changes to the new document
             amDoc = Automerge.change(amDoc, amMsg, (amDoc) => {
@@ -1040,9 +1066,9 @@ document.addEventListener("DOMContentLoaded", function () {
             }, onChange, `loaded ${synthFile.filename}`);
 
             updateSynthWorklet('loadVersion', amDoc.synth.graph)
-            
+
             cy.json(synthFile.visualGraph)
-            console.log(amDoc)
+            
             let index = 0
             synthFile.visualGraph.elements.nodes.forEach((node)=>{
                 
@@ -1081,14 +1107,17 @@ document.addEventListener("DOMContentLoaded", function () {
             head: hash,
             root: hash
         }
-        
+        let msg = 'blank_patch'
+        if (synthFile){
+            msg = synthFile.filename
+        }
         meta = Automerge.change(meta, (meta) => {
             meta.branches[amDoc.title] = {
                 head: hash,
                 root: null,
                 parent: null,
                 // doc: amDoc,
-                history: [ {hash: hash, parent: null, msg: 'blank_patch'} ] 
+                history: [ {hash: hash, parent: null, msg: msg} ] 
             }
             
             // encode the doc as a binary object for efficiency
@@ -2437,62 +2466,62 @@ document.addEventListener("DOMContentLoaded", function () {
         // .removeClass('highlighted');
     }
     // generate list of audio nodes for adding to patch
-    function updateModuleLibrary(){
+    // function updateModuleLibrary(){
         
-        const webAudioNodeNames = Object.keys(modules.webAudioNodes).sort()
-        const RNBODeviceNames = Object.keys(modules.rnboDevices).sort()
+    //     const webAudioNodeNames = Object.keys(modules.webAudioNodes).sort()
+    //     const RNBODeviceNames = Object.keys(modules.rnboDevices).sort()
 
-        // Reference the list element
-        const listElement = document.getElementById('moduleList');
-        // RNBO device category
-        const heading1 = document.createElement('li');
-        heading1.textContent = 'RNBO Devices';
-        heading1.style.fontWeight = 'bold'; // Make the heading stand out
-        heading1.style.pointerEvents = 'none'; // Disable interaction
+    //     // Reference the list element
+    //     const listElement = document.getElementById('moduleList');
+    //     // RNBO device category
+    //     const heading1 = document.createElement('li');
+    //     heading1.textContent = 'RNBO Devices';
+    //     heading1.style.fontWeight = 'bold'; // Make the heading stand out
+    //     heading1.style.pointerEvents = 'none'; // Disable interaction
 
-        listElement.appendChild(heading1);
-         // Loop through the array and create list items
-         RNBODeviceNames.forEach(item => {
-            // Create a new <li> element
-            const listItem = document.createElement('li');
-            // Set the text of the <li> to the current item
-            listItem.textContent = item;
-            listItem.dataset.structure = 'rnboDevices'
-            // Append the <li> to the list
-            listElement.appendChild(listItem);
+    //     listElement.appendChild(heading1);
+    //      // Loop through the array and create list items
+    //      RNBODeviceNames.forEach(item => {
+    //         // Create a new <li> element
+    //         const listItem = document.createElement('li');
+    //         // Set the text of the <li> to the current item
+    //         listItem.textContent = item;
+    //         listItem.dataset.structure = 'rnboDevices'
+    //         // Append the <li> to the list
+    //         listElement.appendChild(listItem);
             
 
-        });       
+    //     });       
 
 
-        // Web Audio Node category
-        const heading2 = document.createElement('li');
-        heading2.textContent = 'Web Audio Nodes';
-        heading2.style.fontWeight = 'bold'; // Make the heading stand out
-        heading2.style.pointerEvents = 'none'; // Disable interaction
+    //     // Web Audio Node category
+    //     const heading2 = document.createElement('li');
+    //     heading2.textContent = 'Web Audio Nodes';
+    //     heading2.style.fontWeight = 'bold'; // Make the heading stand out
+    //     heading2.style.pointerEvents = 'none'; // Disable interaction
 
-        listElement.appendChild(heading2);
-        // Loop through the array and create list items
-        webAudioNodeNames.forEach(item => {
-            if(item != 'AudioDestination' && item != 'AudioWorklet' && item != "OutputLimiter"){
-                // all that are available at the moment
-                if(item === 'BiquadFilter' || item === 'Delay' || item === 'LFO' || item === 'Oscillator' || item === 'Gain' || item === 'ModGain'){
-                    // Create a new <li> element
-                    const listItem = document.createElement('li');
-                    // Set the text of the <li> to the current item
-                    listItem.textContent = item;
+    //     listElement.appendChild(heading2);
+    //     // Loop through the array and create list items
+    //     webAudioNodeNames.forEach(item => {
+    //         if(item != 'AudioDestination' && item != 'AudioWorklet' && item != "OutputLimiter"){
+    //             // all that are available at the moment
+    //             if(item === 'BiquadFilter' || item === 'Delay' || item === 'LFO' || item === 'Oscillator' || item === 'Gain' || item === 'ModGain'){
+    //                 // Create a new <li> element
+    //                 const listItem = document.createElement('li');
+    //                 // Set the text of the <li> to the current item
+    //                 listItem.textContent = item;
 
-                    listItem.dataset.structure = 'webAudioNodes'
-                    // Append the <li> to the list
-                    listElement.appendChild(listItem);
-                }
+    //                 listItem.dataset.structure = 'webAudioNodes'
+    //                 // Append the <li> to the list
+    //                 listElement.appendChild(listItem);
+    //             }
       
-            }
+    //         }
 
-        });
-    }
+    //     });
+    // }
 
-    updateModuleLibrary()
+    // updateModuleLibrary()
 
     function addSpeaker(){
         // check if graph contains a speaker. if not:
@@ -2645,17 +2674,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
     });
 
-    // Reference the module library list element
-    const moduleList = document.getElementById('moduleList');
-    // Add click event listener
-    moduleList.addEventListener('click', (event) => {
-        let loadedModule = event.target.textContent
+    // // Reference the module library list element
+    // const moduleList = document.getElementById('moduleList');
+    // // Add click event listener
+    // moduleList.addEventListener('click', (event) => {
+    //     let loadedModule = event.target.textContent
 
-        if(!loadedModule.includes('RNBO Devices') || !loadedModule.includes('Web Audio Nodes') ){
-            addModule(loadedModule, { x: 200, y: 200 }, [    ], event.target.dataset.structure )
+    //     if(!loadedModule.includes('RNBO Devices') || !loadedModule.includes('Web Audio Nodes') ){
+    //         addModule(loadedModule, { x: 200, y: 200 }, [    ], event.target.dataset.structure )
 
-        }
-    });
+    //     }
+    // });
 
     cy.on('mouseover', 'node', (event) => {
         const node = event.target;
@@ -2751,18 +2780,11 @@ document.addEventListener("DOMContentLoaded", function () {
     
         reader.onload = () => {
             try {
-                // Clear existing elements from Cytoscape instance
-                cy.elements().remove();
 
-                // remove all dynamicly generated UI overlays (knobs, umenus, etc)
-                removeUIOverlay('allNodes')
-                
-                // ensure their container divs are removed too
-                clearparamContainerDivs()
+                localStorage.setItem('synthFile', reader.result);
+
                 // Parse the JSON data
                 const jsonData = JSON.parse(reader.result);
-                const visualGraph = jsonData.visualGraph
-                const audioGraph = jsonData.audioGraph
                 createNewSession(jsonData)
                 
                 // loop through elements, get parents, pass to addModule
@@ -3449,19 +3471,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Add an event listener to the button for the 'click' event
     clearGraphButton.addEventListener('click', function() {
-        cy.elements().remove()
 
-        // * automerge version: 
-        amDoc = applyChange(amDoc, (amDoc) => {
-            amDoc.elements = [ ]
-        }, onChange, `clear`);
-
-        //* old -repo version
-        // handle.change((doc) => {
-        //     doc.elements = []
-        // },{
-        //     message: `clear` // Set a custom change message here
-        // });
+        removeAllCables()
     });
 
     // Select the button element by its ID
