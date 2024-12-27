@@ -43,7 +43,11 @@ let hid = {
     }
 }
 
-
+let synthGraph = {
+    modules: {
+    },
+    connections: []
+}
 
 // *
 // *
@@ -273,9 +277,12 @@ document.addEventListener("DOMContentLoaded", function () {
     
     // save synth to disk
     function saveSynth(fileName) {
-        
+        const synthDef = {
+            visualGraph: cy.json(),
+            audioGraph: synthGraph
+        }
         // generate the data
-        const data = JSON.stringify(cy.json(), null, 2)
+        const data = JSON.stringify(synthDef, null, 2)
 
         // Create a Blob object for the binary data
         const blob = new Blob([data], { type: 'application/json' });
@@ -299,7 +306,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // save synth to user's computer as .fpsynth
     async function saveFile(suggestedFilename) {
-        console.log('save', cy.json())
+        const synthDef = {
+            visualGraph: cy.json(),
+            audioGraph: synthGraph
+        }
         // Show the file save dialog
         const fileHandle = await window.showSaveFilePicker({
             suggestedName: suggestedFilename,
@@ -310,7 +320,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 },
             ],
         });
-        let cytoscapeSynthGraph = JSON.stringify(cy.json(), null, 2)
+        let cytoscapeSynthGraph = JSON.stringify(synthDef, null, 2)
 
         // Create a writable stream for the file
         const writableStream = await fileHandle.createWritable();
@@ -344,12 +354,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     
         let elements = graphJSON.elements.nodes
-    
-        
 
-        // // Sync the positions in `elements`
-        // const syncedElements = syncPositions(forkedDoc);
-        
         // Clear existing elements from Cytoscape instance
         cy.elements().remove();
 
@@ -361,9 +366,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         cy.json(graphJSON);
         // cy.add(elements)
-    
-        // Finally, run layout
-        // cy.layout({ name: 'preset', fit: false}).run(); // `preset` uses the position data directly  
 
         parentNodePositions.forEach(parentNode => {
             const node = cy.getElementById(parentNode.id);
@@ -376,17 +378,9 @@ document.addEventListener("DOMContentLoaded", function () {
                     // console.log(`Random`, typeof pos.x, typeof pos.y);
                 // pos = {x: 273.3788826175895, y: 434.9628649535062};
                 // let clonedPos = {...pos}
-                node.position(pos); // Set the position manually
-        
-
-                
-                
+                node.position(pos); // Set the position manually  
             }
         });
-        // make sure viewport is set back to user's position and zoom
-        // cy.zoom(currentZoom)
-        // cy.pan(currentPan)
-
         
         // add overlay UI elements
         let index = 0
@@ -957,7 +951,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 // Parse the JSON data
                 const jsonData = JSON.parse(reader.result);
 
-                loadSynthGraphFromFile(jsonData)
+                loadSynthGraphFromFile(jsonData.visualGraph)
 
             } catch (error) {
                 console.error("Failed to parse JSON:", error);
@@ -1143,7 +1137,7 @@ document.addEventListener("DOMContentLoaded", function () {
         setTimeout(() => {
             updateKnobPositionAndScale('all');
         }, 10); // Wait for the current rendering cycle to complete
-        
+        synthGraph.modules[parentNodeData.data.id] = audioGraph
     }
 
 

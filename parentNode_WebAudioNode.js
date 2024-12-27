@@ -153,7 +153,6 @@ export class ParentNode_WebAudioNode {
             const paramAnchorNodeID = `${this.moduleName}_${child.name}`
 
             this.nodeIDs.push(`${paramAnchorNodeID}-anchorNode`)
-            console.log(child.name, child.default, child.value)
             let thisValue
             return [{                  
                 data: {
@@ -219,7 +218,6 @@ export class ParentNode_WebAudioNode {
         if(paramOverlays.length === 0){
             paramOverlays = false
         }
-        console.log(parentNode, childrenNodes, audioGraph, paramOverlays)
         return { parentNode, childrenNodes, audioGraph, paramOverlays };
     }
 }

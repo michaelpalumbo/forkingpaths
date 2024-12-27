@@ -967,7 +967,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
 
-    function createNewSession(){
+    function createNewSession(synthFile){
         // deletes the document in the indexedDB instance
         deleteDocument(docID)
         deleteDocument('meta')
@@ -1014,7 +1014,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // Apply initial changes to the new document
         amDoc = Automerge.change(amDoc, amMsg, (amDoc) => {
             amDoc.title = firstBranchName;
-            amDoc.elements = [],
+            amDoc.elements = synthFile.elements,
             amDoc.synth = {
                 graph:{
                     modules: {
@@ -1127,7 +1127,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     */
     function loadSynthGraphFromFile(graphJSON) {
-        console.log(graphJSON)
         parentNodePositions = []; // Array to store positions of all parent nodes
 
         // Extract all parent nodes from the given document
@@ -1163,7 +1162,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 let pos = {x: parseFloat(parentNode.position.x), y: parseFloat(parentNode.position.y)}
                 
                 // pos = {x: Math.random() * 100 + 200, y: Math.random() * 100 + 200};
-                    // console.log(`Random`, typeof pos.x, typeof pos.y);
                 // pos = {x: 273.3788826175895, y: 434.9628649535062};
                 // let clonedPos = {...pos}
                 node.position(pos); // Set the position manually  
@@ -1236,7 +1234,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 let pos = {x: parseFloat(parentNode.position.x), y: parseFloat(parentNode.position.y)}
               
                 // pos = {x: Math.random() * 100 + 200, y: Math.random() * 100 + 200};
-                    // console.log(`Random`, typeof pos.x, typeof pos.y);
                 pos = {x: 273.3788826175895, y: 434.9628649535062};
                 // let clonedPos = {...pos}
                 node.position(pos); // Set the position manually
@@ -2713,12 +2710,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 clearparamContainerDivs()
                 // Parse the JSON data
                 const jsonData = JSON.parse(reader.result);
-                console.log(jsonData)
-
+                const visualGraph = jsonData.visualGraph
+                const audioGraph = jsonData.audioGraph
                 // loop through elements, get parents, pass to addModule
-                jsonData.elements.nodes.forEach((node) => {
+                visualGraph.elements.nodes.forEach((node) => {
                     if(node.classes === ':parent'){
-                        console.log(node.position)
                         // pass name, position, children, an
                         // console.log(node.position)d structure into addModule()
                         addModule(node.data.rnboName, node.position, [ ], node.data.structure)
@@ -3794,7 +3790,6 @@ document.addEventListener("DOMContentLoaded", function () {
             // amDoc.paramUIOverlays[parentNodeData.data.id] = tempOverlayArray
         }, onChange, `add ${parentNodeData.data.id}`);
 
-        console.log(paramUIOverlays)
         // update the synthWorklet
         updateSynthWorklet('addNode', parentNode, structure )
 
@@ -4237,6 +4232,65 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     // cytoscape.use(cytoscapePopper(popperFactory));
+    function loadSynthGraphFromFile(graphJSON) {
+        parentNodePositions = []; // Array to store positions of all parent nodes
+
+        // Step 1: Extract all parent nodes from the given document
+        const parentNodes = graphJSON.elements.nodes.filter(el => el.classes === ':parent'); // Adjust based on your schema
+        parentNodes.forEach(parentNode => {
+            if (parentNode.position) {
+                parentNodePositions.push({
+                    id: parentNode.data.id,
+                    position: parentNode.position
+                });
+            }
+        });
+    
+        let elements = graphJSON.elements.nodes
+
+        // Clear existing elements from Cytoscape instance
+        cy.elements().remove();
+
+        // remove all dynamicly generated UI overlays (knobs, umenus, etc)
+        removeUIOverlay('allNodes')
+        
+        // ensure their container divs are removed too
+        clearparamContainerDivs()
+
+        cy.json(graphJSON);
+        // cy.add(elements)
+
+        parentNodePositions.forEach(parentNode => {
+            const node = cy.getElementById(parentNode.id);
+
+            if (node) {
+                // test
+                let pos = {x: parseFloat(parentNode.position.x), y: parseFloat(parentNode.position.y)}
+                
+                // pos = {x: Math.random() * 100 + 200, y: Math.random() * 100 + 200};
+                    // console.log(`Random`, typeof pos.x, typeof pos.y);
+                // pos = {x: 273.3788826175895, y: 434.9628649535062};
+                // let clonedPos = {...pos}
+                node.position(pos); // Set the position manually  
+            }
+        });
+        
+        // add overlay UI elements
+        let index = 0
+        elements.forEach((node)=>{
+            
+            if(node.classes === 'paramAnchorNode'){
+                // let value = graphJSON.synth.graph.modules[node.data.parent].params[node.data.label]
+                createFloatingOverlay(node.data.parent, node, index)
+        
+                index++
+            }
+        })
+        // Initial position and scale update. delay it to wait for cytoscape rendering to complete. 
+        setTimeout(() => {
+            updateKnobPositionAndScale('all');
+        }, 10); // Wait for the current rendering cycle to complete
+    }  
 });
 
 
