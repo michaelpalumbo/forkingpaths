@@ -745,7 +745,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 
             });
             // set the document branch (aka title) in the editor pane
-            document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
+            // document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
 
             // send doc to history app
             reDrawHistoryGraph()
@@ -1014,7 +1014,12 @@ document.addEventListener("DOMContentLoaded", function () {
         // Apply initial changes to the new document
         amDoc = Automerge.change(amDoc, amMsg, (amDoc) => {
             amDoc.title = firstBranchName;
-            amDoc.elements = synthFile.elements,
+            if(synthFile){
+                amDoc.elements = synthFile.elements
+            } else { 
+                amDoc.elements = []
+            }
+            
             amDoc.synth = {
                 graph:{
                     modules: {
