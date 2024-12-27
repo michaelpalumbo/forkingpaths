@@ -242,7 +242,7 @@ document.addEventListener("DOMContentLoaded", function () {
             name: 'preset', // Preset layout allows manual positioning
             
         },
-        fit: true,
+        fit: false,
         resize: true,
         userZoomingEnabled: false, // Disable zooming
         userPanningEnabled: false,
@@ -1209,6 +1209,10 @@ document.addEventListener("DOMContentLoaded", function () {
         SYNTH CYTOSCAPE
 
     */
+
+        // Add this to your Cytoscape initialization or script
+
+
     function loadSynthGraphFromFile(graphJSON) {
         parentNodePositions = []; // Array to store positions of all parent nodes
 
