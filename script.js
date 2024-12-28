@@ -34,6 +34,8 @@ const baseDropdownWidth = 100; // Base width of the dropdown
 // this is session storage of the ui overlays. 
 let paramUIOverlays = {}
 
+// store the paramOverlay IDs
+let paramUI_IDs = {}
 const eventListeners = []; // Array to track event listeners
 let virtualElements = {}
 
@@ -1367,6 +1369,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // 3. Add new elements to Cytoscape
             cy.add(syncedElements)
+
+            // update knob position(s)
+            if(forkedDoc.changeType && forkedDoc.changeType.msg === 'paramUpdate'){
+                let id = `paramControl_parent:${forkedDoc.changeType.parent}_param:${forkedDoc.changeType.param}`
+                let paramControl = document.getElementById(id)
+                if (paramControl) {
+                    paramControl.value = forkedDoc.changeType.value;
+                  } else {
+                    console.warn(`param with id "${id}" not found.`);
+                  }
+
+            }
         }
         
     
@@ -2209,7 +2223,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Function to create and manage an overlay div
     function createFloatingOverlay(parentNodeID, param, index, loadedValue) { // if loadedValue, this is the value from the amDoc to be passed in
-       console.log('created')
+        
         // const stepSize = determineStepSize(param.min, param.max, 'logarithmic', 100 )
         if(!virtualElements[parentNodeID]){
             virtualElements[parentNodeID] = {
@@ -2241,6 +2255,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if(param.data.ui === 'menu'){
             paramDiv = document.createElement('select');
             // store contextual info about the param
+            paramDiv.id = `paramControl_parent:${parentNodeID}_param:${param.data.label}`
             paramDiv.dataset.parentNodeID = parentNodeID
             paramDiv.dataset.param = param.data.label
 
@@ -2264,6 +2279,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // Create an input element for jQuery Knob
             paramDiv = document.createElement('input');
             // store contextual info about the param
+            paramDiv.id = `paramControl_parent:${parentNodeID}_param:${param.data.label}`
             paramDiv.dataset.parentNodeID = parentNodeID
             paramDiv.dataset.param = param.data.label
             // paramDiv.dataset.description = param.data.description
@@ -2273,7 +2289,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // paramDiv.style.position = 'absolute';
             paramDiv.style.width = `100%`;
             paramDiv.style.height = `100%`;
-            paramDiv.id = `knob_${param.data.id}`
+            // paramDiv.id = `knob_${param.data.id}`
         } else {
             console.warn('missing param ui type in param.data.ui', param.data)
         }
@@ -3948,7 +3964,7 @@ document.addEventListener("DOMContentLoaded", function () {
     //*
 
     function updateSynthWorklet(cmd, data, structure, changeType){
-        console.log(cmd, data, changeType)
+
         switch (cmd) {
             case 'clearGraph':
                 synthWorklet.port.postMessage({ 
@@ -3956,16 +3972,15 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
             break
             case 'loadVersion':
-                console.log(data)
                 // if a loaded version is for a paramChange, no need to recreate the graph
-                if(changeType && changeType.msg === 'paramUpdate'){
-                    synthWorklet.port.postMessage({ cmd: 'paramChange', data: changeType });
-                } else {
-                    synthWorklet.port.postMessage({ 
-                        cmd: 'loadVersion', 
-                        data: data,
-                    });
-                }
+                // if(changeType && changeType.msg === 'paramUpdate'){
+                //     synthWorklet.port.postMessage({ cmd: 'paramChange', data: changeType });
+                // } else {
+                synthWorklet.port.postMessage({ 
+                    cmd: 'loadVersion', 
+                    data: data,
+                });
+                // }
             break
             
             case 'addNode':
