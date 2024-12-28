@@ -775,7 +775,7 @@ document.addEventListener("DOMContentLoaded", function () {
             setTimeout(()=>{
                 updateSynthWorklet('loadVersion', amDoc.synth.graph)
 
-                updateCytoscapeFromDocument(amDoc);
+                updateCytoscapeFromDocument(amDoc, 'buildUI');
                 
                 previousHash = meta.head.hash
                 
@@ -1101,7 +1101,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             });
 
-            updateCytoscapeFromDocument(amDoc);
+            updateCytoscapeFromDocument(amDoc, 'buildUI');
             
         }
 
@@ -1274,83 +1274,100 @@ document.addEventListener("DOMContentLoaded", function () {
     } 
     
         // Function to update Cytoscape with the state from forkedDoc
-    function updateCytoscapeFromDocument(forkedDoc) {
-        
-        
-        parentNodePositions = []; // Array to store positions of all parent nodes
-
-        // Step 1: Extract all parent nodes from the given document
-        const parentNodes = forkedDoc.elements.filter(el => el.classes === ':parent'); // Adjust based on your schema
-        parentNodes.forEach(parentNode => {
-            if (parentNode.position) {
-                parentNodePositions.push({
-                    id: parentNode.data.id,
-                    position: parentNode.position
-                });
-            }
-        });
-    
+    function updateCytoscapeFromDocument(forkedDoc, cmd) {
         let elements = forkedDoc.elements
+
+        // only rebuild the UI if needed
+        if(cmd === 'buildUI'){
+            parentNodePositions = []; // Array to store positions of all parent nodes
+
+            // Step 1: Extract all parent nodes from the given document
+            const parentNodes = forkedDoc.elements.filter(el => el.classes === ':parent'); // Adjust based on your schema
+            parentNodes.forEach(parentNode => {
+                if (parentNode.position) {
+                    parentNodePositions.push({
+                        id: parentNode.data.id,
+                        position: parentNode.position
+                    });
+                }
+            });
+
+
+            // Sync the positions in `elements`
+            const syncedElements = syncPositions(forkedDoc);
+            
+            // Clear existing elements from Cytoscape instance
+            cy.elements().remove();
+
+            // remove all dynamicly generated UI overlays (knobs, umenus, etc)
+            removeUIOverlay('allNodes')
+            
+            // ensure their container divs are removed too
+            clearparamContainerDivs()
+
+            // cy.reset()
+            // 3. Add new elements to Cytoscape
+            cy.add(syncedElements)
+
+            parentNodePositions.forEach(parentNode => {
+                const node = cy.getElementById(parentNode.id);
+    
+                if (node) {
+                    // test
+                    let pos = {x: parseFloat(parentNode.position.x), y: parseFloat(parentNode.position.y)}
+                  
+                    // pos = {x: Math.random() * 100 + 200, y: Math.random() * 100 + 200};
+                    // pos = {x: 273.3788826175895, y: 434.9628649535062};
+                    // let clonedPos = {...pos}
+                    node.position(pos); // Set the position manually
+          
+    
+                    
+                    
+                }
+            });
+            // make sure viewport is set back to user's position and zoom
+            cy.zoom(currentZoom)
+            cy.pan(currentPan)
+    
+            
+            // add overlay UI elements
+            let index = 0
+            elements.forEach((node)=>{
+                
+                if(node.classes === 'paramAnchorNode'){
+                    let value = forkedDoc.synth.graph.modules[node.data.parent].params[node.data.label]
+                    createFloatingOverlay(node.data.parent, node, index, value)
+            
+                    index++
+                }
+            })
+            // Initial position and scale update. delay it to wait for cytoscape rendering to complete. 
+            setTimeout(() => {
+                updateKnobPositionAndScale('all');
+            }, 10); // Wait for the current rendering cycle to complete
+            
+        } else {
+            // Sync the positions in `elements`
+            const syncedElements = syncPositions(forkedDoc);
+            // clear 
+            cy.elements().remove();
+
+            // 3. Add new elements to Cytoscape
+            cy.add(syncedElements)
+        }
+        
+    
+        
  
         
 
-        // Sync the positions in `elements`
-        const syncedElements = syncPositions(forkedDoc);
-        
-        // Clear existing elements from Cytoscape instance
-        cy.elements().remove();
-
-        // remove all dynamicly generated UI overlays (knobs, umenus, etc)
-        removeUIOverlay('allNodes')
-        
-        // ensure their container divs are removed too
-        clearparamContainerDivs()
-
-        // cy.reset()
-        // 3. Add new elements to Cytoscape
-        cy.add(syncedElements)
 
     
         // Finally, run layout
         // cy.layout({ name: 'preset', fit: false}).run(); // `preset` uses the position data directly  
 
-        parentNodePositions.forEach(parentNode => {
-            const node = cy.getElementById(parentNode.id);
 
-            if (node) {
-                // test
-                let pos = {x: parseFloat(parentNode.position.x), y: parseFloat(parentNode.position.y)}
-              
-                // pos = {x: Math.random() * 100 + 200, y: Math.random() * 100 + 200};
-                pos = {x: 273.3788826175895, y: 434.9628649535062};
-                // let clonedPos = {...pos}
-                node.position(pos); // Set the position manually
-      
-
-                
-                
-            }
-        });
-        // make sure viewport is set back to user's position and zoom
-        cy.zoom(currentZoom)
-        cy.pan(currentPan)
-
-        
-        // add overlay UI elements
-        let index = 0
-        elements.forEach((node)=>{
-            
-            if(node.classes === 'paramAnchorNode'){
-                let value = forkedDoc.synth.graph.modules[node.data.parent].params[node.data.label]
-                createFloatingOverlay(node.data.parent, node, index, value)
-        
-                index++
-            }
-        })
-        // Initial position and scale update. delay it to wait for cytoscape rendering to complete. 
-        setTimeout(() => {
-            updateKnobPositionAndScale('all');
-        }, 10); // Wait for the current rendering cycle to complete
     }    
     
 
@@ -2180,7 +2197,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Function to create and manage an overlay div
     function createFloatingOverlay(parentNodeID, param, index, loadedValue) { // if loadedValue, this is the value from the amDoc to be passed in
-       
+       console.log('created')
         // const stepSize = determineStepSize(param.min, param.max, 'logarithmic', 100 )
         if(!virtualElements[parentNodeID]){
             virtualElements[parentNodeID] = {
@@ -2743,7 +2760,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 meta = Automerge.load(binaryData);
                 amDoc = Automerge.load(meta.docs.main)
 
-                updateCytoscapeFromDocument(amDoc);
+                updateCytoscapeFromDocument(amDoc, 'buildUI');
             
                 previousHash = meta.head.hash
                 
