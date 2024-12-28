@@ -943,7 +943,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         branchHeads.current = Automerge.getHeads(amDoc)[0]
        
-        console.log(amDoc.elements)
         // update the historyGraph
         reDrawHistoryGraph()
 
