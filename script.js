@@ -707,6 +707,9 @@ document.addEventListener("DOMContentLoaded", function () {
             // Apply initial changes to the new document
             amDoc = Automerge.change(amDoc, amMsg, (amDoc) => {
                 amDoc.title = firstBranchName;
+                amDoc.changeType = {
+                    msg: 'blank_patch'
+                },
                 amDoc.elements = [],
                 amDoc.synth = {
                     graph:{
@@ -720,6 +723,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
 
             });
+            
 
             let hash = Automerge.getHeads(amDoc)[0]
             previousHash = hash
@@ -759,11 +763,11 @@ document.addEventListener("DOMContentLoaded", function () {
             // meta does contain at least one document, so grab whichever is the one that was last looked at
             amDoc = Automerge.load(meta.docs[meta.head.branch]);
 
-            if(!amDoc.paramUIOverlays){
-                amDoc = applyChange(amDoc, (amDoc) => {        
-                    amDoc.paramUIOverlays = {}
-                }, onChange, `setup param overlay obj`);
-            }
+            // if(!amDoc.paramUIOverlays){
+            //     amDoc = applyChange(amDoc, (amDoc) => {        
+            //         amDoc.paramUIOverlays = {}
+            //     }, onChange, `setup param overlay obj`);
+            // }
             // // store previous head in heads obj
             // branchHeads[branchHeads.current] = {}
             // // update current head to this hash
@@ -773,7 +777,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // branchHeads.previous = Automerge.getHeads(amDoc)[0]
             // wait 1 second before loading content (give the audio worklet a moment to load)
             setTimeout(()=>{
-                updateSynthWorklet('loadVersion', amDoc.synth.graph)
+                updateSynthWorklet('loadVersion', amDoc.synth.graph, null, amDoc.type)
 
                 updateCytoscapeFromDocument(amDoc, 'buildUI');
                 
@@ -963,6 +967,13 @@ document.addEventListener("DOMContentLoaded", function () {
         amDoc = applyChange(amDoc, (amDoc) => {
             amDoc.synth.graph.modules[parentNode].params[paramLabel] = value;
             audioGraphDirty = true;
+            // set the change type
+            amDoc.changeType = {
+                msg: 'paramUpdate',
+                param: paramLabel,
+                parent: parentNode,
+                value, value
+            }
         }, onChange, `paramUpdate ${paramLabel} = ${value}`);
     }
 
@@ -1067,7 +1078,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 audioGraphDirty = true
             }, onChange, `loaded ${synthFile.filename}`);
 
-            updateSynthWorklet('loadVersion', amDoc.synth.graph)
+            updateSynthWorklet('loadVersion', amDoc.synth.graph, null, amDoc.changeType)
 
             cy.json(synthFile.visualGraph)
             
@@ -1274,6 +1285,8 @@ document.addEventListener("DOMContentLoaded", function () {
     
         // Function to update Cytoscape with the state from forkedDoc
     function updateCytoscapeFromDocument(forkedDoc, cmd) {
+
+        console.log(forkedDoc)
         let elements = forkedDoc.elements
 
         // only rebuild the UI if needed
@@ -1433,7 +1446,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (Automerge.getHeads(historicalView)[0] === Automerge.getHeads(amDoc)[0]){
             automergeDocuments.newClone = false
 
-            updateSynthWorklet('loadVersion', historicalView.synth.graph)
+            updateSynthWorklet('loadVersion', historicalView.synth.graph, null, historicalView.changeType)
 
             updateCytoscapeFromDocument(historicalView);
 
@@ -1476,7 +1489,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // get info about targetNode (what was clicked by user)
             branchHeads.previous = Automerge.getHeads(amDoc)[0]
 
-            updateSynthWorklet('loadVersion', historicalView.synth.graph)
+            updateSynthWorklet('loadVersion', historicalView.synth.graph, null, historicalView.changeType)
 
             updateCytoscapeFromDocument(branchDoc);
         } 
@@ -1513,7 +1526,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // get info about targetNode (what was clicked by user)
             branchHeads.previous = Automerge.getHeads(amDoc)[0]
 
-            updateSynthWorklet('loadVersion', historicalView.synth.graph)
+            updateSynthWorklet('loadVersion', historicalView.synth.graph, null, historicalView.changeType)
 
             updateCytoscapeFromDocument(historicalView);
 
@@ -1560,7 +1573,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // get info about targetNode (what was clicked by user)
             branchHeads.previous = Automerge.getHeads(amDoc)[0]
           
-            updateSynthWorklet('loadVersion', historicalView.synth.graph)
+            updateSynthWorklet('loadVersion', historicalView.synth.graph, null, historicalView.changeType)
 
             updateCytoscapeFromDocument(historicalView);
         }
@@ -2940,7 +2953,10 @@ document.addEventListener("DOMContentLoaded", function () {
                         amDoc = applyChange(amDoc, (amDoc) => {
                             // Find the index of the object that matches the condition
                             const index = amDoc.elements.findIndex(el => el.id === edge.data().id);
-
+                            // set the change type
+                            amDoc.changeType = {
+                                msg: 'disconnect'
+                            }
                             // If a match is found, remove the object from the array
                             if (index !== -1) {
                                 amDoc.elements.splice(index, 1);
@@ -2991,7 +3007,10 @@ document.addEventListener("DOMContentLoaded", function () {
                         amDoc = applyChange(amDoc, (amDoc) => {
                             // Find the index of the object that matches the condition
                             const index = amDoc.elements.findIndex(el => el.id === edge.data().id);
-
+                            // set the change type
+                            amDoc.changeType = {
+                                msg: 'disconnect'
+                            }
                             // If a match is found, remove the object from the array
                             if (index !== -1) {
                                 amDoc.elements.splice(index, 1);
@@ -3171,6 +3190,10 @@ document.addEventListener("DOMContentLoaded", function () {
                         id: edgeId,
                         data: { id: edgeId, source: src, target: targ, kind: 'cable' }
                     });
+                    // set the change type
+                    amDoc.changeType = {
+                        msg: 'connect'
+                    }
                     amDoc.synth.graph.connections.push( { source: src, target: targ })
                     audioGraphDirty = true
                 }, onChange,  `connect ${temporaryCables.local.source.data().label} to ${temporaryCables.local.targetNode.data().label}`);
@@ -3214,6 +3237,7 @@ document.addEventListener("DOMContentLoaded", function () {
             temporaryCables.local.ghostNode = null;
         } else if (heldModule){
             // * automerge version: 
+            /*
             const elementIndex = amDoc.elements.findIndex(el => el.data.id === heldModule.data().id);
 
             //  Ensure position values are deeply copied
@@ -3233,25 +3257,10 @@ document.addEventListener("DOMContentLoaded", function () {
     
             }, onChange, `move ${heldModule.data().label}`);
             
+            */
             
-            //* old -repo version
-            // handle.change((newDoc) => {                
-                
-            //     const elementIndex = newDoc.elements.findIndex(el => el.data.id === heldModule.data().id);
-            //     if (elementIndex !== -1) {
-            //         // update the position
-                    
-            //         newDoc.elements[elementIndex].position.x = heldModule.position().x;
-            //         newDoc.elements[elementIndex].position.y = heldModule.position().y;
-            //     }
-
-            // }, {
-            //     message: `move ${heldModule.data().label}` // Set a custom change message here
-            // });
-
-            // if module has any param UI, need to update the internal positioning 
             // toDO: also pass this to automerge handle, and then write a handle.on('change'...) for grabbing this value and passing it to this same function below:
-            updateSliderBoundaries(heldModule)
+            // updateSliderBoundaries(heldModule)
             
             heldModulePos = { }
             heldModule = null
@@ -3367,6 +3376,11 @@ document.addEventListener("DOMContentLoaded", function () {
             updateSynthWorklet('removeCable', { source: highlightedEdge.data().source, target: highlightedEdge.data().target})
 
             amDoc = applyChange(amDoc, (amDoc) => {
+                
+                // set the change type
+                amDoc.changeType = {
+                    msg: 'disconnect'
+                }
                 // Find the index of the object that matches the condition
                 const index = amDoc.elements.findIndex(el => el.id === highlightedEdge.data().id);
 
@@ -3388,6 +3402,7 @@ document.addEventListener("DOMContentLoaded", function () {
             cy.remove(highlightedEdge)
             highlightedEdge = null; // Clear the reference after deletion
         } else if (highlightedNode && (event.key === 'Backspace' || event.key === 'Delete')){
+            /*
             if (highlightedNode.isParent()) {
                 const nodeId = highlightedNode.id();
 
@@ -3487,6 +3502,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 //     message: `remove ${nodeId}` // Set a custom change message here
                 // });
             }
+            */
         }
     });
 
@@ -3871,7 +3887,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // amDoc.paramUIOverlays[parentNodeData.data.id] = tempOverlayArray
         }, onChange, `add ${parentNodeData.data.id}`);
-
+        
         // update the synthWorklet
         updateSynthWorklet('addNode', parentNode, structure )
 
@@ -3889,22 +3905,22 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     
 
-    function updateSliderBoundaries(parentNode){
-        // Update the position constraints for all slider handles that are children of this parent node
-        cy.nodes(`node[parent="${parentNode.data().id}"]`).forEach((childNode) => {
-            if (childNode.hasClass('sliderHandle')) {
-                const trackLength = childNode.data('length') || 100; // Assuming track length is stored in data
-                const newTrackStartX = parentNode.position().x - trackLength / 2;
-                const newTrackEndX = parentNode.position().x + trackLength / 2;
-                const fixedY = parentNode.position().y; // Update if necessary based on your layout logic
+    // function updateSliderBoundaries(parentNode){
+    //     // Update the position constraints for all slider handles that are children of this parent node
+    //     cy.nodes(`node[parent="${parentNode.data().id}"]`).forEach((childNode) => {
+    //         if (childNode.hasClass('sliderHandle')) {
+    //             const trackLength = childNode.data('length') || 100; // Assuming track length is stored in data
+    //             const newTrackStartX = parentNode.position().x - trackLength / 2;
+    //             const newTrackEndX = parentNode.position().x + trackLength / 2;
+    //             const fixedY = parentNode.position().y; // Update if necessary based on your layout logic
 
-                // Update data attributes for the handle to use when dragging
-                childNode.data('trackStartX', newTrackStartX);
-                childNode.data('trackEndX', newTrackEndX);
-                childNode.data('fixedY', fixedY);
-            }
-        });
-    }
+    //             // Update data attributes for the handle to use when dragging
+    //             childNode.data('trackStartX', newTrackStartX);
+    //             childNode.data('trackEndX', newTrackEndX);
+    //             childNode.data('fixedY', fixedY);
+    //         }
+    //     });
+    // }
 
     function displayPeerPointers(peer, position){
         if(!peers.remote[peer]){
@@ -3931,7 +3947,8 @@ document.addEventListener("DOMContentLoaded", function () {
     //* 
     //*
 
-    function updateSynthWorklet(cmd, data, structure){
+    function updateSynthWorklet(cmd, data, structure, changeType){
+        console.log(cmd, data, changeType)
         switch (cmd) {
             case 'clearGraph':
                 synthWorklet.port.postMessage({ 
@@ -3939,10 +3956,16 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
             break
             case 'loadVersion':
-                synthWorklet.port.postMessage({ 
-                    cmd: 'loadVersion', 
-                    data: data,
-                });
+                console.log(data)
+                // if a loaded version is for a paramChange, no need to recreate the graph
+                if(changeType && changeType.msg === 'paramUpdate'){
+                    synthWorklet.port.postMessage({ cmd: 'paramChange', data: changeType });
+                } else {
+                    synthWorklet.port.postMessage({ 
+                        cmd: 'loadVersion', 
+                        data: data,
+                    });
+                }
             break
             
             case 'addNode':
@@ -3981,6 +4004,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 synthWorklet.port.postMessage({ cmd: 'paramChange', data: data });
             break
         }
+    
     }
 
     

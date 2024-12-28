@@ -267,7 +267,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
 
             case 'paramChange':
 
-
+                console.log(msg.data)
                 // this.nodes[msg.data.parent][msg.data.param] = msg.data.value
                 // update the baseParam (the value associated with the knob/control)
                 const targetNode = this.nodes[msg.data.parent];
