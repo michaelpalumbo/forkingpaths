@@ -6,6 +6,7 @@ html, body {
  /* General container layout */
 #container {
   display: grid;
+  
   grid-template-columns: 70% 30%; /* Left, middle, right columns */
   grid-template-rows: 1fr; /* Automatically size rows */
   height: 100vh; /* Full viewport height */
@@ -27,15 +28,33 @@ html, body {
 }
 
 /* Right column (docHistoryPanel) */
-#docHistory-cy {
-  flex: 1; /* Fill available space inside left column */
-  /* grid-row: 1; Full height */
-  overflow: hidden; /* Ensure no scrollbars */
 
+/* Tooltip container: 20% height */
+#cytoscapeTooltipContainer {
+  flex: 0 0 20%; /* Fixed to 20% of the leftColumn height */
   background-color: #f8f8f8; /* Optional for visibility */
-  height: 100%; /* Full height */
-  width: 100%;  /* Full width */
+  padding: 10px; /* Optional padding */
+  box-sizing: border-box; /* Include padding in size calculations */
+  overflow: hidden; /* Prevent overflow */
 }
+
+/* Document history: 80% height */
+#docHistory-cy {
+  flex: 0 0 80%; /* Fixed to 80% of the leftColumn height */
+  background-color: #dcdcdc; /* Optional for visibility */
+  overflow: auto; /* Allow scrolling if content overflows */
+}
+
+/* #docHistory-cy { */
+  /* flex: 1; Fill available space inside left column */
+  
+  /* overflow: hidden; Ensure no scrollbars */
+
+  /* background-color: #f8f8f8; Optional for visibility */
+  /* height: 100%; Full height */
+  /* width: 100%;  Full width */
+/* } */
+
 
 /* Middle column */
 #historyController {

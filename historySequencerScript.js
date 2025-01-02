@@ -107,6 +107,13 @@ document.addEventListener("DOMContentLoaded", function () {
     cytoscape.use( dagre );
     const historyDAG_cy = cytoscape({
         container: document.getElementById('docHistory-cy'),
+
+        // optimization settings:
+        hideEdgesOnViewport: true,
+        pixelRatio: 1,
+        textureOnViewport: true,
+
+
         elements: [],
         zoom: parseFloat(localStorage.getItem('docHistoryCy_Zoom')) || 1., 
         // viewport: {
@@ -115,7 +122,8 @@ document.addEventListener("DOMContentLoaded", function () {
         boxSelectionEnabled: true,
         selectionType: "additive",
         zoomingEnabled: false,
-        
+
+
         layout: graphLayouts[graphStyle],  
         style: [
             {
@@ -946,7 +954,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // console.log('History graph ready to receive updates.');
 
-
+    function setHistoryToolTip(description){
+        const element = document.getElementById('cytoscapeTooltipText');
+        // Set new text content
+        element.textContent = description;
+        
+    }
     
 })
 

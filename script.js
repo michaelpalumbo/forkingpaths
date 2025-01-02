@@ -248,6 +248,7 @@ document.addEventListener("DOMContentLoaded", function () {
         resize: true,
         userZoomingEnabled: false, // Disable zooming
         userPanningEnabled: false,
+        
         style: [
             {
                 selector: 'node',
@@ -629,7 +630,7 @@ document.addEventListener("DOMContentLoaded", function () {
     //* Implement functions for creating, updating, patching, and reverting document states.
     //*
 
-
+ 
     //* NEW AUTOMERGE IMPLEMENTATION
     (async () => {
         // Load Automerge asynchronously and assign it to the global variable
