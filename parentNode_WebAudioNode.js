@@ -135,6 +135,7 @@ export class ParentNode_WebAudioNode {
             data: { id: this.moduleName, label: `${this.module} ${this.animal}`, kind: 'module', rnboName: this.module, moduleSpec: this.moduleSpec, structure: this.structure, bgcolour: this.moduleColour },
             position: this.position,
             classes: ':parent',
+            
         };
         this.nodeIDs.push(this.moduleName)
         const childrenNodes = this.children.flatMap((child, index) => {

@@ -1082,22 +1082,28 @@ document.addEventListener("DOMContentLoaded", function () {
             }, onChange, `loaded ${synthFile.filename}`);
 
             updateSynthWorklet('loadVersion', amDoc.synth.graph, null, amDoc.changeType)
-
-            cy.json(synthFile.visualGraph)
             
-            
-            let index = 0
-            synthFile.visualGraph.elements.nodes.forEach((node)=>{
-                
+            synthFile.visualGraph.elements.nodes.forEach((node, index)=>{
+                // set module grabbable to false -- prevents module movements in main view
+                if(node.classes === ':parent'){
+                    synthFile.visualGraph.elements.nodes[index].grabbable = false
+                    console.log(synthFile.visualGraph.elements.nodes[index])
+                }
+                // create overlays
                 if(node.classes === 'paramAnchorNode'){
                     let value = synthFile.audioGraph.modules[node.data.parent].params[node.data.label]
                     createFloatingOverlay(node.data.parent, node, index, value)
             
-                    index++
+                    // index++
                 }
             })
+            // load synth graph from file into cytoscape
+            cy.json(synthFile.visualGraph)
+
             setTimeout(() => {
                 updateKnobPositionAndScale('all');
+                // Make all nodes non-draggable
+                
             }, 10); // Wait for the current rendering cycle to complete
         } else { 
             let amMsg = makeChangeMessage(firstBranchName, 'blank_patch')
@@ -3870,7 +3876,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // parentNode.getModule('oscillator')
         const { parentNode: parentNodeData, childrenNodes, audioGraph, paramOverlays } = parentNode.getNodeStructure();
-    
+        console.log(parentNode)
         // Add nodes to Cytoscape
         cy.add(parentNodeData);
         cy.add(childrenNodes);
