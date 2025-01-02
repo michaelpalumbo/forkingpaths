@@ -22,9 +22,15 @@ html, body {
   height: 98%; /* Ensure it uses full height */
   width: 100%;
   /* padding: 10px; */
-  background-color: #ffffff; /* Optional for visibility */
+  background-color: white; /* Optional for visibility */
 
 
+}
+
+#cy canvas {
+  background: white !important; /* Ensure canvas is transparent */
+  z-index: 0; /* Place below graph container */
+  pointer-events: none; /* Ensure it doesn't capture clicks */
 }
 
 /* Right column (docHistoryPanel) */
@@ -40,8 +46,9 @@ html, body {
 
 /* Document history: 80% height */
 #docHistory-cy {
+  z-index: 1;
   flex: 0 0 80%; /* Fixed to 80% of the leftColumn height */
-  background-color: #dcdcdc; /* Optional for visibility */
+  background-color: white; /* Optional for visibility */
   overflow: auto; /* Allow scrolling if content overflows */
 }
 

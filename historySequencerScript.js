@@ -16,7 +16,7 @@ let existingHistoryNodeIDs
 let historyHighlightedNode = null
 let historySequencerHighlightedNode = null
 let allowMultiSelect = false;
-let allowPan = false
+let allowPan = true
 let isDraggingEnabled = false;
 let highlightedNode = null
 let graphStyle = 'DAG'
@@ -123,6 +123,8 @@ document.addEventListener("DOMContentLoaded", function () {
         selectionType: "additive",
         zoomingEnabled: false,
 
+        panningEnabled: true,
+        userPanningEnabled: true, // Allows user to pan with scroll gestures
 
         layout: graphLayouts[graphStyle],  
         style: [
@@ -588,7 +590,7 @@ document.addEventListener("DOMContentLoaded", function () {
     document.addEventListener('wheel', function(event) {
         if(allowPan){
             historyDAG_cy.panBy({
-                x: 0,
+                x: event.deltaX,
                 y: event.deltaY 
                 });
         }
@@ -632,7 +634,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
             if (event.key === 'Meta' || event.key === 'Control') {
                 allowMultiSelect = false
-                allowPan = true
+                // allowPan = true
                 historyDAG_cy.userZoomingEnabled(false)
                 hid.key.cmd = true
     
