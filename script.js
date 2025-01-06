@@ -2320,6 +2320,9 @@ document.addEventListener("DOMContentLoaded", function () {
         
 
         if (param.data.ui === 'knob'){
+            let lastValue = null; // use this to filter out repeated values
+
+
             const stepSize = determineStepSize(param.data.min, param.data.max, 'logarithmic', 100 )
             // Initialize jQuery Knob on the input
             $(paramDiv).knob({
@@ -2338,9 +2341,13 @@ document.addEventListener("DOMContentLoaded", function () {
                 //     $(this.$).trigger('knobChange', [parentNodeID, param.data.label, value]);
                 // },
                 change: (value) => {
-                    value = Math.round(value * 100) / 100
-                    // set params in audio graph:
-                    paramChange(parentNodeID, param.data.label, value)
+                    let newValue = Math.round(value * 100) / 100
+                    // filter out repeated values
+                    if (newValue !== lastValue) {
+                        lastValue = newValue;
+                        // set params in audio graph:
+                        paramChange(parentNodeID, param.data.label, newValue)
+                    }
                 },
                 release: (value) => {
                     console.log(`gesture ended. see \/\/! comment in .knob().release() in createFloatingOverlay for how to use this`);
@@ -4432,6 +4439,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const filtered = doc[arrayKey].filter(condition);
         doc[arrayKey] = filtered; // Replace the array
     }
+    
 });
 
 
