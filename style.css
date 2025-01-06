@@ -3,7 +3,7 @@ html, body {
   padding: 0;
   overflow: hidden; /* Prevent scrollbars */
   width: 100vw; /* Match viewport width */
-  height: 100vh; /* Match viewport height */
+  height: 100%; /* Match viewport height */
   font-family: Arial, sans-serif;
   background-color: #222;
 }
