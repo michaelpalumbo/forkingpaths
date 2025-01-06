@@ -1303,7 +1303,6 @@ document.addEventListener("DOMContentLoaded", function () {
         // Function to update Cytoscape with the state from forkedDoc
     function updateCytoscapeFromDocument(forkedDoc, cmd) {
 
-        console.log(forkedDoc)
         let elements = forkedDoc.elements
 
         // only rebuild the UI if needed
@@ -1391,6 +1390,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 let paramControl = document.getElementById(id)
                 if (paramControl) {
                     paramControl.value = forkedDoc.changeType.value;
+                    $(paramControl).val(forkedDoc.changeType.value).trigger('change'); // Refresh the knob display
+
                   } else {
                     console.warn(`param with id "${id}" not found.`);
                   }
