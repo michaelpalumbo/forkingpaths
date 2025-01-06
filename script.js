@@ -662,6 +662,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 synth: {
                     rnboDeviceCache: null,
                 },
+                synthFile: {}
 
 
             })
@@ -1036,8 +1037,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // ensure their container divs are removed too
         clearparamContainerDivs()
 
-
-        meta = Automerge.from({
+        let metaJSON = {
             title: "Forking Paths System",
             branches: {},
             branchOrder: [],
@@ -1059,7 +1059,15 @@ document.addEventListener("DOMContentLoaded", function () {
                 rnboDeviceCache: null,
             },
 
-        })
+        }
+        if(synthFile){
+            metaJSON.synthFile = synthFile
+        } else if (meta.synthFile){
+            // if a synth file had been previously loaded, load it again
+            metaJSON.synthFile = meta.synthFile
+            synthFile = meta.synthFile
+        }
+        meta = Automerge.from(metaJSON)
 
         amDoc = Automerge.init();
 
