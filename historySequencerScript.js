@@ -586,7 +586,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // Log or use the current step (e.g., trigger sound, update UI)
             console.log(`Current Step:`, currentStep);
 
-            if(currentStep.stepChange != '(Empty)'){
+            if(currentStep.status === 'Active'){
                 window.opener?.postMessage({ cmd: 'loadVersion', data: { hash: currentStep.node.id, branch: currentStep.node.branch} }, '*');
             }
             // Move to the next step, wrapping back to the start if at the end
@@ -1144,6 +1144,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 stepLengthCell.textContent = "4n"; // Placeholder for step length
                 row.appendChild(stepLengthCell);
     
+                // create status cell
+                const statusCell = document.createElement("td");
+                statusCell.textContent = `Inactive`; // Placeholder for step name
+                row.appendChild(statusCell);
+                
                         // Add click event listener to the row
                 row.addEventListener("click", () => {
                     if(selectedNode){
@@ -1154,15 +1159,13 @@ document.addEventListener("DOMContentLoaded", function () {
                         row.dataset.label = selectedNode.label
                         row.dataset.branch = selectedNode.branch
         
+                        statusCell.textContent = 'Active'
                         saveSequencerTable()
                     }
 
                 });
 
-                // create active cell
-                const activeCell = document.createElement("td");
-                activeCell.textContent = `Active`; // Placeholder for step name
-                row.appendChild(activeCell);
+
 
                 tableBody.appendChild(row);
             }
@@ -1182,7 +1185,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 return {
                     stepChange: cells[0].textContent, // Step (Change) cell content
                     stepLength: cells[1].textContent, // Step Length cell content
-                    active: true,
+                    status: 'Active',
                     node: {
                         id: row.dataset.id,
                         label: row.dataset.label,
@@ -1194,7 +1197,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 return {
                     stepChange: cells[0].textContent, // Step (Change) cell content
                     stepLength: cells[1].textContent, // Step Length cell content
-                    active: false,
+                    status: 'Inactive',
                 }
             }
 
