@@ -570,10 +570,34 @@ document.addEventListener("DOMContentLoaded", function () {
     // Set the initial BPM
     transport.bpm.value = 120;
     let currentNode = null
+    let stepLength = '8n'
+
+    let currentStepIndex = 0; // Tracks the current step in the table
+
+
     // Schedule the sequencer loop
     transport.scheduleRepeat((time) => {
+
+        // new version: from table
+        if(storedSequencerTable && storedSequencerTable.length > 0){
+                    // Get the current step based on the index
+            const currentStep = storedSequencerTable[currentStepIndex];
+
+            // Log or use the current step (e.g., trigger sound, update UI)
+            console.log(`Current Step:`, currentStep);
+
+            if(currentStep.stepChange != '(Empty)'){
+                window.opener?.postMessage({ cmd: 'loadVersion', data: { hash: currentStep.node.id, branch: currentStep.node.branch} }, '*');
+            }
+            // Move to the next step, wrapping back to the start if at the end
+            currentStepIndex = (currentStepIndex + 1) % storedSequencerTable.length;
+        }
+
+        // old version: from graph
+        return
         let sequencerNodes = historySequencerCy.nodes()
         if (meta && !hid.key.shift && sequencerNodes.length > 0) {
+            
             let node
 
 
@@ -1109,7 +1133,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 
                 // Step (Change) cell
                 const stepCell = document.createElement("td");
-                stepCell.textContent = `Step ${i + 1} (Empty)`; // Placeholder for step name
+                stepCell.textContent = `(Empty)`; // Placeholder for step name
                 row.appendChild(stepCell);
     
                 // Step Length cell

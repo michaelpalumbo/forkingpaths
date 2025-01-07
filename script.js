@@ -196,6 +196,8 @@ document.addEventListener("DOMContentLoaded", function () {
             // console.warn('remember to uncomment the line above this warning')
         }
         localStorage.removeItem('historySequencerWindowOpen');
+        // console.warn('remember to uncomment the line above this warning')
+
     });
     document.getElementById('viewReadme').addEventListener('click', () => {
         fetch('./README.md') // Fetch the README file
