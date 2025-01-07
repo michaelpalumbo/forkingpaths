@@ -93,20 +93,6 @@
                         <button id="clearSequencerButton" class="button is-info">Clear Sequencer</button>
                         <br><br>
 
-                        <!-- Traversal Mode Radio Buttons -->
-                        <div class="field">
-                            <label class="label">Traversal Mode</label>
-                            <div class="control">
-                                <label class="radio">
-                                    <input type="radio" name="traversalMode" value="Sequential" checked>
-                                    Sequential
-                                </label>
-                                <label class="radio">
-                                    <input type="radio" name="traversalMode" value="Random">
-                                    Random
-                                </label>
-                            </div>
-                        </div>
                     </div>
                     <div class="box">
                         <div class="columns">
@@ -141,8 +127,9 @@
                                     <div class="control">
                                         <div class="select">
                                             <select id="sequenceOrder">
-                                                <option value="fixed">Fixed</option>
+                                                <option value="fixed">Entry</option>
                                                 <option value="topologicalSort">Topological Sort</option>
+                                                <option value="random">Random</option>
                                             </select>
                                         </div>
                                     </div>

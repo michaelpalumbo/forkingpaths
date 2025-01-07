@@ -120,6 +120,10 @@ let hid = {
         o: false,
         v: false,
         s: false
+    },
+    mouse: {
+        left: false,
+        right: false
     }
 }
 
@@ -1393,7 +1397,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 let paramControl = document.getElementById(id)
                 if (paramControl) {
                     paramControl.value = forkedDoc.changeType.value;
-                    $(paramControl).val(forkedDoc.changeType.value).trigger('change'); // Refresh the knob display
+                    
+                    $(paramControl).knobSet(forkedDoc.changeType.value);
 
                   } else {
                     console.warn(`param with id "${id}" not found.`);
@@ -2345,18 +2350,21 @@ document.addEventListener("DOMContentLoaded", function () {
                 //     $(this.$).trigger('knobChange', [parentNodeID, param.data.label, value]);
                 // },
                 change: (value) => {
+                    
                     let newValue = Math.round(value * 100) / 100
                     // filter out repeated values
                     if (newValue !== lastValue) {
                         lastValue = newValue;
                         // set params in audio graph:
                         paramChange(parentNodeID, param.data.label, newValue)
+                        console.warn('version change is triggering paramChange')
                     }
                 },
                 release: (value) => {
                     console.log(`gesture ended. see \/\/! comment in .knob().release() in createFloatingOverlay for how to use this`);
                     //! could use this to get the start and end of a knob gesture and store it as an array in the history sequence
                 },
+
             });
         } else if (param.data.ui === 'menu'){
             // ignore
@@ -2928,6 +2936,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // get mousedown events from cytoscape
     cy.on('mousedown', (event) => {
+        hid.mouse.left = true
         // handle slider events
         if(event.target.data().kind && event.target.data().kind === 'slider'){
             // switch(event.target.data().sliderComponent){
@@ -3204,6 +3213,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Step 3: Finalize edge on mouseup
     cy.on('mouseup', (event) => {
+        hid.mouse.left = false
+
         if(isSliderDragging){
             isSliderDragging = false
         }
@@ -4451,6 +4462,14 @@ document.addEventListener("DOMContentLoaded", function () {
         const filtered = doc[arrayKey].filter(condition);
         doc[arrayKey] = filtered; // Replace the array
     }
+    
+
+    // Define the knobSet method (Extend jquery-knob)
+    $.fn.knobSet = function (value) {
+        return this.each(function () {
+            $(this).val(value).trigger("change"); // Update value and refresh knob display
+        });
+    };
     
 });
 
