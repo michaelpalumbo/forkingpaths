@@ -1059,6 +1059,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 row.addEventListener("click", () => {
                     stepCell.textContent = selectedNode.label;
                     stepLengthCell.textContent = "to do"; // Example modification
+                    row.dataset.id = selectedNode.id
+                    row.dataset.label = selectedNode.label
+                    row.dataset.branch = selectedNode.branch
                 });
         
                 tableBody.appendChild(row);
@@ -1079,14 +1082,17 @@ document.addEventListener("DOMContentLoaded", function () {
     
                         // Add click event listener to the row
                 row.addEventListener("click", () => {
-                    // Update row values with data from selectedNode
-                    stepCell.textContent = selectedNode.label;
-                    stepLengthCell.textContent = 'to do'
-                    row.dataset.id = selectedNode.id
-                    row.dataset.label = selectedNode.label
-                    row.dataset.branch = selectedNode.branch
-    
-                    saveSequencerTable()
+                    if(selectedNode){
+                        // Update row values with data from selectedNode
+                        stepCell.textContent = selectedNode.label;
+                        stepLengthCell.textContent = 'to do'
+                        row.dataset.id = selectedNode.id
+                        row.dataset.label = selectedNode.label
+                        row.dataset.branch = selectedNode.branch
+        
+                        saveSequencerTable()
+                    }
+
                 });
                 tableBody.appendChild(row);
             }

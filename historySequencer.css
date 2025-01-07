@@ -31,3 +31,10 @@ html, body {
     border-radius: 4px; /* Optional: Adds rounded corners */
     padding: 5px; /* Optional: Adds padding */
 }
+
+#historyAnalysis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* Space between items, pushes the last child to the bottom */
+  height: 100%; /* Ensures the container occupies the full height */
+}
