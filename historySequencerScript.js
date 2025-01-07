@@ -11,6 +11,7 @@ const historyGraphWorker = new Worker("./workers/historyGraphWorker.js");
 let meta;
 
 let selectedNode= null
+let storedSequencerTable = null
 // * History Graph
 let selectedHistoryNodes = []
 let existingHistoryNodeIDs
@@ -312,6 +313,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 case 'newSession':
                     historySequencerCy.elements().remove();
+                    createSequencerTable()
                 break
                 // commented out because this is now handled by the main app
                 // case 'clearHistoryGraph':
@@ -1001,38 +1003,186 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
 
+
+    // SEQUENCER
+
+    // Get the select element by its ID
+    const stepLengthFunctionSelect = document.getElementById("stepLengthFunction");
+
+    // Add an event listener for the 'change' event
+    stepLengthFunctionSelect.addEventListener("change", (event) => {
+        const selectedValue = event.target.value; // Get the selected option's value
+
+        // Perform actions based on the selected value
+        if (selectedValue === "fixed") {
+            console.log("Step Length Function set to: Fixed");
+            // Add logic for fixed step length
+        } else if (selectedValue === "userEditable") {
+            console.log("Step Length Function set to: User Editable");
+            // Add logic for user-editable step length
+        } else if (selectedValue === "closenessCentrality") {
+            console.log("Step Length Function set to: Closeness Centrality");
+            calculateDistancesFromTableRows(storedSequencerTable)
+
+            // Add logic for closeness centrality-based step length
+        }
+        else if (selectedValue === "euclideanDistance") {
+            calculateEuclideanDistances()
+        }
+
+        
+    });
+
+
     // Function to populate the table with a fixed number of rows (8)
-    function resetSequencerTable() {
+    function createSequencerTable(storedTable) {
         const tableBody = document.getElementById("dynamicTableBody");
         tableBody.innerHTML = ""; // Clear any existing rows
 
         const numberOfRows = 8; // Fixed number of rows
 
-        for (let i = 0; i < numberOfRows; i++) {
-            const row = document.createElement("tr");
-
-            // Step (Change) cell
-            const stepCell = document.createElement("td");
-            stepCell.textContent = `Step ${i + 1} (Empty)`; // Placeholder for step name
-            row.appendChild(stepCell);
-
-            // Step Length cell
-            const stepLengthCell = document.createElement("td");
-            stepLengthCell.textContent = "4n"; // Placeholder for step length
-            row.appendChild(stepLengthCell);
-
-                    // Add click event listener to the row
-            row.addEventListener("click", () => {
-                // Update row values with data from selectedNode
-                stepCell.textContent = selectedNode.label;
-                stepLengthCell.textContent = 'to do'
+        if(storedTable){
+            savedData.forEach((rowData, index) => {
+                const row = document.createElement("tr");
+        
+                // Step (Change) cell
+                const stepCell = document.createElement("td");
+                stepCell.textContent = rowData.stepChange || `Step ${index + 1} (Empty)`; // Fallback for empty rows
+                row.appendChild(stepCell);
+        
+                // Step Length cell
+                const stepLengthCell = document.createElement("td");
+                stepLengthCell.textContent = rowData.stepLength || "4n"; // Fallback for default step length
+                row.appendChild(stepLengthCell);
+        
+                // Re-add click event listener to the row
+                row.addEventListener("click", () => {
+                    stepCell.textContent = selectedNode.label;
+                    stepLengthCell.textContent = "to do"; // Example modification
+                });
+        
+                tableBody.appendChild(row);
             });
-            tableBody.appendChild(row);
+        } else {
+            for (let i = 0; i < numberOfRows; i++) {
+                const row = document.createElement("tr");
+                
+                // Step (Change) cell
+                const stepCell = document.createElement("td");
+                stepCell.textContent = `Step ${i + 1} (Empty)`; // Placeholder for step name
+                row.appendChild(stepCell);
+    
+                // Step Length cell
+                const stepLengthCell = document.createElement("td");
+                stepLengthCell.textContent = "4n"; // Placeholder for step length
+                row.appendChild(stepLengthCell);
+    
+                        // Add click event listener to the row
+                row.addEventListener("click", () => {
+                    // Update row values with data from selectedNode
+                    stepCell.textContent = selectedNode.label;
+                    stepLengthCell.textContent = 'to do'
+                    row.dataset.id = selectedNode.id
+                    row.dataset.label = selectedNode.label
+                    row.dataset.branch = selectedNode.branch
+    
+                    saveSequencerTable()
+                });
+                tableBody.appendChild(row);
+            }
         }
+        
+    }
+
+    // Function to save the table's contents as a JS object
+    function saveSequencerTable() {
+        const tableBody = document.getElementById("dynamicTableBody");
+        const rows = tableBody.querySelectorAll("tr");
+
+        // Extract the contents of each row into an array of objects
+        const tableData = Array.from(rows).map(row => {
+            const cells = row.querySelectorAll("td");
+            return {
+                stepChange: cells[0].textContent, // Step (Change) cell content
+                stepLength: cells[1].textContent, // Step Length cell content
+                node: {
+                    id: row.dataset.id,
+                    label: row.dataset.label,
+                    branch: row.dataset.branch
+                }
+            };
+        });
+
+        storedSequencerTable = tableData
+        localStorage.sequencerTable = tableData
+        return tableData; // Return the table data
     }
 
     // Populate the table with 8 rows on page load
-    resetSequencerTable();
+    createSequencerTable();
+
+
+    function calculateEuclideanDistances(){
+        const tableBody = document.getElementById("dynamicTableBody");
+        const rows = tableBody.querySelectorAll("tr");
+    
+        for (let i = 0; i < storedSequencerTable.length - 1; i++) {
+            const currentNodeID = storedSequencerTable[i].node.id;
+            // Get the ID of the next node (circular for the last row)
+            const nextNodeID = i < storedSequencerTable.length - 1
+            ? storedSequencerTable[i + 1].node.id // Next row for all except last
+            : storedSequencerTable[0].node.id;    // First row for the last row
+
+            // compute the euclidean distance between 2 nodes
+            const currentPosition = historyDAG_cy.$(`#${currentNodeID}`).position();
+            const nextPosition = historyDAG_cy.$(`#${nextNodeID}`).position();
+
+            let distance = Math.sqrt(
+                Math.pow(currentPosition.x - nextPosition.x, 2) +
+                Math.pow(currentPosition.y - nextPosition.y, 2)
+            );
+    
+            // Update the 2nd column (Step Length) of the current row
+            const stepLengthCell = rows[i].children[1]; // 2nd cell of the current row
+            stepLengthCell.textContent = distance.toFixed(2)
+
+        }
+    
+            // // Handle the last row's Step Length column (no "next" node)
+            // rows[storedSequencerTable.length - 1].children[1].textContent = "N/A";
+
+    }
+    function calculateDistancesFromTableRows() {
+        
+        const tableBody = document.getElementById("dynamicTableBody");
+        const rows = tableBody.querySelectorAll("tr");
+    
+        for (let i = 0; i < storedSequencerTable.length - 1; i++) {
+            const currentNodeID = storedSequencerTable[i].node.id;
+            // Get the ID of the next node (circular for the last row)
+            const nextNodeID = i < storedSequencerTable.length - 1
+            ? storedSequencerTable[i + 1].node.id // Next row for all except last
+            : storedSequencerTable[0].node.id;    // First row for the last row
+
+    
+            // Compute the shortest path distance using Dijkstra
+            const dijkstra = historyDAG_cy.elements().dijkstra({
+                root: historyDAG_cy.$(`#${currentNodeID}`), // Current node
+                directed: true // Set to false if the graph is undirected
+            });
+    
+            const distance = dijkstra.distanceTo(historyDAG_cy.$(`#${nextNodeID}`));
+    
+            // Update the 2nd column (Step Length) of the current row
+            const stepLengthCell = rows[i].children[1]; // 2nd cell of the current row
+            stepLengthCell.textContent = isFinite(distance) ? distance.toFixed(2) : "No Path";
+
+        }
+    
+            // Handle the last row's Step Length column (no "next" node)
+            // rows[storedSequencerTable.length - 1].children[1].textContent = "N/A";
+    }
+
     // *
     // *
     // * UTILITY FUNCTIONS
