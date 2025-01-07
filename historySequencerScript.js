@@ -327,6 +327,9 @@ document.addEventListener("DOMContentLoaded", function () {
                     // sequencer settings:
                     stepLengthFunctionSelect.value = meta.sequencer.stepLengthFunction || 'fixed'
                     setStepLengthFunction(stepLengthFunctionSelect.value)
+
+                    // createSequencerTable(meta.sequencer.tableData)
+
                     bpmValue.textContent = meta.sequencer.bpm; // Display the current BPM
                     transport.bpm.value = meta.sequencer.bpm; // Dynamically update the BPM
                         
@@ -338,6 +341,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 case 'newSession':
                     historySequencerCy.elements().remove();
                     createSequencerTable()
+                break
+
+                case 'sequencerUpdate': 
+
                 break
                 // commented out because this is now handled by the main app
                 // case 'clearHistoryGraph':
@@ -1058,7 +1065,7 @@ document.addEventListener("DOMContentLoaded", function () {
             console.log("Step Length Function set to: User Editable");
             // Add logic for user-editable step length
         } else if (func === "closenessCentrality") {
-            calculateDistancesFromTableRows(storedSequencerTable)
+            calculateDistancesFromTableRows()
         }
         else if (func === "euclideanDistance") {
             calculateEuclideanDistances()
@@ -1127,6 +1134,12 @@ document.addEventListener("DOMContentLoaded", function () {
                     }
 
                 });
+
+                // create active cell
+                const activeCell = document.createElement("td");
+                activeCell.textContent = `Active`; // Placeholder for step name
+                row.appendChild(activeCell);
+
                 tableBody.appendChild(row);
             }
         }
@@ -1152,8 +1165,15 @@ document.addEventListener("DOMContentLoaded", function () {
             };
         });
 
+        const update = {
+            cmd: 'updateSequencer',
+            setting: 'tableData',
+            data: tableData,
+        }
+        window.opener?.postMessage(update, '*')
+
         storedSequencerTable = tableData
-        localStorage.sequencerTable = tableData
+        // localStorage.sequencerTable = tableData
         return tableData; // Return the table data
     }
 
@@ -1165,37 +1185,42 @@ document.addEventListener("DOMContentLoaded", function () {
         const tableBody = document.getElementById("dynamicTableBody");
         const rows = tableBody.querySelectorAll("tr");
     
-        for (let i = 0; i < storedSequencerTable.length - 1; i++) {
-            const currentNodeID = storedSequencerTable[i].node.id;
-            // Get the ID of the next node (circular for the last row)
-            const nextNodeID = i < storedSequencerTable.length - 1
-            ? storedSequencerTable[i + 1].node.id // Next row for all except last
-            : storedSequencerTable[0].node.id;    // First row for the last row
-
-            // compute the euclidean distance between 2 nodes
-            const currentPosition = historyDAG_cy.$(`#${currentNodeID}`).position();
-            const nextPosition = historyDAG_cy.$(`#${nextNodeID}`).position();
-
-            let distance = Math.sqrt(
-                Math.pow(currentPosition.x - nextPosition.x, 2) +
-                Math.pow(currentPosition.y - nextPosition.y, 2)
-            );
+        if(storedSequencerTable){
+            for (let i = 0; i < storedSequencerTable.length - 1; i++) {
+                const currentNodeID = storedSequencerTable[i].node.id;
+                // Get the ID of the next node (circular for the last row)
+                const nextNodeID = i < storedSequencerTable.length - 1
+                ? storedSequencerTable[i + 1].node.id // Next row for all except last
+                : storedSequencerTable[0].node.id;    // First row for the last row
     
-            // Update the 2nd column (Step Length) of the current row
-            const stepLengthCell = rows[i].children[1]; // 2nd cell of the current row
-            stepLengthCell.textContent = distance.toFixed(2)
-
+                // compute the euclidean distance between 2 nodes
+                const currentPosition = historyDAG_cy.$(`#${currentNodeID}`).position();
+                const nextPosition = historyDAG_cy.$(`#${nextNodeID}`).position();
+    
+                let distance = Math.sqrt(
+                    Math.pow(currentPosition.x - nextPosition.x, 2) +
+                    Math.pow(currentPosition.y - nextPosition.y, 2)
+                );
+        
+                // Update the 2nd column (Step Length) of the current row
+                const stepLengthCell = rows[i].children[1]; // 2nd cell of the current row
+                stepLengthCell.textContent = distance.toFixed(2)
+    
+            }
         }
+        
     
             // // Handle the last row's Step Length column (no "next" node)
             // rows[storedSequencerTable.length - 1].children[1].textContent = "N/A";
 
     }
     function calculateDistancesFromTableRows() {
-        // return
+        if(!storedSequencerTable){
+            return
+        }
         const tableBody = document.getElementById("dynamicTableBody");
         const rows = tableBody.querySelectorAll("tr");
-    
+        
         for (let i = 0; i < storedSequencerTable.length - 1; i++) {
             const currentNodeID = storedSequencerTable[i].node.id;
             // Get the ID of the next node (circular for the last row)
@@ -1215,6 +1240,13 @@ document.addEventListener("DOMContentLoaded", function () {
             // Update the 2nd column (Step Length) of the current row
             const stepLengthCell = rows[i].children[1]; // 2nd cell of the current row
             stepLengthCell.textContent = isFinite(distance) ? distance.toFixed(2) : "No Path";
+
+            if(stepLengthCell.textContent === 'No Path'){
+                // set the active step setting to 'skip'
+                rows[i].children[2].textContent = 'skip'
+            }else {
+                rows[i].children[2].textContent = 'on'
+            }
 
         }
     

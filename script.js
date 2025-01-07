@@ -2679,9 +2679,7 @@ document.addEventListener("DOMContentLoaded", function () {
     window.addEventListener('message', (event) => {
         
         switch(event.data.cmd){
-            case 'test':
-                console.log('yea')
-            break
+
             case 'historySequencerReady':
                 sendMsgToHistoryApp({
                     appID: 'forkingPathsMain',
@@ -2689,16 +2687,10 @@ document.addEventListener("DOMContentLoaded", function () {
                     data: meta
                         
                 })
-                console.log('ready')
+                
             break
             case 'loadVersion':
                 loadVersion(event.data.data.hash, event.data.data.branch)
-            break
-
-            case 'updateBPM':
-                meta = Automerge.change(meta, (meta) => {
-                    meta.sequencer.bpm = event.data.bpm
-                });
             break
 
             case 'updateSequencer':
@@ -2706,7 +2698,12 @@ document.addEventListener("DOMContentLoaded", function () {
                     meta.sequencer[event.data.setting] = event.data.data
                 });
 
-                console.log('seq', meta.sequencer)
+                sendMsgToHistoryApp({
+                    appID: 'forkingPathsMain',
+                    cmd: 'sequencerUpdate',
+                    data: meta
+                        
+                })
             break
         }
 
