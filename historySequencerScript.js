@@ -7,6 +7,24 @@ const ws = new WebSocket('ws://localhost:3000');
 
 
 const historyGraphWorker = new Worker("./workers/historyGraphWorker.js");
+
+// App settings
+let appSettings = {}
+if(!localStorage.appSettings){
+    let settings = {
+        sequencer: {
+            stepLengthFunction: 'fixed'
+        }
+    }
+    localStorage.setItem('appSettings', JSON.stringify(settings))
+
+    
+}else {
+    
+    appSettings = localStorage.getItem('appSettings')
+    console.log('appSettings:', appSettings)
+}
+
 // meta doc
 let meta;
 
@@ -95,6 +113,10 @@ let hid = {
 
 document.addEventListener("DOMContentLoaded", function () {
 
+    // UI
+    // Get the select element by its ID
+    const stepLengthFunctionSelect = document.getElementById("stepLengthFunction");
+    
     // todo: send a message to main app to request the latest automerge doc
     // todo: note that it might be necessary to only request this later on in the script...
 
@@ -302,7 +324,9 @@ document.addEventListener("DOMContentLoaded", function () {
                     
                     ws.send(update);
 
-                    
+                    // sequencer settings:
+                    stepLengthFunctionSelect.value = meta.sequencer.stepLengthFunction || 'fixed'
+                    setStepLengthFunction(stepLengthFunctionSelect.value)
                     bpmValue.textContent = meta.sequencer.bpm; // Display the current BPM
                     transport.bpm.value = meta.sequencer.bpm; // Dynamically update the BPM
                         
@@ -695,14 +719,15 @@ document.addEventListener("DOMContentLoaded", function () {
     bpmSlider.addEventListener('input', (event) => {
         let bpm = parseInt(event.target.value, 10)
 
-        const update = JSON.stringify({
-            cmd: 'updateBPM',
-            bpm: bpm,
+        const update = {
+            cmd: 'updateSequencer',
+            setting: 'bpm',
+            data: bpm,
             // existingHistoryNodeIDs: existingHistoryNodeIDs,
             // docHistoryGraphStyling: docHistoryGraphStyling
-        })
+        }
         window.opener?.postMessage(update, '*')
-        
+
 
         bpmValue.textContent = bpm; // Display the current BPM
         transport.bpm.value = bpm; // Dynamically update the BPM
@@ -1006,34 +1031,39 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // SEQUENCER
 
-    // Get the select element by its ID
-    const stepLengthFunctionSelect = document.getElementById("stepLengthFunction");
 
+    
     // Add an event listener for the 'change' event
     stepLengthFunctionSelect.addEventListener("change", (event) => {
+        // console.log(localStorage.getItem(appSettings.sequencer.stepLengthFunction)
         const selectedValue = event.target.value; // Get the selected option's value
-
-        // Perform actions based on the selected value
-        if (selectedValue === "fixed") {
-            console.log("Step Length Function set to: Fixed");
-            // Add logic for fixed step length
-        } else if (selectedValue === "userEditable") {
-            console.log("Step Length Function set to: User Editable");
-            // Add logic for user-editable step length
-        } else if (selectedValue === "closenessCentrality") {
-            console.log("Step Length Function set to: Closeness Centrality");
-            calculateDistancesFromTableRows(storedSequencerTable)
-
-            // Add logic for closeness centrality-based step length
+        setStepLengthFunction(selectedValue)
+        const update = {
+            cmd: 'updateSequencer',
+            setting: 'stepLengthFunction',
+            data: selectedValue,
         }
-        else if (selectedValue === "euclideanDistance") {
-            calculateEuclideanDistances()
-        }
+        window.opener?.postMessage(update, '*')
+ 
 
         
     });
 
-
+    function setStepLengthFunction(func){
+            // Perform actions based on the selected value
+            if (func === "fixed") {
+            console.log("Step Length Function set to: Fixed");
+            // Add logic for fixed step length
+        } else if (func === "userEditable") {
+            console.log("Step Length Function set to: User Editable");
+            // Add logic for user-editable step length
+        } else if (func === "closenessCentrality") {
+            calculateDistancesFromTableRows(storedSequencerTable)
+        }
+        else if (func === "euclideanDistance") {
+            calculateEuclideanDistances()
+        }
+    }
     // Function to populate the table with a fixed number of rows (8)
     function createSequencerTable(storedTable) {
         const tableBody = document.getElementById("dynamicTableBody");
@@ -1077,6 +1107,9 @@ document.addEventListener("DOMContentLoaded", function () {
     
                 // Step Length cell
                 const stepLengthCell = document.createElement("td");
+
+                // calculate step length based on step length function
+
                 stepLengthCell.textContent = "4n"; // Placeholder for step length
                 row.appendChild(stepLengthCell);
     
@@ -1159,7 +1192,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     }
     function calculateDistancesFromTableRows() {
-        
+        // return
         const tableBody = document.getElementById("dynamicTableBody");
         const rows = tableBody.querySelectorAll("tr");
     
@@ -1325,6 +1358,10 @@ document.addEventListener("DOMContentLoaded", function () {
         return sorted;
     }
 
+    // update appSettings in localStorage
+    function storeAppSettings(){
+        localStorage.setItem('appSettings', appSettings)
+    }
     
 })
 
