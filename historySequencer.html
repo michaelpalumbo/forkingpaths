@@ -103,10 +103,74 @@
                             </div>
                         </div>
                     </div>
-
+                    <div class="box">
+                        <div class="columns">
+                            <!-- Step Length Function Select Menu -->
+                            <div class="column is-half">
+                                <div class="field">
+                                    <label class="label">Step Length Function</label>
+                                    <div class="control">
+                                        <div class="select">
+                                            <select id="stepLengthFunction">
+                                                <option value="fixed">Fixed</option>
+                                                <option value="userEditable">User Editable</option>
+                                                <option value="closenessCentrality">Closeness Centrality</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        
+                            <!-- JS Comment -->
+                            <script>
+                                // 'closenessCentrality' option:
+                                // This mode takes each step and compares its closeness centrality with the node in the row below it.
+                                // The result is used against a quantized value to determine the step length in Tone.js.
+                            </script>
+                        
+                            <!-- Sequence Order Select Menu -->
+                            <div class="column is-half">
+                                <div class="field">
+                                    <label class="label">Sequence Order</label>
+                                    <div class="control">
+                                        <div class="select">
+                                            <select id="sequenceOrder">
+                                                <option value="fixed">Fixed</option>
+                                                <option value="topologicalSort">Topological Sort</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- JS Comment -->
+                        <script>
+                            // The sequencer can be rearranged according to the user setting or based on some form of Cytoscape analysis,
+                            // such as topological sort for DAGs.
+                        </script>
+                    
+                        <!-- Table -->
+                        <div class="table-container">
+                            <!-- Table -->
+                            <div class="table-container">
+                                <table class="table is-bordered is-striped is-hoverable is-fullwidth">
+                                    <thead>
+                                        <tr>
+                                            <th>Step (Change)</th>
+                                            <th>Step Length</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="dynamicTableBody">
+                                        <!-- Rows will be dynamically generated -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    History Sequencer Graph
                     <div id="historySequencerCy" class="box has-background-dark" style="overflow: hidden;">
                         
-                        History Sequencer Graph
+                        
                     </div>
                 </div>
             </div>

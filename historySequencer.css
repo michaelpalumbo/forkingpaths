@@ -4,11 +4,15 @@ html, body {
     margin: 0;
   }
   
-  #docHistory-cy, #historySequencerCy {
+  #docHistory-cy {
     height: 400px; /* Adjust to fit content */
     overflow: auto;
   }
   
+  #historySequencerCy {
+    height: 200px; /* Adjust to fit content */
+    overflow: auto;
+  }
   /* Tooltip container styling */
   #cytoscapeTooltipContainer {
     padding: 10px;
