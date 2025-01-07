@@ -2705,6 +2705,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             case 'updateSequencer':
                 meta = Automerge.change(meta, (meta) => {
+                    console.log(event.data.data)
                     meta.sequencer[event.data.setting] = event.data.data
                 });
 

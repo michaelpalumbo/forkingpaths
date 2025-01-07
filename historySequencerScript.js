@@ -1108,7 +1108,7 @@ document.addEventListener("DOMContentLoaded", function () {
         
                 // Step (Change) cell
                 const stepCell = document.createElement("td");
-                stepCell.textContent = rowData.stepChange || `Step ${index + 1} (Empty)`; // Fallback for empty rows
+                stepCell.textContent = rowData.stepChange || `(Empty)`; // Fallback for empty rows
                 row.appendChild(stepCell);
         
                 // Step Length cell
@@ -1178,15 +1178,26 @@ document.addEventListener("DOMContentLoaded", function () {
         // Extract the contents of each row into an array of objects
         const tableData = Array.from(rows).map(row => {
             const cells = row.querySelectorAll("td");
-            return {
-                stepChange: cells[0].textContent, // Step (Change) cell content
-                stepLength: cells[1].textContent, // Step Length cell content
-                node: {
-                    id: row.dataset.id,
-                    label: row.dataset.label,
-                    branch: row.dataset.branch
+            if(row.dataset.id){
+                return {
+                    stepChange: cells[0].textContent, // Step (Change) cell content
+                    stepLength: cells[1].textContent, // Step Length cell content
+                    active: true,
+                    node: {
+                        id: row.dataset.id,
+                        label: row.dataset.label,
+                        branch: row.dataset.branch
+                    }
+                };
+            } else {
+                // row doesn't have an assigned history node
+                return {
+                    stepChange: cells[0].textContent, // Step (Change) cell content
+                    stepLength: cells[1].textContent, // Step Length cell content
+                    active: false,
                 }
-            };
+            }
+
         });
 
         const update = {
