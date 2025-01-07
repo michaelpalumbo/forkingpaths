@@ -1,163 +1,29 @@
+/* General page styling */
 html, body {
-  height: 100%; /* Ensure the body and HTML elements occupy the full height */
-  margin: 0; /* Remove default margin */
-  overflow: hidden; /* Prevent scrolling caused by expanding elements*/
-}
- /* General container layout */
-#container {
-  display: grid;
+    height: 100%;
+    margin: 0;
+  }
   
-  grid-template-columns: 30% 70%; /* Left, middle, right columns */
-  grid-template-rows: 1fr; /* Automatically size rows */
-  height: 100vh; /* Full viewport height */
-  /* gap: 10px; Optional: space between columns */
-}
-
-/* Left column */
-#leftColumn {
-  grid-column: 1; /* First column */
-  grid-row: 1; /* Full height */
-  display: flex;
-  flex-direction: column; /* Stack children vertically */
-  height: 98%; /* Ensure it uses full height */
-  width: 100%;
-  /* padding: 10px; */
-  background-color: white; /* Optional for visibility */
-
-
-}
-
-#cy canvas {
-  background: white !important; /* Ensure canvas is transparent */
-  z-index: 0; /* Place below graph container */
-  pointer-events: none; /* Ensure it doesn't capture clicks */
-}
-
-/* Right column (docHistoryPanel) */
-
-/* Tooltip container: 20% height */
-#cytoscapeTooltipContainer {
-  flex: 0 0 20%; /* Fixed to 20% of the leftColumn height */
-  background-color: #f8f8f8; /* Optional for visibility */
-  padding: 10px; /* Optional padding */
-  box-sizing: border-box; /* Include padding in size calculations */
-  overflow: hidden; /* Prevent overflow */
-}
-
-/* Document history: 80% height */
-#docHistory-cy {
-  z-index: 1;
-  flex: 0 0 80%; /* Fixed to 80% of the leftColumn height */
-  background-color: white; /* Optional for visibility */
-  overflow: auto; /* Allow scrolling if content overflows */
-}
-
-/* #docHistory-cy { */
-  /* flex: 1; Fill available space inside left column */
+  #docHistory-cy, #historySequencerCy {
+    height: 400px; /* Adjust to fit content */
+    overflow: auto;
+  }
   
-  /* overflow: hidden; Ensure no scrollbars */
+  /* Tooltip container styling */
+  #cytoscapeTooltipContainer {
+    padding: 10px;
+    background-color: #f8f8f8;
+  }
+  
+  #bpmSlider {
+    width: 100%;
+  }
 
-  /* background-color: #f8f8f8; Optional for visibility */
-  /* height: 100%; Full height */
-  /* width: 100%;  Full width */
-/* } */
-
-
-/* Middle column */
-#historyController {
-  grid-column: 2; /* Middle column */
-  grid-row: 1; /* Full height */
-  display: flex;
-  flex-direction: column; /* Stack children vertically */
-  height: 100%; /* Ensure it uses full height */
-  width: 100%;
-}
-
-
-/* Container for the row with historySequencer and thirdDiv */
-#rowContainer {
-  flex: 4; /* 40% of vertical space */
-  display: grid;
-  grid-template-columns: 50% 50%; /* 70% for historySequencer, 30% for selectedHistory,  */
-  height: 100%; /* Full height of this row */
-}
-
-/* HistorySequencer styling */
-#historySequencer {
-  background-color: #e0e0e0; /* Optional for visibility */
-  width: 100%; /* Takes 70% width defined by grid */
-}
-
-/* selectedHistory styling */
-#historySequencerCy {
-  background-color: #000000; /* Optional for visibility */
-  width: 100%; /* Takes 30% width defined by grid */
-  height: 100%
-}
-
-
-#docHistoryPanel {
-  display: flex;
-  width: 22%;
-  flex-direction: column;
-  height: 100%; /* Adjust this if needed */
-}
-
-
-
-/* file input button */
-#fileInput {
-  display: none;
-}
-
-.bottom-button {
-  position: absolute;
-  bottom: 5%;
-  /* left: 100%; */
-  /* transform: translateX(-50%); Centers the button horizontally */
-}
-
-.highlighted {
-  background-color: yellow; /* Highlight color */
-  font-weight: bold;
-}
-
-
-button {
-  display: inline-block;
-  padding: 2px 6px;
-  background-color: #f0f0f0;
-  color: black;
-  border: 1px solid #000000;
-  border-radius: 2px;
-  cursor: pointer;
-  font-size: 14px;
-  font-family: inherit;
-}
-
-/* Style the custom button */
-.custom-file-button {
-  display: inline-block;
-  padding: 2px 6px;
-  background-color: #f0f0f0;
-  color: black;
-  border: 1px solid #000000;
-  border-radius: 2px;
-  cursor: pointer;
-  font-size: 14px;
-  font-family: inherit;
-}
-
-.custom-file-button:hover {
-  background-color: #0056b3;
-}
-
-
-.radio-group {
-  margin-bottom: 10px;
-}
-
-.radio-group label {
-  margin-right: 20px;
-  font-size: 16px;
+  /* Highlight styling for the active list item */
+.is-active {
+    background-color: #00d1b2; /* Bulma's primary color */
+    color: white;
+    font-weight: bold;
+    border-radius: 4px; /* Optional: Adds rounded corners */
+    padding: 5px; /* Optional: Adds padding */
 }

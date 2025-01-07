@@ -6,7 +6,7 @@
     <title>History Graph</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.21.1/cytoscape.min.js"></script>
     <!-- <link rel="stylesheet" href="historySequencer.css"> -->
-     <link rel="stylesheet" href="main.css">
+     <link rel="stylesheet" href="historySequencer.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.4/css/bulma.min.css">
 
 </head>
@@ -16,13 +16,63 @@
         <div class="container">
             <!-- Bulma columns for layout -->
             <div class="columns">
-                <!-- Left Column -->
+                <!-- history graph column -->
                 <div class="column is-one-third" id="leftColumn">
                     <div id="docHistory-cy" class="box" style="height: 95%; overflow: hidden;">
                     </div>
                 </div>
 
-                <!-- Right Column -->
+                <!-- history analysis column -->
+                <div class="column is-one-third" id="centreColumn">
+                    <div id="historyAnalysis" class="box" style="height: 95%; overflow: hidden;">
+                        <h3 class="title is-4">History Analysis</h3>
+        
+                        <!-- Buttons for graph analysis -->
+                        <!-- Buttons in two columns -->
+                        <div class="columns is-multiline">
+                            <div class="column is-half">
+                                <button class="button is-primary is-fullwidth" id="getLeavesBtn">Get Leaves</button>
+                            </div>
+                            <!-- <div class="column is-half">
+                                <button class="button is-link is-fullwidth" id="dijkstraBtn">Dijkstra's Algorithm</button>
+                            </div>
+                            <div class="column is-half">
+                                <button class="button is-info is-fullwidth" id="topologicalSortBtn">Topological Sort</button>
+                            </div>
+                            <div class="column is-half">
+                                <button class="button is-success is-fullwidth" id="dependenciesBtn">Get Dependencies</button>
+                            </div>
+                            <div class="column is-half">
+                                <button class="button is-warning is-fullwidth" id="prerequisitesBtn">Get Prerequisites</button>
+                            </div>
+                            <div class="column is-half">
+                                <button class="button is-danger is-fullwidth" id="connectedComponentsBtn">Connected Components</button>
+                            </div>
+                            <div class="column is-half">
+                                <button class="button is-light is-fullwidth" id="bfsBtn">Breadth-First Search</button>
+                            </div>
+                            <div class="column is-half">
+                                <button class="button is-dark is-fullwidth" id="dfsBtn">Depth-First Search</button>
+                            </div>
+                            <div class="column is-half">
+                                <button class="button is-primary is-fullwidth" id="pageRankBtn">PageRank</button>
+                            </div>
+                            <div class="column is-half">
+                                <button class="button is-link is-fullwidth" id="closenessCentralityBtn">Closeness Centrality</button>
+                            </div> -->
+                        </div>
+
+                        <div class="box">
+                            <h3 class="title is-4" id="analysisResultTitle"></h3>
+                            <ul id="analysisNodeList" class="list">
+                                <!-- List items will be dynamically added here -->
+                            </ul>
+                        </div>
+                    </div>
+
+                </div>
+                
+                <!-- sequencer controller column -->
                 <div class="column is-one-third" id="historyController">
                     <div id="historySequencer" class="box">
                         <div class="field">
@@ -35,6 +85,7 @@
 
                         <!-- Start/Stop Button -->
                         <button id="startStopButton" class="button is-primary">Start Sequencer</button>
+                        <button id="clearSequencerButton" class="button is-info">Clear Sequencer</button>
                         <br><br>
 
                         <!-- Traversal Mode Radio Buttons -->

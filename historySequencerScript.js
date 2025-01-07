@@ -597,13 +597,12 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     historyDAG_cy.on('tap', 'node', (event) => {
-        console.log(hid.key.shift)
         if(hid.key.shift){
             modifyHistorySequencerCy('add', event.target)
 
         } else {
             historySequencerController('clear')
-
+            console.log(event.target.data().id)
             // loadVersion(event.target.data().id, event.target.data().branch)
             window.opener?.postMessage({ cmd: 'loadVersion', data: {hash: event.target.data().id, branch: event.target.data().branch} }, '*');
             highlightNode(event.target)
@@ -617,7 +616,7 @@ document.addEventListener("DOMContentLoaded", function () {
             historySequencerWindow.close();
         }
         localStorage.removeItem('historySequencerWindowOpen');
-        console.log('history window closed')
+
     });
 
 
@@ -680,6 +679,7 @@ document.addEventListener("DOMContentLoaded", function () {
     historySequencerCy.on('cxttap', 'node', (event) => {
         const node = event.target; // The node that was right-clicked
         historySequencerController('removeSteps', event.target)
+        console.log(node)
         
     });
 
@@ -720,6 +720,20 @@ document.addEventListener("DOMContentLoaded", function () {
         isPlaying = !isPlaying;
     });
 
+    // Clear sequencer button
+    const clearSequencerButton = document.getElementById("clearSequencerButton");
+
+
+    clearSequencerButton.addEventListener("click", async () => {
+        // stop the sequencer
+        if (isPlaying) {
+            transport.stop();
+            startStopButton.textContent = "Start Sequencer";
+            isPlaying = !isPlaying;
+        } 
+        // clear sequencer steps
+        historySequencerCy.elements().remove();        
+    });
 
     historySequencerCy.on('position', 'node', (event) => {
         const draggedNode = event.target; // The node being dragged
@@ -865,6 +879,121 @@ document.addEventListener("DOMContentLoaded", function () {
             }, 50); // Adjust the delay as needed to debounce the event
         }
     });
+
+    // *
+    // *
+    // * HISTORY GRAPH ANALYSIS
+    // * 
+    // *
+
+    document.getElementById("getLeavesBtn").addEventListener("click", () => {
+        // Filter nodes with no outgoing edges
+        const leaves = historyDAG_cy.nodes().filter(node => node.outgoers('edge').length === 0);
+        const leafNodes = leaves.map(node => node.data());
+
+        populateAnalysisNodeList(leafNodes, 'Leaf Nodes')
+    });
+
+    // document.getElementById("dijkstraBtn").addEventListener("click", () => {
+    //     const sourceNodeID = topologicalSort(historyDAG_cy)[0].data().id
+    //     console.log(sourceNodeID)
+    //     const dijkstra = historyDAG_cy.elements().dijkstra({
+    //         root: historyDAG_cy.$(`#${sourceNodeID}`),
+    //         directed: true
+    //     });
+    //     console.log("Dijkstra's Algorithm Results:", dijkstra);
+    // });
+
+    // document.getElementById("topologicalSortBtn").addEventListener("click", () => {
+
+    //     const sortedNodes = topologicalSort(historyDAG_cy);
+    //     console.log("Topologically Sorted Nodes:", sortedNodes);
+    // });
+
+    // document.getElementById("dependenciesBtn").addEventListener("click", () => {
+    //     const selectedNode = historyDAG_cy.$("node:selected");
+    //     const dependencies = selectedNode.outgoers("node");
+    //     console.log("Dependencies:", dependencies);
+    // });
+
+    // document.getElementById("prerequisitesBtn").addEventListener("click", () => {
+    //     const selectedNode = historyDAG_cy.$("node:selected");
+    //     const prerequisites = selectedNode.incomers("node");
+    //     console.log("Prerequisites:", prerequisites);
+    // });
+
+    // document.getElementById("connectedComponentsBtn").addEventListener("click", () => {
+    //     const components = historyDAG_cy.elements().connectedComponents();
+    //     console.log("Connected Components:", components);
+    // });
+
+    // document.getElementById("bfsBtn").addEventListener("click", () => {
+    //     const bfs = historyDAG_cy.elements().bfs({
+    //         roots: historyDAG_cy.$("#sourceNodeID"),
+    //         directed: true
+    //     });
+    //     console.log("Breadth-First Search Path:", bfs.path);
+    // });
+
+    // document.getElementById("dfsBtn").addEventListener("click", () => {
+    //     const dfs = historyDAG_cy.elements().dfs({
+    //         roots: historyDAG_cy.$("#sourceNodeID"),
+    //         directed: true
+    //     });
+    //     console.log("Depth-First Search Path:", dfs.path);
+    // });
+
+    // document.getElementById("pageRankBtn").addEventListener("click", () => {
+    //     const pageRank = historyDAG_cy.elements().pageRank();
+    //     historyDAG_cy.nodes().forEach(node => {
+    //         console.log(`PageRank for ${node.id()}:`, pageRank.rank(node));
+    //     });
+    // });
+
+    // document.getElementById("closenessCentralityBtn").addEventListener("click", () => {
+    //     const closeness = historyDAG_cy.elements().closenessCentralityNormalized();
+    //     historyDAG_cy.nodes().forEach(node => {
+    //         console.log(`Closeness Centrality for ${node.id()}:`, closeness.closeness(node));
+    //     });
+    // });
+
+    const listElement = document.getElementById("analysisNodeList");
+
+    // Add a single click event listener to the parent <ul>
+    listElement.addEventListener("click", (event) => {
+        const clickedItem = event.target;
+        if (clickedItem.tagName === "LI") { // Ensure the target is a list item
+            // Remove highlight from all items
+            listElement.querySelectorAll(".list-item").forEach(item => item.classList.remove("is-active"));
+
+            // Highlight the clicked item
+            clickedItem.classList.add("is-active");
+
+            console.log("Clicked item:", clickedItem.textContent); // Log the clicked item's text
+            console.log("Event Target:", clickedItem); // Log the event target
+        }
+    });
+    
+    function populateAnalysisNodeList(nodes, group) {
+        const titleElement = document.getElementById("analysisResultTitle");
+        titleElement.textContent = group; // Update the text content
+
+        
+        listElement.innerHTML = ""; // Clear any existing content
+    
+        // Populate the list with leaf IDs
+        nodes.forEach(node => {
+            const listItem = document.createElement("li");
+            listItem.classList.add("list-item"); // Optional Bulma class
+            listItem.textContent = node.label; // Add the node ID as the content
+            listItem.dataset.label = node.label
+            listItem.dataset.id = node.id
+            listItem.dataset.branch = node.branch
+            listElement.appendChild(listItem);
+        });
+    }
+
+
     // *
     // *
     // * UTILITY FUNCTIONS
@@ -962,6 +1091,45 @@ document.addEventListener("DOMContentLoaded", function () {
         element.textContent = description;
         
     }
+    
+
+    function topologicalSort(graph) {
+        const nodes = graph.nodes();
+        const inDegree = new Map();
+        const queue = [];
+        const sorted = [];
+    
+        // Initialize in-degree counts
+        nodes.forEach(node => {
+            inDegree.set(node.id(), node.incomers('edge').length);
+            if (inDegree.get(node.id()) === 0) {
+                queue.push(node);
+            }
+        });
+    
+        // Process nodes with zero in-degree
+        while (queue.length > 0) {
+            const current = queue.shift();
+            sorted.push(current);
+    
+            current.outgoers('edge').targets().forEach(target => {
+                const targetId = target.id();
+                inDegree.set(targetId, inDegree.get(targetId) - 1);
+                if (inDegree.get(targetId) === 0) {
+                    queue.push(target);
+                }
+            });
+        }
+    
+        // Check for cycles
+        if (sorted.length !== nodes.length) {
+            console.error("The graph contains a cycle and cannot be sorted topologically.");
+            return [];
+        }
+    
+        return sorted;
+    }
+
     
 })
 
