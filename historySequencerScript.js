@@ -10,6 +10,7 @@ const historyGraphWorker = new Worker("./workers/historyGraphWorker.js");
 // meta doc
 let meta;
 
+let selectedNode= null
 // * History Graph
 let selectedHistoryNodes = []
 let existingHistoryNodeIDs
@@ -606,6 +607,8 @@ document.addEventListener("DOMContentLoaded", function () {
             // loadVersion(event.target.data().id, event.target.data().branch)
             window.opener?.postMessage({ cmd: 'loadVersion', data: {hash: event.target.data().id, branch: event.target.data().branch} }, '*');
             highlightNode(event.target)
+
+            selectedNode = event.target.data()
         }
 
     })
@@ -968,7 +971,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // Highlight the clicked item
             clickedItem.classList.add("is-active");
-
+            selectedNode = {
+                label: clickedItem.dataset.label, 
+                id: clickedItem.dataset.id,
+                branch: clickedItem.dataset.branch
+            }
             console.log("Clicked item:", clickedItem.textContent); // Log the clicked item's text
             console.log("Event Target:", clickedItem); // Log the event target
         }
@@ -994,6 +1001,38 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
 
+    // Function to populate the table with a fixed number of rows (8)
+    function resetSequencerTable() {
+        const tableBody = document.getElementById("dynamicTableBody");
+        tableBody.innerHTML = ""; // Clear any existing rows
+
+        const numberOfRows = 8; // Fixed number of rows
+
+        for (let i = 0; i < numberOfRows; i++) {
+            const row = document.createElement("tr");
+
+            // Step (Change) cell
+            const stepCell = document.createElement("td");
+            stepCell.textContent = `Step ${i + 1} (Empty)`; // Placeholder for step name
+            row.appendChild(stepCell);
+
+            // Step Length cell
+            const stepLengthCell = document.createElement("td");
+            stepLengthCell.textContent = "4n"; // Placeholder for step length
+            row.appendChild(stepLengthCell);
+
+                    // Add click event listener to the row
+            row.addEventListener("click", () => {
+                // Update row values with data from selectedNode
+                stepCell.textContent = selectedNode.label;
+                stepLengthCell.textContent = 'to do'
+            });
+            tableBody.appendChild(row);
+        }
+    }
+
+    // Populate the table with 8 rows on page load
+    resetSequencerTable();
     // *
     // *
     // * UTILITY FUNCTIONS
