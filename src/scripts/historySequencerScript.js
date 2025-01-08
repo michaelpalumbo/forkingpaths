@@ -1227,10 +1227,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
         for (let i = 0; i < storedSequencerTable.length - 1; i++) {
-            const currentNodeID = storedSequencerTable[i].node.id;
-            if(!currentNodeID){
+            if(!storedSequencerTable[i].node){
                 continue
             }
+            const currentNodeID = storedSequencerTable[i].node.id;
+
             // Get the ID of the next node (circular for the last row)
             const nextNodeID = i < storedSequencerTable.length - 1
             ? storedSequencerTable[i + 1].node.id // Next row for all except last
