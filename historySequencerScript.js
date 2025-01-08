@@ -570,7 +570,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Set the initial BPM
     transport.bpm.value = 120;
     let currentNode = null
-    let stepLength = '8n'
+    let stepLength = '4n'
 
     let currentStepIndex = 0; // Tracks the current step in the table
 
@@ -582,7 +582,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if(storedSequencerTable && storedSequencerTable.length > 0){
             // Get the current step based on the index
             const currentStep = storedSequencerTable[currentStepIndex];
-            
+            console.log(currentStep)
             if(currentStep.status === 'Active'){
                 window.opener?.postMessage({ cmd: 'loadVersion', data: { hash: currentStep.node.id, branch: currentStep.node.branch} }, '*');
             }
@@ -632,7 +632,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // Move to the next step
             currentIndex = (currentIndex + 1) % sequencerNodes.length;
         }
-    }, "4n"); // Repeat every eighth note
+    }, stepLength); // Repeat every eighth note
 
 
 
@@ -1091,9 +1091,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function setStepLengthFunction(func){
             // Perform actions based on the selected value
-            if (func === "fixed") {
-            console.log("Step Length Function set to: Fixed");
-            // Add logic for fixed step length
+        if (func === "fixed") {
+            setFixedLengths()
         } else if (func === "userEditable") {
             console.log("Step Length Function set to: User Editable");
             // Add logic for user-editable step length
@@ -1229,6 +1228,19 @@ document.addEventListener("DOMContentLoaded", function () {
     createSequencerTable();
 
 
+    function setFixedLengths(){
+        const tableBody = document.getElementById("dynamicTableBody");
+        const rows = tableBody.querySelectorAll("tr");
+    
+        if(storedSequencerTable){
+            for (let i = 0; i < storedSequencerTable.length - 1; i++) { 
+                // Update the 2nd column (Step Length) of the current row
+                const stepLengthCell = rows[i].children[1]; // 2nd cell of the current row
+                stepLengthCell.textContent = "4n"
+    
+            }
+        }
+    }
     function calculateEuclideanDistances(){
         const tableBody = document.getElementById("dynamicTableBody");
         const rows = tableBody.querySelectorAll("tr");
@@ -1239,7 +1251,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 // Get the ID of the next node (circular for the last row)
                 const nextNodeID = i < storedSequencerTable.length - 1
                 ? storedSequencerTable[i + 1].node.id // Next row for all except last
-                : storedSequencerTable[0].node.id;    // First row for the last row
+                : storedSequencerTable[0].node.id;    // get value of first row for the last row's length
     
                 // compute the euclidean distance between 2 nodes
                 const currentPosition = historyDAG_cy.$(`#${currentNodeID}`).position();
@@ -1252,7 +1264,7 @@ document.addEventListener("DOMContentLoaded", function () {
         
                 // Update the 2nd column (Step Length) of the current row
                 const stepLengthCell = rows[i].children[1]; // 2nd cell of the current row
-                stepLengthCell.textContent = distance.toFixed(2)
+                stepLengthCell.textContent = distance.toFixed(2) || "No Path"
     
             }
         }
@@ -1291,9 +1303,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
             if(stepLengthCell.textContent === 'No Path'){
                 // set the active step setting to 'skip'
-                rows[i].children[2].textContent = 'skip'
+                rows[i].children[2].textContent = 'Inactive'
             }else {
-                rows[i].children[2].textContent = 'on'
+                rows[i].children[2].textContent = 'Active'
             }
 
         }
