@@ -645,6 +645,8 @@ document.addEventListener("DOMContentLoaded", function () {
         // Forking Paths meta document:
         // contains all branches and branch history
         // will probably eventually contain user preferences, etc. 
+
+        // attempt to load meta from indexedDB store
         meta = await loadDocument('meta');
         if (!meta) {
             meta = Automerge.from({
@@ -810,7 +812,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
         }
-
+        console.log(automergeDocuments)
     })();
 
     // Set an interval to periodically save meta to IndexedDB
