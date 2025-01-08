@@ -875,7 +875,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 
                 onChangeCallback(amDoc);
             }
-
+            console.log('the hash', meta.head.hash)
             return amDoc;
         } else {
             // player has made changes to an earlier version, so create a branch and set amDoc to new clone
@@ -938,11 +938,11 @@ document.addEventListener("DOMContentLoaded", function () {
                         
                 })
             }
-            
+            console.log('the hash', meta.head.hash)
             return amDoc;
 
         }
-
+        
 
     }
 
@@ -1493,8 +1493,10 @@ document.addEventListener("DOMContentLoaded", function () {
         let head = meta.branches[branch].head
 
         // Use `Automerge.view()` to view the state at this specific point in history
-        const historicalView = Automerge.view(amDoc, [targetHash]);
-        
+        //? const historicalView = Automerge.view(amDoc, [targetHash]);
+
+        const historicalView = Automerge.view(Automerge.load(meta.docs[branch]), [targetHash]);
+        console.log('historicalView', historicalView)
         // Check if we're on the head; reset clone if true (so we don't trigger opening a new branch with changes made to head)
         if (Automerge.getHeads(historicalView)[0] === Automerge.getHeads(amDoc)[0]){
             automergeDocuments.newClone = false
@@ -1590,7 +1592,11 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         // the selected hash belongs to the current branch
         else {
+
+
             console.log('branch', branch, 'amDoc.title', amDoc.title, '\nmeta.head.branch', meta.head.branch, '\nelements', historicalView.elements)
+            
+            // let newHistoricalView = Automerge.view(Automerge.load(meta.docs[branch]), [targetHash]);
             let clonedDoc = Automerge.clone(historicalView)
 
             clonedDoc.title = uuidv7();
