@@ -116,7 +116,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // UI
     // Get the select element by its ID
     const stepLengthFunctionSelect = document.getElementById("stepLengthFunction");
-    
+    const sequenceOrderSelect = document.getElementById("sequenceOrder");
     // todo: send a message to main app to request the latest automerge doc
     // todo: note that it might be necessary to only request this later on in the script...
 
@@ -1087,6 +1087,29 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     
+    // Add an event listener for the 'change' event
+    sequenceOrderSelect.addEventListener("change", (event) => {
+        // console.log(localStorage.getItem(appSettings.sequencer.stepLengthFunction)
+        const selectedValue = event.target.value; // Get the selected option's value
+        setSequenceOrder(selectedValue)
+        const update = {
+            cmd: 'updateSequencer',
+            setting: 'sequenceOrder',
+            data: selectedValue,
+        }
+        window.opener?.postMessage(update, '*')
+    });
+
+    function setSequenceOrder(order){
+        switch(order){
+            // case 'entry':
+
+            // break
+            default: console.warn('nothing is setup for changing the order of the sequencer rows (low priority')
+        }
+    }
+
+
     // Add an event listener for the 'change' event
     stepLengthFunctionSelect.addEventListener("change", (event) => {
         // console.log(localStorage.getItem(appSettings.sequencer.stepLengthFunction)
