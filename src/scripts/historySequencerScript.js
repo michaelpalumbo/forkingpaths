@@ -927,14 +927,34 @@ document.addEventListener("DOMContentLoaded", function () {
     // * HISTORY GRAPH ANALYSIS
     // * 
     // *
+    // Add an event listener for the 'change' event
+    document.getElementById("getHistoryAnalysisMenu").addEventListener("change", (event) => {
+        // console.log(localStorage.getItem(appSettings.sequencer.stepLengthFunction)
+        const selected = event.target.value; // Get the selected option's value
 
-    document.getElementById("getLeavesBtn").addEventListener("click", () => {
-        // Filter nodes with no outgoing edges
-        const leaves = historyDAG_cy.nodes().filter(node => node.outgoers('edge').length === 0);
-        const leafNodes = leaves.map(node => node.data());
+        switch(selected){
 
-        populateAnalysisNodeList(leafNodes, 'Leaf Nodes')
+            case 'getLeaves':
+                // Filter nodes with no outgoing edges
+                const leaves = historyDAG_cy.nodes().filter(node => node.outgoers('edge').length === 0);
+                const leafNodes = leaves.map(node => node.data());
+
+                populateAnalysisNodeList(leafNodes, 'Leaf Nodes')
+            break
+
+            default: console.warn('no switch case exists for analysis type of ', selected)
+        }
+
+        
     });
+
+    // document.getElementById("getLeavesBtn").addEventListener("click", () => {
+    //     // Filter nodes with no outgoing edges
+    //     const leaves = historyDAG_cy.nodes().filter(node => node.outgoers('edge').length === 0);
+    //     const leafNodes = leaves.map(node => node.data());
+
+    //     populateAnalysisNodeList(leafNodes, 'Leaf Nodes')
+    // });
 
     // document.getElementById("dijkstraBtn").addEventListener("click", () => {
     //     const sourceNodeID = topologicalSort(historyDAG_cy)[0].data().id
@@ -1019,9 +1039,10 @@ document.addEventListener("DOMContentLoaded", function () {
             console.log("Event Target:", clickedItem); // Log the event target
         }
     });
-    
+    const titleElement = document.getElementById("analysisResultTitle");
+
     function populateAnalysisNodeList(nodes, group) {
-        const titleElement = document.getElementById("analysisResultTitle");
+        
         titleElement.textContent = group; // Update the text content
 
         

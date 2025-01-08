@@ -19,22 +19,42 @@
             <!-- Bulma columns for layout -->
             <div class="columns">
                 <!-- history graph column -->
-                <div class="column is-one-third" id="leftColumn">
+                <div class="column is-two-thirds" id="leftColumn">
                     <div id="docHistory-cy" class="box" style="height: 95%; overflow: hidden;">
                     </div>
                 </div>
 
                 <!-- history analysis column -->
-                <div class="column is-one-third" id="centreColumn">
-                    <div id="historyAnalysis" class="box" style="height: 95%; overflow: hidden;">
-                        <h3 class="title is-4">History Analysis</h3>
+                <!-- <div class="column is-one-third" id="centreColumn">
+                   
+
+                </div> -->
+                
+                <!-- sequencer controller column -->
+                <div class="column is-one-third is-flex is-flex-direction-column" id="historyController">
+                    <div id="historyAnalysis" class="box" style="overflow: auto;">
+                        <!-- <h3 class="title is-4">History Analysis</h3> -->
         
+                        <div class="field">
+                            <label class="label">History Analysis</label>
+                            <div class="control">
+                                <div class="select">
+                                    <select id="getHistoryAnalysisMenu">
+                                        <option value="none">none...</option>
+                                        <option value="getLeaves">Get Leaves</option>
+                                        <!-- <option value="userEditable">User Editable</option>
+                                        <option value="closenessCentrality">Closeness Centrality</option>
+                                        <option value="euclideanDistance">Euclidean Distance</option> -->
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
                         <!-- Buttons for graph analysis -->
                         <!-- Buttons in two columns -->
-                        <div class="columns is-multiline">
-                            <div class="column is-half">
+                        <!-- <div class="columns is-multiline"> -->
+                            <!-- <div class="column is-half">
                                 <button class="button is-primary is-fullwidth" id="getLeavesBtn">Get Leaves</button>
-                            </div>
+                            </div> -->
                             <!-- <div class="column is-half">
                                 <button class="button is-link is-fullwidth" id="dijkstraBtn">Dijkstra's Algorithm</button>
                             </div>
@@ -62,7 +82,7 @@
                             <div class="column is-half">
                                 <button class="button is-link is-fullwidth" id="closenessCentralityBtn">Closeness Centrality</button>
                             </div> -->
-                        </div>
+                        <!-- </div> -->
 
                         <div class="box">
                             <h3 class="title is-4" id="analysisResultTitle"></h3>
@@ -70,23 +90,11 @@
                                 <!-- List items will be dynamically added here -->
                             </ul>
                         </div>
-                        History Sequencer Graph
-                        <div id="historySequencerCy" class="box has-background-dark" style="overflow: hidden;">
-                            
-                            
-                        </div>
+
                     </div>
-
-                </div>
-                
-                <!-- sequencer controller column -->
-                <div class="column is-one-third" id="historyController">
-                    <!-- <div id="historySequencer" class="box">
-                        
-                        <br><br>
-
-                    </div> -->
-                    <div class="box">
+                    
+                    <!-- Sequencer Controls -->
+                    <div class="box" style="overflow: auto;">
                         <div class="columns">
                             <!-- Step Length Function Select Menu -->
                             <div class="column is-half">
@@ -167,6 +175,12 @@
                                     </tbody>
                                 </table>
                             </div>
+                        </div>
+
+                        History Sequencer Graph
+                        <div id="historySequencerCy" class="box has-background-dark  is-flex-grow-1" style="overflow: hidden;">
+                            
+                            
                         </div>
                     </div>
 

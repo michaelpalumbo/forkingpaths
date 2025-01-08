@@ -37,9 +37,3 @@ html, body {
   background-color: #f0f8ff; /* Light blue, part of Bulma's default styling */
 }
 
-#historyAnalysis {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between; /* Space between items, pushes the last child to the bottom */
-  height: 100%; /* Ensures the container occupies the full height */
-}
