@@ -574,119 +574,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let currentStepIndex = 0; // Tracks the current step in the table
 
-    /*
-    // Schedule the sequencer loop
-    transport.scheduleRepeat((time) => {
-
-        // new version: from table
-        if(storedSequencerTable && storedSequencerTable.length > 0){
-            // Get the current step based on the index
-            const currentStep = storedSequencerTable[currentStepIndex];
-            console.log(currentStep)
-            if(currentStep.status === 'Active'){
-                window.opener?.postMessage({ cmd: 'loadVersion', data: { hash: currentStep.node.id, branch: currentStep.node.branch} }, '*');
-            }
-
-            // Get all rows in the table body
-            const tableRows = document.querySelectorAll("#dynamicTableBody tr");
-            // Remove highlight from all rows
-            tableRows.forEach((row) => row.classList.remove("is-selected"));
-            // Add highlight to the specified row (adjust for 0-based index)
-            const targetRow = tableRows[currentStepIndex]; // rowNumber starts at 1
-            if(targetRow ) { 
-                targetRow.classList.add("is-selected"); 
-                console.log(currentStep.stepLength)
-                
-            }
-
-            stepLength = currentStep.stepLength
-            // Move to the next step, wrapping back to the start if at the end
-            currentStepIndex = (currentStepIndex + 1) % storedSequencerTable.length;
-        }
-
-        // old version: from graph
-        return
-        // let sequencerNodes = historySequencerCy.nodes()
-        // if (meta && !hid.key.shift && sequencerNodes.length > 0) {
-            
-        //     let node
-
-
-        //     // let connectedNodes = node.connectedEdges().connectedNodes().difference(node);
-
-        //     // console.log(connectedNodes[Math.floor(Math.random() * connectedNodes.length)].data())
-
-        //     if (meta.sequencer.traversalMode === 'Sequential') {
-        //         node = sequencerNodes.eq(currentIndex)
-        //     } else {
-        //         node = sequencerNodes[Math.floor(Math.random() * sequencerNodes.length)]
-        //     }
-
-        //     if (node && node.data().historyNode) {
-        //         // synth.triggerAttackRelease("C4", "8n", time); // Example note
-        //         // loadVersion(node.data().historyNode.data().id, node.data().historyNode.data().branch); // Your custom logic
-        //         window.opener?.postMessage({ cmd: 'loadVersion', data: { hash: node.data().historyNode.data().id, branch: node.data().historyNode.data().branch} }, '*');
-
-        //         highlightNode(node.data().historyNode); // Your custom logic
-        //         highlightSequencerNode(node)
-        //     }
-        //     currentNode = node
-        //     // Move to the next step
-        //     currentIndex = (currentIndex + 1) % sequencerNodes.length;
-        // }
-    }, stepLength); // Repeat every eighth note
-    */
-
-    const sequence = new Tone.Sequence(
-        (time, step) => {
-            // Get the current step
-            const currentStep = storedSequencerTable[step];
-            console.log(currentStep)
-            sequence.interval  = currentStep.stepLength
-            // Skip inactive steps
-            if (currentStep.status !== "Active") return;
-    
-            // Perform your action with the step data
-            window.opener?.postMessage(
-                {
-                    cmd: "loadVersion",
-                    data: { hash: currentStep.node.id, branch: currentStep.node.branch },
-                },
-                "*"
-            );
-    
-            // Highlight the current step in the table
-            const tableRows = document.querySelectorAll("#dynamicTableBody tr");
-            tableRows.forEach((row) => row.classList.remove("is-selected"));
-            const targetRow = tableRows[step];
-            if (targetRow) targetRow.classList.add("is-selected");
-
-
-        },
-        [0, 1, 2, 3, 4, 5, 6, 7], // Start with an empty sequence
-        "4n" // Default subdivision, overridden by step timing
-    );
-    
     currentStepIndex = 0
     const loop = new Tone.Loop(function(time){
-        //triggered every eighth note. 
-        console.log(time);
-
         // Get the current step
         const currentStep = storedSequencerTable[currentStepIndex];
-        console.log(currentStep)
+        // set interval based on step length
         loop.interval  = currentStep.stepLength
-        // Skip inactive steps
-        if (currentStep.status !== "Active") return;
-
-        // Perform your action with the step data
-        window.opener?.postMessage(
-            {
-                cmd: "loadVersion",
-                data: { hash: currentStep.node.id, branch: currentStep.node.branch },
-            },
-            "*"
-        );
 
         // Highlight the current step in the table
         const tableRows = document.querySelectorAll("#dynamicTableBody tr");
@@ -696,10 +589,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
         currentStepIndex = (currentStepIndex + 1) % storedSequencerTable.length;
 
+        // if step is active, send request to load the version
+        if (currentStep.status == "Active"){
+            // Perform your action with the step data
+            window.opener?.postMessage(
+                {
+                    cmd: "loadVersion",
+                    data: { hash: currentStep.node.id, branch: currentStep.node.branch },
+                },
+                "*"
+            );
+        }
     }, "4n")
-    // Start the sequence
-    
-    // Tone.Transport.start();
+
 
 
     // *
