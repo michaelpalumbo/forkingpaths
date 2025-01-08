@@ -366,6 +366,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     function loadVersion(nodeID, branch){
+        console.log('nodID', nodeID, 'branch', branch)
         // Perform your action with the step data
         window.opener?.postMessage(
             {
