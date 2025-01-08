@@ -20,7 +20,7 @@ html, body {
   }
   
   #bpmSlider {
-    width: 100%;
+    width: 40%;
   }
 
   /* Highlight styling for the active list item */
@@ -30,6 +30,11 @@ html, body {
     font-weight: bold;
     border-radius: 4px; /* Optional: Adds rounded corners */
     padding: 5px; /* Optional: Adds padding */
+}
+
+/* Highlight row (Bulma's `is-selected` class does this automatically) */
+.is-selected {
+  background-color: #f0f8ff; /* Light blue, part of Bulma's default styling */
 }
 
 #historyAnalysis {

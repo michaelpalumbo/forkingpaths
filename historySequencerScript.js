@@ -580,15 +580,24 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // new version: from table
         if(storedSequencerTable && storedSequencerTable.length > 0){
-                    // Get the current step based on the index
+            // Get the current step based on the index
             const currentStep = storedSequencerTable[currentStepIndex];
-
-            // Log or use the current step (e.g., trigger sound, update UI)
-            console.log(`Current Step:`, currentStep);
-
+            
             if(currentStep.status === 'Active'){
                 window.opener?.postMessage({ cmd: 'loadVersion', data: { hash: currentStep.node.id, branch: currentStep.node.branch} }, '*');
             }
+
+            // Get all rows in the table body
+            const tableRows = document.querySelectorAll("#dynamicTableBody tr");
+            // Remove highlight from all rows
+            tableRows.forEach((row) => row.classList.remove("is-selected"));
+            // Add highlight to the specified row (adjust for 0-based index)
+            const targetRow = tableRows[currentStepIndex]; // rowNumber starts at 1
+            if(targetRow ) { 
+                targetRow.classList.add("is-selected"); 
+            }
+
+            
             // Move to the next step, wrapping back to the start if at the end
             currentStepIndex = (currentStepIndex + 1) % storedSequencerTable.length;
         }
@@ -623,7 +632,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // Move to the next step
             currentIndex = (currentIndex + 1) % sequencerNodes.length;
         }
-    }, "8n"); // Repeat every eighth note
+    }, "4n"); // Repeat every eighth note
 
 
 
@@ -1105,7 +1114,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if(storedTable){
             savedData.forEach((rowData, index) => {
                 const row = document.createElement("tr");
-        
+                row.classList.add("is-size-4"); // Apply text size to the entire row
                 // Step (Change) cell
                 const stepCell = document.createElement("td");
                 stepCell.textContent = rowData.stepChange || `(Empty)`; // Fallback for empty rows
@@ -1130,7 +1139,8 @@ document.addEventListener("DOMContentLoaded", function () {
         } else {
             for (let i = 0; i < numberOfRows; i++) {
                 const row = document.createElement("tr");
-                
+                row.classList.add("is-size-6"); // Apply text size to the entire row
+
                 // Step (Change) cell
                 const stepCell = document.createElement("td");
                 stepCell.textContent = `(Empty)`; // Placeholder for step name

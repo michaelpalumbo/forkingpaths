@@ -1395,10 +1395,24 @@ document.addEventListener("DOMContentLoaded", function () {
             if(forkedDoc.changeType && forkedDoc.changeType.msg === 'paramUpdate'){
                 let id = `paramControl_parent:${forkedDoc.changeType.parent}_param:${forkedDoc.changeType.param}`
                 let paramControl = document.getElementById(id)
+                
                 if (paramControl) {
-                    paramControl.value = forkedDoc.changeType.value;
-                    
-                    $(paramControl).knobSet(forkedDoc.changeType.value);
+
+                    switch(paramControl.tagName){
+                        case 'INPUT':
+                            paramControl.value = forkedDoc.changeType.value;
+                            
+                            $(paramControl).knobSet(forkedDoc.changeType.value);
+
+                        break
+
+                        case 'SELECT':
+                            paramControl.value = forkedDoc.changeType.value;
+                        break
+
+                        default: console.warn('NEW UI DETECTED, CREATE A SWITCH CASE FOR IT ABOVE THIS LINE')
+                    }
+
 
                   } else {
                     console.warn(`param with id "${id}" not found.`);
@@ -2705,7 +2719,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
             case 'updateSequencer':
                 meta = Automerge.change(meta, (meta) => {
-                    console.log(event.data.data)
                     meta.sequencer[event.data.setting] = event.data.data
                 });
 
