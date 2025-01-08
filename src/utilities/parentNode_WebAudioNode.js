@@ -1,4 +1,4 @@
-import audioNodes from './src/modules/modules.json' assert { type: 'json'}
+import audioNodes from '../modules/modules.json' assert { type: 'json'}
 import {uuidv7} from 'uuidv7'
 import Chance from 'chance';
 const chance = new Chance();

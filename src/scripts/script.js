@@ -5,15 +5,15 @@
 //*
 const ws = new WebSocket('ws://localhost:3000');
 
-import { ParentNode_WebAudioNode } from './parentNode_WebAudioNode.js';
-import modules from './src/modules/modules.json' assert { type: 'json'}
+import { ParentNode_WebAudioNode } from '../utilities/parentNode_WebAudioNode.js';
+import modules from '../modules/modules.json' assert { type: 'json'}
 import { uuidv7 } from "uuidv7";
 import randomColor from 'randomcolor';
-import { saveDocument, loadDocument, deleteDocument } from './utilities/indexedDB.js';
+import { saveDocument, loadDocument, deleteDocument } from '../utilities/indexedDB.js';
 import { marked } from 'marked'
 import * as Tone from "tone";
 import 'jquery-knob';   // Import jQuery Knob plugin
-import * as speaker from "./speaker.json"
+import * as speaker from "../../speaker.json"
 import { computePosition, flip, shift } from '@floating-ui/dom';
 
 // TODO: look for comments with this: //* old -repo version 

@@ -4,8 +4,8 @@
 //* Set up dependencies, initialize core variables
 //*
 
-import { ParentNode_WebAudioNode } from './parentNode_WebAudioNode.js';
-import modules from './src/modules/modules.json' assert { type: 'json'}
+import { ParentNode_WebAudioNode } from '../utilities/parentNode_WebAudioNode.js';
+import modules from '../modules/modules.json' assert { type: 'json'}
 import { marked } from 'marked'
 import 'jquery-knob';   // Import jQuery Knob plugin
 import { computePosition, flip, shift } from '@floating-ui/dom';

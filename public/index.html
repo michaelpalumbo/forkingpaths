@@ -5,15 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
 
-    <title>Forking Paths: Synth Designer</title>
-    <link rel="stylesheet" href="synthDesigner.css">
-    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.30.3/cytoscape.min.js"></script> -->
-  <!-- Cytoscape Grid Guide Extension
-
-  
-  <script src="lib/cytoscape-grid-guide.js"></script> -->
-    <script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
-    <script src="lib/cytoscape-grid-guide.js"></script>
+    <title>Forking Paths</title>
+    <link rel="stylesheet" href="./css/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.30.3/cytoscape.min.js"></script>
     <!-- jQuery Library -->
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 
@@ -28,33 +22,49 @@
             <div class="menu-item">
                 File
                 <div class="dropdown">
-                    <button id="newSession">New Synth</button> 
+                    <button id="newSession">New Patch History</button> 
+                    <input type="file" id="loadSessionButton" accept=".forkingpaths" />
+                    <label for="loadSessionButton" class="custom-file-button">Load Patch History</label>
+                    <button id="saveButton">Save Patch History</button>
                     <hr>
-                    <button id="saveButton">Save Synth</button>
-                    <input type="file" id="fileInput" accept=".forkingpaths" />
-                    <label for="fileInput" class="custom-file-button">Load Synth</label>
-                    <hr>
-                    <button id="viewReadme">Help</button>
-                    <button id="settingsButton">Settings</button>
+                    <input type="file" id="loadSynthButton" accept=".fpsynth" />
+                    <label for="loadSynthButton" class="custom-file-button">Load Synth File</label>     
                 </div>
             </div>
-            
+            <div class="menu-item">
+                Audio
+                <div class="dropdown">
+                    <button class="action-button" id="audioToggleButton">Resume Audio</button>
+                    <!-- <button>Undo</button>
+                    <button>Redo</button> -->
+                </div>
+            </div>
+            <div class="menu-item">
+                View
+                <div class="dropdown">
+                    <!-- <div id="documentName"></div> -->
+                    <button id="openHistoryWindow">Open History Window</button>
+                    <button id="openSynthDesigner">Open Synth Designer</button>
+                </div>
+            </div>
             <div class="menu-buttons">
-                <h3>Forking Paths Synth Designer</h3>
-                <!-- <button class="action-button" id="viewReadme">Help</button>
-                <button class="action-button" id="settingsButton">Settings</button> -->
+                <!-- <button class="action-button" id="audioToggleButton">Resume Audio</button> -->
+                <button class="action-button" id="clearGraph">Clear Cables</button>
+                <button class="action-button" id="viewReadme">Help</button>
+                
+                <button class="action-button" id="settingsButton">Settings</button>
             </div>
         </div>
 
         
-        <div id="leftColumn">
+        <!-- <div id="leftColumn">
             <h3> Modules Library </h3>
             <div id="modulesLibraryContainer">
                 <ul id="moduleList"></ul>
             </div>
             
             
-        </div>
+        </div> -->
 
         <div id="synthAndHistoryController">
             <div id="cy"></div>
@@ -97,6 +107,6 @@
 
     </div>
 
-    <script type="module" src="synthDesigner.js"></script>
+    <script type="module" src="../src/scripts/script.js"></script>
 </body>
 </html>

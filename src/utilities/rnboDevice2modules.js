@@ -1,6 +1,6 @@
 import { readdir, readFile, writeFile } from 'fs/promises';
 import { extname, resolve, join } from 'path';
-import audioNodes from './src/modules/webAudioNodes.json' assert { type: 'json'}
+import audioNodes from '../modules/webAudioNodes.json' assert { type: 'json'}
 
 async function getJsonFiles(directoryPath) {
     try {
