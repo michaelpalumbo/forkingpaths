@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "rnboDevice2modules": "node rnboDevice2modules.js",
+    "rnboDevice2modules": "node ./src/utilities/rnboDevice2modules.js",
     "server": "node server.js",
     "dev": "npm run rnboDevice2modules && concurrently \"npm run server\" \"vite\"",
     "build": "npm run rnboDevice2modules && concurrently \"npm run server\" \"vite build\"",

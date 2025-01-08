@@ -2,7 +2,7 @@ import express from 'express';
 import cytoscape from 'cytoscape';
 import bodyParser from 'body-parser';
 import dagre from 'cytoscape-dagre';
-import buildHistoryGraph from './utilities/buildHistoryGraph.js';
+import buildHistoryGraph from './src/utilities/buildHistoryGraph.js';
 import { WebSocketServer } from 'ws';
 
 
