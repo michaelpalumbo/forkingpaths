@@ -574,7 +574,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let currentStepIndex = 0; // Tracks the current step in the table
 
-
+    /*
     // Schedule the sequencer loop
     transport.scheduleRepeat((time) => {
 
@@ -595,45 +595,111 @@ document.addEventListener("DOMContentLoaded", function () {
             const targetRow = tableRows[currentStepIndex]; // rowNumber starts at 1
             if(targetRow ) { 
                 targetRow.classList.add("is-selected"); 
+                console.log(currentStep.stepLength)
+                
             }
 
-            
+            stepLength = currentStep.stepLength
             // Move to the next step, wrapping back to the start if at the end
             currentStepIndex = (currentStepIndex + 1) % storedSequencerTable.length;
         }
 
         // old version: from graph
         return
-        let sequencerNodes = historySequencerCy.nodes()
-        if (meta && !hid.key.shift && sequencerNodes.length > 0) {
+        // let sequencerNodes = historySequencerCy.nodes()
+        // if (meta && !hid.key.shift && sequencerNodes.length > 0) {
             
-            let node
+        //     let node
 
 
-            // let connectedNodes = node.connectedEdges().connectedNodes().difference(node);
+        //     // let connectedNodes = node.connectedEdges().connectedNodes().difference(node);
 
-            // console.log(connectedNodes[Math.floor(Math.random() * connectedNodes.length)].data())
+        //     // console.log(connectedNodes[Math.floor(Math.random() * connectedNodes.length)].data())
 
-            if (meta.sequencer.traversalMode === 'Sequential') {
-                node = sequencerNodes.eq(currentIndex)
-            } else {
-                node = sequencerNodes[Math.floor(Math.random() * sequencerNodes.length)]
-            }
+        //     if (meta.sequencer.traversalMode === 'Sequential') {
+        //         node = sequencerNodes.eq(currentIndex)
+        //     } else {
+        //         node = sequencerNodes[Math.floor(Math.random() * sequencerNodes.length)]
+        //     }
 
-            if (node && node.data().historyNode) {
-                // synth.triggerAttackRelease("C4", "8n", time); // Example note
-                // loadVersion(node.data().historyNode.data().id, node.data().historyNode.data().branch); // Your custom logic
-                window.opener?.postMessage({ cmd: 'loadVersion', data: { hash: node.data().historyNode.data().id, branch: node.data().historyNode.data().branch} }, '*');
+        //     if (node && node.data().historyNode) {
+        //         // synth.triggerAttackRelease("C4", "8n", time); // Example note
+        //         // loadVersion(node.data().historyNode.data().id, node.data().historyNode.data().branch); // Your custom logic
+        //         window.opener?.postMessage({ cmd: 'loadVersion', data: { hash: node.data().historyNode.data().id, branch: node.data().historyNode.data().branch} }, '*');
 
-                highlightNode(node.data().historyNode); // Your custom logic
-                highlightSequencerNode(node)
-            }
-            currentNode = node
-            // Move to the next step
-            currentIndex = (currentIndex + 1) % sequencerNodes.length;
-        }
+        //         highlightNode(node.data().historyNode); // Your custom logic
+        //         highlightSequencerNode(node)
+        //     }
+        //     currentNode = node
+        //     // Move to the next step
+        //     currentIndex = (currentIndex + 1) % sequencerNodes.length;
+        // }
     }, stepLength); // Repeat every eighth note
+    */
 
+    const sequence = new Tone.Sequence(
+        (time, step) => {
+            // Get the current step
+            const currentStep = storedSequencerTable[step];
+            console.log(currentStep)
+            sequence.interval  = currentStep.stepLength
+            // Skip inactive steps
+            if (currentStep.status !== "Active") return;
+    
+            // Perform your action with the step data
+            window.opener?.postMessage(
+                {
+                    cmd: "loadVersion",
+                    data: { hash: currentStep.node.id, branch: currentStep.node.branch },
+                },
+                "*"
+            );
+    
+            // Highlight the current step in the table
+            const tableRows = document.querySelectorAll("#dynamicTableBody tr");
+            tableRows.forEach((row) => row.classList.remove("is-selected"));
+            const targetRow = tableRows[step];
+            if (targetRow) targetRow.classList.add("is-selected");
+
+
+        },
+        [0, 1, 2, 3, 4, 5, 6, 7], // Start with an empty sequence
+        "4n" // Default subdivision, overridden by step timing
+    );
+    
+    currentStepIndex = 0
+    const loop = new Tone.Loop(function(time){
+        //triggered every eighth note. 
+        console.log(time);
+
+        // Get the current step
+        const currentStep = storedSequencerTable[currentStepIndex];
+        console.log(currentStep)
+        loop.interval  = currentStep.stepLength
+        // Skip inactive steps
+        if (currentStep.status !== "Active") return;
+
+        // Perform your action with the step data
+        window.opener?.postMessage(
+            {
+                cmd: "loadVersion",
+                data: { hash: currentStep.node.id, branch: currentStep.node.branch },
+            },
+            "*"
+        );
+
+        // Highlight the current step in the table
+        const tableRows = document.querySelectorAll("#dynamicTableBody tr");
+        tableRows.forEach((row) => row.classList.remove("is-selected"));
+        const targetRow = tableRows[currentStepIndex];
+        if (targetRow) targetRow.classList.add("is-selected");
+
+        currentStepIndex = (currentStepIndex + 1) % storedSequencerTable.length;
+
+    }, "4n")
+    // Start the sequence
+    
+    // Tone.Transport.start();
 
 
     // *
@@ -669,7 +735,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         } else {
             historySequencerController('clear')
-            console.log(event.target.data().id)
+
             // loadVersion(event.target.data().id, event.target.data().branch)
             window.opener?.postMessage({ cmd: 'loadVersion', data: {hash: event.target.data().id, branch: event.target.data().branch} }, '*');
             highlightNode(event.target)
@@ -781,10 +847,14 @@ document.addEventListener("DOMContentLoaded", function () {
     startStopButton.addEventListener("click", async () => {
         if (isPlaying) {
             transport.stop();
+            // sequence.stop(0);
+            loop.stop()
             startStopButton.textContent = "Start Sequencer";
         } else {
             await Tone.start(); // Required to start audio in modern browsers
             transport.start();
+            // sequence.start(0);
+            loop.start(0)
             startStopButton.textContent = "Stop Sequencer";
         }
         isPlaying = !isPlaying;
@@ -1127,7 +1197,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 // Re-add click event listener to the row
                 row.addEventListener("click", () => {
                     stepCell.textContent = selectedNode.label;
-                    stepLengthCell.textContent = "to do"; // Example modification
+                    stepLengthCell.textContent = "4n"; // Example modification
                     row.dataset.id = selectedNode.id
                     row.dataset.label = selectedNode.label
                     row.dataset.branch = selectedNode.branch
@@ -1163,7 +1233,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     if(selectedNode){
                         // Update row values with data from selectedNode
                         stepCell.textContent = selectedNode.label;
-                        stepLengthCell.textContent = 'to do'
+                        stepLengthCell.textContent = '4n'
                         row.dataset.id = selectedNode.id
                         row.dataset.label = selectedNode.label
                         row.dataset.branch = selectedNode.branch
@@ -1220,6 +1290,7 @@ document.addEventListener("DOMContentLoaded", function () {
         window.opener?.postMessage(update, '*')
 
         storedSequencerTable = tableData
+
         // localStorage.sequencerTable = tableData
         return tableData; // Return the table data
     }
@@ -1237,42 +1308,52 @@ document.addEventListener("DOMContentLoaded", function () {
                 // Update the 2nd column (Step Length) of the current row
                 const stepLengthCell = rows[i].children[1]; // 2nd cell of the current row
                 stepLengthCell.textContent = "4n"
-    
+                storedSequencerTable[i].stepLength = "4n"
             }
+            saveSequencerTable()
         }
     }
     function calculateEuclideanDistances(){
+        if(!storedSequencerTable){
+            return
+        }
+        const maxDistance = calculateMaxEuclideanDistance()
+
+        
         const tableBody = document.getElementById("dynamicTableBody");
         const rows = tableBody.querySelectorAll("tr");
-    
-        if(storedSequencerTable){
-            for (let i = 0; i < storedSequencerTable.length - 1; i++) {
-                const currentNodeID = storedSequencerTable[i].node.id;
-                // Get the ID of the next node (circular for the last row)
-                const nextNodeID = i < storedSequencerTable.length - 1
-                ? storedSequencerTable[i + 1].node.id // Next row for all except last
-                : storedSequencerTable[0].node.id;    // get value of first row for the last row's length
-    
-                // compute the euclidean distance between 2 nodes
-                const currentPosition = historyDAG_cy.$(`#${currentNodeID}`).position();
-                const nextPosition = historyDAG_cy.$(`#${nextNodeID}`).position();
-    
-                let distance = Math.sqrt(
-                    Math.pow(currentPosition.x - nextPosition.x, 2) +
-                    Math.pow(currentPosition.y - nextPosition.y, 2)
-                );
-        
-                // Update the 2nd column (Step Length) of the current row
-                const stepLengthCell = rows[i].children[1]; // 2nd cell of the current row
-                stepLengthCell.textContent = distance.toFixed(2) || "No Path"
-    
-            }
-        }
-        
-    
-            // // Handle the last row's Step Length column (no "next" node)
-            // rows[storedSequencerTable.length - 1].children[1].textContent = "N/A";
 
+
+        for (let i = 0; i < storedSequencerTable.length - 1; i++) {
+            const currentNodeID = storedSequencerTable[i].node.id;
+            if(!currentNodeID){
+                continue
+            }
+            // Get the ID of the next node (circular for the last row)
+            const nextNodeID = i < storedSequencerTable.length - 1
+            ? storedSequencerTable[i + 1].node.id // Next row for all except last
+            : storedSequencerTable[0].node.id;    // get value of first row for the last row's length
+
+            // compute the euclidean distance between 2 nodes
+            const currentPosition = historyDAG_cy.$(`#${currentNodeID}`).position();
+            const nextPosition = historyDAG_cy.$(`#${nextNodeID}`).position();
+
+            let distance = Math.sqrt(
+                Math.pow(currentPosition.x - nextPosition.x, 2) +
+                Math.pow(currentPosition.y - nextPosition.y, 2)
+            );
+    
+            
+
+            // Update the 2nd column (Step Length) of the current row
+            const stepLengthCell = rows[i].children[1]; // 2nd cell of the current row
+            // Map a distance value to a corresponding musical note length in Tone.js based on a defined range.
+            stepLengthCell.textContent = mapDistanceToNoteLength(distance.toFixed(2), maxDistance)
+            storedSequencerTable[i].stepLength = stepLengthCell.textContent
+
+        }
+        saveSequencerTable()
+        
     }
     function calculateDistancesFromTableRows() {
         if(!storedSequencerTable){
@@ -1312,6 +1393,7 @@ document.addEventListener("DOMContentLoaded", function () {
     
             // Handle the last row's Step Length column (no "next" node)
             // rows[storedSequencerTable.length - 1].children[1].textContent = "N/A";
+        saveSequencerTable()
     }
 
     // *
@@ -1450,11 +1532,55 @@ document.addEventListener("DOMContentLoaded", function () {
         return sorted;
     }
 
-    // update appSettings in localStorage
-    function storeAppSettings(){
-        localStorage.setItem('appSettings', appSettings)
-    }
+    function calculateMaxEuclideanDistance() {
+        // Find the root node (no incoming edges)
+        const root = historyDAG_cy.nodes().filter(node => node.indegree() === 0)[0];
+        if (!root) {
+            console.error("No root node found.");
+            return null;
+        }
     
+        // Get the position of the root node
+        const rootPosition = root.position();
+    
+        // Find all leaf nodes (no outgoing edges)
+        const leaves = historyDAG_cy.nodes().filter(node => node.outdegree() === 0);
+    
+        // Calculate the Euclidean distance to each leaf node
+        let maxDistance = 0;
+    
+        leaves.forEach(leaf => {
+            const leafPosition = leaf.position();
+            const distance = Math.sqrt(
+                Math.pow(leafPosition.x - rootPosition.x, 2) +
+                Math.pow(leafPosition.y - rootPosition.y, 2)
+            );
+    
+            // Update maxDistance if the current distance is greater
+            if (distance > maxDistance) {
+                maxDistance = distance;
+            }
+        });
+        return maxDistance;
+    }
+
+    function mapDistanceToNoteLength(distance, maxDistance) {
+        // Note lengths array (smallest to largest)
+        const noteLengths = ["32n", "16n", "8n", "4n", "2n", "1n"];
+        const minDistance = 50; // Minimum threshold for distances
+    
+        // If distance is less than or equal to minDistance, return smallest note length
+        if (distance <= minDistance) return "32n";
+    
+        // If distance is greater than or equal to maxDistance, return largest note length
+        if (distance >= maxDistance) return "1n";
+    
+        // Map the distance to an index in the note lengths array
+        const normalizedDistance = (distance - minDistance) / (maxDistance - minDistance); // Normalize to [0, 1]
+        const noteIndex = Math.floor(normalizedDistance * (noteLengths.length - 1)); // Map to array index
+    
+        return noteLengths[noteIndex];
+    }
 })
 
 
