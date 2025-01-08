@@ -13,7 +13,6 @@ import { saveDocument, loadDocument, deleteDocument } from '../utilities/indexed
 import { marked } from 'marked'
 import * as Tone from "tone";
 import 'jquery-knob';   // Import jQuery Knob plugin
-import * as speaker from "../../speaker.json"
 import { computePosition, flip, shift } from '@floating-ui/dom';
 
 // TODO: look for comments with this: //* old -repo version 
