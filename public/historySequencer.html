@@ -15,143 +15,144 @@
 <body>
     <!-- Main container -->
     <section class="section is-fullheight is-clipped ">
-        <div class="container is-fullheight">
-            <!-- Bulma columns for layout -->
-            <div class="columns is-fullheight">
-                <!-- history graph column -->
-                <div class="column is-two-thirds" id="leftColumn">
-                    <div id="docHistory-cy" class="box" style="height: 95%; overflow: hidden;">
-                    </div>
+        <!-- Bulma columns for layout -->
+        <div class="columns is-fullheight" >
+            
+            <!-- history graph column -->
+            <div class="column is-half" id="leftColumn">
+                <div id="docHistory-cy" class="box" style="height: 95%; overflow: hidden;">
                 </div>
+            </div>
 
-                <!-- history analysis column -->
-                <!-- <div class="column is-one-third" id="centreColumn">
-                   
-
-                </div> -->
-                
-                <!-- sequencer controller column -->
-                <div class="column is-one-third is-flex is-flex-direction-column" id="historyController">
-                    <div id="historyAnalysis" class="box" style="overflow: auto;">
-                        <!-- <h3 class="title is-4">History Analysis</h3> -->
-        
-                        <div class="field">
-                            <label class="label">History Analysis</label>
-                            <div class="control">
-                                <div class="select">
-                                    <select id="getHistoryAnalysisMenu">
-                                        <option value="none">none...</option>
-                                        <option value="getLeaves">Get Leaves</option>
-                                        <!-- <option value="userEditable">User Editable</option>
-                                        <option value="closenessCentrality">Closeness Centrality</option>
-                                        <option value="euclideanDistance">Euclidean Distance</option> -->
-                                    </select>
-                                </div>
+            <!-- history analysis column -->
+            <div class="column is-one-quarter" id="historyAnalysisColumn">
+                <div id="historyAnalysis" class="box" style="overflow: auto;">
+                    <!-- <h3 class="title is-4">History Analysis</h3> -->
+    
+                    <div class="field">
+                        <label class="label">History Analysis</label>
+                        <div class="control">
+                            <div class="select">
+                                <select id="getHistoryAnalysisMenu">
+                                    <option value="none">none...</option>
+                                    <option value="getLeaves">Get Leaves</option>
+                                    <option disabled>──────────</option> <!-- Divider -->
+                                    <option value="paramUpdate">Get Param Changes</option>
+                                    <option value="getCables">Get Cable Changes</option>
+                                    <!-- <option value="userEditable">User Editable</option>
+                                    <option value="closenessCentrality">Closeness Centrality</option>
+                                    <option value="euclideanDistance">Euclidean Distance</option> -->
+                                </select>
                             </div>
                         </div>
-
-                        <div class="box">
-                            <h3 class="title is-4" id="analysisResultTitle"></h3>
-                            <ul id="analysisNodeList" class="list">
-                                <!-- List items will be dynamically added here -->
-                            </ul>
-                        </div>
-
                     </div>
-                    
-                    <!-- Sequencer Controls -->
-                    <div class="box" style="overflow: auto;">
-                        <div class="columns">
-                            <!-- Step Length Function Select Menu -->
-                            <div class="column is-half">
-                                <div class="field">
-                                    <label class="label">BPM Slider</label>
-                                    <div class="control">
-                                        <input type="range" id="bpmSlider" min="30" max="240" step="1" value="120" class="slider">
-                                    </div>
-                                    <p>BPM: <span id="bpmValue">120</span></p>
-                                </div>
-        
-                                <!-- Start/Stop Button -->
-                                <button id="startStopButton" class="button is-primary">Start Sequencer</button>
-                                <button id="clearSequencerButton" class="button is-info">Clear Sequencer</button>
-                                
-                            </div>
-                        
-                            <!-- JS Comment -->
-                            <script>
-                                // 'closenessCentrality' option:
-                                // This mode takes each step and compares its closeness centrality with the node in the row below it.
-                                // The result is used against a quantized value to determine the step length in Tone.js.
-                            </script>
 
-                            <!-- Sequence Order Select Menu -->
-                            <div class="column is-half">
-                                <div class="field">
-                                    <label class="label">Step Length Function</label>
-                                    <div class="control">
-                                        <div class="select">
-                                            <select id="stepLengthFunction">
-                                                <option value="fixed">Fixed</option>
-                                                <option value="userEditable">User Editable</option>
-                                                <option value="closenessCentrality">Closeness Centrality</option>
-                                                <option value="euclideanDistance">Euclidean Distance</option>
-                                            </select>
-                                        </div>
-                                    </div>
+                    <div class="box">
+                        <h3 class="title is-4" id="analysisResultTitle"></h3>
+                        <ul id="analysisNodeList" class="list">
+                            <!-- List items will be dynamically added here -->
+                        </ul>
+                    </div>
+
+                </div>
+            </div>
+            
+            <!-- sequencer controller column -->
+            <div class="column is-one-quarter is-flex is-flex-direction-column" id="historyController">
+                
+                
+                <!-- Sequencer Controls -->
+                <div class="box" style="overflow: auto;">
+                    <div class="columns">
+                        <!-- Step Length Function Select Menu -->
+                        <div class="column is-half">
+                            <div class="field">
+                                <label class="label">BPM Slider</label>
+                                <div class="control">
+                                    <input type="range" id="bpmSlider" min="30" max="240" step="1" value="120" class="slider">
                                 </div>
-                                <div class="field">
-                                    <label class="label">Sequence Order</label>
-                                    <div class="control">
-                                        <div class="select">
-                                            <select id="sequenceOrder">
-                                                <option value="fixed">Entry</option>
-                                                <option value="topologicalSort">Topological Sort</option>
-                                                <option value="random">Random</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
+                                <p>BPM: <span id="bpmValue">120</span></p>
                             </div>
+    
+                            <!-- Start/Stop Button -->
+                            <button id="startStopButton" class="button is-primary">Start Sequencer</button>
+                            <button id="clearSequencerButton" class="button is-info">Clear Sequencer</button>
+                            
                         </div>
+                    
                         <!-- JS Comment -->
                         <script>
-                            // The sequencer can be rearranged according to the user setting or based on some form of Cytoscape analysis,
-                            // such as topological sort for DAGs.
+                            // 'closenessCentrality' option:
+                            // This mode takes each step and compares its closeness centrality with the node in the row below it.
+                            // The result is used against a quantized value to determine the step length in Tone.js.
                         </script>
-                    
-                        <!-- Table -->
-                        <div class="table-container">
-                            <!-- Table -->
-                            <div class="table-container">
-                                <table class="table is-bordered is-striped is-hoverable is-fullwidth">
-                                    <colgroup>
-                                        <col style="width: 70%;">
-                                        <col style="width: 20%;">
-                                        <col style="width: 10%;">
-                                    </colgroup>
-                                    <thead>
-                                        <tr>
-                                            <th>Step (Change)</th>
-                                            <th>Step Length</th>
-                                            <th>Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="dynamicTableBody">
-                                        <!-- Rows will be dynamically generated -->
-                                    </tbody>
-                                </table>
+
+                        <!-- Sequence Order Select Menu -->
+                        <div class="column is-half">
+                            <div class="field">
+                                <label class="label">Step Length Function</label>
+                                <div class="control">
+                                    <div class="select">
+                                        <select id="stepLengthFunction">
+                                            <option value="fixed">Fixed</option>
+                                            <option value="userEditable">User Editable</option>
+                                            <option value="closenessCentrality">Closeness Centrality</option>
+                                            <option value="euclideanDistance">Euclidean Distance</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="label">Sequence Order</label>
+                                <div class="control">
+                                    <div class="select">
+                                        <select id="sequenceOrder">
+                                            <option value="fixed">Entry</option>
+                                            <option value="topologicalSort">Topological Sort</option>
+                                            <option value="random">Random</option>
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-
-                        History Sequencer Graph
-                        <div id="historySequencerCy" class="box has-background-dark  is-flex-grow-1" style="overflow: hidden;">
-                            
-                            
+                    </div>
+                    <!-- JS Comment -->
+                    <script>
+                        // The sequencer can be rearranged according to the user setting or based on some form of Cytoscape analysis,
+                        // such as topological sort for DAGs.
+                    </script>
+                
+                    <!-- Table -->
+                    <div class="table-container">
+                        <!-- Table -->
+                        <div class="table-container">
+                            <table class="table is-bordered is-striped is-hoverable is-fullwidth">
+                                <colgroup>
+                                    <col style="width: 70%;">
+                                    <col style="width: 20%;">
+                                    <col style="width: 10%;">
+                                </colgroup>
+                                <thead>
+                                    <tr>
+                                        <th>Step (Change)</th>
+                                        <th>Step Length</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dynamicTableBody">
+                                    <!-- Rows will be dynamically generated -->
+                                </tbody>
+                            </table>
                         </div>
                     </div>
 
+                    History Sequencer Graph
+                    <div id="historySequencerCy" class="box has-background-dark  is-flex-grow-1" style="overflow: hidden;">
+                        
+                        
+                    </div>
                 </div>
+
             </div>
         </div>
     </section>

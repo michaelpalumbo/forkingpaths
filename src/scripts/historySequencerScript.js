@@ -22,7 +22,7 @@ if(!localStorage.appSettings){
 }else {
     
     appSettings = localStorage.getItem('appSettings')
-    console.log('appSettings:', appSettings)
+
 }
 
 // meta doc
@@ -365,7 +365,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
-
+    function loadVersion(nodeID, branch){
+        // Perform your action with the step data
+        window.opener?.postMessage(
+            {
+                cmd: "loadVersion",
+                data: { hash: nodeID, branch: branch },
+            },
+            "*"
+        );
+    }
 
 
     ws.onopen = () => {
@@ -591,14 +600,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // if step is active, send request to load the version
         if (currentStep.status == "Active"){
-            // Perform your action with the step data
-            window.opener?.postMessage(
-                {
-                    cmd: "loadVersion",
-                    data: { hash: currentStep.node.id, branch: currentStep.node.branch },
-                },
-                "*"
-            );
+            // load the version
+            loadVersion(currentStep.node.id, currentStep.node.branch)
         }
     }, "4n")
 
@@ -649,7 +652,7 @@ document.addEventListener("DOMContentLoaded", function () {
             historySequencerController('clear')
 
             // loadVersion(event.target.data().id, event.target.data().branch)
-            window.opener?.postMessage({ cmd: 'loadVersion', data: {hash: event.target.data().id, branch: event.target.data().branch} }, '*');
+            loadVersion(event.target.data().id, event.target.data().branch)
             highlightNode(event.target)
 
             selectedNode = event.target.data()
@@ -952,6 +955,14 @@ document.addEventListener("DOMContentLoaded", function () {
                 populateAnalysisNodeList(leafNodes, 'Leaf Nodes')
             break
 
+            case 'paramUpdate':
+                populateAnalysisNodeList(historyDAG_cy.nodes(`[label *= "paramUpdate"]`).map((node) => node.data()), 'All Param Changes')
+
+            break
+            case 'getCables':
+                populateAnalysisNodeList(historyDAG_cy.nodes(`[label *= "connect"]`).map((node) => node.data()), 'All Cable Changes')
+            break
+
             default: console.warn('no switch case exists for analysis type of ', selected)
         }
 
@@ -1045,8 +1056,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 id: clickedItem.dataset.id,
                 branch: clickedItem.dataset.branch
             }
-            console.log("Clicked item:", clickedItem.textContent); // Log the clicked item's text
-            console.log("Event Target:", clickedItem); // Log the event target
+
+            loadVersion(clickedItem.dataset.id, clickedItem.dataset.branch)
         }
     });
     const titleElement = document.getElementById("analysisResultTitle");
@@ -1058,7 +1069,7 @@ document.addEventListener("DOMContentLoaded", function () {
         
         listElement.innerHTML = ""; // Clear any existing content
     
-        // Populate the list with leaf IDs
+        // Populate the list with node IDs
         nodes.forEach(node => {
             const listItem = document.createElement("li");
             listItem.classList.add("list-item"); // Optional Bulma class
@@ -1116,7 +1127,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if(storedTable){
             savedData.forEach((rowData, index) => {
                 const row = document.createElement("tr");
-                row.classList.add("is-size-4"); // Apply text size to the entire row
+                row.classList.add("is-size-6"); // Apply text size to the entire row
                 // Step (Change) cell
                 const stepCell = document.createElement("td");
                 stepCell.textContent = rowData.stepChange || `(Empty)`; // Fallback for empty rows
