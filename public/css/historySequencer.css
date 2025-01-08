@@ -1,7 +1,9 @@
+
 /* General page styling */
 html, body {
     height: 100%;
     margin: 0;
+    /* background-color: rgb(76, 76, 146); */
   }
   
   #docHistory-cy {
@@ -37,3 +39,7 @@ html, body {
   background-color: #f0f8ff; /* Light blue, part of Bulma's default styling */
 }
 
+section.section.is-fullheight {
+  margin-top: 0;
+  padding-top: 0;
+}

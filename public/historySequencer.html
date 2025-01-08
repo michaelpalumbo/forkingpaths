@@ -14,10 +14,10 @@
 </head>
 <body>
     <!-- Main container -->
-    <section class="section">
-        <div class="container">
+    <section class="section is-fullheight is-clipped ">
+        <div class="container is-fullheight">
             <!-- Bulma columns for layout -->
-            <div class="columns">
+            <div class="columns is-fullheight">
                 <!-- history graph column -->
                 <div class="column is-two-thirds" id="leftColumn">
                     <div id="docHistory-cy" class="box" style="height: 95%; overflow: hidden;">
@@ -49,40 +49,6 @@
                                 </div>
                             </div>
                         </div>
-                        <!-- Buttons for graph analysis -->
-                        <!-- Buttons in two columns -->
-                        <!-- <div class="columns is-multiline"> -->
-                            <!-- <div class="column is-half">
-                                <button class="button is-primary is-fullwidth" id="getLeavesBtn">Get Leaves</button>
-                            </div> -->
-                            <!-- <div class="column is-half">
-                                <button class="button is-link is-fullwidth" id="dijkstraBtn">Dijkstra's Algorithm</button>
-                            </div>
-                            <div class="column is-half">
-                                <button class="button is-info is-fullwidth" id="topologicalSortBtn">Topological Sort</button>
-                            </div>
-                            <div class="column is-half">
-                                <button class="button is-success is-fullwidth" id="dependenciesBtn">Get Dependencies</button>
-                            </div>
-                            <div class="column is-half">
-                                <button class="button is-warning is-fullwidth" id="prerequisitesBtn">Get Prerequisites</button>
-                            </div>
-                            <div class="column is-half">
-                                <button class="button is-danger is-fullwidth" id="connectedComponentsBtn">Connected Components</button>
-                            </div>
-                            <div class="column is-half">
-                                <button class="button is-light is-fullwidth" id="bfsBtn">Breadth-First Search</button>
-                            </div>
-                            <div class="column is-half">
-                                <button class="button is-dark is-fullwidth" id="dfsBtn">Depth-First Search</button>
-                            </div>
-                            <div class="column is-half">
-                                <button class="button is-primary is-fullwidth" id="pageRankBtn">PageRank</button>
-                            </div>
-                            <div class="column is-half">
-                                <button class="button is-link is-fullwidth" id="closenessCentralityBtn">Closeness Centrality</button>
-                            </div> -->
-                        <!-- </div> -->
 
                         <div class="box">
                             <h3 class="title is-4" id="analysisResultTitle"></h3>
@@ -109,6 +75,18 @@
                                 <!-- Start/Stop Button -->
                                 <button id="startStopButton" class="button is-primary">Start Sequencer</button>
                                 <button id="clearSequencerButton" class="button is-info">Clear Sequencer</button>
+                                
+                            </div>
+                        
+                            <!-- JS Comment -->
+                            <script>
+                                // 'closenessCentrality' option:
+                                // This mode takes each step and compares its closeness centrality with the node in the row below it.
+                                // The result is used against a quantized value to determine the step length in Tone.js.
+                            </script>
+
+                            <!-- Sequence Order Select Menu -->
+                            <div class="column is-half">
                                 <div class="field">
                                     <label class="label">Step Length Function</label>
                                     <div class="control">
@@ -122,17 +100,6 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        
-                            <!-- JS Comment -->
-                            <script>
-                                // 'closenessCentrality' option:
-                                // This mode takes each step and compares its closeness centrality with the node in the row below it.
-                                // The result is used against a quantized value to determine the step length in Tone.js.
-                            </script>
-                        
-                            <!-- Sequence Order Select Menu -->
-                            <div class="column is-half">
                                 <div class="field">
                                     <label class="label">Sequence Order</label>
                                     <div class="control">

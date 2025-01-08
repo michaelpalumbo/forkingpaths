@@ -624,10 +624,20 @@ document.addEventListener("DOMContentLoaded", function () {
     // cmd + scroll = scroll vertically through history graph
     document.addEventListener('wheel', function(event) {
         if(allowPan){
-            historyDAG_cy.panBy({
-                x: event.deltaX,
-                y: event.deltaY 
+
+            if(!willExceedPanLimits(event.deltaX, event.deltaY)){
+                historyDAG_cy.panBy({
+                    x: event.deltaX,
+                    y: event.deltaY 
                 });
+            }
+            //  else {
+            //     historyDAG_cy.panBy({
+            //         x: event.deltaX,
+            //         y: event.deltaY 
+            //     });
+            // }
+
         }
     });
 
@@ -1505,6 +1515,46 @@ document.addEventListener("DOMContentLoaded", function () {
     
         return noteLengths[noteIndex];
     }
+    // prevent panning beyond position of any node in the graph
+    function calculatePanLimits(){
+        // Get the bounding box of the graph
+        const boundingBox = historyDAG_cy.elements().boundingBox();
+
+        // Calculate the limits for panning
+        const padding = 100; // Add some padding around the edges for aesthetics
+        const viewportWidth = historyDAG_cy.width();
+        const viewportHeight = historyDAG_cy.height();
+
+        return {
+            xMin: boundingBox.x1 - padding,
+            xMax: boundingBox.x2 + padding - viewportWidth,
+            yMin: boundingBox.y1 - padding,
+            yMax: boundingBox.y2 + padding - viewportHeight,
+        };
+    }
+
+    // Function to check if a panBy operation will exceed pan limits
+    function willExceedPanLimits(deltaX, deltaY) {
+        const currentPan = historyDAG_cy.pan(); // Get the current pan position
+        const panLimits = calculatePanLimits();
+
+        // Calculate the new pan position
+        const newPan = {
+            x: currentPan.x + deltaX,
+            y: currentPan.y + deltaY,
+        };
+
+        // Check if the new pan position exceeds the limits for the given direction
+        const exceedsX =
+            (deltaX > 0 && newPan.x > -panLimits.xMin) || // Panning right
+            (deltaX < 0 && newPan.x < -panLimits.xMax); // Panning left
+        const exceedsY =
+            (deltaY > 0 && newPan.y > -panLimits.yMin) || // Panning down
+            (deltaY < 0 && newPan.y < -panLimits.yMax); // Panning up
+
+        return exceedsX || exceedsY;
+    }
+
 })
 
 
