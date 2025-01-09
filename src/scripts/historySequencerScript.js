@@ -1411,7 +1411,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // Pan to the node
             historyDAG_cy.pan({
                 x: -position.x + historyDAG_cy.width(), // Adjust for viewport center
-                // y: -position.y + historyDAG_cy.height() / 1.5
+                y: -position.y + historyDAG_cy.height() / 1.5
             });
         } else {
             // console.log(`Node with ID ${nodeId} not found`);

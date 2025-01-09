@@ -812,7 +812,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
         }
-        console.log(automergeDocuments)
     })();
 
     // Set an interval to periodically save meta to IndexedDB
@@ -828,7 +827,6 @@ document.addEventListener("DOMContentLoaded", function () {
     // Custom function to handle document changes and call a callback
     function applyChange(doc, changeCallback, onChangeCallback, changeMessage) {
         
-        console.log(`at applychange:\namDoc.title = ${amDoc.title}\nmeta.head.branch = ${meta.head.branch}`)
         // check if we are working from a newly cloned doc or if branch is in head position
         if(automergeDocuments.newClone === false ){
             
@@ -875,7 +873,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 
                 onChangeCallback(amDoc);
             }
-            console.log('the hash', meta.head.hash)
             return amDoc;
         } else {
             // player has made changes to an earlier version, so create a branch and set amDoc to new clone
@@ -938,7 +935,6 @@ document.addEventListener("DOMContentLoaded", function () {
                         
                 })
             }
-            console.log('the hash', meta.head.hash)
             return amDoc;
 
         }
@@ -1103,7 +1099,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 // set module grabbable to false -- prevents module movements in main view
                 if(node.classes === ':parent'){
                     synthFile.visualGraph.elements.nodes[index].grabbable = false
-                    console.log(synthFile.visualGraph.elements.nodes[index])
                 }
                 // create overlays
                 if(node.classes === 'paramAnchorNode'){
@@ -1488,17 +1483,16 @@ document.addEventListener("DOMContentLoaded", function () {
     
     // Load a version from the DAG
     async function loadVersion(targetHash, branch) {
-        console.log(`currentBranch ${meta.head.branch}\nloaded branch ${branch}`)
         // get the head from this branch
         let head = meta.branches[branch].head
+        let requestedDoc= loadAutomergeDoc(branch)
+        const historicalView = Automerge.view(requestedDoc, [targetHash]);
 
         // Use `Automerge.view()` to view the state at this specific point in history
-        //? const historicalView = Automerge.view(amDoc, [targetHash]);
-
-        const historicalView = Automerge.view(Automerge.load(meta.docs[branch]), [targetHash]);
-        console.log('historicalView', historicalView)
+        // const historicalView = Automerge.view(amDoc, [targetHash]);
+    
         // Check if we're on the head; reset clone if true (so we don't trigger opening a new branch with changes made to head)
-        if (Automerge.getHeads(historicalView)[0] === Automerge.getHeads(amDoc)[0]){
+        if (Automerge.getHeads(historicalView)[0] === Automerge.getHeads(requestedDoc)[0]){
             automergeDocuments.newClone = false
 
             updateSynthWorklet('loadVersion', historicalView.synth.graph, null, historicalView.changeType)
@@ -1515,7 +1509,6 @@ document.addEventListener("DOMContentLoaded", function () {
         } 
         // if the head of a branch was clicked, we need to load that branch's full history (which traces all the way back to the blank_patch node (root))
         else if (targetHash === head){
-
 
             // retrieve the document from the binary store
             let branchDoc = loadAutomergeDoc(branch)    
@@ -1542,11 +1535,9 @@ document.addEventListener("DOMContentLoaded", function () {
             branchHeads.current = targetHash
             // Step 3: Add node in Cytoscape for this clone point
             // get info about targetNode (what was clicked by user)
-            branchHeads.previous = Automerge.getHeads(amDoc)[0]
+            branchHeads.previous = Automerge.getHeads(requestedDoc)[0]
 
-            console.log('head called', historicalView)
-            console.log('targetHash', targetHash, 'head', head, '\nbranch', branch, '\namDoc.title', amDoc.title, '\nmeta.head.branch', meta.head.branch)
-            //! updateSynthWorklet('loadVersion', historicalView.synth.graph, null, historicalView.changeType)
+            updateSynthWorklet('loadVersion', historicalView.synth.graph, null, historicalView.changeType)
 
             updateCytoscapeFromDocument(branchDoc);
         } 
@@ -1581,20 +1572,15 @@ document.addEventListener("DOMContentLoaded", function () {
             branchHeads.current = targetHash
             // Step 3: Add node in Cytoscape for this clone point
             // get info about targetNode (what was clicked by user)
-            branchHeads.previous = Automerge.getHeads(amDoc)[0]
-            console.log('nother branch called', historicalView)
-            console.log('branch', branch, 'amDoc.title', amDoc.title, '\nmeta.head.branch', meta.head.branch)
-
-            //! updateSynthWorklet('loadVersion', historicalView.synth.graph, null, historicalView.changeType)
+            branchHeads.previous = Automerge.getHeads(requestedDoc)[0]
+    
+            updateSynthWorklet('loadVersion', historicalView.synth.graph, null, historicalView.changeType)
 
             updateCytoscapeFromDocument(historicalView);
 
         }
         // the selected hash belongs to the current branch
         else {
-
-
-            console.log('branch', branch, 'amDoc.title', amDoc.title, '\nmeta.head.branch', meta.head.branch, '\nelements', historicalView.elements)
             
             // let newHistoricalView = Automerge.view(Automerge.load(meta.docs[branch]), [targetHash]);
             let clonedDoc = Automerge.clone(historicalView)
@@ -1634,13 +1620,12 @@ document.addEventListener("DOMContentLoaded", function () {
             branchHeads.current = Automerge.getHeads(historicalView)[0]
             // Step 3: Add node in Cytoscape for this clone point
             // get info about targetNode (what was clicked by user)
-            branchHeads.previous = Automerge.getHeads(amDoc)[0]
+            branchHeads.previous = Automerge.getHeads(requestedDoc)[0]
           
             updateSynthWorklet('loadVersion', historicalView.synth.graph, null, historicalView.changeType)
 
             updateCytoscapeFromDocument(historicalView);
         }
-        console.log(`after loadversion:\namDoc.title = ${amDoc.title}\nmeta.head.branch = ${meta.head.branch}`)
     }
 
 
@@ -3939,7 +3924,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // parentNode.getModule('oscillator')
         const { parentNode: parentNodeData, childrenNodes, audioGraph, paramOverlays } = parentNode.getNodeStructure();
-        console.log(parentNode)
         // Add nodes to Cytoscape
         cy.add(parentNodeData);
         cy.add(childrenNodes);
