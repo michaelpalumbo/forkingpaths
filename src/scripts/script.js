@@ -51,6 +51,7 @@ let onChange; // my custom automerge callback for changes made to the doc
 let docUpdated = false // set this to true whenever doc has changed so that indexedDB will store it. after set it back to false
 let automergeDocuments = {
     newClone: false,
+    newMerge: false,
     current: {
         doc: null,
         hash: null
@@ -824,10 +825,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     }, saveInterval);
 
-    // Custom function to handle document changes and call a callback
+    // handle document changes and call a callback
     function applyChange(doc, changeCallback, onChangeCallback, changeMessage) {
         
-        // check if we are working from a newly cloned doc or if branch is in head position
         if(automergeDocuments.newClone === false ){
             
             let amMsg = makeChangeMessage(meta.head.branch, changeMessage)
@@ -1482,7 +1482,128 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // merge 2 versions & create a new node in the graph
+    function createMerge(nodes){
+        let doc1 = nodes[0]
+        let doc2 = nodes[1]
+        // load historical views of both docs
 
+        let head1 = meta.branches[doc1.branch].head
+        let requestedDoc1 = loadAutomergeDoc(doc1.branch)
+        const historicalView1 = Automerge.view(requestedDoc1, [doc1.id]);
+
+        let head2 = meta.branches[doc2.branch].head
+        let requestedDoc2 = loadAutomergeDoc(doc2.branch)
+        const historicalView2 = Automerge.view(requestedDoc2, [doc2.id]);
+
+        // set newClone flag so that we can update the amDoc as a new node
+        automergeDocuments.newMerge = true
+
+        // create new doc from merged docs
+        amDoc = Automerge.merge(requestedDoc1, requestedDoc2)
+
+        const newBranchName = uuidv7();
+        // store previous amDoc in automergeDocuments, and its property is the hash of its head
+        //? automergeDocuments.otherDocs[meta.head.branch] = amDoc
+
+        // grab the current hash before making the new change:
+        // previousHash = Automerge.getHeads(amDoc)[0]
+
+        let hash = Automerge.getHeads(amDoc)[0]
+
+        // Update in Automerge
+        // amDoc = applyChange(amDoc, (amDoc) => {
+        //     amDoc = mergedDoc
+        // }, onChange, `merge`);
+        
+        meta = Automerge.change(meta, (meta) => {
+
+            // Initialize the branch metadata if it doesn't already exist
+            if (!meta.branches[newBranchName]) {
+                meta.branches[newBranchName] = { head: null, parent: null, history: [] };
+                
+            }
+
+            // Update the head property
+            meta.branches[newBranchName].head = hash;
+
+            // Push the new history entry into the existing array
+            meta.branches[newBranchName].history.push({
+                hash: hash,
+                msg: 'merge',
+                parent1: doc1.id,
+                parent2: doc2.id
+            });
+            // store current doc
+            meta.docs[newBranchName] = Automerge.save(amDoc)
+            
+            // store the HEAD info
+            meta.head.hash = hash
+            //? meta.head.branch = amDoc.title
+
+            // store the branch name so that we can ensure its ordering later on
+            meta.branchOrder.push(newBranchName)
+        });
+
+        // set docUpdated so that indexedDB will save it
+        docUpdated = true
+        // store the current hash (used by historyDAG_cy)
+
+        branchHeads.current = hash
+       
+        // update the historyGraph
+        reDrawHistoryGraph()
+
+        if(audioGraphDirty){
+            audioGraphDirty = false
+        }
+        
+        // panToBranch(historyDAG_cy.getElementById(hash)) //! remove this line when 2nd window is working fully
+        
+        // sendMsgToHistoryApp({
+        //     appID: 'forkingPathsMain',
+        //     cmd: 'panToBranch',
+        //     data: hash
+                
+        // })
+
+
+        
+        // check if we are working from a newly cloned doc or if branch is in head position
+        
+        // console.log(mergedDoc)
+
+        // // retrieve the document from the binary store
+        // let branchDoc = loadAutomergeDoc(branch)    
+        // let clonedDoc = Automerge.clone(branchDoc)
+
+        // automergeDocuments.current = {
+        //     doc: clonedDoc,
+        //     hash: [targetHash],
+        //     history: getHistoryProps(clonedDoc)
+
+            
+        // }
+        // branches[newBranchName] = {
+        //     head: null,
+        //     roots: [doc1.id, doc2.id]
+        // }
+
+        // meta = Automerge.change(meta, (meta) => {
+        //     meta.branches[newBranchName] ={
+        //         head: null,
+        //         parent1: doc1.id,
+        //         parent2: doc2.id,
+        //         // doc: clonedDoc,
+        //         history: []
+        //     }
+        //     meta.docs[newBranchName] = {}
+        //     // store the HEAD info (the most recent HEAD and branch that were viewed or operated on)
+        //     meta.head.hash = targetHash
+        //     meta.head.branch = newBranchName
+        // });
+        // apply changes 
+
+    }
 
     // Load a version from the DAG
     async function loadVersion(targetHash, branch) {
@@ -2732,7 +2853,8 @@ document.addEventListener("DOMContentLoaded", function () {
             break
 
             case 'merge':
-                console.log(event.data.doc1, event.data.doc2)
+                createMerge(event.data.nodes)
+                
             break
             default: console.warn('switch case doesnt exist for:', event.data.cmd)
         }

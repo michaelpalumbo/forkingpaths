@@ -631,27 +631,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let draggedNode = null;
     let intersectedNode = null;
 
-    // Highlight function
-    function highlightIntersectedNode(node) {
-        node.addClass('intersected'); // Add a class for styling
-    }
-
-    // Remove highlight function
-    function removeIntersectedHighlight(node) {
-        node.removeClass('intersected');
-    }
-
-    // Check intersection
-    function isIntersecting(node1, node2) {
-        const bb1 = node1.renderedBoundingBox();
-        const bb2 = node2.renderedBoundingBox();
-        return (
-            bb1.x2 > bb2.x1 &&
-            bb1.x1 < bb2.x2 &&
-            bb1.y2 > bb2.y1 &&
-            bb1.y1 < bb2.y2
-        );
-    }
+    
 
     // Event: Start dragging
     historyDAG_cy.on('grab', 'node', (e) => {
@@ -693,20 +673,12 @@ document.addEventListener("DOMContentLoaded", function () {
         if (draggedNode === releasedNode && intersectedNode) {
             const node1 = draggedNode.data()
             const node2 = intersectedNode.data()
-            console.log('Node dropped on:', intersectedNode.data(), );
             sendToMainApp({
                 cmd: 'merge',
-                doc1: {
-                    id: node1.id,
-                    branch: node1.branch
-                },
-                doc2: {
-                    id: node2.id,
-                    branch: node2.branch
-                }
+                nodes: [node1, node2]
             })
             // Perform actions for dropping on intersected node
-            removeHighlight(intersectedNode);
+            removeIntersectedHighlight(intersectedNode);
         }
 
         // Clean up
@@ -1484,6 +1456,28 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    // Highlight function
+    function highlightIntersectedNode(node) {
+        node.addClass('intersected'); // Add a class for styling
+    }
+
+    // Remove highlight function
+    function removeIntersectedHighlight(node) {
+        node.removeClass('intersected');
+    }
+
+    // Check intersection
+    function isIntersecting(node1, node2) {
+        const bb1 = node1.renderedBoundingBox();
+        const bb2 = node2.renderedBoundingBox();
+        return (
+            bb1.x2 > bb2.x1 &&
+            bb1.x1 < bb2.x2 &&
+            bb1.y2 > bb2.y1 &&
+            bb1.y1 < bb2.y2
+        );
+    }
+
     function highlightSequencerNode(target){
 
         if(historySequencerHighlightedNode){
@@ -1499,6 +1493,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // pan to new/selected branch
     function panToBranch(node) {
+        
         if(!node){
             return
         }
