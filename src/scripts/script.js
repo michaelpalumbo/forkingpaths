@@ -1480,7 +1480,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
         */
     }
-    
+
+    // merge 2 versions & create a new node in the graph
+
+
     // Load a version from the DAG
     async function loadVersion(targetHash, branch) {
         // get the head from this branch
@@ -2697,7 +2700,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Listen for the historySequencerReady message
     window.addEventListener('message', (event) => {
-        
+        if(!event.data.cmd){
+            return
+        }
         switch(event.data.cmd){
 
             case 'historySequencerReady':
@@ -2725,6 +2730,11 @@ document.addEventListener("DOMContentLoaded", function () {
                         
                 })
             break
+
+            case 'merge':
+                console.log(event.data.doc1, event.data.doc2)
+            break
+            default: console.warn('switch case doesnt exist for:', event.data.cmd)
         }
 
     });

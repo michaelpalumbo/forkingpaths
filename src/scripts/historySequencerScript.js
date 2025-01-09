@@ -181,10 +181,18 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             },
             {
+                selector: 'node.intersected',
+                style: {
+                    'border-color': 'black', // Highlight color
+                    'border-width': 7,
+                    'shape': 'triangle'
+                }
+            },
+            {
                 selector: 'node.highlighted',
                 style: {
                     'border-color': '#228B22', // Highlight color
-                    'border-width': 15,
+                    'border-width': 12,
                     'shape': 'rectangle'
                 }
             },
@@ -303,7 +311,11 @@ document.addEventListener("DOMContentLoaded", function () {
     // * COMMUNICATIONS WITH MAIN APP
     // * 
     // *
-    window.opener?.postMessage({ cmd: 'historySequencerReady' }, '*');
+
+    function sendToMainApp(msg){
+        window.opener?.postMessage(msg, '*');
+    }
+    
 
     // Listen for messages from the main app
     window.addEventListener('message', (event) => {
@@ -366,14 +378,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     function loadVersion(nodeID, branch){
-        console.log('nodID', nodeID, 'branch', branch)
         // Perform your action with the step data
-        window.opener?.postMessage(
+        sendToMainApp(
             {
                 cmd: "loadVersion",
                 data: { hash: nodeID, branch: branch },
-            },
-            "*"
+            }
         );
     }
 
@@ -617,6 +627,93 @@ document.addEventListener("DOMContentLoaded", function () {
     // * 
     // *
 
+    // Track the current node being dragged and any node it's intersecting
+    let draggedNode = null;
+    let intersectedNode = null;
+
+    // Highlight function
+    function highlightIntersectedNode(node) {
+        node.addClass('intersected'); // Add a class for styling
+    }
+
+    // Remove highlight function
+    function removeIntersectedHighlight(node) {
+        node.removeClass('intersected');
+    }
+
+    // Check intersection
+    function isIntersecting(node1, node2) {
+        const bb1 = node1.renderedBoundingBox();
+        const bb2 = node2.renderedBoundingBox();
+        return (
+            bb1.x2 > bb2.x1 &&
+            bb1.x1 < bb2.x2 &&
+            bb1.y2 > bb2.y1 &&
+            bb1.y1 < bb2.y2
+        );
+    }
+
+    // Event: Start dragging
+    historyDAG_cy.on('grab', 'node', (e) => {
+        draggedNode = e.target;
+        intersectedNode = null; // Reset intersected node
+    });
+
+    // Event: Dragging
+    historyDAG_cy.on('drag', 'node', (e) => {
+        const currentNode = e.target;
+
+        if (draggedNode !== currentNode) return;
+
+        let foundIntersection = false;
+
+        historyDAG_cy.nodes().not(currentNode).forEach((otherNode) => {
+            if (isIntersecting(currentNode, otherNode)) {
+                if (intersectedNode !== otherNode) {
+                    // Highlight the newly intersected node
+                    if (intersectedNode) removeIntersectedHighlight(intersectedNode);
+                    highlightIntersectedNode(otherNode);
+                    intersectedNode = otherNode;
+                }
+                foundIntersection = true;
+            }
+        });
+
+        if (!foundIntersection && intersectedNode) {
+            // Remove highlight if no intersection
+            removeIntersectedHighlight(intersectedNode);
+            intersectedNode = null;
+        }
+    });
+
+    // Event: Dragging stopped
+    historyDAG_cy.on('free', 'node', (e) => {
+        const releasedNode = e.target;
+
+        if (draggedNode === releasedNode && intersectedNode) {
+            const node1 = draggedNode.data()
+            const node2 = intersectedNode.data()
+            console.log('Node dropped on:', intersectedNode.data(), );
+            sendToMainApp({
+                cmd: 'merge',
+                doc1: {
+                    id: node1.id,
+                    branch: node1.branch
+                },
+                doc2: {
+                    id: node2.id,
+                    branch: node2.branch
+                }
+            })
+            // Perform actions for dropping on intersected node
+            removeHighlight(intersectedNode);
+        }
+
+        // Clean up
+        draggedNode = null;
+        intersectedNode = null;
+    });
+
     // Listen for changes to the radio buttons
     const radioButtons = document.querySelectorAll('input[name="traversalMode"]');
     console.warn('need to setup the sequencer meta control see the associated code')
@@ -751,7 +848,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // existingHistoryNodeIDs: existingHistoryNodeIDs,
             // docHistoryGraphStyling: docHistoryGraphStyling
         }
-        window.opener?.postMessage(update, '*')
+        sendToMainApp(update)
 
 
         bpmValue.textContent = bpm; // Display the current BPM
@@ -1101,7 +1198,7 @@ document.addEventListener("DOMContentLoaded", function () {
             setting: 'sequenceOrder',
             data: selectedValue,
         }
-        window.opener?.postMessage(update, '*')
+        sendToMainApp(update)
     });
 
     function setSequenceOrder(order){
@@ -1124,7 +1221,7 @@ document.addEventListener("DOMContentLoaded", function () {
             setting: 'stepLengthFunction',
             data: selectedValue,
         }
-        window.opener?.postMessage(update, '*')
+        sendToMainApp(update)
  
 
         
@@ -1258,7 +1355,7 @@ document.addEventListener("DOMContentLoaded", function () {
             setting: 'tableData',
             data: tableData,
         }
-        window.opener?.postMessage(update, '*')
+        sendToMainApp(update)
 
         storedSequencerTable = tableData
 
@@ -1402,7 +1499,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // pan to new/selected branch
     function panToBranch(node) {
-        
+        if(!node){
+            return
+        }
         // only pan if new node is outside of the viewport
         // Get the current viewport extent
         const extent = historyDAG_cy.extent();
