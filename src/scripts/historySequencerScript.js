@@ -390,7 +390,10 @@ document.addEventListener("DOMContentLoaded", function () {
         // console.log(msg)
         historyDAG_cy.json(msg)
         historyDAG_cy.panBy({x: 25, y: 25 })
-        highlightNode(historyDAG_cy.nodes().last())
+
+        const latestNode = historyDAG_cy.nodes().last()
+        highlightNode(latestNode)
+        panToBranch(latestNode)
         
     };
     
@@ -1398,23 +1401,24 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // pan to new/selected branch
-    function panToBranch(hash) {
-        const node = historyDAG_cy.getElementById(hash)
-        if(!meta.userSettings.focusNewBranch){
-            return
-        }
-        // const node = y.getElementById(nodeId); // Select the node by its ID
+    function panToBranch(node) {
+        
+        // only pan if new node is outside of the viewport
+        // Get the current viewport extent
+        const extent = historyDAG_cy.extent();
+        const position = node.position(); // Get the node's position
 
-        if (node && node.length > 0) { // Check if the node exists
-            const position = node.position(); // Get the node's position
+        // Check if the node is outside the viewport
+        const isOutsideViewport =
+        position.x < extent.x1 || position.x > extent.x2 ||
+        position.y < extent.y1 || position.y > extent.y2;
 
+        if (isOutsideViewport) {
             // Pan to the node
             historyDAG_cy.pan({
-                x: -position.x + historyDAG_cy.width(), // Adjust for viewport center
-                y: -position.y + historyDAG_cy.height() / 1.5
+                x: -position.x + (historyDAG_cy.width() /2), // Adjust for viewport center
+                y: -position.y + (historyDAG_cy.height() / 1.5)
             });
-        } else {
-            // console.log(`Node with ID ${nodeId} not found`);
         }
     }
     

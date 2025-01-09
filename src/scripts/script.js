@@ -660,7 +660,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 },
                 
                 userSettings: {
-                    focusNewBranch:false 
+                    focusNewBranch: true 
                 },
                 sequencer: {
                     bpm: 120,
