@@ -391,6 +391,10 @@ document.addEventListener("DOMContentLoaded", function () {
     ws.onopen = () => {
         console.log('Connected to WebSocket server');
         // ws.send('Hello, server!');
+        sendToMainApp({
+            cmd: 'historySequencerReady'
+        })
+
     };
     
     ws.onmessage = (event) => {
