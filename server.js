@@ -238,6 +238,8 @@ function updateHistoryGraph(ws, meta, docHistoryGraphStyling){
         existingHistoryNodeIDs,
         docHistoryGraphStyling
     );
+
+    console.log("server:", nodes)
     // Run the layout and get the rendered graph
     // historyDAG_cy.layout(layout).run();
 

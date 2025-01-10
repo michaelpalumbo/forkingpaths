@@ -1495,6 +1495,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function panToBranch(node) {
         
         if(!node){
+            console.warn('no node')
             return
         }
         // only pan if new node is outside of the viewport

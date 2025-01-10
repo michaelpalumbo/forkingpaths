@@ -1489,19 +1489,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
         let head1 = meta.branches[doc1.branch].head
         let requestedDoc1 = loadAutomergeDoc(doc1.branch)
-        const historicalView1 = Automerge.view(requestedDoc1, [doc1.id]);
+        // const historicalView1 = Automerge.view(requestedDoc1, [doc1.id]);
 
         let head2 = meta.branches[doc2.branch].head
         let requestedDoc2 = loadAutomergeDoc(doc2.branch)
-        const historicalView2 = Automerge.view(requestedDoc2, [doc2.id]);
+        // const historicalView2 = Automerge.view(requestedDoc2, [doc2.id]);
 
-        // set newClone flag so that we can update the amDoc as a new node
-        automergeDocuments.newMerge = true
+        console.log(requestedDoc1, requestedDoc2)
 
-        // create new doc from merged docs
         amDoc = Automerge.merge(requestedDoc1, requestedDoc2)
 
-        const newBranchName = uuidv7();
+        console.log(amDoc.synth.graph.modules.LFO_Banteng_dd91188a2806.params, requestedDoc1.synth.graph.modules.LFO_Banteng_dd91188a2806.params, requestedDoc2.synth.graph.modules.LFO_Banteng_dd91188a2806.params)
+
+        const newBranchName = `merge_${uuidv7()}`;
         // store previous amDoc in automergeDocuments, and its property is the hash of its head
         //? automergeDocuments.otherDocs[meta.head.branch] = amDoc
 
@@ -1509,11 +1509,6 @@ document.addEventListener("DOMContentLoaded", function () {
         // previousHash = Automerge.getHeads(amDoc)[0]
 
         let hash = Automerge.getHeads(amDoc)[0]
-
-        // Update in Automerge
-        // amDoc = applyChange(amDoc, (amDoc) => {
-        //     amDoc = mergedDoc
-        // }, onChange, `merge`);
         
         meta = Automerge.change(meta, (meta) => {
 
@@ -1538,18 +1533,23 @@ document.addEventListener("DOMContentLoaded", function () {
             
             // store the HEAD info
             meta.head.hash = hash
-            //? meta.head.branch = amDoc.title
+            meta.head.branch = newBranchName
 
             // store the branch name so that we can ensure its ordering later on
             meta.branchOrder.push(newBranchName)
         });
 
+        console.log('newBranchname', newBranchName, meta.branches)
         // set docUpdated so that indexedDB will save it
         docUpdated = true
         // store the current hash (used by historyDAG_cy)
 
         branchHeads.current = hash
        
+        updateSynthWorklet('loadVersion', amDoc.synth.graph)
+
+        updateCytoscapeFromDocument(amDoc, 'buildUI');
+
         // update the historyGraph
         reDrawHistoryGraph()
 
