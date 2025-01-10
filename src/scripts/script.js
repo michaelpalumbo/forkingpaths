@@ -740,10 +740,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
             let hash = Automerge.getHeads(amDoc)[0]
             previousHash = hash
-            branches[amDoc.title] = {
-                head: hash,
-                root: hash
-            }
             
             meta = Automerge.change(meta, (meta) => {
                 meta.branches[amDoc.title] = {
@@ -827,7 +823,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // handle document changes and call a callback
     function applyChange(doc, changeCallback, onChangeCallback, changeMessage) {
-        
+
+        // in this condition, we are applying a change on the current branch
         if(automergeDocuments.newClone === false ){
             
             let amMsg = makeChangeMessage(meta.head.branch, changeMessage)
@@ -881,6 +878,9 @@ document.addEventListener("DOMContentLoaded", function () {
             automergeDocuments.otherDocs[meta.head.branch] = amDoc
             // set amDoc to current cloned doc
             amDoc = Automerge.clone(automergeDocuments.current.doc)
+
+            // create a new branch name
+            const newBranchName = uuidv7();
             // use the new branch title
             let amMsg = makeChangeMessage(meta.head.branch, changeMessage)
 
@@ -895,30 +895,42 @@ document.addEventListener("DOMContentLoaded", function () {
                 
                 meta = Automerge.change(meta, (meta) => {
 
-                    // Initialize the branch metadata if it doesn't already exist
-                    // if (!meta.branches[meta.head.branch]) {
-                    //     meta.branches[meta.head.branch] = { head: null, parent: null, history: [] };
-                        
-                    // }
+                    // create the branch
+                    meta.branches[newBranchName] = {
+                        head: hash,
+                        parent: previousHash,
+                        history: [{
+                            hash: hash,
+                            msg: changeMessage,
+                            parent: previousHash
+                        }]
+                    }
+                    // // Update the head property
+                    // meta.branches[newBranchName].head = hash;
+                    // // update the parent property
+                    // meta.branches[newBranchName].parent = hash;
 
-                    // Update the head property
-                    meta.branches[meta.head.branch].head = hash;
-
-                    // Push the new history entry into the existing array
-                    meta.branches[meta.head.branch].history.push({
-                        hash: hash,
-                        msg: changeMessage,
-                        parent: previousHash
-                    });
+                    // // create the history array, and add this new history entry
+                    // meta.branches[newBranchName].history = [{
+                    //     hash: hash,
+                    //     msg: changeMessage,
+                    //     parent: previousHash
+                    // }]
+                    // // Push the new history entry into the existing array
+                    // meta.branches[newBranchName].history.push({
+                    //     hash: hash,
+                    //     msg: changeMessage,
+                    //     parent: previousHash
+                    // });
                     // store current doc
-                    meta.docs[meta.head.branch] = Automerge.save(amDoc)
+                    meta.docs[newBranchName] = Automerge.save(amDoc)
                     
                     // store the HEAD info
                     meta.head.hash = hash
-                    //? meta.head.branch = amDoc.title
+                    meta.head.branch = newBranchName
 
                     // store the branch name so that we can ensure its ordering later on
-                    meta.branchOrder.push(meta.head.branch)
+                    meta.branchOrder.push(newBranchName)
                 });
                
                 // makeBranch(changeMessage, Automerge.getHeads(newDoc)[0])
@@ -944,7 +956,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // define the onChange Callback
     onChange = () => {
-        
+        console.log('current branch: ', meta.head.branch)
         // update synth audio graph
         // loadSynthGraph()
         // You can add any additional logic here, such as saving to IndexedDB
@@ -1137,16 +1149,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
         let hash = Automerge.getHeads(amDoc)[0]
         previousHash = hash
-        branches[meta.head.branch] = {
-            head: hash,
-            root: hash
-        }
+
         let msg = 'blank_patch'
         if (synthFile){
             msg = synthFile.filename
         }
         meta = Automerge.change(meta, (meta) => {
-            meta.branches[meta.head.branch] = {
+            meta.branches[firstBranchName] = {
                 head: hash,
                 root: null,
                 parent: null,
@@ -1155,8 +1164,8 @@ document.addEventListener("DOMContentLoaded", function () {
             }
             
             // encode the doc as a binary object for efficiency
-            meta.docs[meta.head.branch] = Automerge.save(amDoc)
-            //? meta.head.branch = firstBranchName
+            meta.docs[firstBranchName] = Automerge.save(amDoc)
+            meta.head.branch = firstBranchName
             meta.head.hash = hash 
             meta.branchOrder.push(meta.head.branch)
             
@@ -1556,67 +1565,29 @@ document.addEventListener("DOMContentLoaded", function () {
         if(audioGraphDirty){
             audioGraphDirty = false
         }
-        
-        // panToBranch(historyDAG_cy.getElementById(hash)) //! remove this line when 2nd window is working fully
-        
-        // sendMsgToHistoryApp({
-        //     appID: 'forkingPathsMain',
-        //     cmd: 'panToBranch',
-        //     data: hash
-                
-        // })
-
-
-        
-        // check if we are working from a newly cloned doc or if branch is in head position
-        
-        // console.log(mergedDoc)
-
-        // // retrieve the document from the binary store
-        // let branchDoc = loadAutomergeDoc(branch)    
-        // let clonedDoc = Automerge.clone(branchDoc)
-
-        // automergeDocuments.current = {
-        //     doc: clonedDoc,
-        //     hash: [targetHash],
-        //     history: getHistoryProps(clonedDoc)
-
-            
-        // }
-        // branches[newBranchName] = {
-        //     head: null,
-        //     roots: [doc1.id, doc2.id]
-        // }
-
-        // meta = Automerge.change(meta, (meta) => {
-        //     meta.branches[newBranchName] ={
-        //         head: null,
-        //         parent1: doc1.id,
-        //         parent2: doc2.id,
-        //         // doc: clonedDoc,
-        //         history: []
-        //     }
-        //     meta.docs[newBranchName] = {}
-        //     // store the HEAD info (the most recent HEAD and branch that were viewed or operated on)
-        //     meta.head.hash = targetHash
-        //     meta.head.branch = newBranchName
-        // });
-        // apply changes 
 
     }
 
     // Load a version from the DAG
     async function loadVersion(targetHash, branch) {
+        console.log(`requested branch \n${branch}\n\ncurrent branch:\n${meta.head.branch}`)
         // get the head from this branch
         let head = meta.branches[branch].head
-        let requestedDoc= loadAutomergeDoc(branch)
-        const historicalView = Automerge.view(requestedDoc, [targetHash]);
+
+
+        if (targetHash === head){
+            console.log('is this ever triggered')
+        }
+        let requestedDoc = loadAutomergeDoc(branch)
 
         // Use `Automerge.view()` to view the state at this specific point in history
-        // const historicalView = Automerge.view(amDoc, [targetHash]);
+        const historicalView = Automerge.view(requestedDoc, [targetHash]);
     
         // Check if we're on the head; reset clone if true (so we don't trigger opening a new branch with changes made to head)
+        // compare the point in history we want (Automerge.getHeads(historicalView)[0]) against the head of its associated branch (Automerge.getHeads(requestedDoc)[0])
         if (Automerge.getHeads(historicalView)[0] === Automerge.getHeads(requestedDoc)[0]){
+            console.log('requested point in history is the same as the head of requested branch:')
+            console.log(branch)
             automergeDocuments.newClone = false
 
             updateSynthWorklet('loadVersion', historicalView.synth.graph, null, historicalView.changeType)
@@ -1631,43 +1602,46 @@ document.addEventListener("DOMContentLoaded", function () {
 
             return
         } 
+        
+        // ? 
+        // ! seems this one and the one above are the same conditionals. this one should be a little faster, but we'll see 
         // if the head of a branch was clicked, we need to load that branch's full history (which traces all the way back to the blank_patch node (root))
-        else if (targetHash === head){
+        // else if (targetHash === head){
+        //     console.log('is this ever triggered')
+        //     // retrieve the document from the binary store
+        //     let branchDoc = loadAutomergeDoc(branch)    
+        //     let clonedDoc = Automerge.clone(branchDoc)
 
-            // retrieve the document from the binary store
-            let branchDoc = loadAutomergeDoc(branch)    
-            let clonedDoc = Automerge.clone(branchDoc)
-
-            automergeDocuments.current = {
-                doc: clonedDoc,
-                hash: [targetHash],
-                history: getHistoryProps(clonedDoc)
+        //     automergeDocuments.current = {
+        //         doc: clonedDoc,
+        //         hash: [targetHash],
+        //         history: getHistoryProps(clonedDoc)
 
                 
-            }
+        //     }
 
-            meta = Automerge.change(meta, (meta) => {
-                // store the HEAD info (the most recent HEAD and branch that were viewed or operated on)
-                meta.head.hash = targetHash
-                meta.head.branch = branch
-            });
+        //     meta = Automerge.change(meta, (meta) => {
+        //         // store the HEAD info (the most recent HEAD and branch that were viewed or operated on)
+        //         meta.head.hash = targetHash
+        //         meta.head.branch = branch
+        //     });
 
-            // set newClone to true
-            automergeDocuments.newClone = true
+        //     // set newClone to true
+        //     automergeDocuments.newClone = true
 
-            // update current head to this hash
-            branchHeads.current = targetHash
-            // Step 3: Add node in Cytoscape for this clone point
-            // get info about targetNode (what was clicked by user)
-            branchHeads.previous = Automerge.getHeads(requestedDoc)[0]
+        //     // update current head to this hash
+        //     branchHeads.current = targetHash
+        //     // Step 3: Add node in Cytoscape for this clone point
+        //     // get info about targetNode (what was clicked by user)
+        //     branchHeads.previous = Automerge.getHeads(requestedDoc)[0]
 
-            updateSynthWorklet('loadVersion', historicalView.synth.graph, null, historicalView.changeType)
+        //     updateSynthWorklet('loadVersion', historicalView.synth.graph, null, historicalView.changeType)
 
-            updateCytoscapeFromDocument(branchDoc);
-        } 
+        //     updateCytoscapeFromDocument(branchDoc);
+        // } 
         // this is necessary for loading a hash on another branch that ISN'T the head
         else if (branch != meta.head.branch) {
-
+            console.log(`branch ${branch} != meta.head.branch ${meta.head.branch}`)
             // load this branch's doc
             let branchDoc = loadAutomergeDoc(branch)
 
@@ -1705,28 +1679,24 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         // the selected hash belongs to the current branch
         else {
-            
+            console.log(`hash ${targetHash} belongs to current branch ${meta.head.branch}`)
             // let newHistoricalView = Automerge.view(Automerge.load(meta.docs[branch]), [targetHash]);
             let clonedDoc = Automerge.clone(historicalView)
 
-            clonedDoc.title = uuidv7();
-            branches[clonedDoc.title] = {
-                head: null,
-                root: targetHash
-            }
+            // const newBranchName = uuidv7();
 
-            meta = Automerge.change(meta, (meta) => {
-                meta.branches[clonedDoc.title] ={
-                    head: null,
-                    parent: targetHash,
-                    // doc: clonedDoc,
-                    history: []
-                }
-                meta.docs[clonedDoc.title] = {}
-                // store the HEAD info (the most recent HEAD and branch that were viewed or operated on)
-                meta.head.hash = targetHash
-                meta.head.branch = clonedDoc.title
-            });
+            // meta = Automerge.change(meta, (meta) => {
+            //     meta.branches[newBranchName] ={
+            //         head: null,
+            //         parent: targetHash,
+            //         // doc: clonedDoc,
+            //         history: []
+            //     }
+            //     meta.docs[newBranchName] = {}
+            //     // store the HEAD info (the most recent HEAD and branch that were viewed or operated on)
+            //     meta.head.hash = targetHash
+            //     meta.head.branch = newBranchName
+            // });
 
             automergeDocuments.current = {
                 doc: clonedDoc,

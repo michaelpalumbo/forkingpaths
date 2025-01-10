@@ -379,6 +379,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function loadVersion(nodeID, branch){
         // Perform your action with the step data
+        console.log('loadVersion called', new Date())
         sendToMainApp(
             {
                 cmd: "loadVersion",
