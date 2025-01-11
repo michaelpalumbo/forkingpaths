@@ -50,7 +50,6 @@ function buildHistoryGraph(meta, existingHistoryNodeIDs, docHistoryGraphStyling)
         // ! this is where we'll also figure out how to deal with 2 parents in the case of a merge!
         // If the history item has a parent, add an edge to connect the parent
         if (item.parent) {
-            console.log('item.parent', item.parent, 'is a', typeof item.parent)
             // first check if item.parent is an array. if it is, then this node is a merge between 2 parents
             if(Array.isArray(item.parent)){
                 console.log('this is a merge')

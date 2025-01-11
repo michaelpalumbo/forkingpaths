@@ -50,6 +50,7 @@ let saveInterval = 1000; // how frequently to store the automerge document in in
 let onChange; // my custom automerge callback for changes made to the doc
 let docUpdated = false // set this to true whenever doc has changed so that indexedDB will store it. after set it back to false
 
+let newMerge = false
 
 let automergeDocuments = {
     newClone: false,
@@ -801,10 +802,10 @@ document.addEventListener("DOMContentLoaded", function () {
     }, saveInterval);
 
     // handle document changes and call a callback
-    function applyChange(doc, changeCallback, onChangeCallback, changeMessage) {
-
+    function applyChange(doc, changeCallback, onChangeCallback, changeMessage, mergeParents) {
+        console.log('newmerge', newMerge)
         // in this condition, we are applying a change on the current branch
-        if(automergeDocuments.newClone === false ){
+        if(automergeDocuments.newClone === false && newMerge === false){
             let amMsg = makeChangeMessage(meta.head.branch, changeMessage)
             // we are working from a head
 
@@ -846,7 +847,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 onChangeCallback(amDoc);
             }
             return amDoc;
-        } else {
+        } else if (automergeDocuments.newClone === true && newMerge === false){
             // player has made changes to an earlier version, so create a branch and set amDoc to new clone
 
             // store previous amDoc in automergeDocuments, and its property is the hash of its head
@@ -909,9 +910,80 @@ document.addEventListener("DOMContentLoaded", function () {
                         
                 })
             }
+        
             return amDoc;
 
+        } else if (newMerge == true){
+            console.log('create the merge')
+
+
+            // store previous amDoc in automergeDocuments, and its property is the hash of its head
+            automergeDocuments.otherDocs[meta.head.branch] = amDoc
+            // set amDoc to current cloned doc
+            // amDoc = Automerge.clone(automergeDocuments.current.doc)
+
+            // create a new branch name
+            const newBranchName = uuidv7();
+            // use the new branch title
+            let amMsg = makeChangeMessage(newBranchName, changeMessage)
+
+            // grab the current hash before making the new change:
+            previousHash = Automerge.getHeads(amDoc)[0]
+            //! if any issues with graph arise, try switching above code to this:
+            //! previousHash = meta.head.hash
+
+            // Apply the change using Automerge.change
+            amDoc = Automerge.change(amDoc, amMsg, changeCallback);
+            let hash = Automerge.getHeads(amDoc)[0]
+            
+            console.log('newhash', hash, 'previoushash', previousHash)
+            // If there was a change, call the onChangeCallback
+            if (amDoc !== doc && typeof onChangeCallback === 'function') {   
+                console.log('it gets this far')
+                meta = Automerge.change(meta, (meta) => {
+
+                    // create the branch
+                    meta.branches[newBranchName] = {
+                        head: hash,
+                        parent: mergeParents,
+                        history: [{
+                            hash: hash,
+                            msg: changeMessage,
+                            parent: mergeParents
+                        }]
+                    }
+
+                    // store current doc
+                    meta.docs[newBranchName] = Automerge.save(amDoc)
+                    
+                    // store the HEAD info
+                    meta.head.hash = hash
+                    meta.head.branch = newBranchName
+
+                    // store the branch name so that we can ensure its ordering later on
+                    meta.branchOrder.push(newBranchName)
+                });
+               
+                // makeBranch(changeMessage, Automerge.getHeads(newDoc)[0])
+                onChangeCallback(amDoc);
+                // automergeDocuments.newClone = false
+
+                updateSynthWorklet('loadVersion', amDoc.synth.graph)
+
+                updateCytoscapeFromDocument(amDoc, 'buildUI');
+                // panToBranch(historyDAG_cy.getElementById(hash)) //! remove this line when 2nd window is working fully
+                
+                sendMsgToHistoryApp({
+                    appID: 'forkingPathsMain',
+                    cmd: 'panToBranch',
+                    data: hash
+                        
+                })
+            }
+            newMerge = false
+            return amDoc;
         }
+        
         
 
     }
@@ -1471,17 +1543,34 @@ document.addEventListener("DOMContentLoaded", function () {
         let requestedDoc2 = loadAutomergeDoc(doc2.branch)
         // const historicalView2 = Automerge.view(requestedDoc2, [doc2.id]);
 
-        amDoc = Automerge.merge(requestedDoc1, requestedDoc2)
+        // console.log('2. Doc1 Heads:', Automerge.getHeads(requestedDoc1));
+        // console.log('2. Doc2 Heads:', Automerge.getHeads(requestedDoc2));
 
+        // const changes1 = Automerge.getAllChanges(requestedDoc1);
+        // const changes2 = Automerge.getAllChanges(requestedDoc2);
+
+        // console.log('3. Doc1 Changes:', changes1);
+        // console.log('3. Doc2 Changes:', changes2);
+        
+        const newMergeDoc = Automerge.merge(requestedDoc1, requestedDoc2)
+        console.log("newMergeDoc head", Automerge.getHeads(newMergeDoc)[0])
+        // console.log('1. Merged Document:', amDoc);
+        // console.log('1. Heads of Merged Document:', Automerge.getHeads(amDoc));
+
+        newMerge = true
+        // * automerge version: 
+        amDoc = applyChange(amDoc, (amDoc) => {
+            amDoc = newMergeDoc
+        }, onChange, `merge`, [doc1.id, doc2.id]);
+        
         const newBranchName = uuidv7();
-        // store previous amDoc in automergeDocuments, and its property is the hash of its head
-        //? automergeDocuments.otherDocs[meta.head.branch] = amDoc
 
         // grab the current hash before making the new change:
         // previousHash = Automerge.getHeads(amDoc)[0]
-
+        /*
         let hash = Automerge.getHeads(amDoc)[0]
         
+        console.log('newHash', hash, '\nhead1', head1, '\nhead2', head2)
         meta = Automerge.change(meta, (meta) => {
 
             // Initialize the branch metadata if it doesn't already exist
@@ -1523,6 +1612,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if(audioGraphDirty){
             audioGraphDirty = false
         }
+            */
 
     }
 
