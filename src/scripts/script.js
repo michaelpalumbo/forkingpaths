@@ -805,7 +805,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // in this condition, we are applying a change on the current branch
         if(automergeDocuments.newClone === false ){
-            console.log('making change on branch', meta.head.branch)
             let amMsg = makeChangeMessage(meta.head.branch, changeMessage)
             // we are working from a head
 
@@ -817,7 +816,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // If there was a change, call the onChangeCallback
             if (amDoc !== doc && typeof onChangeCallback === 'function') {
-                console.log('making change to meta')
                 let hash = Automerge.getHeads(amDoc)[0]
                 
                 meta = Automerge.change(meta, (meta) => {
@@ -863,6 +861,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // grab the current hash before making the new change:
             previousHash = Automerge.getHeads(amDoc)[0]
+            //! if any issues with graph arise, try switching above code to this:
+            //! previousHash = meta.head.hash
+            
             // Apply the change using Automerge.change
             amDoc = Automerge.change(amDoc, amMsg, changeCallback);
             let hash = Automerge.getHeads(amDoc)[0]
@@ -917,8 +918,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // define the onChange Callback
     onChange = () => {
-        console.log('current branch: ', meta.head.branch)
-        console.log(meta.branches)
         // update synth audio graph
         // loadSynthGraph()
         // You can add any additional logic here, such as saving to IndexedDB
@@ -1535,12 +1534,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Load a version from the DAG
     async function loadVersion(targetHash, branch) {
-        console.log(meta.branches)
-        console.log(`requested branch \n${branch}\n\ncurrent branch:\n${meta.head.branch}`)
+
         // get the head from this branch
         let head = meta.branches[branch].head
 
-        console.log('head', head, 'targetHash', targetHash)
         let requestedDoc = loadAutomergeDoc(branch)
 
         // Use `Automerge.view()` to view the state at this specific point in history
@@ -1550,7 +1547,6 @@ document.addEventListener("DOMContentLoaded", function () {
         // compare the point in history we want (Automerge.getHeads(historicalView)[0]) against the head of its associated branch (Automerge.getHeads(requestedDoc)[0])
         // if (Automerge.getHeads(historicalView)[0] === Automerge.getHeads(requestedDoc)[0]){
         if (head === targetHash){
-            console.log('head === targetHash')
             automergeDocuments.newClone = false
 
             updateSynthWorklet('loadVersion', historicalView.synth.graph, null, historicalView.changeType)
@@ -2393,10 +2389,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 const childNode = cy.getElementById(param.data.id);
                 const parentNode = cy.getElementById(parentNodeID)
                 const parentData = parentNode.data();
-                // console.log('param.data.id', param.data.id)
-                // console.log('parentNodeID', parentNodeID)
-                // console.log('childNode', childNode.data())
-                // console.log('parentNode', parentNode.data())
+
                 const parentParams = parentData?.moduleSpec?.paramNames || [];
                 if (childNode && parentParams.length > 0) {
                     const containerRect = cy.container().getBoundingClientRect();
@@ -2817,7 +2810,6 @@ document.addEventListener("DOMContentLoaded", function () {
         } 
         // // Set new text content
         // element.textContent = toolTip;
-        // console.log(toolTip)
 
     });
     
@@ -2880,7 +2872,6 @@ document.addEventListener("DOMContentLoaded", function () {
     // get .fpsynth files from user's filesystem
     document.getElementById('loadSynthButton').addEventListener('change', async (event) => {
         const file = event.target.files[0];
-        // console.log('snared')
     
         if (!file) {
             alert('No file selected');
@@ -2961,15 +2952,6 @@ document.addEventListener("DOMContentLoaded", function () {
         hid.mouse.left = true
         // handle slider events
         if(event.target.data().kind && event.target.data().kind === 'slider'){
-            // switch(event.target.data().sliderComponent){
-            //     case 'track':
-            //         console.log('slider track clicked')
-            //     break;
-
-            //     case 'handle':
-            //         currentHandleNode = event.target;
-            //         isSliderDragging = true;
-            // }
             
         } else {
 
