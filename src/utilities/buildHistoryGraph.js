@@ -50,7 +50,23 @@ function buildHistoryGraph(meta, existingHistoryNodeIDs, docHistoryGraphStyling)
         // ! this is where we'll also figure out how to deal with 2 parents in the case of a merge!
         // If the history item has a parent, add an edge to connect the parent
         if (item.parent) {
-            // //Make sure the parent node also exists before adding the edge
+            console.log('item.parent', item.parent, 'is a', typeof item.parent)
+            // first check if item.parent is an array. if it is, then this node is a merge between 2 parents
+            if(Array.isArray(item.parent)){
+                console.log('this is a merge')
+
+                item.parent.forEach((parent, index)=>{
+                    edges.push({
+                        group: "edges",
+                        data: {
+                            id: `${item.parent[index]}_to_${nodeId}`,
+                            source: item.parent[index],
+                            target: nodeId,
+                        },
+                    });
+                })
+            } else {
+                            // //Make sure the parent node also exists before adding the edge
             // if (existingHistoryNodeIDs.has(item.parent)) {
                 edges.push({
                     group: "edges",
@@ -60,7 +76,7 @@ function buildHistoryGraph(meta, existingHistoryNodeIDs, docHistoryGraphStyling)
                         target: nodeId,
                     },
                 });
-            // }
+            }
         }
         
     });

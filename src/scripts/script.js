@@ -863,7 +863,7 @@ document.addEventListener("DOMContentLoaded", function () {
             previousHash = Automerge.getHeads(amDoc)[0]
             //! if any issues with graph arise, try switching above code to this:
             //! previousHash = meta.head.hash
-            
+
             // Apply the change using Automerge.change
             amDoc = Automerge.change(amDoc, amMsg, changeCallback);
             let hash = Automerge.getHeads(amDoc)[0]
@@ -1471,13 +1471,9 @@ document.addEventListener("DOMContentLoaded", function () {
         let requestedDoc2 = loadAutomergeDoc(doc2.branch)
         // const historicalView2 = Automerge.view(requestedDoc2, [doc2.id]);
 
-        console.log(requestedDoc1, requestedDoc2)
-
         amDoc = Automerge.merge(requestedDoc1, requestedDoc2)
 
-        console.log(amDoc.synth.graph.modules.LFO_Banteng_dd91188a2806.params, requestedDoc1.synth.graph.modules.LFO_Banteng_dd91188a2806.params, requestedDoc2.synth.graph.modules.LFO_Banteng_dd91188a2806.params)
-
-        const newBranchName = `merge_${uuidv7()}`;
+        const newBranchName = uuidv7();
         // store previous amDoc in automergeDocuments, and its property is the hash of its head
         //? automergeDocuments.otherDocs[meta.head.branch] = amDoc
 
@@ -1490,7 +1486,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // Initialize the branch metadata if it doesn't already exist
             if (!meta.branches[newBranchName]) {
-                meta.branches[newBranchName] = { head: null, parent: null, history: [] };
+                meta.branches[newBranchName] = { head: null, parent: [doc1.id, doc2.id], history: [] };
                 
             }
 
@@ -1501,8 +1497,7 @@ document.addEventListener("DOMContentLoaded", function () {
             meta.branches[newBranchName].history.push({
                 hash: hash,
                 msg: 'merge',
-                parent1: doc1.id,
-                parent2: doc2.id
+                parent: [doc1.id, doc2.id]
             });
             // store current doc
             meta.docs[newBranchName] = Automerge.save(amDoc)
@@ -1514,8 +1509,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // store the branch name so that we can ensure its ordering later on
             meta.branchOrder.push(newBranchName)
         });
-
-        console.log('newBranchname', newBranchName, meta.branches)
+        console.log(meta.branches[newBranchName])
         // set docUpdated so that indexedDB will save it
         docUpdated = true
        

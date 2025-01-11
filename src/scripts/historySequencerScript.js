@@ -323,7 +323,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // console.log(event.data)
             switch (event.data.cmd){
                 case 'reDrawHistoryGraph':
-                    
+                    console.log('redraw')
                     meta = event.data.data
                     // reDrawHistoryGraph(meta)
                             // Send the elements to the server for rendering
