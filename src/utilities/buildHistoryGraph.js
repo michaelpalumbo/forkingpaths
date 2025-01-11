@@ -17,7 +17,7 @@ function buildHistoryGraph(meta, existingHistoryNodeIDs, docHistoryGraphStyling)
             // Iterate over each history item in the branch
             branch.history.forEach((item) => {
             const nodeId = item.hash;
-
+                console.log(item, 'branchName:', branchName)
             // Check if the node already exists in the history graph
             if (!existingHistoryNodeIDs.has(nodeId)) {
                 // Add node to the history graph
@@ -25,7 +25,7 @@ function buildHistoryGraph(meta, existingHistoryNodeIDs, docHistoryGraphStyling)
                     group: "nodes",
                     data: {
                         id: nodeId,
-                        label: item.msg,
+                        label: item.msg + '_id_' + nodeId + '_branch:_' + branchName + '_parent:_' + item.parent,
                         color: docHistoryGraphStyling.nodeColours[item.msg.split(" ")[0]] || "#ccc",
                         branch: branchName,
                     },
