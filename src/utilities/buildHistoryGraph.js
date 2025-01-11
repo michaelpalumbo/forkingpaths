@@ -24,7 +24,7 @@ function buildHistoryGraph(meta, existingHistoryNodeIDs, docHistoryGraphStyling)
                     group: "nodes",
                     data: {
                         id: nodeId,
-                        label: item.msg + '_id_' + nodeId + '_branch:_' + branchName + '_parent:_' + item.parent,
+                        label: item.msg,
                         color: docHistoryGraphStyling.nodeColours[item.msg.split(" ")[0]] || "#ccc",
                         branch: branchName,
                     },

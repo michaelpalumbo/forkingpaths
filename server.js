@@ -239,8 +239,6 @@ function updateHistoryGraph(ws, meta, docHistoryGraphStyling){
         docHistoryGraphStyling
     );
 
-    console.log("server:", nodes)
-    console.log('server:', edges)
     // Run the layout and get the rendered graph
     // historyDAG_cy.layout(layout).run();
 

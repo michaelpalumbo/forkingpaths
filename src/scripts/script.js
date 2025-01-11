@@ -810,12 +810,10 @@ document.addEventListener("DOMContentLoaded", function () {
             // we are working from a head
 
             // grab the current hash before making the new change:
-            previousHash = Automerge.getHeads(amDoc)[0]
+            previousHash = meta.head.hash
             
-
             // Apply the change using Automerge.change
             amDoc = Automerge.change(amDoc, amMsg, changeCallback);
-
 
             // If there was a change, call the onChangeCallback
             if (amDoc !== doc && typeof onChangeCallback === 'function') {
@@ -838,7 +836,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         msg: changeMessage
 
                     });
-                    console.log('within the change', meta.head.branch, meta.branches[meta.head.branch].history)
+
                     // encode the doc as a binary object for efficiency
                     meta.docs[meta.head.branch] = Automerge.save(amDoc)
                     // store the HEAD info
@@ -884,23 +882,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             parent: previousHash
                         }]
                     }
-                    // // Update the head property
-                    // meta.branches[newBranchName].head = hash;
-                    // // update the parent property
-                    // meta.branches[newBranchName].parent = hash;
 
-                    // // create the history array, and add this new history entry
-                    // meta.branches[newBranchName].history = [{
-                    //     hash: hash,
-                    //     msg: changeMessage,
-                    //     parent: previousHash
-                    // }]
-                    // // Push the new history entry into the existing array
-                    // meta.branches[newBranchName].history.push({
-                    //     hash: hash,
-                    //     msg: changeMessage,
-                    //     parent: previousHash
-                    // });
                     // store current doc
                     meta.docs[newBranchName] = Automerge.save(amDoc)
                     
