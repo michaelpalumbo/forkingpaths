@@ -79,6 +79,8 @@ function buildHistoryGraph(meta, existingHistoryNodeIDs, docHistoryGraphStyling)
         }
         
     });
+
+    
 });
 
 
