@@ -1187,6 +1187,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    
 
     // Add an event listener for the 'change' event
     stepLengthFunctionSelect.addEventListener("change", (event) => {

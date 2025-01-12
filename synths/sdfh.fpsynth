@@ -1,0 +1,1479 @@
+{
+  "filename": "filename.fpsynth",
+  "visualGraph": {
+    "elements": {
+      "nodes": [
+        {
+          "data": {
+            "id": "AudioDestination_Honey_be4bbe6544ca",
+            "label": "AudioDestination Honey",
+            "kind": "module",
+            "rnboName": "AudioDestination",
+            "moduleSpec": {
+              "parameters": {},
+              "paramNames": [],
+              "cv": {},
+              "inputs": [
+                "IN"
+              ],
+              "outputs": []
+            },
+            "structure": "webAudioNodes",
+            "bgcolour": "#E6CCFF"
+          },
+          "position": {
+            "x": 515.5,
+            "y": 390
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ":parent"
+        },
+        {
+          "data": {
+            "id": "AudioDestination_Honey_be4bbe6544ca.IN",
+            "parent": "AudioDestination_Honey_be4bbe6544ca",
+            "label": "IN",
+            "kind": "input",
+            "bgcolour": "#FC9A4F",
+            "ghostCableShape": "rectangle",
+            "ghostCableColour": "#5C9AE3",
+            "description": null
+          },
+          "position": {
+            "x": 530,
+            "y": 390
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "Oscillator_Boa_10e62e98cd5e",
+            "label": "Oscillator Boa",
+            "kind": "module",
+            "rnboName": "Oscillator",
+            "moduleSpec": {
+              "parameters": {
+                "frequency": {
+                  "min": 110,
+                  "max": 3000,
+                  "default": 440,
+                  "units": "Hz",
+                  "description": "The frequency of the oscillator.",
+                  "modulatable": true,
+                  "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects.",
+                  "kind": "paramAnchorNode",
+                  "name": "frequency",
+                  "ui": "knob"
+                },
+                "type": {
+                  "values": [
+                    "sine",
+                    "square",
+                    "sawtooth",
+                    "triangle",
+                    "custom"
+                  ],
+                  "default": "sine",
+                  "description": "The waveform shape of the oscillator.",
+                  "kind": "paramAnchorNode",
+                  "name": "type",
+                  "ui": "menu"
+                },
+                "freq cv +/-": {
+                  "min": -1000,
+                  "max": 1000,
+                  "default": 100,
+                  "units": "Hz",
+                  "description": "The attenuverter of the frequency CV input",
+                  "modulatable": false,
+                  "modulationDescription": "The attenuverter of the frequency CV input",
+                  "kind": "paramAnchorNode",
+                  "name": "freq cv +/-",
+                  "ui": "knob"
+                }
+              },
+              "paramNames": [
+                "frequency",
+                "freq cv +/-",
+                "type"
+              ],
+              "cvNames": [
+                "frequency"
+              ],
+              "cv": {
+                "frequency": {
+                  "min": 110,
+                  "max": 9000,
+                  "default": 440,
+                  "units": "Hz",
+                  "description": "The frequency of the oscillator.",
+                  "modulatable": true,
+                  "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects.",
+                  "kind": "input",
+                  "name": "frequency",
+                  "ui": "knob"
+                }
+              },
+              "inputs": [],
+              "outputs": [
+                "OUT"
+              ]
+            },
+            "structure": "webAudioNodes",
+            "bgcolour": "#CCCCCC"
+          },
+          "position": {
+            "x": 292,
+            "y": 312.5
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ":parent"
+        },
+        {
+          "data": {
+            "id": "Oscillator_Boa_10e62e98cd5e_frequency",
+            "parent": "Oscillator_Boa_10e62e98cd5e",
+            "label": "frequency",
+            "nameSpace": "Oscillator_Boa_10e62e98cd5e_frequency.frequency",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "Oscillator_Boa_10e62e98cd5e_frequency",
+            "ui": "knob",
+            "min": 110,
+            "max": 3000,
+            "value": 440,
+            "menuOptions": "none",
+            "description": "The frequency of the oscillator."
+          },
+          "position": {
+            "x": 350,
+            "y": 190
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "Oscillator_Boa_10e62e98cd5e_freq cv +/-",
+            "parent": "Oscillator_Boa_10e62e98cd5e",
+            "label": "freq cv +/-",
+            "nameSpace": "Oscillator_Boa_10e62e98cd5e_freq cv +/-.freq cv +/-",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "Oscillator_Boa_10e62e98cd5e_freq cv +/-",
+            "ui": "knob",
+            "min": -1000,
+            "max": 1000,
+            "value": 100,
+            "menuOptions": "none",
+            "description": "The attenuverter of the frequency CV input"
+          },
+          "position": {
+            "x": 350,
+            "y": 250
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "Oscillator_Boa_10e62e98cd5e_type",
+            "parent": "Oscillator_Boa_10e62e98cd5e",
+            "label": "type",
+            "nameSpace": "Oscillator_Boa_10e62e98cd5e_type.type",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "Oscillator_Boa_10e62e98cd5e_type",
+            "ui": "menu",
+            "min": 0,
+            "max": 1,
+            "value": "sine",
+            "menuOptions": [
+              "sine",
+              "square",
+              "sawtooth",
+              "triangle",
+              "custom"
+            ],
+            "description": "The waveform shape of the oscillator."
+          },
+          "position": {
+            "x": 350,
+            "y": 310
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "Oscillator_Boa_10e62e98cd5e.frequency",
+            "parent": "Oscillator_Boa_10e62e98cd5e",
+            "label": "frequency",
+            "kind": "input",
+            "bgcolour": "#FC9A4F",
+            "ghostCableShape": "rectangle",
+            "ghostCableColour": "#5C9AE3",
+            "description": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects."
+          },
+          "position": {
+            "x": 330,
+            "y": 370
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "Oscillator_Boa_10e62e98cd5e.OUT",
+            "parent": "Oscillator_Boa_10e62e98cd5e",
+            "label": "OUT",
+            "kind": "output",
+            "bgcolour": "#6FB1FC",
+            "ghostCableShape": "triangle",
+            "ghostCableColour": "#E68942",
+            "description": null
+          },
+          "position": {
+            "x": 330,
+            "y": 430
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "LFO_Caracara_1ccb73d4a627",
+            "label": "LFO Caracara",
+            "kind": "module",
+            "rnboName": "LFO",
+            "moduleSpec": {
+              "parameters": {
+                "frequency": {
+                  "min": 0.01,
+                  "max": 10,
+                  "default": 1,
+                  "units": "Hz",
+                  "description": "The frequency of the low frequency oscillator.",
+                  "modulatable": true,
+                  "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects.",
+                  "kind": "paramAnchorNode",
+                  "name": "frequency",
+                  "ui": "knob"
+                },
+                "type": {
+                  "values": [
+                    "sine",
+                    "square",
+                    "sawtooth",
+                    "triangle",
+                    "custom"
+                  ],
+                  "default": "sine",
+                  "description": "The waveform shape of the oscillator.",
+                  "kind": "paramAnchorNode",
+                  "name": "type",
+                  "ui": "menu"
+                },
+                "freq cv +/-": {
+                  "min": -20,
+                  "max": 20,
+                  "default": 10,
+                  "units": "Hz",
+                  "description": "The attenuverter of the frequency CV input",
+                  "modulatable": false,
+                  "modulationDescription": "The attenuverter of the frequency CV input",
+                  "kind": "paramAnchorNode",
+                  "name": "freq cv +/-",
+                  "ui": "knob"
+                }
+              },
+              "paramNames": [
+                "frequency",
+                "freq cv +/-",
+                "type"
+              ],
+              "cvNames": [
+                "frequency"
+              ],
+              "cv": {
+                "frequency": {
+                  "min": 0.01,
+                  "max": 10,
+                  "default": 5,
+                  "units": "Hz",
+                  "description": "The frequency of the oscillator.",
+                  "modulatable": true,
+                  "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects.",
+                  "kind": "input",
+                  "name": "frequency",
+                  "ui": "knob"
+                }
+              },
+              "inputs": [],
+              "outputs": [
+                "OUT"
+              ]
+            },
+            "structure": "webAudioNodes",
+            "bgcolour": "#CCCCCC"
+          },
+          "position": {
+            "x": 112,
+            "y": 192.5
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ":parent"
+        },
+        {
+          "data": {
+            "id": "LFO_Caracara_1ccb73d4a627_frequency",
+            "parent": "LFO_Caracara_1ccb73d4a627",
+            "label": "frequency",
+            "nameSpace": "LFO_Caracara_1ccb73d4a627_frequency.frequency",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "LFO_Caracara_1ccb73d4a627_frequency",
+            "ui": "knob",
+            "min": 0.01,
+            "max": 10,
+            "value": 1,
+            "menuOptions": "none",
+            "description": "The frequency of the low frequency oscillator."
+          },
+          "position": {
+            "x": 170,
+            "y": 70
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "LFO_Caracara_1ccb73d4a627_freq cv +/-",
+            "parent": "LFO_Caracara_1ccb73d4a627",
+            "label": "freq cv +/-",
+            "nameSpace": "LFO_Caracara_1ccb73d4a627_freq cv +/-.freq cv +/-",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "LFO_Caracara_1ccb73d4a627_freq cv +/-",
+            "ui": "knob",
+            "min": -20,
+            "max": 20,
+            "value": 10,
+            "menuOptions": "none",
+            "description": "The attenuverter of the frequency CV input"
+          },
+          "position": {
+            "x": 170,
+            "y": 130
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "LFO_Caracara_1ccb73d4a627_type",
+            "parent": "LFO_Caracara_1ccb73d4a627",
+            "label": "type",
+            "nameSpace": "LFO_Caracara_1ccb73d4a627_type.type",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "LFO_Caracara_1ccb73d4a627_type",
+            "ui": "menu",
+            "min": 0,
+            "max": 1,
+            "value": "sine",
+            "menuOptions": [
+              "sine",
+              "square",
+              "sawtooth",
+              "triangle",
+              "custom"
+            ],
+            "description": "The waveform shape of the oscillator."
+          },
+          "position": {
+            "x": 170,
+            "y": 190
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "LFO_Caracara_1ccb73d4a627.frequency",
+            "parent": "LFO_Caracara_1ccb73d4a627",
+            "label": "frequency",
+            "kind": "input",
+            "bgcolour": "#FC9A4F",
+            "ghostCableShape": "rectangle",
+            "ghostCableColour": "#5C9AE3",
+            "description": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects."
+          },
+          "position": {
+            "x": 150,
+            "y": 250
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "LFO_Caracara_1ccb73d4a627.OUT",
+            "parent": "LFO_Caracara_1ccb73d4a627",
+            "label": "OUT",
+            "kind": "output",
+            "bgcolour": "#6FB1FC",
+            "ghostCableShape": "triangle",
+            "ghostCableColour": "#E68942",
+            "description": null
+          },
+          "position": {
+            "x": 150,
+            "y": 310
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "LFO_Zebra_e26602b4dde6",
+            "label": "LFO Zebra",
+            "kind": "module",
+            "rnboName": "LFO",
+            "moduleSpec": {
+              "parameters": {
+                "frequency": {
+                  "min": 0.01,
+                  "max": 10,
+                  "default": 1,
+                  "units": "Hz",
+                  "description": "The frequency of the low frequency oscillator.",
+                  "modulatable": true,
+                  "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects.",
+                  "kind": "paramAnchorNode",
+                  "name": "frequency",
+                  "ui": "knob"
+                },
+                "type": {
+                  "values": [
+                    "sine",
+                    "square",
+                    "sawtooth",
+                    "triangle",
+                    "custom"
+                  ],
+                  "default": "sine",
+                  "description": "The waveform shape of the oscillator.",
+                  "kind": "paramAnchorNode",
+                  "name": "type",
+                  "ui": "menu"
+                },
+                "freq cv +/-": {
+                  "min": -20,
+                  "max": 20,
+                  "default": 10,
+                  "units": "Hz",
+                  "description": "The attenuverter of the frequency CV input",
+                  "modulatable": false,
+                  "modulationDescription": "The attenuverter of the frequency CV input",
+                  "kind": "paramAnchorNode",
+                  "name": "freq cv +/-",
+                  "ui": "knob"
+                }
+              },
+              "paramNames": [
+                "frequency",
+                "freq cv +/-",
+                "type"
+              ],
+              "cvNames": [
+                "frequency"
+              ],
+              "cv": {
+                "frequency": {
+                  "min": 0.01,
+                  "max": 10,
+                  "default": 5,
+                  "units": "Hz",
+                  "description": "The frequency of the oscillator.",
+                  "modulatable": true,
+                  "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects.",
+                  "kind": "input",
+                  "name": "frequency",
+                  "ui": "knob"
+                }
+              },
+              "inputs": [],
+              "outputs": [
+                "OUT"
+              ]
+            },
+            "structure": "webAudioNodes",
+            "bgcolour": "#CCCCCC"
+          },
+          "position": {
+            "x": 112,
+            "y": 572.5
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ":parent"
+        },
+        {
+          "data": {
+            "id": "LFO_Zebra_e26602b4dde6_frequency",
+            "parent": "LFO_Zebra_e26602b4dde6",
+            "label": "frequency",
+            "nameSpace": "LFO_Zebra_e26602b4dde6_frequency.frequency",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "LFO_Zebra_e26602b4dde6_frequency",
+            "ui": "knob",
+            "min": 0.01,
+            "max": 10,
+            "value": 1,
+            "menuOptions": "none",
+            "description": "The frequency of the low frequency oscillator."
+          },
+          "position": {
+            "x": 170,
+            "y": 450
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "LFO_Zebra_e26602b4dde6_freq cv +/-",
+            "parent": "LFO_Zebra_e26602b4dde6",
+            "label": "freq cv +/-",
+            "nameSpace": "LFO_Zebra_e26602b4dde6_freq cv +/-.freq cv +/-",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "LFO_Zebra_e26602b4dde6_freq cv +/-",
+            "ui": "knob",
+            "min": -20,
+            "max": 20,
+            "value": 10,
+            "menuOptions": "none",
+            "description": "The attenuverter of the frequency CV input"
+          },
+          "position": {
+            "x": 170,
+            "y": 510
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "LFO_Zebra_e26602b4dde6_type",
+            "parent": "LFO_Zebra_e26602b4dde6",
+            "label": "type",
+            "nameSpace": "LFO_Zebra_e26602b4dde6_type.type",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "LFO_Zebra_e26602b4dde6_type",
+            "ui": "menu",
+            "min": 0,
+            "max": 1,
+            "value": "sine",
+            "menuOptions": [
+              "sine",
+              "square",
+              "sawtooth",
+              "triangle",
+              "custom"
+            ],
+            "description": "The waveform shape of the oscillator."
+          },
+          "position": {
+            "x": 170,
+            "y": 570
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "LFO_Zebra_e26602b4dde6.frequency",
+            "parent": "LFO_Zebra_e26602b4dde6",
+            "label": "frequency",
+            "kind": "input",
+            "bgcolour": "#FC9A4F",
+            "ghostCableShape": "rectangle",
+            "ghostCableColour": "#5C9AE3",
+            "description": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects."
+          },
+          "position": {
+            "x": 150,
+            "y": 630
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "LFO_Zebra_e26602b4dde6.OUT",
+            "parent": "LFO_Zebra_e26602b4dde6",
+            "label": "OUT",
+            "kind": "output",
+            "bgcolour": "#6FB1FC",
+            "ghostCableShape": "triangle",
+            "ghostCableColour": "#E68942",
+            "description": null
+          },
+          "position": {
+            "x": 150,
+            "y": 690
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "oscillator_Burro_f4b98a64985d",
+            "label": "oscillator Burro",
+            "kind": "module",
+            "rnboName": "oscillator",
+            "moduleSpec": {
+              "parameters": {
+                "frequency": {
+                  "type": "ParameterTypeNumber",
+                  "index": 0,
+                  "name": "frequency",
+                  "paramId": "frequency",
+                  "minimum": 110,
+                  "maximum": 880,
+                  "exponent": 1,
+                  "steps": 0,
+                  "initialValue": 220,
+                  "isEnum": false,
+                  "enumValues": [],
+                  "displayName": "",
+                  "unit": "",
+                  "order": 0,
+                  "debug": false,
+                  "visible": true,
+                  "signalIndex": null,
+                  "ioType": "IOTypeUndefined",
+                  "description": "frequency",
+                  "kind": "paramAnchorNode",
+                  "ui": "knob"
+                }
+              },
+              "paramNames": [
+                "frequency"
+              ],
+              "cvNames": [
+                "frequency"
+              ],
+              "cv": {
+                "frequency": {
+                  "type": "ParameterTypeNumber",
+                  "index": 0,
+                  "name": "frequency",
+                  "paramId": "frequency",
+                  "minimum": 110,
+                  "maximum": 880,
+                  "exponent": 1,
+                  "steps": 0,
+                  "initialValue": 220,
+                  "isEnum": false,
+                  "enumValues": [],
+                  "displayName": "",
+                  "unit": "",
+                  "order": 0,
+                  "debug": false,
+                  "visible": true,
+                  "signalIndex": null,
+                  "ioType": "IOTypeUndefined",
+                  "description": "frequency",
+                  "kind": "input",
+                  "ui": "knob"
+                }
+              },
+              "inputs": [],
+              "outputs": [
+                "sine out"
+              ],
+              "structure": "rnboDevice"
+            },
+            "structure": "rnboDevices",
+            "bgcolour": "#E6CCFF"
+          },
+          "position": {
+            "x": 772,
+            "y": 262.5
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ":parent"
+        },
+        {
+          "data": {
+            "id": "oscillator_Burro_f4b98a64985d_frequency",
+            "parent": "oscillator_Burro_f4b98a64985d",
+            "label": "frequency",
+            "nameSpace": "oscillator_Burro_f4b98a64985d_frequency.frequency",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "oscillator_Burro_f4b98a64985d_frequency",
+            "ui": "knob",
+            "min": 110,
+            "max": 880,
+            "value": 0,
+            "menuOptions": "none",
+            "description": "frequency"
+          },
+          "position": {
+            "x": 830,
+            "y": 210
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "oscillator_Burro_f4b98a64985d.frequency",
+            "parent": "oscillator_Burro_f4b98a64985d",
+            "label": "frequency",
+            "kind": "input",
+            "bgcolour": "#FC9A4F",
+            "ghostCableShape": "rectangle",
+            "ghostCableColour": "#5C9AE3",
+            "description": null
+          },
+          "position": {
+            "x": 810,
+            "y": 250
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "oscillator_Burro_f4b98a64985d.sine out",
+            "parent": "oscillator_Burro_f4b98a64985d",
+            "label": "sine out",
+            "kind": "output",
+            "bgcolour": "#6FB1FC",
+            "ghostCableShape": "triangle",
+            "ghostCableColour": "#E68942",
+            "description": null
+          },
+          "position": {
+            "x": 810,
+            "y": 310
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        }
+      ]
+    },
+    "style": [
+      {
+        "selector": "node",
+        "style": {
+          "background-color": "data(bgcolour)",
+          "label": "data(label)",
+          "font-size": "18px",
+          "width": "30px",
+          "height": "30px",
+          "color": "rgb(0,0,0)",
+          "text-valign": "center",
+          "text-halign": "left",
+          "text-margin-x": "-10px"
+        }
+      },
+      {
+        "selector": "node[bgcolour]",
+        "style": {
+          "background-color": "data(bgcolour)"
+        }
+      },
+      {
+        "selector": "node[kind = \"input\"]",
+        "style": {
+          "shape": "triangle"
+        }
+      },
+      {
+        "selector": "node[kind = \"output\"]",
+        "style": {
+          "shape": "rectangle"
+        }
+      },
+      {
+        "selector": ":parent",
+        "style": {
+          "background-opacity": "0.5",
+          "background-color": "data(bgcolour)",
+          "border-color": "rgb(245,122,65)",
+          "border-width": "1px",
+          "label": "data(label)",
+          "text-valign": "top",
+          "text-halign": "center",
+          "color": "rgb(255,0,0)",
+          "font-size": "20px",
+          "text-margin-y": "-10px"
+        }
+      },
+      {
+        "selector": "node.highlighted",
+        "style": {
+          "border-color": "rgb(34,139,34)",
+          "border-width": "10px"
+        }
+      },
+      {
+        "selector": "node.ghostNode",
+        "style": {
+          "background-color": "rgb(255,255,255)",
+          "opacity": "0.8",
+          "width": "27px",
+          "height": "27px",
+          "border-width": "0px",
+          "label": ""
+        }
+      },
+      {
+        "selector": "edge",
+        "style": {
+          "width": "6px",
+          "line-color": "rgb(204,204,204)",
+          "target-arrow-shape": "triangle",
+          "source-arrow-shape": "triangle",
+          "source-arrow-color": "rgb(0,0,0)",
+          "target-arrow-color": "rgb(0,0,0)",
+          "target-arrow-width": "20px",
+          "source-arrow-width": "50px",
+          "curve-style": "unbundled-bezier",
+          "control-point-weights": "0.25 0.75",
+          "control-point-distances": "20px -20px"
+        }
+      },
+      {
+        "selector": "edge.highlighted",
+        "style": {
+          "line-color": "rgb(255,0,0)",
+          "target-arrow-color": "rgb(255,0,0)",
+          "source-arrow-color": "rgb(255,0,0)",
+          "width": "10px"
+        }
+      },
+      {
+        "selector": "edge.connectedEdges",
+        "style": {
+          "line-color": "rgb(34,139,34)",
+          "target-arrow-color": "rgb(34,139,34)",
+          "source-arrow-color": "rgb(34,139,34)",
+          "width": "6px"
+        }
+      },
+      {
+        "selector": ".peerPointer",
+        "style": {
+          "background-color": "data(colour)",
+          "width": "15px",
+          "height": "15px",
+          "shape": "star",
+          "text-valign": "center",
+          "text-halign": "right",
+          "text-margin-x": "10px"
+        }
+      },
+      {
+        "selector": ".paramAnchorNode",
+        "style": {
+          "background-color": "rgb(245,164,93)",
+          "background-opacity": "0",
+          "shape": "ellipse",
+          "width": "20px",
+          "height": "20px",
+          "label": "",
+          "text-opacity": "0",
+          "outline-width": "0px",
+          "events": "no"
+        }
+      },
+      {
+        "selector": "._gridParentPadding",
+        "style": {
+          "compound-sizing-wrt-labels": "exclude",
+          "padding": "20px"
+        }
+      },
+      {
+        "selector": "._gridParentPadding",
+        "style": {
+          "compound-sizing-wrt-labels": "exclude",
+          "padding": "20px"
+        }
+      }
+    ],
+    "data": {},
+    "zoomingEnabled": true,
+    "userZoomingEnabled": false,
+    "zoom": 1,
+    "minZoom": 1e-50,
+    "maxZoom": 1e+50,
+    "panningEnabled": true,
+    "userPanningEnabled": false,
+    "pan": {
+      "x": 0,
+      "y": 0
+    },
+    "boxSelectionEnabled": true,
+    "renderer": {
+      "name": "canvas"
+    }
+  },
+  "paramUIOverlays": {
+    "AudioDestination_Honey_be4bbe6544ca": [],
+    "Oscillator_Boa_10e62e98cd5e": [
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      }
+    ],
+    "LFO_Caracara_1ccb73d4a627": [
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      }
+    ],
+    "LFO_Zebra_e26602b4dde6": [
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      }
+    ],
+    "oscillator_Burro_f4b98a64985d": [
+      {
+        "containerDiv": {}
+      }
+    ]
+  },
+  "audioGraph": {
+    "modules": {
+      "AudioDestination_Honey_be4bbe6544ca": {
+        "type": "AudioDestination",
+        "params": {},
+        "moduleSpec": {
+          "parameters": {},
+          "paramNames": [],
+          "cv": {},
+          "inputs": [
+            "IN"
+          ],
+          "outputs": []
+        },
+        "nodeIDs": [
+          "AudioDestination_Honey_be4bbe6544ca",
+          "AudioDestination_Honey_be4bbe6544ca.IN"
+        ],
+        "structure": "webAudioNodes"
+      },
+      "Oscillator_Boa_10e62e98cd5e": {
+        "type": "Oscillator",
+        "params": {
+          "frequency": 440,
+          "freq cv +/-": 100,
+          "type": "sine"
+        },
+        "moduleSpec": {
+          "parameters": {
+            "frequency": {
+              "min": 110,
+              "max": 3000,
+              "default": 440,
+              "units": "Hz",
+              "description": "The frequency of the oscillator.",
+              "modulatable": true,
+              "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects.",
+              "kind": "paramAnchorNode",
+              "name": "frequency",
+              "ui": "knob"
+            },
+            "type": {
+              "values": [
+                "sine",
+                "square",
+                "sawtooth",
+                "triangle",
+                "custom"
+              ],
+              "default": "sine",
+              "description": "The waveform shape of the oscillator.",
+              "kind": "paramAnchorNode",
+              "name": "type",
+              "ui": "menu"
+            },
+            "freq cv +/-": {
+              "min": -1000,
+              "max": 1000,
+              "default": 100,
+              "units": "Hz",
+              "description": "The attenuverter of the frequency CV input",
+              "modulatable": false,
+              "modulationDescription": "The attenuverter of the frequency CV input",
+              "kind": "paramAnchorNode",
+              "name": "freq cv +/-",
+              "ui": "knob"
+            }
+          },
+          "paramNames": [
+            "frequency",
+            "freq cv +/-",
+            "type"
+          ],
+          "cvNames": [
+            "frequency"
+          ],
+          "cv": {
+            "frequency": {
+              "min": 110,
+              "max": 9000,
+              "default": 440,
+              "units": "Hz",
+              "description": "The frequency of the oscillator.",
+              "modulatable": true,
+              "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects.",
+              "kind": "input",
+              "name": "frequency",
+              "ui": "knob"
+            }
+          },
+          "inputs": [],
+          "outputs": [
+            "OUT"
+          ]
+        },
+        "nodeIDs": [
+          "Oscillator_Boa_10e62e98cd5e",
+          "Oscillator_Boa_10e62e98cd5e_frequency-anchorNode",
+          "Oscillator_Boa_10e62e98cd5e_freq cv +/--anchorNode",
+          "Oscillator_Boa_10e62e98cd5e_type-anchorNode",
+          "Oscillator_Boa_10e62e98cd5e.frequency",
+          "Oscillator_Boa_10e62e98cd5e.OUT"
+        ],
+        "structure": "webAudioNodes"
+      },
+      "LFO_Caracara_1ccb73d4a627": {
+        "type": "LFO",
+        "params": {
+          "frequency": 1,
+          "freq cv +/-": 10,
+          "type": "sine"
+        },
+        "moduleSpec": {
+          "parameters": {
+            "frequency": {
+              "min": 0.01,
+              "max": 10,
+              "default": 1,
+              "units": "Hz",
+              "description": "The frequency of the low frequency oscillator.",
+              "modulatable": true,
+              "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects.",
+              "kind": "paramAnchorNode",
+              "name": "frequency",
+              "ui": "knob"
+            },
+            "type": {
+              "values": [
+                "sine",
+                "square",
+                "sawtooth",
+                "triangle",
+                "custom"
+              ],
+              "default": "sine",
+              "description": "The waveform shape of the oscillator.",
+              "kind": "paramAnchorNode",
+              "name": "type",
+              "ui": "menu"
+            },
+            "freq cv +/-": {
+              "min": -20,
+              "max": 20,
+              "default": 10,
+              "units": "Hz",
+              "description": "The attenuverter of the frequency CV input",
+              "modulatable": false,
+              "modulationDescription": "The attenuverter of the frequency CV input",
+              "kind": "paramAnchorNode",
+              "name": "freq cv +/-",
+              "ui": "knob"
+            }
+          },
+          "paramNames": [
+            "frequency",
+            "freq cv +/-",
+            "type"
+          ],
+          "cvNames": [
+            "frequency"
+          ],
+          "cv": {
+            "frequency": {
+              "min": 0.01,
+              "max": 10,
+              "default": 5,
+              "units": "Hz",
+              "description": "The frequency of the oscillator.",
+              "modulatable": true,
+              "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects.",
+              "kind": "input",
+              "name": "frequency",
+              "ui": "knob"
+            }
+          },
+          "inputs": [],
+          "outputs": [
+            "OUT"
+          ]
+        },
+        "nodeIDs": [
+          "LFO_Caracara_1ccb73d4a627",
+          "LFO_Caracara_1ccb73d4a627_frequency-anchorNode",
+          "LFO_Caracara_1ccb73d4a627_freq cv +/--anchorNode",
+          "LFO_Caracara_1ccb73d4a627_type-anchorNode",
+          "LFO_Caracara_1ccb73d4a627.frequency",
+          "LFO_Caracara_1ccb73d4a627.OUT"
+        ],
+        "structure": "webAudioNodes"
+      },
+      "LFO_Zebra_e26602b4dde6": {
+        "type": "LFO",
+        "params": {
+          "frequency": 1,
+          "freq cv +/-": 10,
+          "type": "sine"
+        },
+        "moduleSpec": {
+          "parameters": {
+            "frequency": {
+              "min": 0.01,
+              "max": 10,
+              "default": 1,
+              "units": "Hz",
+              "description": "The frequency of the low frequency oscillator.",
+              "modulatable": true,
+              "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects.",
+              "kind": "paramAnchorNode",
+              "name": "frequency",
+              "ui": "knob"
+            },
+            "type": {
+              "values": [
+                "sine",
+                "square",
+                "sawtooth",
+                "triangle",
+                "custom"
+              ],
+              "default": "sine",
+              "description": "The waveform shape of the oscillator.",
+              "kind": "paramAnchorNode",
+              "name": "type",
+              "ui": "menu"
+            },
+            "freq cv +/-": {
+              "min": -20,
+              "max": 20,
+              "default": 10,
+              "units": "Hz",
+              "description": "The attenuverter of the frequency CV input",
+              "modulatable": false,
+              "modulationDescription": "The attenuverter of the frequency CV input",
+              "kind": "paramAnchorNode",
+              "name": "freq cv +/-",
+              "ui": "knob"
+            }
+          },
+          "paramNames": [
+            "frequency",
+            "freq cv +/-",
+            "type"
+          ],
+          "cvNames": [
+            "frequency"
+          ],
+          "cv": {
+            "frequency": {
+              "min": 0.01,
+              "max": 10,
+              "default": 5,
+              "units": "Hz",
+              "description": "The frequency of the oscillator.",
+              "modulatable": true,
+              "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects.",
+              "kind": "input",
+              "name": "frequency",
+              "ui": "knob"
+            }
+          },
+          "inputs": [],
+          "outputs": [
+            "OUT"
+          ]
+        },
+        "nodeIDs": [
+          "LFO_Zebra_e26602b4dde6",
+          "LFO_Zebra_e26602b4dde6_frequency-anchorNode",
+          "LFO_Zebra_e26602b4dde6_freq cv +/--anchorNode",
+          "LFO_Zebra_e26602b4dde6_type-anchorNode",
+          "LFO_Zebra_e26602b4dde6.frequency",
+          "LFO_Zebra_e26602b4dde6.OUT"
+        ],
+        "structure": "webAudioNodes"
+      },
+      "oscillator_Burro_f4b98a64985d": {
+        "type": "oscillator",
+        "params": {},
+        "moduleSpec": {
+          "parameters": {
+            "frequency": {
+              "type": "ParameterTypeNumber",
+              "index": 0,
+              "name": "frequency",
+              "paramId": "frequency",
+              "minimum": 110,
+              "maximum": 880,
+              "exponent": 1,
+              "steps": 0,
+              "initialValue": 220,
+              "isEnum": false,
+              "enumValues": [],
+              "displayName": "",
+              "unit": "",
+              "order": 0,
+              "debug": false,
+              "visible": true,
+              "signalIndex": null,
+              "ioType": "IOTypeUndefined",
+              "description": "frequency",
+              "kind": "paramAnchorNode",
+              "ui": "knob"
+            }
+          },
+          "paramNames": [
+            "frequency"
+          ],
+          "cvNames": [
+            "frequency"
+          ],
+          "cv": {
+            "frequency": {
+              "type": "ParameterTypeNumber",
+              "index": 0,
+              "name": "frequency",
+              "paramId": "frequency",
+              "minimum": 110,
+              "maximum": 880,
+              "exponent": 1,
+              "steps": 0,
+              "initialValue": 220,
+              "isEnum": false,
+              "enumValues": [],
+              "displayName": "",
+              "unit": "",
+              "order": 0,
+              "debug": false,
+              "visible": true,
+              "signalIndex": null,
+              "ioType": "IOTypeUndefined",
+              "description": "frequency",
+              "kind": "input",
+              "ui": "knob"
+            }
+          },
+          "inputs": [],
+          "outputs": [
+            "sine out"
+          ],
+          "structure": "rnboDevice"
+        },
+        "nodeIDs": [
+          "oscillator_Burro_f4b98a64985d",
+          "oscillator_Burro_f4b98a64985d_frequency-anchorNode",
+          "oscillator_Burro_f4b98a64985d.frequency",
+          "oscillator_Burro_f4b98a64985d.sine out"
+        ],
+        "structure": "rnboDevices"
+      }
+    },
+    "connections": []
+  }
+}
