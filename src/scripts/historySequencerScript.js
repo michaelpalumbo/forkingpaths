@@ -358,6 +358,25 @@ document.addEventListener("DOMContentLoaded", function () {
                 case 'sequencerUpdate': 
 
                 break
+
+                case 'selectedNode':
+                    console.warn('node selection for history analysis not setup yet, see section associated with this line')
+
+                    if(event.data.data === 'unselected'){
+                        // clear global variable
+
+                        // remove results in history analysis 
+
+                        // remove it as an option in the selectmenu
+                    }else {
+                        // store selected node in global variable
+
+                        // set it as an option in the selectmenu
+
+                        // when user selects it, retrieve all changes related to that node
+                    }
+
+                break
                 // commented out because this is now handled by the main app
                 // case 'clearHistoryGraph':
                 //     ws.send(JSON.stringify({

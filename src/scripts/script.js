@@ -1283,7 +1283,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function updateCytoscapeFromDocument(forkedDoc, cmd) {
 
         let elements = forkedDoc.elements
-        const start = performance.now();
+
         // only rebuild the UI if needed
         if(cmd === 'buildUI'){
             console.log('buildUI')
@@ -1365,53 +1365,33 @@ document.addEventListener("DOMContentLoaded", function () {
             // 3. Add new elements to Cytoscape
             cy.add(syncedElements)
 
-            // loop through UI, update each one
-            console.log(forkedDoc)
+            // loop through UI, update each param
             const synthModules = forkedDoc.synth.graph.modules
             Object.keys(synthModules).forEach((moduleID)=>{
                 Object.keys(synthModules[moduleID].params).forEach((param)=>{                  
                     let id = `paramControl_parent:${moduleID}_param:${param}`
                     console.log(id)
-                    let paramControl = document.getElementById(id)
-                    
+                    let paramControl = document.getElementById(id) 
                     if (paramControl) {
-    
                         switch(paramControl.tagName){
                             case 'INPUT':
                                 paramControl.value = synthModules[moduleID].params[param]
                                 console.log(paramControl.value)
                                 $(paramControl).knobSet(paramControl.value);
-    
                             break
     
                             case 'SELECT':
                                 paramControl.value = synthModules[moduleID].params[param]
                             break
-    
+
                             default: console.warn('NEW UI DETECTED, CREATE A SWITCH CASE FOR IT ABOVE THIS LINE')
                         }
-    
-    
                       } else {
                         console.warn(`param with id "${id}" not found.`);
-                      }
-                        
+                      }               
                 })
             })
         }
-        
-        const end = performance.now();
-        console.log(`Function took ${end - start} milliseconds.`);
-        
- 
-        
-
-
-    
-        // Finally, run layout
-        // cy.layout({ name: 'preset', fit: false}).run(); // `preset` uses the position data directly  
-
-
     }    
     
 
@@ -3384,6 +3364,12 @@ document.addEventListener("DOMContentLoaded", function () {
             highlightedNode.removeClass('highlighted');
             // remove connected edge highlights
             highlightEdges('hide', highlightedNode)
+            sendMsgToHistoryApp({
+                appID: 'forkingPathsMain',
+                cmd: 'selectedNode',
+                data: 'unselected'
+                    
+            })
         } 
         // if highlighted module is clicked again, unhighlighted it
         if( highlightedNode == event.target){
@@ -3391,18 +3377,29 @@ document.addEventListener("DOMContentLoaded", function () {
             // remove connected edge highlights
             highlightEdges('hide', highlightedNode)
             highlightedNode = null
+
+            sendMsgToHistoryApp({
+                appID: 'forkingPathsMain',
+                cmd: 'selectedNode',
+                data: 'unselected'
+                    
+            })
             
         }
         else {
-            // remove any cable highlights
-            // highlightEdges('hide', highlightedNode)
             // Highlight the clicked parent node
             highlightedNode = event.target;
             highlightedNode.addClass('highlighted');
             // show connected edge highlights
             highlightEdges('show', highlightedNode)
 
-
+            sendMsgToHistoryApp({
+                appID: 'forkingPathsMain',
+                cmd: 'selectedNode',
+                data: highlightedNode.data().id
+                    
+            })
+            
         }
     });
 
