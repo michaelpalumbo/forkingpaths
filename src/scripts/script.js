@@ -1283,9 +1283,10 @@ document.addEventListener("DOMContentLoaded", function () {
     function updateCytoscapeFromDocument(forkedDoc, cmd) {
 
         let elements = forkedDoc.elements
-
+        const start = performance.now();
         // only rebuild the UI if needed
         if(cmd === 'buildUI'){
+            console.log('buildUI')
             parentNodePositions = []; // Array to store positions of all parent nodes
 
             // Step 1: Extract all parent nodes from the given document
@@ -1355,6 +1356,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }, 10); // Wait for the current rendering cycle to complete
             
         } else {
+            console.log('no rebuild, just param update')
             // Sync the positions in `elements`
             const syncedElements = syncPositions(forkedDoc);
             // clear 
@@ -1363,37 +1365,43 @@ document.addEventListener("DOMContentLoaded", function () {
             // 3. Add new elements to Cytoscape
             cy.add(syncedElements)
 
-            // update knob position(s)
-            if(forkedDoc.changeType && forkedDoc.changeType.msg === 'paramUpdate'){
-                let id = `paramControl_parent:${forkedDoc.changeType.parent}_param:${forkedDoc.changeType.param}`
-                let paramControl = document.getElementById(id)
-                
-                if (paramControl) {
-
-                    switch(paramControl.tagName){
-                        case 'INPUT':
-                            paramControl.value = forkedDoc.changeType.value;
-                            
-                            $(paramControl).knobSet(forkedDoc.changeType.value);
-
-                        break
-
-                        case 'SELECT':
-                            paramControl.value = forkedDoc.changeType.value;
-                        break
-
-                        default: console.warn('NEW UI DETECTED, CREATE A SWITCH CASE FOR IT ABOVE THIS LINE')
-                    }
-
-
-                  } else {
-                    console.warn(`param with id "${id}" not found.`);
-                  }
-
-            }
+            // loop through UI, update each one
+            console.log(forkedDoc)
+            const synthModules = forkedDoc.synth.graph.modules
+            Object.keys(synthModules).forEach((moduleID)=>{
+                Object.keys(synthModules[moduleID].params).forEach((param)=>{                  
+                    let id = `paramControl_parent:${moduleID}_param:${param}`
+                    console.log(id)
+                    let paramControl = document.getElementById(id)
+                    
+                    if (paramControl) {
+    
+                        switch(paramControl.tagName){
+                            case 'INPUT':
+                                paramControl.value = synthModules[moduleID].params[param]
+                                console.log(paramControl.value)
+                                $(paramControl).knobSet(paramControl.value);
+    
+                            break
+    
+                            case 'SELECT':
+                                paramControl.value = synthModules[moduleID].params[param]
+                            break
+    
+                            default: console.warn('NEW UI DETECTED, CREATE A SWITCH CASE FOR IT ABOVE THIS LINE')
+                        }
+    
+    
+                      } else {
+                        console.warn(`param with id "${id}" not found.`);
+                      }
+                        
+                })
+            })
         }
         
-    
+        const end = performance.now();
+        console.log(`Function took ${end - start} milliseconds.`);
         
  
         

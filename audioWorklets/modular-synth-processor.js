@@ -112,7 +112,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
             default: 
         }
 
-
+        
     } 
 
     cableBuilder(){
@@ -147,6 +147,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                     this.audioNodeBuilder(module.type, moduleID, module.params)
                 })
 
+       
                 synthGraph.connections.forEach((cable)=>{
                     if(cable.target.includes('AudioDestination')){
                         

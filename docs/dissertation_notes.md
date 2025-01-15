@@ -105,4 +105,147 @@ for now: loading a synth doesn't erase the history of the previous synth? can th
 
 see issue #20 for branch legacy/module-placement
 
-when loading a version that contains a param change, this doesn't trigger a rebuild of the audio graph. 
+when loading a version that contains a param change, this doesn't trigger a rebuild of the audio graph. I tried this, but it also means that if i do this sequence : 1. load a version that involves disconnecting a cable. 2. load a later version with say a param change. then the later version load will not contain the addition of the cable. in order to do this properly, i need to do a diff operation on every version load, and that might be too expensive. 
+
+as of version 543b194e, the sequencer works well, but each version recall causes audio clicks. these occur because the graph completely changes during non-zero crossing updates. To handle abrupt changes and avoid clicks caused by non-zero crossing updates in the audio graph, I implemented a crossfading mechanism within the block size of the audio worklet. This approach involves:
+
+1. Dual Graph Rendering: Maintaining the current and next graph in memory and rendering both during a transition phase.
+2. Buffer-based Interpolation: Using linear interpolation across the block's frames to mix the output of the current and next graph, ensuring a smooth transition.
+3. Block-aware Transition: Computing and completing the crossfade within the block duration (e.g., 128 frames at 44.1 kHz ≈ 2.9 ms) to meet real-time audio constraints.
+
+This method ensures seamless updates to the audio graph while preventing audible artifacts, supporting dynamic reconfiguration in real-time audio synthesis.
+
+
+
+### DAG graph analyses for sequencing:
+
+1. Centrality-Based Metrics
+Closeness Centrality
+What it tells you: Finds commits that are "central" in terms of their reachability to all other commits.
+Possible Insight: Central commits may represent key turning points where significant changes or experiments were made.
+Betweenness Centrality
+What it tells you: Measures how often a commit lies on the shortest path between other commits.
+Possible Insight: Identifies "bridging" commits that connect separate chains of experiments or feature branches, potentially acting as integrative points.
+PageRank
+What it tells you: Highlights commits that are more "important" based on the structure of incoming edges.
+Possible Insight: Prioritizes commits that have many dependent changes or are frequently merged.
+2. Degree-Based Metrics
+Indegree (Dependencies)
+What it tells you: The number of incoming edges to a commit.
+Possible Insight: Commits with high indegree are foundational changes upon which many others depend.
+Outdegree (Impact)
+What it tells you: The number of outgoing edges from a commit.
+Possible Insight: High outdegree commits may represent branching points where significant experimentation occurred.
+3. Topological Insights
+Roots (Initial Commits)
+What it tells you: Nodes with no incoming edges.
+Possible Insight: These are the earliest changes in the graph, representing starting points of ideas or experiments.
+Leaves (Final Commits)
+What it tells you: Nodes with no outgoing edges.
+Possible Insight: These represent final or currently active states in the synthesizer's history, such as stable versions or ongoing experiments.
+4. Path Analysis
+Longest Path
+What it tells you: The longest sequence of commits without revisiting a node.
+Possible Insight: Identifies the most sustained chain of sequential changes, possibly indicating a linear feature development or bug fix history.
+Shortest Path
+What it tells you: The shortest path between two commits.
+Possible Insight: Useful for determining the minimal steps or changes required to move between two specific states of the synthesizer.
+5. Subgraph Analysis
+Connected Components
+What it tells you: Identifies disconnected subgraphs in the DAG.
+Possible Insight: Separate components could represent independent experiments or development branches that are isolated from the main history.
+Branching Factor
+What it tells you: Evaluates how often commits diverge into multiple branches.
+Possible Insight: A high branching factor might indicate periods of intense experimentation or parallel development.
+6. Temporal Analysis
+Commit Activity Over Time
+What it tells you: Measures how many commits were made during specific periods.
+Possible Insight: Peaks in activity may correspond to focused development periods or deadlines.
+Staleness
+What it tells you: Identifies nodes that haven't been touched in a long time.
+Possible Insight: These commits might represent abandoned features or stable functionality.
+7. Structural Patterns
+Merges
+What it tells you: Identifies nodes with multiple incoming edges.
+Possible Insight: Represents integration points where parallel branches or experiments were combined.
+Forks
+What it tells you: Identifies nodes with multiple outgoing edges.
+Possible Insight: Highlights points where the synthesizer's development branched into multiple experimental paths.
+8. Experimental Diversity
+Most Divergent Paths
+What it tells you: Tracks branches that deviate the most from the main history.
+Possible Insight: Highlights unique or highly experimental changes.
+Convergence Points
+What it tells you: Identifies nodes where previously independent branches merged.
+Possible Insight: Represents consolidation of ideas or features.
+9. Content-Specific Metrics
+Since your graph stores synthesizer-specific data like parameter changes and cable connections, you can analyze:
+
+Parameter Change Impact
+What it tells you: Analyze commits where parameter changes occurred frequently or had significant cascading effects on later commits.
+Possible Insight: Identify parameter tweaks that were foundational to subsequent experiments.
+Cable Change Density
+What it tells you: Measures the number of cable changes (connections/disconnections) in each commit.
+Possible Insight: Highlights commits where substantial reconfiguration occurred.
+10. Version Quality
+Stable vs. Experimental Versions
+What it tells you: Analyzes metadata to distinguish between "stable" and "experimental" commits.
+Possible Insight: Helps classify commits into reliable states and ongoing experiments.
+Visualization Ideas
+Highlight Central Commits: Use node size or color to reflect centrality metrics like closeness or PageRank.
+Branch Heatmap: Visualize branching density to show regions of intense experimentation.
+Temporal Layers: Use layers or timelines to group commits based on time or development phases.
+
+
+
+### step sequencer table:
+
+step length function: determines the length of each step. "Euclidean Distance" calculates the step length based on the euclidean distance between the step in the graph, and the following row's node position in the graph. Closeness Centrality calculates the path distance between 2 nodes (how many nodes there are between them).  
+
+using the table as a sequencer is A LOT more efficient than the graph, and it's not slowing down!
+
+### determining note lengths
+using the euclidean distance note length function:
+
+Define Note Lengths:
+
+Map the smallest distance (≤ 50) to a 32nd note ("32n").
+Map the largest distance (max distance) to a whole note ("1n").
+Interpolate distances in between to corresponding note lengths.
+Linear Interpolation:
+
+Use the formula:
+mappedValue
+=
+minValue
++
+(
+distance
+−
+minDistance
+)
+×
+maxValue
+−
+minValue
+maxDistance
+−
+minDistance
+mappedValue=minValue+(distance−minDistance)× 
+maxDistance−minDistance
+maxValue−minValue
+​
+ 
+Here, minValue and maxValue represent indices of note lengths ("32n", "1n").
+Define Note Lengths Array:
+
+Use an array of note divisions: [ "32n", "16n", "8n", "4n", "2n", "1n" ].
+Clamp Values:
+
+Ensure values below 50 are mapped to "32n" and values equal to or greater than max are mapped to "1n".
+
+
+### future work:
+if i could start this over again, i would build the forking paths as just the history sequencer, not build a synth too. so i would make it something that can be connected to a MIDI device or OSC namespace, and use it with existing hardware or software
+
+Automerge uses last-writer-wins (LWW) conflict resolution for most properties.
