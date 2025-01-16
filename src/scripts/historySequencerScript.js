@@ -659,6 +659,16 @@ document.addEventListener("DOMContentLoaded", function () {
         if(historyBoxSelect){
             historyBoxSelect = false
 
+
+            // first remove the highlighting of any earlier selected nodes:
+            const sequencerNodes = historyDAG_cy.nodes('.sequencerNode');
+            if(sequencerNodes.length > 0){
+                sequencerNodes.forEach((node) => {
+                    node.removeClass("sequencerNode");
+                });
+            }
+
+
             let selected = historyDAG_cy.$("node:selected"); // Get all selected nodes
             
             
@@ -667,6 +677,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if (selected.length > 1) {
                 selected.addClass("sequencerNode");
 
+                
                 // update sequencer table
                 replaceStepSequencerTable(selected)
 
