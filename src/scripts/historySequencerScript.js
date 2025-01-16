@@ -962,6 +962,22 @@ document.addEventListener("DOMContentLoaded", function () {
             row.dataset.label = node.label
             row.dataset.branch = node.branch
 
+            // Add click event listener to the row
+            // this will make it so that each row can be updated by clicks
+            row.addEventListener("click", () => {
+                if(selectedNode){
+                    // Update row values with data from selectedNode
+                    stepCell.textContent = selectedNode.label;
+                    stepLengthCell.textContent = '4n'
+                    row.dataset.id = selectedNode.id
+                    row.dataset.label = selectedNode.label
+                    row.dataset.branch = selectedNode.branch
+    
+                    statusCell.textContent = 'Active'
+                    saveSequencerTable()
+                }
+
+            });
             tableBody.appendChild(row);
             saveSequencerTable()
         }

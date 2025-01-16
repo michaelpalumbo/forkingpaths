@@ -1,42 +1,57 @@
 
 /* General page styling */
 html, body {
-    height: 100%;
-    margin: 0;
-    /* background-color: rgb(76, 76, 146); */
-  }
-  
-  #docHistory-cy {
-    height: 400px; /* Adjust to fit content */
-    overflow: auto;
-  }
-  
-  #historySequencerCy {
-    height: 200px; /* Adjust to fit content */
-    overflow: auto;
-  }
-  /* Tooltip container styling */
-  #cytoscapeTooltipContainer {
-    padding: 10px;
-    background-color: #f8f8f8;
-  }
-  
-  #bpmSlider {
-    width: 40%;
-  }
+  height: 100%;
+  margin: 0;
+  /* background-color: rgb(76, 76, 146); */
+}
 
-  /* Highlight styling for the active list item */
+/* Ensure #leftColumn takes full height */
+#leftColumn {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+#docHistory-cy {
+  height: 400px; /* Adjust to fit content */
+  overflow: auto;
+}
+
+/* Ensure #historyController takes full height */
+#historyController {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Tooltip container styling */
+#cytoscapeTooltipContainer {
+  padding: 10px;
+  background-color: #f8f8f8;
+}
+
+#bpmSlider {
+  width: 40%;
+}
+
+/* Highlight styling for the active list item */
 .is-active {
-    background-color: #00d1b2; /* Bulma's primary color */
-    color: white;
-    font-weight: bold;
-    border-radius: 4px; /* Optional: Adds rounded corners */
-    padding: 5px; /* Optional: Adds padding */
+  background-color: #00d1b2; /* Bulma's primary color */
+  color: white;
+  font-weight: bold;
+  border-radius: 4px; /* Optional: Adds rounded corners */
+  padding: 5px; /* Optional: Adds padding */
 }
 
 /* Highlight row (Bulma's `is-selected` class does this automatically) */
 .is-selected {
   background-color: #f0f8ff; /* Light blue, part of Bulma's default styling */
+}
+
+/* Ensure parent columns and child elements take full height */
+.columns.is-fullheight {
+  height: 100vh; /* Full height of the viewport */
 }
 
 section.section.is-fullheight {
