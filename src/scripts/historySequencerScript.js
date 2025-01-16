@@ -1024,6 +1024,10 @@ document.addEventListener("DOMContentLoaded", function () {
                     modifyHistorySequencerCy('add', node)
                 });
 
+
+                // update sequencer table
+                replaceStepSequencerTable(selected)
+
             }
 
             // Reset the historyBoxSelect flag after a short delay
@@ -1068,20 +1072,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
             case 'getSelectedModule':
                 const option = document.getElementById("selectedModuleOption")
-
-                console.log(option.text)
                 const matchingChanges = historyDAG_cy.nodes().filter((node) => {
                     const parentString = node.data().parents; // Access the 'parent' field in data
-                    console.log(parentString)
                     return parentString.includes(option.text);
                 }).map((node) => node.data())
-                console.log(matchingChanges)
-                // // console.log(historyDAG_cy.nodes().map((node) => node.data()))
-                // console.log(historyDAG_cy.nodes().filter((node) => {
-                //     const parentString = node.data('parents'); // Access the 'parent' field in data
-                    
-                //     return Array.isArray(parentArray) && parentArray.includes(option.text);
-                // }).map((node) => node.data()))
                 populateAnalysisNodeList(matchingChanges, option.text.split('_')[0] + '_' + option.text.split('_')[1])
             break
 
@@ -1293,6 +1287,63 @@ document.addEventListener("DOMContentLoaded", function () {
             calculateEuclideanDistances()
         }
     }
+
+    function replaceStepSequencerTable(selectedNodes){
+        const numberOfRows = selectedNodes.length
+        const tableBody = document.getElementById("dynamicTableBody");
+        tableBody.innerHTML = ""; // Clear any existing rows
+
+        for (let i = 0; i < numberOfRows; i++) {
+            const row = document.createElement("tr");
+            row.classList.add("is-size-6"); // Apply text size to the entire row
+            const node = selectedNodes[i].data()
+            // Step (Change) cell
+            const stepCell = document.createElement("td");
+            stepCell.textContent = node.label; // Placeholder for step name
+            row.appendChild(stepCell);
+
+            // Step Length cell
+            const stepLengthCell = document.createElement("td");
+
+            // calculate step length based on step length function
+
+            stepLengthCell.textContent = "4n"; // Placeholder for step length
+            row.appendChild(stepLengthCell);
+
+            // create status cell
+            const statusCell = document.createElement("td");
+            statusCell.textContent = `Active`; // Placeholder for step name
+
+            
+            row.appendChild(statusCell);
+            
+            //         // Add click event listener to the row
+            // row.addEventListener("click", () => {
+            //     if(selectedNode){
+            //         // Update row values with data from selectedNode
+            //         stepCell.textContent = selectedNode.label;
+            //         stepLengthCell.textContent = '4n'
+            //         row.dataset.id = selectedNode.id
+            //         row.dataset.label = selectedNode.label
+            //         row.dataset.branch = selectedNode.branch
+    
+            //         statusCell.textContent = 'Active'
+            //         saveSequencerTable()
+            //     }
+
+            // });
+
+            row.dataset.id = node.id
+            row.dataset.label = node.label
+            row.dataset.branch = node.branch
+
+            tableBody.appendChild(row);
+            saveSequencerTable()
+        }
+
+    }
+
+
     // Function to populate the table with a fixed number of rows (8)
     function createSequencerTable(storedTable) {
         const tableBody = document.getElementById("dynamicTableBody");

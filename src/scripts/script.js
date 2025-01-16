@@ -185,15 +185,15 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // Remove the flag when the graph window is closed
-    window.addEventListener('beforeunload', () => {
-        if (historySequencerWindow) {
-            historySequencerWindow.close();
-            // console.warn('remember to uncomment the line above this warning')
-        }
-        localStorage.removeItem('historySequencerWindowOpen');
-        // console.warn('remember to uncomment the line above this warning')
+    // window.addEventListener('beforeunload', () => {
+    //     if (historySequencerWindow) {
+    //         historySequencerWindow.close();
+    //         // console.warn('remember to uncomment the line above this warning')
+    //     }
+    //     localStorage.removeItem('historySequencerWindowOpen');
+    //     // console.warn('remember to uncomment the line above this warning')
 
-    });
+    // });
     document.getElementById('viewReadme').addEventListener('click', () => {
         fetch('./README.md') // Fetch the README file
             .then(response => response.text())
@@ -3494,7 +3494,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 // update audioGraph right away
                 updateSynthWorklet('removeNode', nodeId)
-
+-d 
 
 
                 // * automerge version:
