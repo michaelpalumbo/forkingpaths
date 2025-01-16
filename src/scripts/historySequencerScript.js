@@ -25,6 +25,7 @@ if(!localStorage.appSettings){
 
 }
 
+let selectedModule = null
 // meta doc
 let meta;
 
@@ -364,15 +365,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     if(event.data.data === 'unselected'){
                         // clear global variable
-
+                        // selectedModule = null
                         // remove results in history analysis 
 
                         // remove it as an option in the selectmenu
+                        modifyHistoryAnalysisMenu('removeSelectedModule')
                     }else {
                         // store selected node in global variable
-
+                        // selectedModule = event.data.data
                         // set it as an option in the selectmenu
-
+                        modifyHistoryAnalysisMenu('setSelectedModule', event.data.data)
                         // when user selects it, retrieve all changes related to that node
                     }
 
@@ -1060,12 +1062,66 @@ document.addEventListener("DOMContentLoaded", function () {
                 populateAnalysisNodeList(historyDAG_cy.nodes(`[label *= "connect"]`).map((node) => node.data()), 'All Cable Changes')
             break
 
+            case 'getMerges':
+                console.warn('getMerges not setup yet')
+            break
+
+            case 'getSelectedModule':
+                const option = document.getElementById("selectedModuleOption")
+
+                console.log(option.text)
+                const matchingChanges = historyDAG_cy.nodes().filter((node) => {
+                    const parentString = node.data().parents; // Access the 'parent' field in data
+                    console.log(parentString)
+                    return parentString.includes(option.text);
+                }).map((node) => node.data())
+                console.log(matchingChanges)
+                // // console.log(historyDAG_cy.nodes().map((node) => node.data()))
+                // console.log(historyDAG_cy.nodes().filter((node) => {
+                //     const parentString = node.data('parents'); // Access the 'parent' field in data
+                    
+                //     return Array.isArray(parentArray) && parentArray.includes(option.text);
+                // }).map((node) => node.data()))
+                populateAnalysisNodeList(matchingChanges, option.text.split('_')[0] + '_' + option.text.split('_')[1])
+            break
+
             default: console.warn('no switch case exists for analysis type of ', selected)
         }
 
         
     });
 
+    // function to modify selectmenu
+    function modifyHistoryAnalysisMenu(cmd, data){
+        switch(cmd){
+
+            case 'setSelectedModule':
+                const menu = document.getElementById("getHistoryAnalysisMenu")
+                if(!document.getElementById("selectedModuleOption")){
+                    // Create a new option element
+                    let newOption = document.createElement('option');
+                    // Set the text and value of the new option
+                    newOption.text = data
+                    newOption.value = "getSelectedModule";
+                    newOption.id = 'selectedModuleOption'
+                    // Add the new option to the select menu
+                    menu.add(newOption);
+                } else {
+                    // retrieve option element
+                    let updateOption = document.getElementById('selectedModuleOption');
+                    // Set the text and value of the new option
+                    updateOption.text = data;
+                    updateOption.value = "getSelectedModule";
+                    updateOption.id = 'selectedModuleOption'
+                    // Add the new option to the select menu
+                    // menu.add(updateOption);
+                }
+            break;
+            case 'removeSelectedModule':
+                document.getElementById('selectedModuleOption').remove()
+            break
+        }
+    }
     // document.getElementById("getLeavesBtn").addEventListener("click", () => {
     //     // Filter nodes with no outgoing edges
     //     const leaves = historyDAG_cy.nodes().filter(node => node.outgoers('edge').length === 0);

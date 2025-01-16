@@ -953,7 +953,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 parent: parentNode,
                 value, value
             }
-        }, onChange, `paramUpdate ${paramLabel} = ${value}`);
+        }, onChange, `paramUpdate ${paramLabel} = ${value}$PARENT ${parentNode}`);
     }
 
 
@@ -3004,13 +3004,17 @@ document.addEventListener("DOMContentLoaded", function () {
                     // Extract positions to simple variables to avoid potential issues
                     const sourcePos = { x: sourceNode.position('x'), y: sourceNode.position('y') };
                     const targetPos = { x: targetNode.position('x'), y: targetNode.position('y') };
-            
+                    const parentSourceID = sourceNode.parent().data().id
+                    const parentTargetID = targetNode.parent().data().id
+                    
                     // Check if the click is near the source or target endpoint
                     if (isNearEndpoint(mousePos, sourcePos)) {
                         // delete the cable
                         cy.remove(edge);
                         // also remove the cable from automerge!
                         updateSynthWorklet('removeCable', { source: edge.data().source, target: edge.data().target})
+                        
+                        
                         // * automerge version: 
                         amDoc = applyChange(amDoc, (amDoc) => {
                             // Find the index of the object that matches the condition
@@ -3023,7 +3027,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             if (index !== -1) {
                                 amDoc.elements.splice(index, 1);
                             }
-                        }, onChange, `disconnect ${edge.data().source} from ${edge.data().target}`);
+                        }, onChange, `disconnect ${edge.data().source} from ${edge.data().target}$PARENTS ${parentSourceID} ${parentTargetID}`);
 
 
                         //* old -repo version
@@ -3077,7 +3081,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             if (index !== -1) {
                                 amDoc.elements.splice(index, 1);
                             }
-                        }, onChange, `disconnect ${edge.data().target} from ${edge.data().source}`);
+                        }, onChange, `disconnect ${edge.data().target} from ${edge.data().source}$PARENTS ${parentSourceID} ${parentTargetID}`);
 
 
                         //* old -repo version
@@ -3246,7 +3250,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     data: { id: edgeId, source: src, target: targ, kind: 'cable' },
                     classes: 'edge'
                 });
-                
+                const parentSourceID = temporaryCables.local.source.parent().data().id
+                const parentTargetID = temporaryCables.local.targetNode.parent().data().id
                 // * automerge version:                
                 amDoc = applyChange(amDoc, (amDoc) => {
                     amDoc.elements.push({
@@ -3260,7 +3265,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     }
                     amDoc.synth.graph.connections.push( { source: src, target: targ })
                     audioGraphDirty = true
-                }, onChange,  `connect ${temporaryCables.local.source.data().label} to ${temporaryCables.local.targetNode.data().label}`);
+                }, onChange,  `connect ${temporaryCables.local.source.data().label} to ${temporaryCables.local.targetNode.data().label}$PARENTS ${parentSourceID} ${parentTargetID}`);
 
 
                 //* old -repo version
@@ -3455,7 +3460,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (highlightedEdge && (event.key === 'Backspace' || event.key === 'Delete')) {
             
             updateSynthWorklet('removeCable', { source: highlightedEdge.data().source, target: highlightedEdge.data().target})
-
+            console.log(highlightedEdge.data().target)
             amDoc = applyChange(amDoc, (amDoc) => {
                 
                 // set the change type
@@ -3478,7 +3483,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (graphIndex !== -1) {
                     amDoc.synth.graph.connections.splice(graphIndex, 1);
                 }
-            }, onChange, `disconnect ${highlightedEdge.data().target} from ${highlightedEdge.data().source}`);
+            }, onChange, `disconnect ${highlightedEdge.data().target.split('.')[1]} from ${highlightedEdge.data().source.split('.')[1]}$PARENTS ${highlightedEdge.data().source.split('.')[0]} ${highlightedEdge.data().target.split('.')[0]}`);
 
             cy.remove(highlightedEdge)
             highlightedEdge = null; // Clear the reference after deletion

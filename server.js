@@ -238,12 +238,12 @@ function updateHistoryGraph(ws, meta, docHistoryGraphStyling){
         existingHistoryNodeIDs,
         docHistoryGraphStyling
     );
-
+    // dumb hack for weird bug where the parent prop in each node was coming out undefined despite existing in the return statement of buildHistoryGraph
+    const stringed = JSON.parse(JSON.stringify(nodes, null, 2))
     // Run the layout and get the rendered graph
     // historyDAG_cy.layout(layout).run();
-
     if(nodes.length > 0){
-        historyDAG_cy.add(nodes);
+        historyDAG_cy.add(stringed);
 
     }
     if(edges.length > 0){
