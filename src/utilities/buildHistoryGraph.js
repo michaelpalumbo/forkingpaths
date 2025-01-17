@@ -12,10 +12,10 @@ function buildHistoryGraph(meta, existingHistoryNodeIDs, docHistoryGraphStyling)
 
     // Accessing branches in order, create nodes and edges for each branch
     meta.branchOrder.forEach((branchName) => {
-            const branch = meta.branches[branchName];
+        const branch = meta.branches[branchName];
 
-            // Iterate over each history item in the branch
-            branch.history.forEach((item) => {
+        // Iterate over each history item in the branch
+        branch.history.forEach((item) => {
             const nodeId = item.hash;
             let label;
             let parent = []
@@ -40,7 +40,8 @@ function buildHistoryGraph(meta, existingHistoryNodeIDs, docHistoryGraphStyling)
                         label: label,
                         color: docHistoryGraphStyling.nodeColours[item.msg.split(" ")[0]] || "#ccc",
                         branch: branchName,
-                        parents: parent || null
+                        parents: parent || null,
+                        timeStamp: item.timeStamp
 
                     },
                 }

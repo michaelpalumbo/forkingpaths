@@ -183,7 +183,8 @@ document.addEventListener("DOMContentLoaded", function () {
     } else {
         openGraphWindow();
     }
-
+    //! uncomment this
+    console.warn('make sure to uncomment the code below this message when finished making big changes to the history seq page')
     // Remove the flag when the graph window is closed
     // window.addEventListener('beforeunload', () => {
     //     if (historySequencerWindow) {
@@ -814,6 +815,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // Apply the change using Automerge.change
             amDoc = Automerge.change(amDoc, amMsg, changeCallback);
 
+
             // If there was a change, call the onChangeCallback
             if (amDoc !== doc && typeof onChangeCallback === 'function') {
                 let hash = Automerge.getHeads(amDoc)[0]
@@ -831,7 +833,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     meta.branches[meta.head.branch].history.push({
                         hash: hash,
                         parent: previousHash,
-                        msg: changeMessage
+                        msg: changeMessage,
+                        timeStamp: new Date().getTime()
 
                     });
 
@@ -839,9 +842,11 @@ document.addEventListener("DOMContentLoaded", function () {
                     meta.docs[meta.head.branch] = Automerge.save(amDoc)
                     // store the HEAD info
                     meta.head.hash = hash
+                    meta.timeStamp = new Date().getTime()
                     //? meta.head.branch = amDoc.title
                     
                 });
+                
                 
                 onChangeCallback(amDoc);
             }
@@ -870,7 +875,7 @@ document.addEventListener("DOMContentLoaded", function () {
             
             // If there was a change, call the onChangeCallback
             if (amDoc !== doc && typeof onChangeCallback === 'function') {   
-                
+                const timestamp = new Date().getTime()
                 meta = Automerge.change(meta, (meta) => {
 
                     // create the branch
@@ -880,7 +885,8 @@ document.addEventListener("DOMContentLoaded", function () {
                         history: [{
                             hash: hash,
                             msg: changeMessage,
-                            parent: previousHash
+                            parent: previousHash,
+                            timeStamp: timestamp
                         }]
                     }
 
@@ -890,6 +896,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     // store the HEAD info
                     meta.head.hash = hash
                     meta.head.branch = newBranchName
+
+                    meta.timeStamp = timestamp
 
                     // store the branch name so that we can ensure its ordering later on
                     meta.branchOrder.push(newBranchName)

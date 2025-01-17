@@ -1,16 +1,22 @@
 # Forking Paths
 
-## Synth 
+## About
 
-**Add Module:**  
-Double-click anywhere in the grey background.
+Created by Michael Palumbo, 2024. 
 
-**Modify Module Layout:**  
-Hold down the `e` key and drag any module element (e.g., input, slider, etc.) to reposition it.  
-*Coming soon: changing the module layout will save in the user's settings.*
+[My website](www.palumbomichael.com) // [Instagram](https://instagram.com/michaelpalumbo_)
 
-**Drag multiple modules:**  
-Cmd/Ctrl + click + drag to select multiple elements, then drag any module to move them all at once.
+This work is part of my PhD dissertation. Previous related work includes:
+
+[Affordances and Constraints of Modular Synthesis in Virtual Reality](https://alicelab.world/msvr/) Co-authored with Dr. Graham Wakefield
+
+[Modular Reality: Analogues of Patching in Immersive Space](https://scholar.google.ca/citations?view_op=view_citation&hl=en&user=iKEglLIAAAAJ&citation_for_view=iKEglLIAAAAJ:d1gkVwhDpl0C) Co-authored with Dr. Graham Wakefield and Alexander Zonta
+
+[(Video) Mischmasch: Modular Synthesizer in VR](https://www.youtube.com/watch?v=kq_0cVode9g)
+
+## Main window: Synthesizer 
+
+
 
 **Make cable connections**
 Inputs are orange triangles, outputs are blue squares. Click and drag from either of these elements to spawn a cable. Release the click when hovering over an input or output. Note that inputs can only be connected out outputs and vice versa. 
@@ -38,16 +44,13 @@ Hold `shift`. release to resume sequence.
 Hold `shift` and then `right-click` a node. Note that this only removes the last-added instance of this node. Keep right-clicking to remove all instances of this node in the sequence. 
 
 
-## About
+## Synth Designer
 
-Created by Michael Palumbo, 2024. 
+**Add Module:**  
+Click any module name from the left panel to add it to the synth. 
 
-[My website](www.palumbomichael.com) // [Instagram](https://instagram.com/michaelpalumbo_)
+**Move Modules**
+Click + drag any module to reposition it
 
-This work is part of my PhD dissertation. Previous related work includes:
-
-[Affordances and Constraints of Modular Synthesis in Virtual Reality](https://alicelab.world/msvr/) Co-authored with Dr. Graham Wakefield
-
-[Modular Reality: Analogues of Patching in Immersive Space](https://scholar.google.ca/citations?view_op=view_citation&hl=en&user=iKEglLIAAAAJ&citation_for_view=iKEglLIAAAAJ:d1gkVwhDpl0C) Co-authored with Dr. Graham Wakefield and Alexander Zonta
-
-[(Video) Mischmasch: Modular Synthesizer in VR](https://www.youtube.com/watch?v=kq_0cVode9g)
+**Drag multiple modules:**  
+Cmd/Ctrl + click + drag to select multiple elements, then drag any module to move them all at once.

@@ -249,6 +249,62 @@ document.addEventListener("DOMContentLoaded", function () {
         ]
     });
 
+    const gestureCy = cytoscape({
+        container: document.getElementById('gestureCy'), // Container ID
+
+        elements: [
+            // // Define nodes
+            // { data: { id: 'node1', label: 'Node 1' } },
+            // { data: { id: 'node2', label: 'Node 2' } },
+            // { data: { id: 'node3', label: 'Node 3' } },
+            // { data: { id: 'node4', label: 'Node 4' } },
+
+            // // Define edges
+            // { data: { id: 'edge1', source: 'node1', target: 'node2' } },
+            // { data: { id: 'edge2', source: 'node2', target: 'node3' } },
+            // { data: { id: 'edge3', source: 'node3', target: 'node4' } },
+        ],
+
+        style: [
+            // Style for nodes
+            {
+                selector: 'node',
+                style: {
+                    'background-color': '#0074D9',
+                    'label': 'data(label)',
+                    'text-valign': 'center',
+                    'color': '#fff',
+                    'text-outline-width': 2,
+                    'text-outline-color': '#0074D9',
+                    'width': 30,
+                    'height': 30,
+                    'font-size': 10,
+                }
+            },
+            // Style for edges
+            {
+                selector: 'edge',
+                style: {
+                    'width': 2,
+                    'line-color': '#0074D9',
+                    'target-arrow-color': '#0074D9',
+                    'target-arrow-shape': 'triangle',
+                    'curve-style': 'bezier',
+                }
+            }
+        ],
+
+        layout: {
+            name: 'breadthfirst', // Ensures left-to-right placement
+            directed: true,
+            horizontal: true, // Makes the layout left-to-right
+
+            padding: 10,
+            spacingFactor: 1, // Adjust spacing between nodes
+            nodeDimensionsIncludeLabels: true,
+        }
+    });
+
     // *
     // *
     // * COMMUNICATIONS WITH MAIN APP
@@ -338,7 +394,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function loadVersion(nodeID, branch){
         // Perform your action with the step data
-        console.log('loadVersion called', new Date())
+        
         sendToMainApp(
             {
                 cmd: "loadVersion",
@@ -388,7 +444,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // do this once:
     historyDAG_cy.panBy({x: 25, y: 0 })
     
-/*
+    /*
 
         HISTORY SEQUENCER 
 
@@ -423,8 +479,49 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }, "4n")
 
+    /*
 
+        GESTURE PLAYER
 
+    */
+
+    // Function to dynamically generate the graph
+    function generateGraph(nodes) {
+        const nn = nodes.length
+        // Clear the current graph
+        gestureCy.elements().remove();
+
+        const elements = [];
+
+        // Create nodes and edges dynamically
+        for (let i = 1; i <= nn; i++) {
+            const nodeId = `node${i}`;
+            elements.push({ data: { id: nodeId, label: `Node ${i}` } });
+
+            // Add edge from the previous node to the current node
+            if (i > 1) {
+                elements.push({
+                    data: {
+                        id: `edge${i - 1}-${i}`,
+                        source: `node${i - 1}`,
+                        target: nodeId
+                    }
+                });
+            }
+        }
+
+        // Add elements to the graph
+        gestureCy.add(elements);
+
+        // Reapply the layout
+        gestureCy.layout({
+            name: 'breadthfirst',
+            directed: true,
+            padding: 10,
+            spacingFactor: 1.5,
+            horizontal: true,
+        }).run();
+    }
     // *
     // *
     // * EVENT HANDLERS
@@ -523,8 +620,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     historyDAG_cy.on('tap', 'node', (event) => {
         if(hid.key.shift){
+            // add node to sequencer
 
         } else {
+            console.log(event.target.data())
             // loadVersion(event.target.data().id, event.target.data().branch)
             loadVersion(event.target.data().id, event.target.data().branch)
             highlightNode(event.target)
@@ -657,6 +756,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let historyBoxSelect = true // this is necessary because this event listener fires many times otherwise
     historyDAG_cy.on("boxselect", "node", () => {
         if(historyBoxSelect){
+
             historyBoxSelect = false
 
 
@@ -677,9 +777,15 @@ document.addEventListener("DOMContentLoaded", function () {
             if (selected.length > 1) {
                 selected.addClass("sequencerNode");
 
-                
-                // update sequencer table
-                replaceStepSequencerTable(selected)
+                if(hid.key.cmd){
+                    // if the cmd key was held during selection, set these nodes as a gesture
+                    generateGraph(selected)
+                }else {
+                    // if just shift was held down, update the sequencer table
+                    // update sequencer table
+                    replaceStepSequencerTable(selected)
+                }
+
 
             }
 

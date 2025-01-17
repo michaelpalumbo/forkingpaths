@@ -20,6 +20,11 @@ html, body {
   overflow: auto;
 }
 
+#gestureCy {
+  width: 100%;   /* Set width */
+  height: 500px; /* Set height */
+  border: 1px solid #ccc;
+}
 /* Ensure #historyController takes full height */
 #historyController {
   height: 100%;
