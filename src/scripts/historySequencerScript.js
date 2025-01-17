@@ -270,7 +270,7 @@ document.addEventListener("DOMContentLoaded", function () {
             {
                 selector: 'node',
                 style: {
-                    'background-color': '#0074D9',
+                    'background-color': 'data(color)',
                     'label': 'data(label)',
                     'text-valign': 'center',
                     'color': '#000', 
@@ -509,10 +509,13 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             const x = timePosition * viewportWidth; // Interpolate to x-coordinate
-            // let normalizedTime = 
+
+            console.log(timePosition, x)
+            const nodeColor = docHistoryGraphStyling.nodeColours[node.data().label.split(' ')[0]]
+
             elements.push({ 
                 group: 'nodes',
-                data: { id: nodeId, label: `${node.data().label}` },
+                data: { id: nodeId, label: `${node.data().label}`, color: nodeColor },
                 position: { x: x, y: baseY } // Set position explicitly
         });
 
