@@ -273,12 +273,15 @@ document.addEventListener("DOMContentLoaded", function () {
                     'background-color': '#0074D9',
                     'label': 'data(label)',
                     'text-valign': 'center',
-                    'color': '#fff',
-                    'text-outline-width': 2,
-                    'text-outline-color': '#0074D9',
+                    'color': '#000', 
+                    // 'text-outline-width': 2,
+                    // 'text-outline-color': '#0074D9',
                     'width': 30,
                     'height': 30,
                     'font-size': 10,
+                    'text-rotation': '-90deg', // Rotates the label 45 degrees counter-clockwise
+                    'text-halign': 'right',  // Optional: Align text horizontally (default is 'center')
+                    'text-valign': 'center',  // Optional: Align text vertically (default is 'center')
                 }
             },
             // Style for edges
@@ -296,10 +299,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
         layout: {
             name: 'breadthfirst', // Ensures left-to-right placement
-            directed: true,
+            // directed: true,
             horizontal: true, // Makes the layout left-to-right
 
-            padding: 10,
+            // padding: 10,
             spacingFactor: 1, // Adjust spacing between nodes
             nodeDimensionsIncludeLabels: true,
         }
@@ -486,20 +489,35 @@ document.addEventListener("DOMContentLoaded", function () {
     */
 
     // Function to dynamically generate the graph
-    function generateGraph(nodes) {
-        const nn = nodes.length
+    function createGestureGraph(nodes) {
         // Clear the current graph
         gestureCy.elements().remove();
-
         const elements = [];
+        const viewportWidth = gestureCy.width(); // Get the width of the Cytoscape container
+        const baseY = 100; // Fixed Y position for all nodes
+        const timestampRange = nodes[nodes.length - 1].data().timeStamp - nodes[0].data().timeStamp;
 
         // Create nodes and edges dynamically
-        for (let i = 1; i <= nn; i++) {
+        for (let i = 0; i < nodes.length; i++) {
+            let node = nodes[i]
             const nodeId = `node${i}`;
-            elements.push({ data: { id: nodeId, label: `Node ${i}` } });
+            let timePosition;
+            if(i === 0){
+                timePosition = 0
+            } else {
+                timePosition = (node.data().timeStamp - nodes[0].data().timeStamp) / timestampRange
+            }
+
+            const x = timePosition * viewportWidth; // Interpolate to x-coordinate
+            // let normalizedTime = 
+            elements.push({ 
+                group: 'nodes',
+                data: { id: nodeId, label: `${node.data().label}` },
+                position: { x: x, y: baseY } // Set position explicitly
+        });
 
             // Add edge from the previous node to the current node
-            if (i > 1) {
+            if (i > 0) {
                 elements.push({
                     data: {
                         id: `edge${i - 1}-${i}`,
@@ -513,14 +531,19 @@ document.addEventListener("DOMContentLoaded", function () {
         // Add elements to the graph
         gestureCy.add(elements);
 
-        // Reapply the layout
-        gestureCy.layout({
-            name: 'breadthfirst',
-            directed: true,
-            padding: 10,
-            spacingFactor: 1.5,
-            horizontal: true,
-        }).run();
+        // // Reapply the layout
+        // gestureCy.layout({
+        //     name: 'breadthfirst',
+        //     // directed: true,
+        //     padding: 10,
+        //     spacingFactor: 1.5,
+        //     horizontal: true,
+        // }).run();
+
+        // Use the preset layout
+        gestureCy.layout({ name: 'preset' }).run();
+        
+        gestureCy.fit();
     }
     // *
     // *
@@ -779,7 +802,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 if(hid.key.cmd){
                     // if the cmd key was held during selection, set these nodes as a gesture
-                    generateGraph(selected)
+                    createGestureGraph(selected)
                 }else {
                     // if just shift was held down, update the sequencer table
                     // update sequencer table
