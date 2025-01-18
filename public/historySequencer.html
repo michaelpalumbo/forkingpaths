@@ -24,138 +24,151 @@
                 </div>
             </div>
 
-            <!-- history analysis column -->
-            <div class="column is-one-quarter is-fullheight" id="historyAnalysisColumn">
-                <div id="historyAnalysis" class="box" style="overflow: auto;">
-                    <!-- <h3 class="title is-4">History Analysis</h3> -->
-    
-                    <div class="field">
-                        <label class="label">History Analysis</label>
-                        <div class="control">
-                            <div class="select">
-                                <select id="getHistoryAnalysisMenu">
-                                    <option value="none">none...</option>
-                                    <option disabled>Graph-Based:</option> <!-- Divider -->
-                                    <option value="getLeaves">Leaves</option>
-                                    <option disabled>Change-Based:</option> <!-- Divider -->
-                                    <option value="paramUpdate">Param Changes</option>
-                                    <option value="getCables">Cable Changes</option>
-                                    <option value="getMerges">Merges</option>
-                                    <option disabled>Selected Module Changes</option>
-                                    <!-- <option value="userEditable">User Editable</option>
-                                    <option value="closenessCentrality">Closeness Centrality</option>
-                                    <option value="euclideanDistance">Euclidean Distance</option> -->
-                                </select>
-                            </div>
-                        </div>
-                    </div>
+            <div class="columns top-half">
 
-                    <div class="box">
-                        <h3 class="title is-4" id="analysisResultTitle"></h3>
-                        <ul id="analysisNodeList" class="list">
-                            <!-- List items will be dynamically added here -->
-                        </ul>
-                    </div>
-
-                </div>
-
-                <div id="gestureCyContainer" class="box" style="overflow: auto;">
-                    <h2>Gesture Player</h2>
-                    <div id="gestureCy"></div>
-                    todo: set a 0ms to the bottom left corner, and whatever the max milliseconds is from the start of the gesture to the last node's timestamp
-                </div>
-
-            </div>
-            
-            <!-- sequencer controller column -->
-            <div class="column is-one-quarter is-flex is-flex-direction-column is-fullheight" id="historyController">
-                
-                
-                <!-- Sequencer Controls -->
-                <div class="box" style="height: 100%; overflow: auto;">
-                    <div class="columns">
-                        <!-- Step Length Function Select Menu -->
-                        <div class="column is-half">
-                            <div class="field">
-                                <label class="label">BPM Slider</label>
-                                <div class="control">
-                                    <input type="range" id="bpmSlider" min="30" max="300" step="1" value="120" class="slider">
+                <!-- history analysis column -->
+                <div class="column is-one-quarter is-fullheight" id="historyAnalysisColumn">
+                    <div id="historyAnalysis" class="box" style="overflow: auto;">
+                        <!-- <h3 class="title is-4">History Analysis</h3> -->
+        
+                        <div class="field">
+                            <label class="label">History Analysis</label>
+                            <div class="control">
+                                <div class="select">
+                                    <select id="getHistoryAnalysisMenu">
+                                        <option value="none">none...</option>
+                                        <option disabled>Graph-Based:</option> <!-- Divider -->
+                                        <option value="getLeaves">Leaves</option>
+                                        <option disabled>Change-Based:</option> <!-- Divider -->
+                                        <option value="paramUpdate">Param Changes</option>
+                                        <option value="getCables">Cable Changes</option>
+                                        <option value="getMerges">Merges</option>
+                                        <option disabled>Selected Module Changes</option>
+                                        <!-- <option value="userEditable">User Editable</option>
+                                        <option value="closenessCentrality">Closeness Centrality</option>
+                                        <option value="euclideanDistance">Euclidean Distance</option> -->
+                                    </select>
                                 </div>
-                                <p>BPM: <span id="bpmValue">120</span></p>
                             </div>
-    
-                            <!-- Start/Stop Button -->
-                            <button id="startStopButton" class="button is-primary">Start Sequencer</button>
-                            <button id="clearSequencerButton" class="button is-info">Clear Sequencer</button>
-                            
                         </div>
+
+                        <div class="box">
+                            <h3 class="title is-4" id="analysisResultTitle"></h3>
+                            <ul id="analysisNodeList" class="list">
+                                <!-- List items will be dynamically added here -->
+                            </ul>
+                        </div>
+
+                    </div>
+
+
+                </div>
+                
+                <!-- sequencer controller column -->
+                <div class="column is-one-quarter is-flex is-flex-direction-column is-fullheight" id="historyController">
                     
+                    
+                    <!-- Sequencer Controls -->
+                    <div class="box" style="height: 100%; overflow: auto;">
+                        <div class="columns">
+                            <!-- Step Length Function Select Menu -->
+                            <div class="column is-half">
+                                <div class="field">
+                                    <label class="label">BPM Slider</label>
+                                    <div class="control">
+                                        <input type="range" id="bpmSlider" min="30" max="300" step="1" value="120" class="slider">
+                                    </div>
+                                    <p>BPM: <span id="bpmValue">120</span></p>
+                                </div>
+        
+                                <!-- Start/Stop Button -->
+                                <button id="startStopButton" class="button is-primary">Start Sequencer</button>
+                                <button id="clearSequencerButton" class="button is-info">Clear Sequencer</button>
+                                
+                            </div>
+                        
+                            <!-- JS Comment -->
+                            <script>
+                                // 'closenessCentrality' option:
+                                // This mode takes each step and compares its closeness centrality with the node in the row below it.
+                                // The result is used against a quantized value to determine the step length in Tone.js.
+                            </script>
+
+                            <!-- Sequence Order Select Menu -->
+                            <div class="column is-half">
+                                <div class="field">
+                                    <label class="label">Step Length Function</label>
+                                    <div class="control">
+                                        <div class="select">
+                                            <select id="stepLengthFunction">
+                                                <option value="fixed">Fixed</option>
+                                                <option value="userEditable">User Editable</option>
+                                                <option value="closenessCentrality">Closeness Centrality</option>
+                                                <option value="euclideanDistance">Euclidean Distance</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <label class="label">Sequence Order</label>
+                                    <div class="control">
+                                        <div class="select">
+                                            <select id="sequenceOrder">
+                                                <option value="entry">Entry</option>
+                                                <option value="topologicalSort">Topological Sort</option>
+                                                <option value="random">Random</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <!-- JS Comment -->
                         <script>
-                            // 'closenessCentrality' option:
-                            // This mode takes each step and compares its closeness centrality with the node in the row below it.
-                            // The result is used against a quantized value to determine the step length in Tone.js.
+                            // The sequencer can be rearranged according to the user setting or based on some form of Cytoscape analysis,
+                            // such as topological sort for DAGs.
                         </script>
+                    
+                        <!-- Table -->
+                        <div class="table-container">
 
-                        <!-- Sequence Order Select Menu -->
-                        <div class="column is-half">
-                            <div class="field">
-                                <label class="label">Step Length Function</label>
-                                <div class="control">
-                                    <div class="select">
-                                        <select id="stepLengthFunction">
-                                            <option value="fixed">Fixed</option>
-                                            <option value="userEditable">User Editable</option>
-                                            <option value="closenessCentrality">Closeness Centrality</option>
-                                            <option value="euclideanDistance">Euclidean Distance</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="field">
-                                <label class="label">Sequence Order</label>
-                                <div class="control">
-                                    <div class="select">
-                                        <select id="sequenceOrder">
-                                            <option value="entry">Entry</option>
-                                            <option value="topologicalSort">Topological Sort</option>
-                                            <option value="random">Random</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
+                                <table class="table is-bordered is-striped is-hoverable is-fullwidth">
+                                    <colgroup>
+                                        <col style="width: 70%;">
+                                        <col style="width: 20%;">
+                                        <col style="width: 10%;">
+                                    </colgroup>
+                                    <thead>
+                                        <tr>
+                                            <th>Step (Change)</th>
+                                            <th>Step Length</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="dynamicTableBody">
+                                        <!-- Rows will be dynamically generated -->
+                                    </tbody>
+                                </table>
                         </div>
                     </div>
-                    <!-- JS Comment -->
-                    <script>
-                        // The sequencer can be rearranged according to the user setting or based on some form of Cytoscape analysis,
-                        // such as topological sort for DAGs.
-                    </script>
-                
-                    <!-- Table -->
-                    <div class="table-container">
 
-                            <table class="table is-bordered is-striped is-hoverable is-fullwidth">
-                                <colgroup>
-                                    <col style="width: 70%;">
-                                    <col style="width: 20%;">
-                                    <col style="width: 10%;">
-                                </colgroup>
-                                <thead>
-                                    <tr>
-                                        <th>Step (Change)</th>
-                                        <th>Step Length</th>
-                                        <th>Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="dynamicTableBody">
-                                    <!-- Rows will be dynamically generated -->
-                                </tbody>
-                            </table>
+                </div>
+            </div>
+
+            <div class="columns bottom-half">
+                <div class="column is-half">
+                    <div id="gestureCyContainer" class="box" style="overflow: auto;">
+                        <h2>Gesture Player</h2>
+                        <div id="gestureCy"></div>
+                        todo: set a 0ms to the bottom left corner, and whatever the max milliseconds is from the start of the gesture to the last node's timestamp
+                        todo: if you capture nodes where some have very small differences and timestamps while others have large differences, the small ones will be rendered over each other and therefore all but the top one will be seen. need to figure out a way to ensure that they're all still rendered
                     </div>
                 </div>
-
             </div>
+
+
+
+            
         </div>
     </section>
     
