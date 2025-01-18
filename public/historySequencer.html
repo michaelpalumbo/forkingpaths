@@ -28,12 +28,12 @@
 
             <!-- top row  -->
             <!-- Right Column -->
-            <div class="col-6 full-height">
+            <div class="col-6 full-height" style="height: 100%;">
                 <!-- Top Row (70% Height) -->
-                <div class="row h-75 border">
+                <div class="row h-75 border" style="height: 100%;">
 
-                    <div class="col-6 border overflow-auto" id="historyAnalysisColumn">
-                        <div id="historyAnalysis" class="p-3">
+                    <div class="col-6 border overflow-auto" id="historyAnalysisColumn" style="height: 100%;">
+                        <div id="historyAnalysis" class="p-3" style="height: 100%;">
                             <label class="form-label">History Analysis</label>
                             <select id="getHistoryAnalysisMenu" class="form-select mb-3">
                                 <option value="none">none...</option>
@@ -45,7 +45,7 @@
                                 <option value="getMerges">Merges</option>
                                 <option disabled>Selected Module Changes</option>
                             </select>
-                            <div class="border p-2 overflow-auto">
+                            <div class="border p-2 overflow-auto" style="max-height: 90%">
                                 <h4 id="analysisResultTitle">Results</h4>
                                 <ul id="analysisNodeList" class="list-group">
                                     <!-- List items dynamically added -->
@@ -103,7 +103,7 @@
                             <h4 class="mb-2">Gesture Player</h4> <!-- Header with minimal margin -->
                             <div id="gestureCyContainer" class="flex-grow-1 border overflow-hidden">
                                 <div id="gestureCy"></div>
-                                <p>todo: manage node timestamps and avoid overlap.</p>
+                                <!-- <p>todo: manage node timestamps and avoid overlap.</p> -->
                             </div>
                         </div>
                     </div>

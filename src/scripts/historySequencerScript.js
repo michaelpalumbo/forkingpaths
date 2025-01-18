@@ -252,18 +252,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const gestureCy = cytoscape({
         container: document.getElementById('gestureCy'), // Container ID
 
-        elements: [
-            // // Define nodes
-            // { data: { id: 'node1', label: 'Node 1' } },
-            // { data: { id: 'node2', label: 'Node 2' } },
-            // { data: { id: 'node3', label: 'Node 3' } },
-            // { data: { id: 'node4', label: 'Node 4' } },
-
-            // // Define edges
-            // { data: { id: 'edge1', source: 'node1', target: 'node2' } },
-            // { data: { id: 'edge2', source: 'node2', target: 'node3' } },
-            // { data: { id: 'edge3', source: 'node3', target: 'node4' } },
-        ],
+        elements: [ ],
 
         style: [
             // Style for nodes
@@ -278,10 +267,10 @@ document.addEventListener("DOMContentLoaded", function () {
                     // 'text-outline-color': '#0074D9',
                     'width': 30,
                     'height': 30,
-                    'font-size': 10,
+                    'font-size': 12,
                     'text-rotation': '-90deg', // Rotates the label 45 degrees counter-clockwise
                     'text-halign': 'right',  // Optional: Align text horizontally (default is 'center')
-                    'text-valign': 'center',  // Optional: Align text vertically (default is 'center')
+                    'text-valign': 'right',  // Optional: Align text vertically (default is 'center')
                 }
             },
             // Style for edges
@@ -294,6 +283,24 @@ document.addEventListener("DOMContentLoaded", function () {
                     'target-arrow-shape': 'triangle',
                     'curve-style': 'bezier',
                 }
+            },
+            {
+                selector: 'node.timestamp',
+                style: {
+                    'background-color': 'white', 
+                    'label': 'data(label)', // Use the custom label attribute
+                    'font-size': 20,
+                    'width': 30,
+                    'height': 30,
+                    'color': '#000',            // Label text color
+                    'text-valign': 'center',    // Vertically center the label
+                    'text-halign': 'center',      // Horizontally align label to the left of the node
+                    'grabbable': false
+                    // 'text-margin-x': 15, // 
+                    // 'text-margin-y': 15, // move the label down a little to make space for branch edges
+                    // 'shape': 'data(shape)' // set this for accessibility (colour blindness)
+                }
+
             }
         ],
 
@@ -494,6 +501,8 @@ document.addEventListener("DOMContentLoaded", function () {
         gestureCy.elements().remove();
         const elements = [];
         const viewportWidth = gestureCy.width(); // Get the width of the Cytoscape container
+        const viewportHeight = gestureCy.height(); // Get the height of the Cytoscape container
+
         const baseY = 100; // Fixed Y position for all nodes
         const timestampRange = nodes[nodes.length - 1].data().timeStamp - nodes[0].data().timeStamp;
 
@@ -510,14 +519,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const x = timePosition * viewportWidth; // Interpolate to x-coordinate
 
-            console.log(timePosition, x)
             const nodeColor = docHistoryGraphStyling.nodeColours[node.data().label.split(' ')[0]]
-
+            const index = node.data().label.indexOf(' ');
+            const trimmedLabel = index !== -1 ? node.data().label.substring(index + 1) : '';
+      
             elements.push({ 
                 group: 'nodes',
-                data: { id: nodeId, label: `${node.data().label}`, color: nodeColor },
+                data: { id: nodeId, label: trimmedLabel, change: node.data().label, color: nodeColor },
                 position: { x: x, y: baseY } // Set position explicitly
-        });
+            });
 
             // Add edge from the previous node to the current node
             if (i > 0) {
@@ -531,6 +541,23 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
 
+
+        // Add two fixed nodes at the bottom corners of the viewport for displaying the time range.
+        elements.push(
+            {
+                group: 'nodes',
+                classes: 'timestamp',
+                data: { id: 'bottom-left', label: '0ms' },
+                position: { x: 0, y: viewportHeight - 50 } // 50px padding from bottom
+            },
+            {
+                group: 'nodes',
+                classes: 'timestamp',
+                data: { id: 'bottom-right', label: `${timestampRange}ms` },
+                position: { x: viewportWidth, y: viewportHeight - 50 } // 50px padding from bottom
+            }
+        );
+        
         // Add elements to the graph
         gestureCy.add(elements);
 
