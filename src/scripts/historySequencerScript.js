@@ -28,7 +28,7 @@ if(!localStorage.appSettings){
 let selectedModule = null
 // meta doc
 let meta;
-
+let gestureNodes;
 let mouseoverState = null
 let historyCyRectangle;
 let gestureCyRectangle;
@@ -504,6 +504,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Function to dynamically generate the graph
     function createGestureGraph(nodes) {
+        // store nodes in case window is resized
+        gestureNodes = nodes
         // Clear the current graph
         gestureCy.elements().remove();
         const elements = [];
@@ -598,6 +600,14 @@ document.addEventListener("DOMContentLoaded", function () {
         resizeTimeout = setTimeout(() => {
             historyCyRectangle = historyDAG_cy.container().getBoundingClientRect(); // Get the container's position and size
             gestureCyRectangle = gestureCy.container().getBoundingClientRect()
+
+            gestureCy.layout({ name: 'preset' }).run();
+        
+            gestureCy.fit();
+
+            if(gestureNodes){
+                createGestureGraph(gestureNodes)
+            }
         }, 200); // Adjust the delay as needed
     });
 
@@ -685,32 +695,24 @@ document.addEventListener("DOMContentLoaded", function () {
     // cmd + scroll = scroll vertically through history graph
     document.addEventListener('wheel', function(event) {
 
-            // Check if the mouse is within the bounds of the viewport and that the pan won't exceed the boundaries
-            if  ( !willExceedPanLimits(event.deltaX, event.deltaY) &&
-                hid.mouse.x >= historyCyRectangle.left &&
-                hid.mouse.x <= historyCyRectangle.right &&
-                hid.mouse.y >= historyCyRectangle.top &&
-                hid.mouse.y <= historyCyRectangle.bottom){
-                    historyDAG_cy.panBy({
-                        x: event.deltaX,
-                        y: event.deltaY 
-                    });
-                }
-            else if  ( 
-                hid.mouse.x >= gestureCyRectangle.left &&
-                hid.mouse.x <= gestureCyRectangle.right &&
-                hid.mouse.y >= gestureCyRectangle.top &&
-                hid.mouse.y <= gestureCyRectangle.bottom){
-                    console.log('pan gesture player')
-                }
-
-            
-            //  else {
-            //     historyDAG_cy.panBy({
-            //         x: event.deltaX,
-            //         y: event.deltaY 
-            //     });
-            // }
+        // Check if the mouse is within the bounds of the viewport and that the pan won't exceed the boundaries
+        if  (!willExceedPanLimits(event.deltaX, event.deltaY) &&
+            hid.mouse.x >= historyCyRectangle.left &&
+            hid.mouse.x <= historyCyRectangle.right &&
+            hid.mouse.y >= historyCyRectangle.top &&
+            hid.mouse.y <= historyCyRectangle.bottom){
+                historyDAG_cy.panBy({
+                    x: event.deltaX,
+                    y: event.deltaY 
+                });
+            }
+        else if  ( 
+            hid.mouse.x >= gestureCyRectangle.left &&
+            hid.mouse.x <= gestureCyRectangle.right &&
+            hid.mouse.y >= gestureCyRectangle.top &&
+            hid.mouse.y <= gestureCyRectangle.bottom){
+                console.log('pan gesture player')
+            }
 
         
     });
