@@ -16,15 +16,24 @@ html, body {
 }
 
 #docHistory-cy {
-  height: 400px; /* Adjust to fit content */
-  overflow: auto;
+  flex: 1; /* Make it grow to fill available vertical space */
+  overflow: auto; /* Allow scrolling if content overflows */
+}
+
+#gestureCyContainer {
+  height: 100%; /* Ensures it takes up the full height of the .row.h-25 */
+  display: flex;
+  justify-content: center; /* Optional: Center content horizontally */
+  align-items: center; /* Optional: Center content vertically */
+  overflow: hidden; /* Prevent content overflow */
 }
 
 #gestureCy {
   width: 100%;   /* Set width */
-  height: 500px; /* Set height */
+  height: 100%; /* Set height */
   border: 1px solid #ccc;
 }
+
 /* Ensure #historyController takes full height */
 #historyController {
   height: 100%;
@@ -65,4 +74,18 @@ html, body {
 section.section.is-fullheight {
   margin-top: 0;
   padding-top: 0;
+}
+
+.overflow-auto {
+  overflow: auto;
+}
+
+/* Full-height helper for Bootstrap columns */
+.full-height {
+  height: 100vh; /* Ensure the container spans the full viewport height */
+}
+
+/* custom height */
+.h-70 {
+  height: 40%;
 }
