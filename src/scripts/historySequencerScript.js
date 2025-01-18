@@ -476,9 +476,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Highlight the current step in the table
         const tableRows = document.querySelectorAll("#dynamicTableBody tr");
-        tableRows.forEach((row) => row.classList.remove("is-selected"));
+        tableRows.forEach((row) => row.classList.remove("table-active"));
         const targetRow = tableRows[currentStepIndex];
-        if (targetRow) targetRow.classList.add("is-selected");
+        if (targetRow) targetRow.classList.add("table-active");
 
         currentStepIndex = (currentStepIndex + 1) % storedSequencerTable.length;
 
