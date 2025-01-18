@@ -29,6 +29,9 @@ let selectedModule = null
 // meta doc
 let meta;
 
+let mouseoverState = null
+let historyCyRectangle;
+let gestureCyRectangle;
 let selectedNode= null
 let storedSequencerTable = null
 // * History Graph
@@ -106,6 +109,10 @@ let hid = {
         o: false,
         v: false,
         s: false
+    },
+    mouse: {
+        x: 0,
+        y: 0
     }
 }
 
@@ -580,6 +587,29 @@ document.addEventListener("DOMContentLoaded", function () {
     // * EVENT HANDLERS
     // * 
     // *
+    // update the viewport boundaries whenever the window resizes
+    let resizeTimeout;  
+    // get initial sizes
+    historyCyRectangle = historyDAG_cy.container().getBoundingClientRect(); // Get the container's position and size
+    gestureCyRectangle = gestureCy.container().getBoundingClientRect()
+    // calculare cytoscape viewport dimensions after any window or page content resizing
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+            historyCyRectangle = historyDAG_cy.container().getBoundingClientRect(); // Get the container's position and size
+            gestureCyRectangle = gestureCy.container().getBoundingClientRect()
+        }, 200); // Adjust the delay as needed
+    });
+
+
+
+    
+    // Listen to mousemove events on the document
+    document.addEventListener('mousemove', (event) => {
+        hid.mouse.x = event.clientX; // Mouse X position
+        hid.mouse.y = event.clientY; // Mouse Y position
+    });
+
 
     // Track the current node being dragged and any node it's intersecting
     let draggedNode = null;
@@ -651,16 +681,30 @@ document.addEventListener("DOMContentLoaded", function () {
     //     });
     // });
     
+
     // cmd + scroll = scroll vertically through history graph
     document.addEventListener('wheel', function(event) {
-        if(allowPan){
 
-            if(!willExceedPanLimits(event.deltaX, event.deltaY)){
-                historyDAG_cy.panBy({
-                    x: event.deltaX,
-                    y: event.deltaY 
-                });
-            }
+            // Check if the mouse is within the bounds of the viewport and that the pan won't exceed the boundaries
+            if  ( !willExceedPanLimits(event.deltaX, event.deltaY) &&
+                hid.mouse.x >= historyCyRectangle.left &&
+                hid.mouse.x <= historyCyRectangle.right &&
+                hid.mouse.y >= historyCyRectangle.top &&
+                hid.mouse.y <= historyCyRectangle.bottom){
+                    historyDAG_cy.panBy({
+                        x: event.deltaX,
+                        y: event.deltaY 
+                    });
+                }
+            else if  ( 
+                hid.mouse.x >= gestureCyRectangle.left &&
+                hid.mouse.x <= gestureCyRectangle.right &&
+                hid.mouse.y >= gestureCyRectangle.top &&
+                hid.mouse.y <= gestureCyRectangle.bottom){
+                    console.log('pan gesture player')
+                }
+
+            
             //  else {
             //     historyDAG_cy.panBy({
             //         x: event.deltaX,
@@ -668,7 +712,7 @@ document.addEventListener("DOMContentLoaded", function () {
             //     });
             // }
 
-        }
+        
     });
 
     historyDAG_cy.on('tap', 'node', (event) => {

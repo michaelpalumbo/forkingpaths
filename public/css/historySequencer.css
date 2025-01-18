@@ -54,7 +54,7 @@ html, body {
 
 /* Highlight styling for the active list item */
 .is-active {
-  background-color: #00d1b2; /* Bulma's primary color */
+  background-color: #23dbbf; /* Bulma's primary color */
   color: white;
   font-weight: bold;
   border-radius: 4px; /* Optional: Adds rounded corners */
@@ -91,6 +91,10 @@ section.section.is-fullheight {
 }
 
 /* custom height */
-.h-70 {
+.h-60 {
+  height: 60%;
+}
+
+.h-40 {
   height: 40%;
 }
