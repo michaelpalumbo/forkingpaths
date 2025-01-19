@@ -34,7 +34,8 @@ let mouseoverState = null
 // gestureCy data
 let gestureData = {
     nodes: [],
-    scheduler: []
+    scheduler: [],
+    loop: false
 }
 
 
@@ -660,6 +661,14 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     })
 
+    const loopGesturesButton = document.getElementById("loopGesturesButton");
+
+    loopGesturesButton.addEventListener("click", async () => {
+        console.log('before', gestureData.loop)
+        gestureData.loop = !gestureData.loop
+        console.log('after', gestureData.loop)
+
+    })
 
     // update the viewport boundaries whenever the window resizes
     let resizeTimeout;  
