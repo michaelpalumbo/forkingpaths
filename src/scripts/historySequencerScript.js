@@ -38,7 +38,12 @@ let gestureData = {
     loop: false,
     startTime: null,
     endTime: null,
-    length: null
+    length: null,
+    assign: {
+        parent: null,
+        param: 'default',
+        range: null
+    }
 }
 
 
@@ -370,8 +375,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     bpmValue.textContent = meta.sequencer.bpm; // Display the current BPM
                     transport.bpm.value = meta.sequencer.bpm; // Dynamically update the BPM
 
-                    console.log(meta.synthFile)
-                        
+                    modifyGestureParamAssign() 
                 break
                 case 'panToBranch':
                     panToBranch(event.data.data)
@@ -526,6 +530,11 @@ document.addEventListener("DOMContentLoaded", function () {
         gestureData.nodes = []
         // Clear the current graph
         gestureCy.elements().remove();
+
+        // set the gesture assign value back to default
+        assignGestureToParam.selectedIndex = 1; // Set to the second option (index is zero-based)
+        assignGestureToParam.dispatchEvent(new Event('change')); // Manually trigger the change event
+
         // in this case, we're just using this function to clear the gestureCy
         if(!nodes){
             return
@@ -651,10 +660,23 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // Use setTimeout to schedule the callback
             const timeoutID = setTimeout(() => {
-                sendToMainApp({
-                    cmd: 'playGesture',
-                    data: node
-                })
+                console.log(node)
+
+                if(gestureData.assign.param === 'default'){
+                    sendToMainApp({
+                        cmd: 'playGesture',
+                        data: node
+                    })
+                } else {
+                    // process it using the gesturedata assign range data for scaling
+                    // set the parent node from gestureData.assign.parent
+
+                    // set param name from gestureData.assign.param
+
+                    // convert the value from the source value's min and max to gestureData.assign.range
+                    // first get the min and max of the source value
+                }
+
 
                 // if looping is on, repeat the gesture after the last point
                 if(gestureData.loop && gestureData.length === delay){
@@ -688,11 +710,105 @@ document.addEventListener("DOMContentLoaded", function () {
         requestAnimationFrame(updateSlider); // Start the animation
     }
 
+
+    const assignGestureToParam = document.getElementById("assignGestureToParam")
+    // function to modify selectmenu
+    function modifyGestureParamAssign(cmd, data){
+        assignGestureToParam.innerHTML = '';
+
+        // add first option
+        let newOption = document.createElement('option');
+        // Set the text and value of the new option
+        newOption.text = 'Assign...'
+        newOption.disabled = true
+        assignGestureToParam.add(newOption);
+
+        // add option default assignment
+        newOption = document.createElement('option');
+        // Set the text and value of the new option
+        newOption.text = 'default'
+        // newOption.value = "getSelectedModule";
+        // newOption.id = 'selectedModuleOption'
+        // newOption.disabled = true;
+
+        // Add the new option to the select menu
+        assignGestureToParam.add(newOption);
+        
+
+        const modules = removeElementsBySubstring(Object.keys(meta.synthFile.audioGraph.modules), 'AudioDestination');
+        
+        modules.forEach((module, index)=>{
+            // start by adding the module to the menu as a disabled option
+            // Create a new option element
+            let newOption = document.createElement('option');
+            // Set the text and value of the new option
+            newOption.text = getSubstringBeforeLastInstanceOf(module, '_')
+            // newOption.value = "getSelectedModule";
+            // newOption.id = 'selectedModuleOption'
+            newOption.disabled = true;
+
+            // Add the new option to the select menu
+            assignGestureToParam.add(newOption);
+
+
+
+            // now add each param under this option
+            let paramNames = Object.keys(meta.synthFile.audioGraph.modules[module].params)
+
+            for(let i = 0; i < paramNames.length; i++){
+                let metadata = meta.synthFile.audioGraph.modules[module].moduleSpec.parameters[paramNames[i]]
+                // Create a new option element
+                let newOption = document.createElement('option');
+                // Set the text and value of the new option
+                newOption.text = paramNames[i]
+                newOption.dataset.parent = module
+                
+                if(metadata.ui === 'knob'){
+                    newOption.dataset.min = metadata.min
+                    newOption.dataset.max = metadata.max
+                } else if (metadata.ui === 'menu'){
+                    newOption.dataset.values = metadata.values
+                }
+
+                newOption.id = `paramAssign_${paramNames[i]}`
+
+                // Add the new option to the select menu
+                assignGestureToParam.add(newOption);
+            }
+
+        })
+
+    }
+
     // *
     // *
     // * EVENT HANDLERS
     // * 
     // *
+
+
+    document.getElementById("assignGestureToParam").addEventListener("change", (event) => { 
+        const selected = event.target.options[event.target.selectedIndex]; // Get the selected <option>
+        console.log(selected.dataset.parent)
+        gestureData.assign.parent = selected.dataset.parent || null
+        gestureData.assign.param = selected.text
+        if(selected.text === 'default'){
+            // reset
+            gestureData.assign.range = null
+        }
+        if(selected.dataset.values){
+            // param is a menu
+            gestureData.assign.range = selected.dataset.values
+        } else if (selected.dataset.min){
+            // param is a knob
+            gestureData.assign.range = {
+                min: selected.dataset.min,
+                max: selected.dataset.max
+            }
+        }
+    })
+
+
 
     const playGestureButton = document.getElementById("playGestureButton");
 
@@ -1733,7 +1849,17 @@ document.addEventListener("DOMContentLoaded", function () {
         return exceedsX || exceedsY;
     }
 
+    function removeElementsBySubstring(array, substring) {
+        return array.filter(element => !element.toLowerCase().includes(substring.toLowerCase()));
+    }
 
+    function getSubstringBeforeLastInstanceOf(input, condition) {
+        const lastIndex = input.lastIndexOf(condition);
+        if (lastIndex === -1) {
+            return input; // Return the full string if condition is not found
+        }
+        return input.substring(0, lastIndex);
+    }
 })
 
 
