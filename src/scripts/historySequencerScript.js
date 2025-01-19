@@ -373,6 +373,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 case 'newSession':
                     createSequencerTable()
+                    createGestureGraph()
                 break
 
                 case 'sequencerUpdate': 
@@ -519,6 +520,10 @@ document.addEventListener("DOMContentLoaded", function () {
         gestureData.nodes = []
         // Clear the current graph
         gestureCy.elements().remove();
+        // in this case, we're just using this function to clear the gestureCy
+        if(!nodes){
+            return
+        }
         const elements = [];
         const viewportWidth = gestureCy.width(); // Get the width of the Cytoscape container
         const viewportHeight = gestureCy.height(); // Get the height of the Cytoscape container
@@ -537,15 +542,23 @@ document.addEventListener("DOMContentLoaded", function () {
                 timePosition = (node.data().timeStamp - nodes[0].data().timeStamp) / timestampRange
             }
 
+            console.log(node.data())
             
             const x = timePosition * viewportWidth; // Interpolate to x-coordinate
 
             const nodeColor = docHistoryGraphStyling.nodeColours[node.data().label.split(' ')[0]]
             const index = node.data().label.indexOf(' ');
             const trimmedLabel = index !== -1 ? node.data().label.substring(index + 1) : '';
+            const param = trimmedLabel.split(' = ')[0]
+
+            // extract the param value from the label
+            const valueString = trimmedLabel.split(' = ')[1]
+            const parsedNumber = parseFloat(valueString);
+            const value = isNaN(parsedNumber) ? valueString : parsedNumber;
+
             const gesturePoint = { 
                 group: 'nodes',
-                data: { id: nodeId, label: trimmedLabel, change: node.data().label, color: nodeColor, timestamp: node.data().timeStamp, branch: node.data().branch, parents: node.data().parents },
+                data: { id: nodeId, label: trimmedLabel, change: node.data().label, color: nodeColor, timestamp: node.data().timeStamp, branch: node.data().branch, parents: node.data().parents, param: param, value: value },
                 position: { x: x, y: baseY } // Set position explicitly
             }
             elements.push(gesturePoint);
@@ -636,14 +649,14 @@ document.addEventListener("DOMContentLoaded", function () {
     const playGestureButton = document.getElementById("playGestureButton");
 
     playGestureButton.addEventListener("click", async () => {
-        // Call playback with a callback to handle each object
-        // playbackObjectsInRealTime(gestureData.nodes, obj => {
-        //     console.log(`Playback at ${obj.data.timestamp}:`, obj);
-        // });
-        const array = [30, 100, 450, 700, 900, 950, 1030];
-
+        // Call playback with a callback to handle each scheduled node in the gesture
         playGesture(gestureData.nodes, (node, delay) => {
-            loadVersion(node.data.id, node.data.branch)
+            // loadVersion(node.data.id, node.data.branch)
+
+            sendToMainApp({
+                cmd: 'playGesture',
+                data: node
+            })
         });
     })
 
@@ -1674,6 +1687,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         return exceedsX || exceedsY;
     }
+
 
 })
 

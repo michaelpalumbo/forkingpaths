@@ -2736,6 +2736,17 @@ document.addEventListener("DOMContentLoaded", function () {
                 createMerge(event.data.nodes)
                 
             break
+
+            case 'playGesture':
+                const node = event.data.data.data
+
+                const data = {
+                    parent: node.parents,
+                    param: node.param, 
+                    value: node.value
+                }
+                updateSynthWorklet('paramChange', data)
+            break
             default: console.warn('switch case doesnt exist for:', event.data.cmd)
         }
 
