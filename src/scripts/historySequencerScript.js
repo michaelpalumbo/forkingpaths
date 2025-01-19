@@ -510,6 +510,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     */
 
+    let previousNodeID
     // Function to dynamically generate the graph
     function createGestureGraph(nodes) {
         // store nodes in case window is resized
@@ -528,7 +529,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // Create nodes and edges dynamically
         for (let i = 0; i < nodes.length; i++) {
             let node = nodes[i]
-            const nodeId = `node${i}`;
+            const nodeId = node.data().id
             let timePosition;
             if(i === 0){
                 timePosition = 0
@@ -555,11 +556,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 elements.push({
                     data: {
                         id: `edge${i - 1}-${i}`,
-                        source: `node${i - 1}`,
+                        source: previousNodeID,
                         target: nodeId
                     }
                 });
             }
+            previousNodeID = nodeId
         }
 
 
@@ -610,18 +612,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // sort objects by timestamp
         const sortedNodes = [...nodes].sort((a, b) => a.data.timestamp - b.data.timestamp);
-        console.log(sortedNodes)
         // Get the starting timestamp (the earliest one)
         const startTime = sortedNodes[0].data.timestamp;
-        console.log(startTime)
         // create the scheduler
         sortedNodes.forEach((node, index) => {
-            console.log(node.data.timestamp)
             const delay = node.data.timestamp - startTime; // Calculate delay from the start
 
             // Use setTimeout to schedule the callback
             const timeoutID = setTimeout(() => {
-                callback(index, delay);
+                callback(node, delay);
             }, delay);
 
             gestureData.scheduler.push(timeoutID)
@@ -643,8 +642,8 @@ document.addEventListener("DOMContentLoaded", function () {
         // });
         const array = [30, 100, 450, 700, 900, 950, 1030];
 
-        scheduleTimers(gestureData.nodes, (index, delay) => {
-            console.log(`Timer ${index + 1} executed after ${delay} milliseconds.`);
+        scheduleTimers(gestureData.nodes, (node, delay) => {
+            console.log(node);
         });
     })
 
