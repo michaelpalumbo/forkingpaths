@@ -543,10 +543,9 @@ document.addEventListener("DOMContentLoaded", function () {
             const nodeColor = docHistoryGraphStyling.nodeColours[node.data().label.split(' ')[0]]
             const index = node.data().label.indexOf(' ');
             const trimmedLabel = index !== -1 ? node.data().label.substring(index + 1) : '';
-            
             const gesturePoint = { 
                 group: 'nodes',
-                data: { id: nodeId, label: trimmedLabel, change: node.data().label, color: nodeColor, timestamp: node.data().timeStamp },
+                data: { id: nodeId, label: trimmedLabel, change: node.data().label, color: nodeColor, timestamp: node.data().timeStamp, branch: node.data().branch, parents: node.data().parents },
                 position: { x: x, y: baseY } // Set position explicitly
             }
             elements.push(gesturePoint);
@@ -606,7 +605,8 @@ document.addEventListener("DOMContentLoaded", function () {
     //     });
     // }
 
-    function scheduleTimers(nodes, callback) {
+    function playGesture(nodes, callback) {
+        
         // reset the gesture scheduler
         gestureData.scheduler = [ ]
 
@@ -642,8 +642,8 @@ document.addEventListener("DOMContentLoaded", function () {
         // });
         const array = [30, 100, 450, 700, 900, 950, 1030];
 
-        scheduleTimers(gestureData.nodes, (node, delay) => {
-            console.log(node);
+        playGesture(gestureData.nodes, (node, delay) => {
+            loadVersion(node.data.id, node.data.branch)
         });
     })
 
