@@ -369,6 +369,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     bpmValue.textContent = meta.sequencer.bpm; // Display the current BPM
                     transport.bpm.value = meta.sequencer.bpm; // Dynamically update the BPM
+
+                    console.log(meta.synthFile)
                         
                 break
                 case 'panToBranch':
@@ -1187,7 +1189,6 @@ document.addEventListener("DOMContentLoaded", function () {
         
         titleElement.textContent = group; // Update the text content
 
-        
         listElement.innerHTML = ""; // Clear any existing content
     
         // Populate the list with node IDs
