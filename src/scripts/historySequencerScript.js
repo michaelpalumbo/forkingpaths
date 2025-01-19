@@ -3,7 +3,7 @@ import * as Tone from "tone";
 import { uuidv7 } from "uuidv7";
 const ws = new WebSocket('ws://localhost:3000');
 
-
+// import NanoTimer from 'nanotimer';
 
 
 const historyGraphWorker = new Worker("./workers/historyGraphWorker.js");
@@ -30,6 +30,14 @@ let selectedModule = null
 let meta;
 let gestureNodes;
 let mouseoverState = null
+
+// gestureCy data
+let gestureData = {
+    nodes: [],
+    scheduler: []
+}
+
+
 let historyCyRectangle;
 let gestureCyRectangle;
 let selectedNode= null
@@ -506,6 +514,8 @@ document.addEventListener("DOMContentLoaded", function () {
     function createGestureGraph(nodes) {
         // store nodes in case window is resized
         gestureNodes = nodes
+        // clear the gestureData.nodes
+        gestureData.nodes = []
         // Clear the current graph
         gestureCy.elements().remove();
         const elements = [];
@@ -526,18 +536,20 @@ document.addEventListener("DOMContentLoaded", function () {
                 timePosition = (node.data().timeStamp - nodes[0].data().timeStamp) / timestampRange
             }
 
+            
             const x = timePosition * viewportWidth; // Interpolate to x-coordinate
 
             const nodeColor = docHistoryGraphStyling.nodeColours[node.data().label.split(' ')[0]]
             const index = node.data().label.indexOf(' ');
             const trimmedLabel = index !== -1 ? node.data().label.substring(index + 1) : '';
-      
-            elements.push({ 
+            
+            const gesturePoint = { 
                 group: 'nodes',
-                data: { id: nodeId, label: trimmedLabel, change: node.data().label, color: nodeColor },
+                data: { id: nodeId, label: trimmedLabel, change: node.data().label, color: nodeColor, timestamp: node.data().timeStamp },
                 position: { x: x, y: baseY } // Set position explicitly
-            });
-
+            }
+            elements.push(gesturePoint);
+            gestureData.nodes.push(gesturePoint)
             // Add edge from the previous node to the current node
             if (i > 0) {
                 elements.push({
@@ -570,25 +582,73 @@ document.addEventListener("DOMContentLoaded", function () {
         // Add elements to the graph
         gestureCy.add(elements);
 
-        // // Reapply the layout
-        // gestureCy.layout({
-        //     name: 'breadthfirst',
-        //     // directed: true,
-        //     padding: 10,
-        //     spacingFactor: 1.5,
-        //     horizontal: true,
-        // }).run();
-
         // Use the preset layout
         gestureCy.layout({ name: 'preset' }).run();
         
         gestureCy.fit();
     }
+
+    // function playbackObjectsInRealTime(objects, onPlayback) {
+    //     // Sort objects by timestamp
+    //     const sortedObjects = [...objects].sort((a, b) => a.data.timestamp - b.data.timestamp);
+    
+    //     // Get the starting timestamp (the earliest one)
+    //     const startTime = sortedObjects[0].timestamp;
+    
+    //     // Playback logic
+    //     sortedObjects.forEach(obj => {
+    //         const delay = obj.data.timestamp - startTime; // Calculate delay from the start
+    //         setTimeout(() => {
+    //             onPlayback(obj); // Invoke the callback with the current object
+    //         }, delay); // Execute after the calculated delay
+    //     });
+    // }
+
+    function scheduleTimers(nodes, callback) {
+        // reset the gesture scheduler
+        gestureData.scheduler = [ ]
+
+        // sort objects by timestamp
+        const sortedNodes = [...nodes].sort((a, b) => a.data.timestamp - b.data.timestamp);
+        console.log(sortedNodes)
+        // Get the starting timestamp (the earliest one)
+        const startTime = sortedNodes[0].data.timestamp;
+        console.log(startTime)
+        // create the scheduler
+        sortedNodes.forEach((node, index) => {
+            console.log(node.data.timestamp)
+            const delay = node.data.timestamp - startTime; // Calculate delay from the start
+
+            // Use setTimeout to schedule the callback
+            const timeoutID = setTimeout(() => {
+                callback(index, delay);
+            }, delay);
+
+            gestureData.scheduler.push(timeoutID)
+        });
+    }
+
     // *
     // *
     // * EVENT HANDLERS
     // * 
     // *
+
+    const playGestureButton = document.getElementById("playGestureButton");
+
+    playGestureButton.addEventListener("click", async () => {
+        // Call playback with a callback to handle each object
+        // playbackObjectsInRealTime(gestureData.nodes, obj => {
+        //     console.log(`Playback at ${obj.data.timestamp}:`, obj);
+        // });
+        const array = [30, 100, 450, 700, 900, 950, 1030];
+
+        scheduleTimers(gestureData.nodes, (index, delay) => {
+            console.log(`Timer ${index + 1} executed after ${delay} milliseconds.`);
+        });
+    })
+
+
     // update the viewport boundaries whenever the window resizes
     let resizeTimeout;  
     // get initial sizes
