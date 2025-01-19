@@ -26,6 +26,7 @@ html, body {
   justify-content: center; /* Optional: Center content horizontally */
   align-items: center; /* Optional: Center content vertically */
   overflow: hidden; /* Prevent content overflow */
+  background: transparent;
 }
 
 #gestureCy {
@@ -50,6 +51,61 @@ html, body {
 
 #bpmSlider {
   width: 40%;
+}
+
+/* Style only the slider with ID 'gesturePlayhead' */
+#gesturePlayhead {
+  appearance: none; /* Remove default browser styles */
+  -webkit-appearance: none; /* For Safari */
+  background: transparent; /* Make the rail invisible */
+  width: 100%; /* Full-width slider */
+  height: 16px; /* Thumb visibility area */
+}
+
+/* Remove the rail (track) for WebKit browsers (e.g., Chrome, Safari) */
+#gesturePlayhead::-webkit-slider-runnable-track {
+  background: transparent; /* Ensure the track is transparent */
+}
+
+/* Remove the rail (track) for Mozilla browsers (e.g., Firefox) */
+#gesturePlayhead::-moz-range-track {
+  background: transparent; /* Ensure the track is transparent */
+}
+
+/* Remove the rail (track) for Microsoft browsers (e.g., Edge, IE) */
+#gesturePlayhead::-ms-track {
+  background: transparent; /* Ensure the track is transparent */
+  border-color: transparent; /* Remove track border */
+  color: transparent; /* Remove track color */
+}
+
+   /* Style the rectangular thumb for WebKit browsers */
+#gesturePlayhead::-webkit-slider-thumb {
+    appearance: none; /* Remove default styles */
+    -webkit-appearance: none; /* Safari-specific */
+    background: #007bff; /* Thumb color */
+    width: 8px; /* Thumb width */
+    height: 20px; /* Thumb height */
+    border-radius: 2px; /* Slight rounding for rectangle */
+    cursor: pointer; /* Change cursor on hover */
+}
+
+/* Style the rectangular thumb for Mozilla browsers */
+#gesturePlayhead::-moz-range-thumb {
+    background: #007bff;
+    width: 16px; /* Thumb width */
+    height: 8px; /* Thumb height */
+    border-radius: 2px; /* Slight rounding for rectangle */
+    cursor: pointer;
+}
+
+/* Style the rectangular thumb for Microsoft browsers */
+#gesturePlayhead::-ms-thumb {
+    background: #007bff;
+    width: 16px; /* Thumb width */
+    height: 8px; /* Thumb height */
+    border-radius: 2px; /* Slight rounding for rectangle */
+    cursor: pointer;
 }
 
 /* Highlight styling for the active list item */

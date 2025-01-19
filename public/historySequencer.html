@@ -30,7 +30,7 @@
             <!-- Right Column -->
             <div class="col-6 full-height" style="height: 100%;">
                 <!-- Top Row (70% Height) -->
-                <div class="row h-75 border" style="height: 100%;">
+                <div class="row h-50 border" style="height: 100%;">
 
                     <div class="col-6 border overflow-auto" id="historyAnalysisColumn" style="height: 100%;">
                         <div id="historyAnalysis" class="p-3" style="height: 100%;">
@@ -98,7 +98,7 @@
                     </div>
                 </div>
                     <!-- Bottom Row (25% Height) -->
-                    <div class="row h-25 border">
+                    <div class="row h-50 border">
                         <div class="d-flex flex-column p-3">
                             <div class="row">
                                 <div class="col-3">
@@ -115,10 +115,15 @@
                                 </div>
                             </div>
       
-                                <div id="gestureCyContainer" class="flex-grow-1 border overflow-hidden">
-                                    <div id="gestureCy"></div>
-                                    <!-- <p>todo: manage node timestamps and avoid overlap.</p> -->
-                                </div>
+                            <div class="container mt-0">
+                                <input type="range" class="form-range" id="gesturePlayhead" min="0" max="100" step="1" value="0">
+                            </div>
+                            <div id="gestureCyContainer" class="flex-grow-1 border overflow-hidden mt-0">
+                                <div id="gestureCy"></div>
+                                
+                                <!-- <p>todo: manage node timestamps and avoid overlap.</p> -->
+                            </div>
+
                   
                             
   

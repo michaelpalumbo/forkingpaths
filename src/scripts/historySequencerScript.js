@@ -35,7 +35,10 @@ let mouseoverState = null
 let gestureData = {
     nodes: [],
     scheduler: [],
-    loop: false
+    loop: false,
+    startTime: null,
+    endTime: null,
+    length: null
 }
 
 
@@ -530,7 +533,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const viewportHeight = gestureCy.height(); // Get the height of the Cytoscape container
 
         const baseY = 100; // Fixed Y position for all nodes
-        const timestampRange = nodes[nodes.length - 1].data().timeStamp - nodes[0].data().timeStamp;
+        let timestampRange = nodes[nodes.length - 1].data().timeStamp - nodes[0].data().timeStamp;
 
         // Create nodes and edges dynamically
         for (let i = 0; i < nodes.length; i++) {
@@ -578,6 +581,11 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
 
+        if (timestampRange > 1000){
+            timestampRange = `${timestampRange / 1000.0}s`
+        } else {
+            timestampRange = `${timestampRange}ms`
+        }
         // Add two fixed nodes at the bottom corners of the viewport for displaying the time range.
         elements.push(
             {
@@ -589,7 +597,7 @@ document.addEventListener("DOMContentLoaded", function () {
             {
                 group: 'nodes',
                 classes: 'timestamp',
-                data: { id: 'bottom-right', label: `${timestampRange}ms` },
+                data: { id: 'bottom-right', label: timestampRange },
                 position: { x: viewportWidth, y: viewportHeight - 50 } // 50px padding from bottom
             }
         );
@@ -619,26 +627,63 @@ document.addEventListener("DOMContentLoaded", function () {
     //     });
     // }
 
-    function playGesture(nodes, callback) {
-        
-        // reset the gesture scheduler
-        gestureData.scheduler = [ ]
+    let sortedGestureNodes
+    function playGesture(mode) {
+        // 'repeat' is passed by the function call when looping is on, so we don't want to have to get the same data again if the loop is on
+        if(mode != 'repeat'){
+            // reset the gesture scheduler
+            gestureData.scheduler = [ ]
 
-        // sort objects by timestamp
-        const sortedNodes = [...nodes].sort((a, b) => a.data.timestamp - b.data.timestamp);
-        // Get the starting timestamp (the earliest one)
-        const startTime = sortedNodes[0].data.timestamp;
+            // sort objects by timestamp
+            sortedGestureNodes = [...gestureData.nodes].sort((a, b) => a.data.timestamp - b.data.timestamp);
+            // Get the starting timestamp (the earliest one)
+            gestureData.startTime = sortedGestureNodes[0].data.timestamp;
+            gestureData.endTime = sortedGestureNodes[sortedGestureNodes.length - 1].data.timestamp;
+            gestureData.length = gestureData.endTime - gestureData.startTime
+        }
+        
+        animateSlider(gestureData.length)
         // create the scheduler
-        sortedNodes.forEach((node, index) => {
-            const delay = node.data.timestamp - startTime; // Calculate delay from the start
+        sortedGestureNodes.forEach((node) => {
+            const delay = node.data.timestamp - gestureData.startTime; // Calculate delay from the start
 
             // Use setTimeout to schedule the callback
             const timeoutID = setTimeout(() => {
-                callback(node, delay);
+                sendToMainApp({
+                    cmd: 'playGesture',
+                    data: node
+                })
+
+                // if looping is on, repeat the gesture after the last point
+                if(gestureData.loop && gestureData.length === delay){
+                    console.log('repeat')
+                    setTimeout(() => {
+                        playGesture('repeat')
+                    }, 100);
+                }
             }, delay);
 
             gestureData.scheduler.push(timeoutID)
         });
+
+
+    }
+
+    function animateSlider(duration) {
+        const slider = document.getElementById('gesturePlayhead');
+        const startTime = performance.now();
+
+        function updateSlider(timestamp) {
+            const elapsed = timestamp - startTime;
+            const progress = Math.min((elapsed / duration) * 100, 100); // Calculate progress percentage
+            slider.value = progress; // Update the slider's position
+
+            if (progress < 100) {
+                requestAnimationFrame(updateSlider); // Continue animation
+            }
+        }
+
+        requestAnimationFrame(updateSlider); // Start the animation
     }
 
     // *
@@ -651,23 +696,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
     playGestureButton.addEventListener("click", async () => {
         // Call playback with a callback to handle each scheduled node in the gesture
-        playGesture(gestureData.nodes, (node, delay) => {
-            // loadVersion(node.data.id, node.data.branch)
-
-            sendToMainApp({
-                cmd: 'playGesture',
-                data: node
-            })
-        });
+        playGesture();
     })
 
     const loopGesturesButton = document.getElementById("loopGesturesButton");
 
     loopGesturesButton.addEventListener("click", async () => {
-        console.log('before', gestureData.loop)
         gestureData.loop = !gestureData.loop
-        console.log('after', gestureData.loop)
-
     })
 
     // update the viewport boundaries whenever the window resizes
