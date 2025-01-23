@@ -701,14 +701,13 @@ document.addEventListener("DOMContentLoaded", function () {
                         let outputMax = gestureData.assign.range.max
                         // (value, inputMin, inputMax, outputMin, outputMax)
                         let scaledValue = roundToHundredth(scaleKnob(value, Number(inputMin), Number(inputMax), Number(outputMin), Number(outputMax)))
-                        console.log(value, scaledValue)
+                        
 
                         let data = {
                             parent: gestureData.assign.parent,
                             param: gestureData.assign.param,
                             value: scaledValue
                         }
-                        console.log(data)
                         sendToMainApp({
                             cmd: 'playGesture',
                             data: data
@@ -737,9 +736,56 @@ document.addEventListener("DOMContentLoaded", function () {
                         })
 
                     } else if(srcMetadata.ui === 'menu' && gestureData.assign.kind === 'menu'){
+         
+                        let sourceOptions = srcMetadata.values
+                        
+                        let inputMin = 0
+                        let inputMax = sourceOptions.length - 1
+
+                        let options = gestureData.assign.range.split(',')
+                        let outputMin = 0
+                        let outputMax = options.length - 1
+
+                        // (value, inputMin, inputMax, outputMin, outputMax)
+                        let optionIndex = Math.floor(scaleKnob(sourceOptions.indexOf(value), Number(inputMin), Number(inputMax), Number(outputMin), Number(outputMax)))
+
+                        let data = {
+                            parent: gestureData.assign.parent,
+                            param: gestureData.assign.param,
+                            value: options[optionIndex]
+                        }
+                        
+                        
+                        sendToMainApp({
+                            cmd: 'playGesture',
+                            data: data
+                        })
 
                     } else if(srcMetadata.ui === 'menu' && gestureData.assign.kind === 'knob'){
+                        
+                        let sourceOptions = srcMetadata.values
+                        let menuIndex = sourceOptions.indexOf(value)
+                        let inputMin = 0
+                        let inputMax = sourceOptions.length - 1
 
+                        let outputMin = gestureData.assign.range.min
+                        let outputMax = gestureData.assign.range.max
+
+                        console.log(menuIndex, inputMin, inputMax, outputMin, outputMax)
+                        // (value, inputMin, inputMax, outputMin, outputMax)
+                        let scaledValue = roundToHundredth(scaleKnob(menuIndex, Number(inputMin), Number(inputMax), Number(outputMin), Number(outputMax)))
+
+                        let data = {
+                            parent: gestureData.assign.parent,
+                            param: gestureData.assign.param,
+                            value: scaledValue
+                        }
+                        
+                        console.log(data)
+                        sendToMainApp({
+                            cmd: 'playGesture',
+                            data: data
+                        })
                     }
 
 
