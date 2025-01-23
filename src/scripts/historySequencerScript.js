@@ -45,7 +45,7 @@ let gestureData = {
         range: null
     }
 }
-
+let timestampRange
 let synthParamRanges = {
 
 }
@@ -548,7 +548,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const viewportHeight = gestureCy.height(); // Get the height of the Cytoscape container
 
         const baseY = 100; // Fixed Y position for all nodes
-        let timestampRange = nodes[nodes.length - 1].data().timeStamp - nodes[0].data().timeStamp;
+        timestampRange = nodes[nodes.length - 1].data().timeStamp - nodes[0].data().timeStamp;
 
         // Create nodes and edges dynamically
         for (let i = 0; i < nodes.length; i++) {
@@ -561,7 +561,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 timePosition = (node.data().timeStamp - nodes[0].data().timeStamp) / timestampRange
             }
 
-            console.log(node.data())
             
             const x = timePosition * viewportWidth; // Interpolate to x-coordinate
 
@@ -735,10 +734,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
                 // if looping is on, repeat the gesture after the last point
+                // first get the average distance between nodes in the gestureCy and use that as the setTimeout interval
+                
+                // let avgDistance = calculateAverageDistance()
+
+                // if(avgDistance >= 1){
+                //     avgDistance = avgDistance * 1000
+                // }
                 if(gestureData.loop && gestureData.length === delay){
                     setTimeout(() => {
                         playGesture('repeat')
-                    }, 100);
+                    }, 250);
                 }
             }, delay);
 
@@ -859,7 +865,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     document.getElementById("assignGestureToParam").addEventListener("change", (event) => { 
         const selected = event.target.options[event.target.selectedIndex]; // Get the selected <option>
-        console.log(selected.dataset.parent)
         gestureData.assign.parent = selected.dataset.parent || null
         gestureData.assign.param = selected.text
         if(selected.text === 'default'){
@@ -1943,7 +1948,33 @@ document.addEventListener("DOMContentLoaded", function () {
         return Math.round(value * 100) / 100;
     }
 
+    function calculateAverageDistance() {
+        const nodes = gestureCy.nodes();
+        const n = nodes.length;
+        
+        let totalDistance = 0;
+        let pairCount = 0;
 
+        nodes.forEach((node1) => {
+            const dijkstra = gestureCy.elements().dijkstra({
+                root: node1,
+                weight: (edge) => edge.data('weight') || 1, // Edge weight, default to 1
+                directed: false, // Change to true if your graph is directed
+            });
+
+            nodes.forEach((node2) => {
+                if (node1 !== node2) {
+                    const distance = dijkstra.distanceTo(node2);
+                    if (distance < Infinity) { // Ensure the nodes are reachable
+                        totalDistance += distance;
+                        pairCount++;
+                    }
+                }
+            });
+        });
+
+        return pairCount > 0 ? totalDistance / pairCount : 0; // Avoid division by zero
+    }
 })
 
 
