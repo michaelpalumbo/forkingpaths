@@ -718,9 +718,24 @@ document.addEventListener("DOMContentLoaded", function () {
                         let inputMin = srcMetadata.min
                         let inputMax = srcMetadata.max
                         // destination is a menu
-                        
+                        let options = gestureData.assign.range.split(',')
+                        let outputMin = 0
+                        let outputMax = options.length - 1
+
                         // (value, inputMin, inputMax, outputMin, outputMax)
-                        // scaleKnob(value, inputMin, inputMax,  )
+                        let optionIndex = Math.floor(scaleKnob(value, Number(inputMin), Number(inputMax), Number(outputMin), Number(outputMax)))
+
+                        let data = {
+                            parent: gestureData.assign.parent,
+                            param: gestureData.assign.param,
+                            value: options[optionIndex]
+                        }
+                        
+                        sendToMainApp({
+                            cmd: 'playGesture',
+                            data: data
+                        })
+
                     } else if(srcMetadata.ui === 'menu' && gestureData.assign.kind === 'menu'){
 
                     } else if(srcMetadata.ui === 'menu' && gestureData.assign.kind === 'knob'){
