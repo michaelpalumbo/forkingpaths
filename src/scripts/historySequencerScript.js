@@ -46,7 +46,9 @@ let gestureData = {
     }
 }
 
+let synthParamRanges = {
 
+}
 let historyCyRectangle;
 let gestureCyRectangle;
 let selectedNode= null
@@ -376,6 +378,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     transport.bpm.value = meta.sequencer.bpm; // Dynamically update the BPM
 
                     modifyGestureParamAssign() 
+
+
                 break
                 case 'panToBranch':
                     panToBranch(event.data.data)
@@ -660,27 +664,78 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // Use setTimeout to schedule the callback
             const timeoutID = setTimeout(() => {
-                console.log(node)
 
                 if(gestureData.assign.param === 'default'){
+                    console.log(node)
+                    let data = {
+                        parent: node.data.parents,
+                        param: node.data.param,
+                        value: node.data.value
+                    }
                     sendToMainApp({
                         cmd: 'playGesture',
-                        data: node
+                        data: data
                     })
                 } else {
                     // process it using the gesturedata assign range data for scaling
                     // set the parent node from gestureData.assign.parent
-
-                    // set param name from gestureData.assign.param
-
+                    let assignedNode = {
+                        parent: gestureData.assign.parent,
+                        param: gestureData.assign.param,
+                        // value: // need to scale input range to output range
+                    }
                     // convert the value from the source value's min and max to gestureData.assign.range
                     // first get the min and max of the source value
+                    // synthParamRanges
+
+                    
+                    let value = node.data.value
+                    
+                    let srcMetadata = meta.synthFile.audioGraph.modules[node.data.parents].moduleSpec.parameters[node.data.param]
+                    
+                    if(srcMetadata.ui === 'knob' && gestureData.assign.kind === 'knob'){
+                        // source and destination params are both knobs
+                        let inputMin = srcMetadata.min
+                        let inputMax = srcMetadata.max
+                        
+                        let outputMin = gestureData.assign.range.min
+                        let outputMax = gestureData.assign.range.max
+                        // (value, inputMin, inputMax, outputMin, outputMax)
+                        let scaledValue = roundToHundredth(scaleKnob(value, Number(inputMin), Number(inputMax), Number(outputMin), Number(outputMax)))
+                        console.log(value, scaledValue)
+
+                        let data = {
+                            parent: gestureData.assign.parent,
+                            param: gestureData.assign.param,
+                            value: scaledValue
+                        }
+                        console.log(data)
+                        sendToMainApp({
+                            cmd: 'playGesture',
+                            data: data
+                        })
+                    } else if(srcMetadata.ui === 'knob' && gestureData.assign.kind === 'menu'){
+                        // source is a knob
+                        let inputMin = srcMetadata.min
+                        let inputMax = srcMetadata.max
+                        // destination is a menu
+                        
+                        // (value, inputMin, inputMax, outputMin, outputMax)
+                        // scaleKnob(value, inputMin, inputMax,  )
+                    } else if(srcMetadata.ui === 'menu' && gestureData.assign.kind === 'menu'){
+
+                    } else if(srcMetadata.ui === 'menu' && gestureData.assign.kind === 'knob'){
+
+                    }
+
+
+
+                    // console.log()
                 }
 
 
                 // if looping is on, repeat the gesture after the last point
                 if(gestureData.loop && gestureData.length === delay){
-                    console.log('repeat')
                     setTimeout(() => {
                         playGesture('repeat')
                     }, 100);
@@ -734,6 +789,9 @@ document.addEventListener("DOMContentLoaded", function () {
         // Add the new option to the select menu
         assignGestureToParam.add(newOption);
         
+        synthParamRanges = {
+
+        }
 
         const modules = removeElementsBySubstring(Object.keys(meta.synthFile.audioGraph.modules), 'AudioDestination');
         
@@ -750,7 +808,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // Add the new option to the select menu
             assignGestureToParam.add(newOption);
 
-
+            synthParamRanges[module] = { }
 
             // now add each param under this option
             let paramNames = Object.keys(meta.synthFile.audioGraph.modules[module].params)
@@ -762,12 +820,24 @@ document.addEventListener("DOMContentLoaded", function () {
                 // Set the text and value of the new option
                 newOption.text = paramNames[i]
                 newOption.dataset.parent = module
-                
+
                 if(metadata.ui === 'knob'){
                     newOption.dataset.min = metadata.min
                     newOption.dataset.max = metadata.max
+
+                    synthParamRanges[module][paramNames[i]] = {
+                        kind: 'knob',
+                        min: metadata.min,
+                        max: metadata.max
+                    }
                 } else if (metadata.ui === 'menu'){
                     newOption.dataset.values = metadata.values
+                    synthParamRanges[module][paramNames[i]] = {
+                        kind: 'menu',
+                        min: 0,
+                        max: metadata.values.length - 1,
+                        values: metadata.values
+                    }
                 }
 
                 newOption.id = `paramAssign_${paramNames[i]}`
@@ -798,9 +868,11 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         if(selected.dataset.values){
             // param is a menu
+            gestureData.assign.kind = 'menu'
             gestureData.assign.range = selected.dataset.values
         } else if (selected.dataset.min){
             // param is a knob
+            gestureData.assign.kind = 'knob'
             gestureData.assign.range = {
                 min: selected.dataset.min,
                 max: selected.dataset.max
@@ -1860,6 +1932,18 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         return input.substring(0, lastIndex);
     }
+
+    function scaleKnob(value, inputMin, inputMax, outputMin, outputMax){
+        return ((value - inputMin) / (inputMax - inputMin)) * (outputMax - outputMin) + outputMin;
+    }
+
+    function scaleMenu(value, inputMin, inputMax, outputMin, outputMax){}
+
+    function roundToHundredth(value) {
+        return Math.round(value * 100) / 100;
+    }
+
+
 })
 
 

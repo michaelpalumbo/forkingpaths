@@ -2738,10 +2738,10 @@ document.addEventListener("DOMContentLoaded", function () {
             break
 
             case 'playGesture':
-                const node = event.data.data.data
-
+                const node = event.data.data
+                console.log(node)
                 const data = {
-                    parent: node.parents,
+                    parent: node.parent,
                     param: node.param, 
                     value: node.value
                 }
