@@ -102,6 +102,7 @@ let currentPan = { x: 0, y: 0 }
 let currentZoom = 0.8
 let parentNodePositions = []
 
+
 // * INPUTS
 
 let hid = {
@@ -2746,6 +2747,10 @@ document.addEventListener("DOMContentLoaded", function () {
                     value: node.value
                 }
                 updateSynthWorklet('paramChange', data)
+            break
+
+            case 'cloneGesture':
+                console.log(event.data)
             break
             default: console.warn('switch case doesnt exist for:', event.data.cmd)
         }

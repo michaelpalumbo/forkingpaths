@@ -771,7 +771,6 @@ document.addEventListener("DOMContentLoaded", function () {
                         let outputMin = gestureData.assign.range.min
                         let outputMax = gestureData.assign.range.max
 
-                        console.log(menuIndex, inputMin, inputMax, outputMin, outputMax)
                         // (value, inputMin, inputMax, outputMin, outputMax)
                         let scaledValue = roundToHundredth(scaleKnob(menuIndex, Number(inputMin), Number(inputMax), Number(outputMin), Number(outputMax)))
 
@@ -781,7 +780,6 @@ document.addEventListener("DOMContentLoaded", function () {
                             value: scaledValue
                         }
                         
-                        console.log(data)
                         sendToMainApp({
                             cmd: 'playGesture',
                             data: data
@@ -922,6 +920,28 @@ document.addEventListener("DOMContentLoaded", function () {
     // * EVENT HANDLERS
     // * 
     // *
+    
+
+
+    const cloneGestureButton = document.getElementById("cloneGestureButton");
+
+    cloneGestureButton.addEventListener("click", async () => {
+        // Call playback with a callback to handle each scheduled node in the gesture
+        // we need this parentNode to know where to create a new branch from for the cloned gesture
+        let parentNode = historyDAG_cy.getElementById(gestureData.nodes[0].data.id).incomers('node').data();
+        
+        sendToMainApp(
+            {
+                cmd: "cloneGesture",
+                data: { 
+                    parentNode: parentNode, 
+                    gesture: gestureData.nodes, 
+                    assignTo: gestureData.assign
+                },
+            }
+        );
+    })
+
 
 
     document.getElementById("assignGestureToParam").addEventListener("change", (event) => { 
@@ -931,11 +951,17 @@ document.addEventListener("DOMContentLoaded", function () {
         if(selected.text === 'default'){
             // reset
             gestureData.assign.range = null
+            // disable the gesture clone button
+            document.getElementById("cloneGestureButton").disabled = true;
         }
         if(selected.dataset.values){
+
             // param is a menu
             gestureData.assign.kind = 'menu'
             gestureData.assign.range = selected.dataset.values
+
+            // enable the gesture clone button
+            document.getElementById("cloneGestureButton").disabled = false;
         } else if (selected.dataset.min){
             // param is a knob
             gestureData.assign.kind = 'knob'
@@ -943,6 +969,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 min: selected.dataset.min,
                 max: selected.dataset.max
             }
+
+            // enable the gesture clone button
+            document.getElementById("cloneGestureButton").disabled = false;
+
         }
     })
 
