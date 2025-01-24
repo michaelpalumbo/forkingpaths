@@ -31,10 +31,9 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
         this.crossfadeProgress = 0; // Crossfade interpolation progress (0 to 1)
         this.crossfadeStep = 0; // Increment step for crossfade progress
 
-
-
-        this.start
-        this.end
+        const crossfadeDurationSeconds = 0.03; // Adjust as needed
+        console.log(`audiograph crossfade set to ${crossfadeDurationSeconds} seconds`)
+        this.crossfadeStep = 1 / ((sampleRate / 128) * crossfadeDurationSeconds); // Calculate step size
 
     }
 
@@ -183,7 +182,6 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                 // this.signalConnections = [];
                 // this.outputConnections = [];
                 // this.cvConnections = [] 
-                console.log(this.crossfadeInProgress)
                 if (this.crossfadeInProgress) return; // Prevent loading mid-crossfade
     
                 this.nextState = {
@@ -220,11 +218,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                 // Begin crossfade
                 this.crossfadeInProgress = true;
                 this.crossfadeProgress = 0;
-                const crossfadeDurationSeconds = 0.1; // Adjust as needed
-                console.warn(`audiograph crossfade currently set to ${crossfadeDurationSeconds} seconds, could change to just larger than blocksize or amount left in current block?`)
 
-                this.crossfadeStep = 1 / ((sampleRate / 128) * crossfadeDurationSeconds); // Calculate step size
-                this.start = currentTime
             break;
             case 'addNode':
                 if(msg.structure === 'webAudioNodes'){
@@ -420,27 +414,9 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                 // crossfade is complete
                 this.crossfadeProgress = 1;
                 this.crossfadeInProgress = false;
-
-                console.log('Before Transition:', this.currentState, this.nextState);
-
                 // Deep copy this.nextState to this.currentState
                 this.currentState = cloneDeep(this.nextState);
-
-                console.log(this.currentState.outputConnections)
                 this.nextState = {}; // Clear the next state
-
-                console.log('After Transition:', this.currentState, this.nextState);
-
-
-                console.log('xfade completed')
-                this.end = currentTime
-
-                console.log(`Execution time: ${(this.end - this.start).toFixed(2)} ms`);
-
-                console.log('Current State after transition:', this.currentState);
-
-
-
             }
         }
 
@@ -783,17 +759,8 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
             };
 
             // Step 3: Process all nodes connected to the output
-            // console.log(stateVersion, state, state.outputConnections)
             for (const id of state.outputConnections) {
                 processNode(id.split('.')[0]); // process the node first
-
-                // Sum the output of directly connected nodes
-                // const nodeBuffer = signalBuffers[id.split('.')[0]];
-                // if (nodeBuffer) {
-                //     for (let i = 0; i < output.length; i++) {
-                //         output[i] += nodeBuffer[i]; // Sum signals from all connected nodes
-                //     }
-                // }
             }
         }
 
@@ -807,8 +774,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
         if (this.nextState.outputConnections) {
             processGraph(this.nextState, signalBuffersNext, 'next');
         }
-        // console.log(this.nextState.outputConnections[0])
-        
+        // process both states and, if crossfade is enabled due to loading a version state, crossfade between them
         for (let i = 0; i < output.length; i++) {
             let currentSample = 0;
             let nextSample = 0;
@@ -818,7 +784,6 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                 const currentOutputId = this.currentState.outputConnections[0].split('.')[0];
                 const currentBuffer = signalBuffersCurrent[currentOutputId];
                 currentSample = currentBuffer ? currentBuffer[i] || 0 : 0;
-                // console.log(currentSample)
             }
         
             // Process nextState if it has valid outputConnections
@@ -828,8 +793,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                 nextSample = nextBuffer ? nextBuffer[i] || 0 : 0;
    
             }
-            // console.log(currentSample, nextSample)
-            // console.log('Crossfade Progress:', this.crossfadeProgress);
+
             // Crossfade between currentSample and nextSample
             // Use only currentSample if crossfade is complete
             if (!this.crossfadeInProgress) {
@@ -838,19 +802,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                 // Crossfade between currentSample and nextSample
                 output[i] = (1 - this.crossfadeProgress) * currentSample + this.crossfadeProgress * nextSample;
             }
-            // console.log(output[i])
         }
-        
-
-  
-        
-        // Normalize the mixed signal
-        // const numConnections = state.outputConnections.length;
-        // if (numConnections > 0) {
-        //     for (let i = 0; i < output.length; i++) {
-        //         output[i] /= numConnections; // Normalize by the number of contributing nodes
-        //     }
-        // }
 
         // Apply an overall gain to limit output signal
         const overallGain = 0.5; // Adjust as needed
