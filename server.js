@@ -203,6 +203,15 @@ wss.on('connection', (ws, req) => {
                 }
                 historyDAG_cy.layout(graphLayouts[graphStyle]).run()
             break
+
+            case 'collapseNodes':
+
+            break
+
+            case 'expandNodes':
+
+            break
+            
             default:
         }
         
@@ -263,3 +272,32 @@ function updateHistoryGraph(ws, meta, docHistoryGraphStyling){
 
 
 
+// Collapsing nodes into a parent node
+function collapseNodes(cy, nodeIds, collapsedNodeId) {
+    // Add the parent (collapsed) node
+    cy.add({
+        group: 'nodes',
+        data: {
+            id: collapsedNodeId,
+            label: 'Collapsed Node'
+        }
+    });
+
+    // Update the parent of the selected nodes
+    nodeIds.forEach((nodeId) => {
+        const node = cy.getElementById(nodeId);
+        node.move({ parent: collapsedNodeId });
+    });
+
+    // Optionally hide the child nodes to simulate collapsing
+    cy.$(`#${collapsedNodeId}`).children().hide();
+}
+
+// Expanding the collapsed node
+function expandNodes(cy, collapsedNodeId) {
+    // Show the child nodes
+    cy.$(`#${collapsedNodeId}`).children().show();
+
+    // Optionally remove the parent node
+    cy.remove(cy.getElementById(collapsedNodeId));
+}

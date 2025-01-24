@@ -1530,7 +1530,6 @@ document.addEventListener("DOMContentLoaded", function () {
             meta.branchOrder.push(newBranchName)
         });
 
-        console.log('newBranchname', newBranchName, meta.branches)
         // set docUpdated so that indexedDB will save it
         docUpdated = true
        
@@ -3325,6 +3324,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
                 const parentSourceID = temporaryCables.local.source.parent().data().id
                 const parentTargetID = temporaryCables.local.targetNode.parent().data().id
+                
+                console.log(hasCycleAtParentLevel())
+                
                 // * automerge version:                
                 amDoc = applyChange(amDoc, (amDoc) => {
                     amDoc.elements.push({
@@ -4574,6 +4576,58 @@ document.addEventListener("DOMContentLoaded", function () {
             $(this).val(value).trigger("change"); // Update value and refresh knob display
         });
     };
+
+    // detect cycles in the graph
+    function hasCycleAtParentLevel() {
+        // console.log(cy.json())
+        const parentEdges = new Map();
+
+        // Step 1: Build a directed graph of parent nodes
+        cy.edges().forEach((edge) => {
+            console.log(edge.data())
+            // const sourceParent = cy.$(`#${edge.source()}`).parent().id();
+            // const targetParent = cy.$(`#${edge.target()}`).parent().id();
+            const sourceParent = edge.data().source.split('.')[0]
+            const targetParent = edge.data().target.split('.')[0]
+            console.log(sourceParent, targetParent)
+            if (sourceParent && targetParent && sourceParent !== targetParent) {
+                if (!parentEdges.has(sourceParent)) {
+                    parentEdges.set(sourceParent, new Set());
+                }
+                parentEdges.get(sourceParent).add(targetParent);
+            }
+        });
+    
+        // Step 2: Detect cycles using DFS
+        const visited = new Set();
+        const recStack = new Set();
+    
+        function dfs(node) {
+            if (!visited.has(node)) {
+                visited.add(node);
+                recStack.add(node);
+    
+                const neighbors = parentEdges.get(node) || new Set();
+                for (const neighbor of neighbors) {
+                    if (!visited.has(neighbor) && dfs(neighbor)) {
+                        return true;
+                    } else if (recStack.has(neighbor)) {
+                        return true;
+                    }
+                }
+            }
+            recStack.delete(node);
+            return false;
+        }
+    
+        for (const node of parentEdges.keys()) {
+            if (dfs(node)) {
+                return true; // Cycle found
+            }
+        }
+    
+        return false; // No cycles
+    }
     
 });
 

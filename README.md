@@ -16,7 +16,8 @@ This work is part of my PhD dissertation. Previous related work includes:
 
 ## Main window: Synthesizer 
 
-
+**First time**
+Start by loading a synth file. 
 
 **Make cable connections**
 Inputs are orange triangles, outputs are blue squares. Click and drag from either of these elements to spawn a cable. Release the click when hovering over an input or output. Note that inputs can only be connected out outputs and vice versa. 
@@ -54,3 +55,6 @@ Click + drag any module to reposition it
 
 **Drag multiple modules:**  
 Cmd/Ctrl + click + drag to select multiple elements, then drag any module to move them all at once.
+
+**Save Synth**
+Click File > Save Synth... to save it to anywhere in your computer. 

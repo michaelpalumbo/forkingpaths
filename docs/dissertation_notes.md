@@ -249,3 +249,20 @@ Ensure values below 50 are mapped to "32n" and values equal to or greater than m
 if i could start this over again, i would build the forking paths as just the history sequencer, not build a synth too. so i would make it something that can be connected to a MIDI device or OSC namespace, and use it with existing hardware or software
 
 Automerge uses last-writer-wins (LWW) conflict resolution for most properties.
+
+To detect cycles at the parent node level (modules) in your modular synth patching interface, we need to abstract the graph to focus solely on parent nodes and their connections, ignoring the child nodes. Then, we perform cycle detection on this higher-level graph.
+
+Here's how you can implement this:
+
+Approach
+Abstract Parent Nodes:
+
+Identify parent nodes and treat them as the main graph elements for cycle detection.
+Connections between child nodes (like module1.out > module2.in) translate to connections between their parent nodes.
+Create a Reduced Graph:
+
+Build a virtual graph where edges represent connections between parent nodes (modules).
+Include self-loops for connections within a module (module1.out > module1.in).
+Detect Cycles:
+
+Use a depth-first search (DFS) or another algorithm (e.g., Tarjan's strongly connected components) to check for cycles in this reduced graph.
