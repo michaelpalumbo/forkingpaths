@@ -32,14 +32,6 @@
                 </div>
             </div>
             <div class="menu-item">
-                Audio
-                <div class="dropdown">
-                    <button class="action-button" id="audioToggleButton">Resume Audio</button>
-                    <!-- <button>Undo</button>
-                    <button>Redo</button> -->
-                </div>
-            </div>
-            <div class="menu-item">
                 View
                 <div class="dropdown">
                     <!-- <div id="documentName"></div> -->
@@ -47,12 +39,35 @@
                     <button id="openSynthDesigner">Open Synth Designer</button>
                 </div>
             </div>
+
+            <div class="menu-item">
+                System
+                <div class="dropdown">
+                    <button class="action-button" id="settingsButton">Settings</button>
+                    <hr>
+                    <button class="action-button" id="audioToggleButton">Resume Audio</button>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                Help
+                <div class="dropdown">
+                    <button class="action-button" id="viewReadme">Instructions</button>
+                    <button class="action-button" id="">About</button>
+                    <hr>
+                    <button class="action-button" id="">Bug Report</button>
+                    
+                    <!-- <button>Undo</button>
+                    <button>Redo</button> -->
+                </div>
+            </div>
+            
             <div class="menu-buttons">
                 <!-- <button class="action-button" id="audioToggleButton">Resume Audio</button> -->
                 <button class="action-button" id="clearGraph">Clear Cables</button>
-                <button class="action-button" id="viewReadme">Help</button>
                 
-                <button class="action-button" id="settingsButton">Settings</button>
+                
+                
             </div>
         </div>
 
@@ -98,10 +113,10 @@
                               min="0" 
                               max="1" 
                               step="0.01" 
-                              value="0.5">
+                              value="0.5"> <!-- Default to 50% if no saved value -->
                           </div>
                           <div class="col-2">
-                            <span id="volumeValue">50%</span>
+                            <span id="volumeValue">50%</span> 
                           </div>
                         </div>
                       </div>

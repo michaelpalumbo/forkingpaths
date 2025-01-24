@@ -975,6 +975,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function removeAllCables(){
         console.warn(`nope, this isn't ready yet. see function removeAllCables. \nits almost ready, but the way that automerge handles array manipulation is super annoying...`)
+        alert('feature not yet ready')
         /*
         let indexes = []
         const newElements = [];
