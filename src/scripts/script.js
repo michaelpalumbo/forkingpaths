@@ -1379,13 +1379,12 @@ document.addEventListener("DOMContentLoaded", function () {
             Object.keys(synthModules).forEach((moduleID)=>{
                 Object.keys(synthModules[moduleID].params).forEach((param)=>{                  
                     let id = `paramControl_parent:${moduleID}_param:${param}`
-                    console.log(id)
+                    
                     let paramControl = document.getElementById(id) 
                     if (paramControl) {
                         switch(paramControl.tagName){
                             case 'INPUT':
                                 paramControl.value = synthModules[moduleID].params[param]
-                                console.log(paramControl.value)
                                 $(paramControl).knobSet(paramControl.value);
                             break
     

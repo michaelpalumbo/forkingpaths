@@ -532,6 +532,8 @@ document.addEventListener("DOMContentLoaded", function () {
         gestureNodes = nodes
         // clear the gestureData.nodes
         gestureData.nodes = []
+
+        console.log(gestureData.nodes)
         // Clear the current graph
         gestureCy.elements().remove();
 
