@@ -1365,7 +1365,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }, 10); // Wait for the current rendering cycle to complete
             
         } else {
-            console.log('no rebuild, just param update')
+
             // Sync the positions in `elements`
             const syncedElements = syncPositions(forkedDoc);
             // clear 
@@ -1554,6 +1554,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // compare the point in history we want (Automerge.getHeads(historicalView)[0]) against the head of its associated branch (Automerge.getHeads(requestedDoc)[0])
         // if (Automerge.getHeads(historicalView)[0] === Automerge.getHeads(requestedDoc)[0]){
         if (head === targetHash){
+            console.log('head = targetHash')
             automergeDocuments.newClone = false
 
             updateSynthWorklet('loadVersion', historicalView.synth.graph, null, historicalView.changeType)
@@ -1602,6 +1603,10 @@ document.addEventListener("DOMContentLoaded", function () {
         // } 
         // this is necessary for loading a hash on another branch that ISN'T the head
         else if (branch != meta.head.branch) {
+
+            console.log('branch != meta.head.branch')
+
+
             automergeDocuments.current = {
                 doc: requestedDoc
             }
@@ -1621,6 +1626,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         // the selected hash belongs to the current branch
         else {
+            console.log('he selected hash belongs to the current branch')
             let clonedDoc = Automerge.clone(historicalView)
 
             automergeDocuments.current = {
@@ -1633,6 +1639,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
             updateCytoscapeFromDocument(historicalView);
         }
+
+        console.log('finished loading version')
     }
 
 
@@ -2750,9 +2758,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
             case 'cloneGesture':
                 let msg = event.data.data
-                console.log(msg)
-                // load the parent node first, then apply the gesture as assigned to the new param as a set of new changes
-                loadVersion(msg.parentNode.id, msg.parentNode.branch)
+
+                // prepare to create a new branch from the position of the parentNode, which is the node just before the start of the gesture we are cloning
+                let requestedDoc = loadAutomergeDoc(msg.parentNode.branch)
+
+                // Use `Automerge.view()` to view the state at this specific point in history
+                const historicalView = Automerge.view(requestedDoc, [msg.parentNode.id]);
+
+                let clonedDoc = Automerge.clone(historicalView)
+
+                automergeDocuments.current = {
+                    doc: clonedDoc
+                }
+                // set newClone to true
+                automergeDocuments.newClone = true
 
                 // now loop through the scaledValues and apply each one as a new change
                 msg.scaledValues.forEach((change)=>{
