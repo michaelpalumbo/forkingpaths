@@ -161,16 +161,23 @@ let temporaryCables = {
 
 document.addEventListener("DOMContentLoaded", function () {
 
+    // Get the saved volume level from localStorage, default to 0.5 (50%)
+    const savedVolume = parseFloat(localStorage.getItem('volume')) || 0.5;
+
     // Audio context
     const audioContext = new window.AudioContext();
 
     audioContext.audioWorklet.addModule('./audioWorklets/modular-synth-processor.js').then(() => {
         synthWorklet = new AudioWorkletNode(audioContext, 'modular-synth-processor');
         synthWorklet.connect(audioContext.destination);
+
+        // set volume
+        updateSynthWorklet('setOutputVolume', savedVolume)
     }).catch((error) => {
         console.error('Error loading the worklet:', error);
     });
     
+
 
 
     // on load, check if historySequencer window is already open:
@@ -1635,7 +1642,7 @@ document.addEventListener("DOMContentLoaded", function () {
             updateCytoscapeFromDocument(historicalView);
         }
 
-        console.log('finished loading version')
+  
     }
 
 
@@ -2784,6 +2791,26 @@ document.addEventListener("DOMContentLoaded", function () {
 //* Functions that directly handle UI interactions
 //*
 
+
+    // updateSynthWorklet(setOutputVolume, gainLevel)
+
+    // Slider functionality
+    const volumeSlider = document.getElementById('volumeSlider');
+    const volumeValue = document.getElementById('volumeValue');
+
+    // Initialize the GainNode and slider with the saved volume
+    volumeValue.textContent = `${Math.round(savedVolume * 100)}%`; // Update percentage display
+    volumeSlider.value = savedVolume;
+
+    volumeSlider.addEventListener('input', (event) => {
+        const volume = parseFloat(event.target.value);
+        updateSynthWorklet('setOutputVolume', volume)
+        console.log(volume)
+        volumeValue.textContent = `${Math.round(volume * 100)}%`; // Update percentage display
+
+        localStorage.setItem('volume', volume); // Save to localStorage
+
+    });
     // listen for changes on module selectmenu elements
     $(document).on('change', 'select', function () {
         // only pass inputs that are actually module inputs
@@ -4077,9 +4104,16 @@ document.addEventListener("DOMContentLoaded", function () {
     //* 
     //*
 
+    
     function updateSynthWorklet(cmd, data, structure, changeType){
 
         switch (cmd) {
+            case 'setOutputVolume':
+                synthWorklet.port.postMessage({ 
+                    cmd: 'setOutputVolume',
+                    data: data
+                });
+            break
             case 'clearGraph':
                 synthWorklet.port.postMessage({ 
                     cmd: 'clearGraph'

@@ -34,7 +34,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
         const crossfadeDurationSeconds = 0.03; // Adjust as needed
         console.log(`audiograph crossfade set to ${crossfadeDurationSeconds} seconds`)
         this.crossfadeStep = 1 / ((sampleRate / 128) * crossfadeDurationSeconds); // Calculate step size
-
+        this.outputVolume = 0.5
     }
 
 
@@ -161,10 +161,15 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
 
     }
     
+ 
 
     handleMessage(msg) {
         
         switch (msg.cmd){
+            case 'setOutputVolume':
+                this.outputVolume = msg.data
+            break
+            
             case 'clearGraph':
                 // clear the audioWorklet's own graph:
                 this.currentState.nodes = {};
@@ -805,9 +810,8 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
         }
 
         // Apply an overall gain to limit output signal
-        const overallGain = 0.5; // Adjust as needed
         for (let i = 0; i < output.length; i++) {
-            output[i] *= overallGain; // Scale the output
+            output[i] *= this.outputVolume; // Scale the output
         }
         /*
         // Generate output for directly connected nodes
