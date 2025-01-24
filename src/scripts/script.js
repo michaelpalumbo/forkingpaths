@@ -4579,13 +4579,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // detect cycles in the graph
     function hasCycleAtParentLevel() {
-        // console.log(cy.json())
+        let selfLoopDetected = false;
         const parentEdges = new Map();
 
         // Step 1: Build a directed graph of parent nodes
         cy.edges().forEach((edge) => {
             console.log(edge.data())
-            // const sourceParent = cy.$(`#${edge.source()}`).parent().id();
             // const targetParent = cy.$(`#${edge.target()}`).parent().id();
             const sourceParent = edge.data().source.split('.')[0]
             const targetParent = edge.data().target.split('.')[0]
