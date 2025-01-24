@@ -665,7 +665,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const timeoutID = setTimeout(() => {
 
                 if(gestureData.assign.param === 'default'){
-                    console.log(node)
+                    
                     let data = {
                         parent: node.data.parents,
                         param: node.data.param,
@@ -677,12 +677,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     })
                 } else {
                     // process it using the gesturedata assign range data for scaling
-                    // set the parent node from gestureData.assign.parent
-                    let assignedNode = {
-                        parent: gestureData.assign.parent,
-                        param: gestureData.assign.param,
-                        // value: // need to scale input range to output range
-                    }
+
                     // convert the value from the source value's min and max to gestureData.assign.range
                     // first get the min and max of the source value
                     // synthParamRanges
@@ -690,101 +685,107 @@ document.addEventListener("DOMContentLoaded", function () {
                     
                     let value = node.data.value
                     
-                    let srcMetadata = meta.synthFile.audioGraph.modules[node.data.parents].moduleSpec.parameters[node.data.param]
-                    
-                    if(srcMetadata.ui === 'knob' && gestureData.assign.kind === 'knob'){
-                        // source and destination params are both knobs
-                        let inputMin = srcMetadata.min
-                        let inputMax = srcMetadata.max
+                    let storedParam = meta.synthFile.audioGraph.modules[node.data.parents].moduleSpec.parameters[node.data.param]
+                    let targetParam = gestureData.assign
+
+                    sendToMainApp({
+                        cmd: 'playGesture',
+                        data: convertParams(storedParam, targetParam, value)
+
+                    })
+                    // if(srcMetadata.ui === 'knob' && gestureData.assign.kind === 'knob'){
+                    //     // source and destination params are both knobs
+                    //     let inputMin = srcMetadata.min
+                    //     let inputMax = srcMetadata.max
                         
-                        let outputMin = gestureData.assign.range.min
-                        let outputMax = gestureData.assign.range.max
-                        // (value, inputMin, inputMax, outputMin, outputMax)
-                        let scaledValue = roundToHundredth(scaleKnob(value, Number(inputMin), Number(inputMax), Number(outputMin), Number(outputMax)))
+                    //     let outputMin = gestureData.assign.range.min
+                    //     let outputMax = gestureData.assign.range.max
+                    //     // (value, inputMin, inputMax, outputMin, outputMax)
+                    //     let scaledValue = roundToHundredth(scaleKnob(value, Number(inputMin), Number(inputMax), Number(outputMin), Number(outputMax)))
                         
 
-                        let data = {
-                            parent: gestureData.assign.parent,
-                            param: gestureData.assign.param,
-                            value: scaledValue
-                        }
-                        sendToMainApp({
-                            cmd: 'playGesture',
-                            data: data
-                        })
-                    } else if(srcMetadata.ui === 'knob' && gestureData.assign.kind === 'menu'){
-                        // source is a knob
-                        let inputMin = srcMetadata.min
-                        let inputMax = srcMetadata.max
-                        // destination is a menu
-                        let options = gestureData.assign.range.split(',')
-                        let outputMin = 0
-                        let outputMax = options.length - 1
+                    //     let data = {
+                    //         parent: gestureData.assign.parent,
+                    //         param: gestureData.assign.param,
+                    //         value: scaledValue
+                    //     }
+                    //     sendToMainApp({
+                    //         cmd: 'playGesture',
+                    //         data: data
+                    //     })
+                    // } else if(srcMetadata.ui === 'knob' && gestureData.assign.kind === 'menu'){
+                    //     // source is a knob
+                    //     let inputMin = srcMetadata.min
+                    //     let inputMax = srcMetadata.max
+                    //     // destination is a menu
+                    //     let options = gestureData.assign.range.split(',')
+                    //     let outputMin = 0
+                    //     let outputMax = options.length - 1
 
-                        // (value, inputMin, inputMax, outputMin, outputMax)
-                        let optionIndex = Math.floor(scaleKnob(value, Number(inputMin), Number(inputMax), Number(outputMin), Number(outputMax)))
+                    //     // (value, inputMin, inputMax, outputMin, outputMax)
+                    //     let optionIndex = Math.floor(scaleKnob(value, Number(inputMin), Number(inputMax), Number(outputMin), Number(outputMax)))
 
-                        let data = {
-                            parent: gestureData.assign.parent,
-                            param: gestureData.assign.param,
-                            value: options[optionIndex]
-                        }
+                    //     let data = {
+                    //         parent: gestureData.assign.parent,
+                    //         param: gestureData.assign.param,
+                    //         value: options[optionIndex]
+                    //     }
                         
-                        sendToMainApp({
-                            cmd: 'playGesture',
-                            data: data
-                        })
+                    //     sendToMainApp({
+                    //         cmd: 'playGesture',
+                    //         data: data
+                    //     })
 
-                    } else if(srcMetadata.ui === 'menu' && gestureData.assign.kind === 'menu'){
+                    // } else if(srcMetadata.ui === 'menu' && gestureData.assign.kind === 'menu'){
          
-                        let sourceOptions = srcMetadata.values
+                    //     let sourceOptions = srcMetadata.values
                         
-                        let inputMin = 0
-                        let inputMax = sourceOptions.length - 1
+                    //     let inputMin = 0
+                    //     let inputMax = sourceOptions.length - 1
 
-                        let options = gestureData.assign.range.split(',')
-                        let outputMin = 0
-                        let outputMax = options.length - 1
+                    //     let options = gestureData.assign.range.split(',')
+                    //     let outputMin = 0
+                    //     let outputMax = options.length - 1
 
-                        // (value, inputMin, inputMax, outputMin, outputMax)
-                        let optionIndex = Math.floor(scaleKnob(sourceOptions.indexOf(value), Number(inputMin), Number(inputMax), Number(outputMin), Number(outputMax)))
+                    //     // (value, inputMin, inputMax, outputMin, outputMax)
+                    //     let optionIndex = Math.floor(scaleKnob(sourceOptions.indexOf(value), Number(inputMin), Number(inputMax), Number(outputMin), Number(outputMax)))
 
-                        let data = {
-                            parent: gestureData.assign.parent,
-                            param: gestureData.assign.param,
-                            value: options[optionIndex]
-                        }
+                    //     let data = {
+                    //         parent: gestureData.assign.parent,
+                    //         param: gestureData.assign.param,
+                    //         value: options[optionIndex]
+                    //     }
                         
                         
-                        sendToMainApp({
-                            cmd: 'playGesture',
-                            data: data
-                        })
+                    //     sendToMainApp({
+                    //         cmd: 'playGesture',
+                    //         data: data
+                    //     })
 
-                    } else if(srcMetadata.ui === 'menu' && gestureData.assign.kind === 'knob'){
+                    // } else if(srcMetadata.ui === 'menu' && gestureData.assign.kind === 'knob'){
                         
-                        let sourceOptions = srcMetadata.values
-                        let menuIndex = sourceOptions.indexOf(value)
-                        let inputMin = 0
-                        let inputMax = sourceOptions.length - 1
+                    //     let sourceOptions = srcMetadata.values
+                    //     let menuIndex = sourceOptions.indexOf(value)
+                    //     let inputMin = 0
+                    //     let inputMax = sourceOptions.length - 1
 
-                        let outputMin = gestureData.assign.range.min
-                        let outputMax = gestureData.assign.range.max
+                    //     let outputMin = gestureData.assign.range.min
+                    //     let outputMax = gestureData.assign.range.max
 
-                        // (value, inputMin, inputMax, outputMin, outputMax)
-                        let scaledValue = roundToHundredth(scaleKnob(menuIndex, Number(inputMin), Number(inputMax), Number(outputMin), Number(outputMax)))
+                    //     // (value, inputMin, inputMax, outputMin, outputMax)
+                    //     let scaledValue = roundToHundredth(scaleKnob(menuIndex, Number(inputMin), Number(inputMax), Number(outputMin), Number(outputMax)))
 
-                        let data = {
-                            parent: gestureData.assign.parent,
-                            param: gestureData.assign.param,
-                            value: scaledValue
-                        }
+                    //     let data = {
+                    //         parent: gestureData.assign.parent,
+                    //         param: gestureData.assign.param,
+                    //         value: scaledValue
+                    //     }
                         
-                        sendToMainApp({
-                            cmd: 'playGesture',
-                            data: data
-                        })
-                    }
+                    //     sendToMainApp({
+                    //         cmd: 'playGesture',
+                    //         data: data
+                    //     })
+                    // }
 
 
 
@@ -2065,6 +2066,90 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
         return pairCount > 0 ? totalDistance / pairCount : 0; // Avoid division by zero
+    }
+
+    function convertParams(storedParam, targetParam, value){
+
+        let data;
+
+        if(storedParam.ui === 'knob' && targetParam.kind === 'knob'){
+            // source and destination params are both knobs
+            let inputMin = storedParam.min
+            let inputMax = storedParam.max
+            
+            let outputMin = targetParam.range.min
+            let outputMax = targetParam.range.max
+            // (value, inputMin, inputMax, outputMin, outputMax)
+            let scaledValue = roundToHundredth(scaleKnob(value, Number(inputMin), Number(inputMax), Number(outputMin), Number(outputMax)))
+            
+
+            data = {
+                parent: targetParam.parent,
+                param: targetParam.param,
+                value: scaledValue
+            }
+
+        } else if(storedParam.ui === 'knob' && targetParam.kind === 'menu'){
+            // source is a knob
+            let inputMin = storedParam.min
+            let inputMax = storedParam.max
+            // destination is a menu
+            let options = targetParam.range.split(',')
+            let outputMin = 0
+            let outputMax = options.length - 1
+
+            // (value, inputMin, inputMax, outputMin, outputMax)
+            let optionIndex = Math.floor(scaleKnob(value, Number(inputMin), Number(inputMax), Number(outputMin), Number(outputMax)))
+
+            data = {
+                parent: targetParam.parent,
+                param: targetParam.param,
+                value: options[optionIndex]
+            }
+            
+        } else if(storedParam.ui === 'menu' && targetParam.kind === 'menu'){
+
+            let sourceOptions = storedParam.values
+            
+            let inputMin = 0
+            let inputMax = sourceOptions.length - 1
+
+            let options = targetParam.range.split(',')
+            let outputMin = 0
+            let outputMax = options.length - 1
+
+            // (value, inputMin, inputMax, outputMin, outputMax)
+            let optionIndex = Math.floor(scaleKnob(sourceOptions.indexOf(value), Number(inputMin), Number(inputMax), Number(outputMin), Number(outputMax)))
+
+            data = {
+                parent: targetParam.parent,
+                param: targetParam.param,
+                value: options[optionIndex]
+            }
+
+        } else if(storedParam.ui === 'menu' && targetParam.kind === 'knob'){
+            
+            let sourceOptions = storedParam.values
+            let menuIndex = sourceOptions.indexOf(value)
+            let inputMin = 0
+            let inputMax = sourceOptions.length - 1
+
+            let outputMin = targetParam.range.min
+            let outputMax = targetParam.range.max
+
+            // (value, inputMin, inputMax, outputMin, outputMax)
+            let scaledValue = roundToHundredth(scaleKnob(menuIndex, Number(inputMin), Number(inputMax), Number(outputMin), Number(outputMax)))
+
+            data = {
+                parent: targetParam.parent,
+                param: targetParam.param,
+                value: scaledValue
+            }
+
+        }
+
+        console.log(data)
+        return data
     }
 })
 

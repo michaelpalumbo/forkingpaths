@@ -2751,6 +2751,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
             case 'cloneGesture':
                 console.log(event.data)
+                let msg = event.data.data
+                console.log(msg)
+                // load the parent node first, then apply the gesture as assigned to the new param as a set of new changes
+                loadVersion(msg.parentNode.id, msg.parentNode.branch)
             break
             default: console.warn('switch case doesnt exist for:', event.data.cmd)
         }
