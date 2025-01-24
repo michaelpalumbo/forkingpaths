@@ -1554,7 +1554,6 @@ document.addEventListener("DOMContentLoaded", function () {
         // compare the point in history we want (Automerge.getHeads(historicalView)[0]) against the head of its associated branch (Automerge.getHeads(requestedDoc)[0])
         // if (Automerge.getHeads(historicalView)[0] === Automerge.getHeads(requestedDoc)[0]){
         if (head === targetHash){
-            console.log('head = targetHash')
             automergeDocuments.newClone = false
 
             updateSynthWorklet('loadVersion', historicalView.synth.graph, null, historicalView.changeType)
@@ -1604,9 +1603,6 @@ document.addEventListener("DOMContentLoaded", function () {
         // this is necessary for loading a hash on another branch that ISN'T the head
         else if (branch != meta.head.branch) {
 
-            console.log('branch != meta.head.branch')
-
-
             automergeDocuments.current = {
                 doc: requestedDoc
             }
@@ -1626,7 +1622,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         // the selected hash belongs to the current branch
         else {
-            console.log('he selected hash belongs to the current branch')
             let clonedDoc = Automerge.clone(historicalView)
 
             automergeDocuments.current = {
