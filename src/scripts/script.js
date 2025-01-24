@@ -911,12 +911,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 
                 // panToBranch(historyDAG_cy.getElementById(hash)) //! remove this line when 2nd window is working fully
                 
-                sendMsgToHistoryApp({
-                    appID: 'forkingPathsMain',
-                    cmd: 'panToBranch',
-                    data: hash
+                // sendMsgToHistoryApp({
+                //     appID: 'forkingPathsMain',
+                //     cmd: 'panToBranch',
+                //     data: hash
                         
-                })
+                // })
             }
             return amDoc;
 

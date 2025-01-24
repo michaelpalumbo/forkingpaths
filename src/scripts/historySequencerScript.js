@@ -382,6 +382,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 break
                 case 'panToBranch':
+                    
                     panToBranch(event.data.data)
                 break
 
@@ -463,6 +464,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const latestNode = historyDAG_cy.nodes().last()
         highlightNode(latestNode)
+
+
         panToBranch(latestNode)
         
     };
@@ -533,7 +536,6 @@ document.addEventListener("DOMContentLoaded", function () {
         // clear the gestureData.nodes
         gestureData.nodes = []
 
-        console.log(gestureData.nodes)
         // Clear the current graph
         gestureCy.elements().remove();
 
@@ -1885,6 +1887,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // only pan if new node is outside of the viewport
         // Get the current viewport extent
         const extent = historyDAG_cy.extent();
+
         const position = node.position(); // Get the node's position
 
         // Check if the node is outside the viewport
@@ -2159,7 +2162,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         }
 
-        console.log(data)
         return data
     }
 })
