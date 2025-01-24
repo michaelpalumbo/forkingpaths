@@ -324,7 +324,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     'line-color': '#ccc',
                     'target-arrow-shape': 'triangle',
 
-                    'source-arrow-shape': 'triangle', // Adds a circle at the start
+                    'source-arrow-shape': 'none', // Adds a circle at the start
                     'source-arrow-color': '#000',
                     'target-arrow-color': '#000',
                     'target-arrow-width': 20, // Size of the target endpoint shape
