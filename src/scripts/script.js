@@ -2750,11 +2750,15 @@ document.addEventListener("DOMContentLoaded", function () {
             break
 
             case 'cloneGesture':
-                console.log(event.data)
                 let msg = event.data.data
                 console.log(msg)
                 // load the parent node first, then apply the gesture as assigned to the new param as a set of new changes
                 loadVersion(msg.parentNode.id, msg.parentNode.branch)
+
+                // now loop through the scaledValues and apply each one as a new change
+                msg.scaledValues.forEach((change)=>{
+                    paramChange(change.parent, change.param, change.value)
+                })
             break
             default: console.warn('switch case doesnt exist for:', event.data.cmd)
         }

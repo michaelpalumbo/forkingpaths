@@ -931,13 +931,22 @@ document.addEventListener("DOMContentLoaded", function () {
         // we need this parentNode to know where to create a new branch from for the cloned gesture
         let parentNode = historyDAG_cy.getElementById(gestureData.nodes[0].data.id).incomers('node').data();
         
+        let scaledValues = []
+        
+        let targetParam = gestureData.assign
+        gestureData.nodes.forEach((node)=>{
+            let storedParam = meta.synthFile.audioGraph.modules[node.data.parents].moduleSpec.parameters[node.data.param]
+            let value = node.data.value
+            scaledValues.push(convertParams(storedParam, targetParam, value))
+        })
         sendToMainApp(
             {
                 cmd: "cloneGesture",
                 data: { 
                     parentNode: parentNode, 
                     gesture: gestureData.nodes, 
-                    assignTo: gestureData.assign
+                    assignTo: gestureData.assign,
+                    scaledValues: scaledValues
                 },
             }
         );
