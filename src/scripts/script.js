@@ -2807,7 +2807,6 @@ document.addEventListener("DOMContentLoaded", function () {
     volumeSlider.addEventListener('input', (event) => {
         const volume = parseFloat(event.target.value);
         updateSynthWorklet('setOutputVolume', volume)
-        console.log(volume)
         volumeValue.textContent = `${Math.round(volume * 100)}%`; // Update percentage display
 
         localStorage.setItem('volume', volume); // Save to localStorage
@@ -3088,7 +3087,8 @@ document.addEventListener("DOMContentLoaded", function () {
                         // also remove the cable from automerge!
                         updateSynthWorklet('removeCable', { source: edge.data().source, target: edge.data().target})
                         
-                        
+                        console.warn('todo: check if this cable was part of a cycle, if it is, ensure that whichever edge in the cycle that has the feedback:true prop set in the audio graph is now set to false')
+
                         // * automerge version: 
                         amDoc = applyChange(amDoc, (amDoc) => {
                             // Find the index of the object that matches the condition
@@ -3142,6 +3142,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         cy.remove(edge);
                         updateSynthWorklet('removeCable', { source: edge.data().source, target: edge.data().target})
                         // also remove the cable from automerge!
+                        console.warn('todo: check if this cable was part of a cycle, if it is, ensure that whichever edge in the cycle that has the feedback:true prop set in the audio graph is now set to false')
 
                         // * automerge version:      
                         amDoc = applyChange(amDoc, (amDoc) => {
@@ -3309,8 +3310,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     src = temporaryCables.local.targetNode.id()
                     targ = temporaryCables.local.source.id()
                 }
-                // update audio right away
-                updateSynthWorklet('addCable', { source: src, target: targ})
+
+ 
 
                 // If a target node is highlighted, connect the edge to it
                 // tempEdge.data('target', targ); // Update the edge target
@@ -3327,7 +3328,22 @@ document.addEventListener("DOMContentLoaded", function () {
                 const parentSourceID = temporaryCables.local.source.parent().data().id
                 const parentTargetID = temporaryCables.local.targetNode.parent().data().id
                 
-                console.log(isEdgeInCycle(cy.$(`#${edgeId}`)))
+                let cycle = isEdgeInCycle(cy.$(`#${edgeId}`))
+
+                // todo: inserting a blockSize delay in the worklet is clunky...
+                // ...  therefore, need to create a feedbackDelayNode that gets added to the synth.graph.modules
+                // ...  and has 2 conndections: {source: src, target: feedbackDelayNode.IN} & {source: feedbackDelayNode.IN, target: targ}
+                // ...  then we need to add in the audioWorklet a 128-sample delay to the if statement for processing module kinds:
+                // ...  i.e. process this node
+                // ...  if (node.node === 'feedbackDelayNode') {
+                // ...      // code for the blockSize delay
+                // ...  }
+
+                console.warn('see todo comment above this warning in script.js')
+                console.log('cable is part of feedback path:', cycle)
+
+                // update audio
+                updateSynthWorklet('addCable', { source: src, target: targ, feedback: cycle})
                 
                 // * automerge version:                
                 amDoc = applyChange(amDoc, (amDoc) => {
@@ -3340,7 +3356,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     amDoc.changeType = {
                         msg: 'connect'
                     }
-                    amDoc.synth.graph.connections.push( { source: src, target: targ })
+                    amDoc.synth.graph.connections.push( { source: src, target: targ, feedback: cycle })
                     audioGraphDirty = true
                 }, onChange,  `connect ${temporaryCables.local.source.data().label} to ${temporaryCables.local.targetNode.data().label}$PARENTS ${parentSourceID} ${parentTargetID}`);
 
@@ -3537,7 +3553,11 @@ document.addEventListener("DOMContentLoaded", function () {
         if (highlightedEdge && (event.key === 'Backspace' || event.key === 'Delete')) {
             
             updateSynthWorklet('removeCable', { source: highlightedEdge.data().source, target: highlightedEdge.data().target})
-            console.log(highlightedEdge.data().target)
+            
+            // let cycle = isEdgeInCycle(cy.$(`#${edgeId}`))
+
+            console.warn('todo: check if this cable was part of a cycle, if it is, ensure that its associated feedbackDelayNode is also removed from the synth.graph along with its 2 edges')
+
             amDoc = applyChange(amDoc, (amDoc) => {
                 
                 // set the change type
@@ -4155,7 +4175,7 @@ document.addEventListener("DOMContentLoaded", function () {
             case 'addCable':
                 synthWorklet.port.postMessage({
                     cmd: 'addCable',
-                    data: { source: data.source, target: data.target }
+                    data: data
                 });
 
             break
@@ -4579,219 +4599,69 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     };
 
-    // detect cycles in the graph
-    function hasCycleAtParentLevel() {
-        let selfLoopDetected = false;
-        const parentEdges = new Map();
-
-
-        // Step 1: Build a directed graph of parent nodes
-        cy.edges().forEach((edge) => {
-            // console.log(edge.data())
-            // Extract the parent IDs from the source and target node IDs
-            const sourceParent = edge.data().source.split('.')[0]
-            const targetParent = edge.data().target.split('.')[0]
-            if(targetParent.includes('AudioDestination')){
-                return // ignore cables that just go to the audio destination (there would never be a feedback connection here)
-            }
-            console.log(sourceParent, targetParent)
-            // Check if both sourceParent and targetParent are valid and not the same
-            if (sourceParent && targetParent && sourceParent !== targetParent) {
-                // If sourceParent does not exist in the map, initialize it with an empty Set
-                if (!parentEdges.has(sourceParent)) {
-                    parentEdges.set(sourceParent, new Set());
-                }
-                // Add the targetParent as a neighbor of sourceParent
-                parentEdges.get(sourceParent).add(targetParent);
-            }
-        });
-    
-        console.log(parentEdges)
-        // Step 2: Detect cycles using Depth-First Search (DFS)
-        const visited = new Set(); // A set to track visited nodes
-        const recStack = new Set(); // A set to track nodes in the current recursion stack
-
-        // Helper function for DFS traversal
-        function dfs(node) {
-            // If the node has not been visited
-            if (!visited.has(node)) {
-                // Mark the node as visited
-                visited.add(node);
-                // Add the node to the recursion stack
-                recStack.add(node);
-    
-                // Get the neighbors of the node
-                const neighbors = parentEdges.get(node) || new Set();
-                
-                // If the neighbor is not visited, recursively visit it
-                for (const neighbor of neighbors) {
-                    let cycle = []
-                    if (!visited.has(neighbor) && dfs(neighbor)) {
-                        // Cycle detected
-                        console.log('4622:', node, neighbor)
-                        cycle.push(neighbor)
-                        return true;
-                    } else if (recStack.has(neighbor)) {
-                        // Cycle detected via back edge
-                        console.log('4626:', node, neighbor)
-
-                        return true;
-                    }
-                }
-            }
-            // Remove the node from the recursion stack after visiting all neighbors
-            recStack.delete(node);
-            // No cycle detected from this node
-            return false;
-        }
-        // Perform DFS for each node in the graph
-        for (const node of parentEdges.keys()) {
-            if (dfs(node)) {
-                console.log('4639:', node)
-                return true; // Cycle found in the graph
-            }
-        }
-    
-        return false; // No cycles found in the graph
-    }
-    
-
-    function detectCycles(){
-        // hasCycleAtParentLevel()
-        const parentNodes = { }
-        const parentEdges = new Map();
-
-        // Step 1: Build a directed graph of parent nodes
-        cy.edges().forEach((edge) => {
-            // console.log(edge.data())
-            // Extract the parent IDs from the source and target node IDs
-            const sourceParent = edge.data().source.split('.')[0]
-            const targetParent = edge.data().target.split('.')[0]
-            const sourceChild = edge.data().source.split('.')[1]
-            const targetChild = edge.data().target.split('.')[1]
-            if(targetParent.includes('AudioDestination')){
-                return // ignore cables that just go to the audio destination (there would never be a feedback connection here)
-            }
-
-            if (sourceParent && targetParent) {
-                if (!parentEdges.has(sourceParent)) {
-                    parentEdges.set(sourceParent, new Set());
-                }
-                parentEdges.get(sourceParent).add(targetParent); // Add edge from sourceParent to targetParent
-    
-                if (!parentNodes[sourceParent]) {
-                    parentNodes[sourceParent] = [];
-                }
-                parentNodes[sourceParent].push({
-                    sourceParent,
-                    targetParent,
-                    sourceChild,
-                    targetChild,
-                });
-            }
-
-            // // Check if both sourceParent and targetParent are valid
-            // if (sourceParent && targetParent) {
-            //     // If sourceParent does not exist in the map, initialize it with an empty Set
-            //     if (!parentNodes[sourceParent]) {
-            //         parentNodes[sourceParent] = [];
-
-            //         parentEdges.set(sourceParent, new Set());
-            //     }
-            //     // Add the targetParent as a neighbor of sourceParent
-            //     parentEdges.get(sourceParent).add(targetParent);
-
-            //     parentNodes[sourceParent].push({sourceParent, targetParent, sourceChild, targetChild});
-            // }
-        });
-        console.log(parentNodes)
-
-        // Step 2: Detect cycles using Depth-First Search (DFS)
-        const visited = new Set(); // A set to track visited nodes
-        const recStack = new Set(); // A set to track nodes in the current recursion stack
-        const cycles = []; // Store all cycles (paths)
-
-
-        // Helper function for DFS traversal
-        function dfs(node) {
-            // If the node has not been visited
-            if (!visited.has(node)) {
-                // Mark the node as visited
-                visited.add(node);
-                // Add the node to the recursion stack
-                recStack.add(node);
-    
-                // Get the neighbors of the node
-                const neighbors = parentEdges.get(node) || new Set();
-                
-                // If the neighbor is not visited, recursively visit it
-                for (const neighbor of neighbors) {
-                    let cycle = []
-                    if (!visited.has(neighbor) && dfs(neighbor)) {
-                        // Cycle detected
-                        
-                        cycle.push(neighbor)
-                        return true;
-                    } else if (recStack.has(neighbor)) {
-                        // Cycle detected via back edge
-                        console.log('4626:', node, neighbor)
-
-                        return true;
-                    }
-                }
-            }
-            // Remove the node from the recursion stack after visiting all neighbors
-            recStack.delete(node);
-            // No cycle detected from this node
-            return false;
-        }
-
-        Object.keys(parentNodes).forEach((sourceParent)=>{
-            console.log(parentNodes[sourceParent])
-            if (dfs(parentNodes[sourceParent])) {
-
-                console.log('4639:', node)
-                return true; // Cycle found in the graph
-            }
-        })
-    }
-
     function isEdgeInCycle(edgeToCheck) {
         const parentEdges = new Map();
+        const selfLoopEdges = []; // Store self-loop edges for same parent connections
     
-        // Step 1: Build a directed graph of parent nodes
+        // Step 1: Build a directed graph of parent nodes with child information
         cy.edges().forEach((edge) => {
             const sourceParent = edge.data().source.split('.')[0]; // Parent of the source node
             const targetParent = edge.data().target.split('.')[0]; // Parent of the target node
-            const sourceChild = edge.data().source.split('.')[1]; // Child of the source node
-            const targetChild = edge.data().target.split('.')[1]; // Child of the target node
+            const sourceChild = edge.data().source.split('.')[1]; // Source child
+            const targetChild = edge.data().target.split('.')[1]; // Target child
     
             if (targetParent.includes('AudioDestination')) {
                 return; // Ignore connections to the audio destination
             }
     
-            if (!parentEdges.has(sourceParent)) {
-                parentEdges.set(sourceParent, new Set());
+            if (sourceParent === targetParent) {
+                // Detect self-loop: connections within the same parent node
+                selfLoopEdges.push({
+                    sourceParent,
+                    targetParent,
+                    sourceChild,
+                    targetChild,
+                });
+            } else {
+                // Add normal inter-parent edges
+                if (!parentEdges.has(sourceParent)) {
+                    parentEdges.set(sourceParent, []);
+                }
+                parentEdges.get(sourceParent).push({
+                    targetParent,
+                    sourceChild,
+                    targetChild,
+                });
             }
-            parentEdges.get(sourceParent).add({
-                targetParent,
-                sourceChild,
-                targetChild,
-            }); // Add the edge with both parent and child nodes
         });
     
-        // Step 2: Detect cycles using Depth-First Search (DFS)
+        // Step 2: Detect self-loop cycles
+        const selfLoopMatch = selfLoopEdges.some(
+            (edge) =>
+                edge.sourceParent === edgeToCheck.data().source.split('.')[0] &&
+                edge.targetParent === edgeToCheck.data().target.split('.')[0] &&
+                edge.sourceChild === edgeToCheck.data().source.split('.')[1] &&
+                edge.targetChild === edgeToCheck.data().target.split('.')[1]
+        );
+    
+        if (selfLoopMatch) {
+            // console.log(
+            //     `Edge ${edgeToCheck.id()} forms a self-loop cycle within ${edgeToCheck.data().source.split('.')[0]}`
+            // );
+            return true;
+        }
+    
+        // Step 3: Detect inter-parent cycles using Depth-First Search (DFS)
         const visited = new Set();
         const recStack = new Set();
         let edgeInCycle = false;
     
-        // Helper function for DFS traversal
         function dfs(node, path = [], edgePath = []) {
             if (!visited.has(node)) {
                 visited.add(node); // Mark the node as visited
                 recStack.add(node); // Add the node to the recursion stack
     
-                const neighbors = parentEdges.get(node) || new Set();
+                const neighbors = parentEdges.get(node) || [];
                 for (const neighbor of neighbors) {
                     const currentEdge = {
                         sourceParent: node,
@@ -4833,16 +4703,16 @@ document.addEventListener("DOMContentLoaded", function () {
                             )
                         ) {
                             edgeInCycle = true;
+                            return true;
                         }
                     }
                 }
             }
     
-            recStack.delete(node); // Remove the node from the recursion stack
-            return false; // No cycle detected in this path
+            recStack.delete(node);
+            return false;
         }
     
-        // Step 3: Start DFS from each node in the graph
         for (const node of parentEdges.keys()) {
             if (!visited.has(node)) {
                 dfs(node);
@@ -4850,10 +4720,8 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
     
-        return edgeInCycle; // Return true if the edge belongs to a cycle
+        return edgeInCycle; // Return true if the edge belongs to any cycle
     }
-    
-
     
 });
 
