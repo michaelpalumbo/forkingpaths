@@ -229,6 +229,21 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                 if(msg.structure === 'webAudioNodes'){
                     this.audioNodeBuilder(msg.data.module, msg.data.moduleName, msg.data.audioGraph.params)
    
+                } else if (msg.structure === 'feedbackDelayNode'){
+                    let moduleName = msg.data
+                    let delay = {
+                        node: 'Delay',
+                        baseParams: {
+                            delayTime: (128 * 1000) / sampleRate
+                        },
+                        modulatedParams: {
+                            // delayTime: 0, // Offset for modulation
+                        },
+                        output: new Float32Array(128),
+                    }
+    
+                    console.log(delay)
+                    
                 } else {
                     console.log('code for loading rnbo devices has not been written')
                     // todo: run this in this.rnboDeviceBuilder()

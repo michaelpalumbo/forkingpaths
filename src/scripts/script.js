@@ -3331,34 +3331,64 @@ document.addEventListener("DOMContentLoaded", function () {
                 let cycle = isEdgeInCycle(cy.$(`#${edgeId}`))
 
                 // todo: inserting a blockSize delay in the worklet is clunky...
-                // ...  therefore, need to create a feedbackDelayNode that gets added to the synth.graph.modules
-                // ...  and has 2 conndections: {source: src, target: feedbackDelayNode.IN} & {source: feedbackDelayNode.IN, target: targ}
-                // ...  then we need to add in the audioWorklet a 128-sample delay to the if statement for processing module kinds:
-                // ...  i.e. process this node
-                // ...  if (node.node === 'feedbackDelayNode') {
-                // ...      // code for the blockSize delay
-                // ...  }
+                if(cycle){
+                    console.warn('see todo comment above this warning in script.js')
+                    console.log('cable is part of feedback path:', cycle)
+                    // ...  therefore, need to create a feedbackDelayNode that gets added to the synth.graph.modules
+                    // ...  and has 2 connections: {source: src, target: feedbackDelayNode.IN} & {source: feedbackDelayNode.IN, target: targ}
+                    // ...  then we need to add in the audioWorklet a 128-sample delay to the if statement for processing module kinds:
+                    // ...  i.e. process this node
+                    // ...  if (node.node === 'feedbackDelayNode') {
+                    // ...      // code for the blockSize delay
+                    // ...  }
 
-                console.warn('see todo comment above this warning in script.js')
-                console.log('cable is part of feedback path:', cycle)
+                    // todo add the feedbackDelayNode
+                    let feedbackDelayNodeID = `feedbackDelayNode_${uuidv7()}`
+                    updateSynthWorklet('addNode', feedbackDelayNodeID, 'feedbackDelayNode' )
 
-                // update audio
-                updateSynthWorklet('addCable', { source: src, target: targ, feedback: cycle})
-                
-                // * automerge version:                
-                amDoc = applyChange(amDoc, (amDoc) => {
-                    amDoc.elements.push({
-                        type: 'edge',
-                        id: edgeId,
-                        data: { id: edgeId, source: src, target: targ, kind: 'cable' }
-                    });
-                    // set the change type
-                    amDoc.changeType = {
-                        msg: 'connect'
-                    }
-                    amDoc.synth.graph.connections.push( { source: src, target: targ, feedback: cycle })
-                    audioGraphDirty = true
-                }, onChange,  `connect ${temporaryCables.local.source.data().label} to ${temporaryCables.local.targetNode.data().label}$PARENTS ${parentSourceID} ${parentTargetID}`);
+                    // todoto updateSynthWorklet: add 2 connections: {source: src, target: feedbackDelayNode.IN} & {source: feedbackDelayNode.IN, target: targ}
+                    updateSynthWorklet('addCable', { source: src, target: targ, feedback: cycle})                    
+
+                    //todo to amDoc.synth.graph.connections: add 2 connections: {source: src, target: feedbackDelayNode.IN} & {source: feedbackDelayNode.IN, target: targ}
+                    amDoc = applyChange(amDoc, (amDoc) => {
+                        amDoc.elements.push({
+                            type: 'edge',
+                            id: edgeId,
+                            data: { id: edgeId, source: src, target: targ, kind: 'cable' }
+                        });
+                        // set the change type
+                        amDoc.changeType = {
+                            msg: 'connect'
+                        }
+                        amDoc.synth.graph.connections.push( { source: src, target: targ, feedback: cycle })
+                        audioGraphDirty = true
+                    }, onChange,  `connect ${temporaryCables.local.source.data().label} to ${temporaryCables.local.targetNode.data().label}$PARENTS ${parentSourceID} ${parentTargetID}`);
+                    
+
+                } else {
+                    // update audio
+                    updateSynthWorklet('addCable', { source: src, target: targ, feedback: cycle})
+                    
+                    // * automerge version:                
+                    amDoc = applyChange(amDoc, (amDoc) => {
+                        amDoc.elements.push({
+                            type: 'edge',
+                            id: edgeId,
+                            data: { id: edgeId, source: src, target: targ, kind: 'cable' }
+                        });
+                        // set the change type
+                        amDoc.changeType = {
+                            msg: 'connect'
+                        }
+                        amDoc.synth.graph.connections.push( { source: src, target: targ, feedback: cycle })
+                        audioGraphDirty = true
+                    }, onChange,  `connect ${temporaryCables.local.source.data().label} to ${temporaryCables.local.targetNode.data().label}$PARENTS ${parentSourceID} ${parentTargetID}`);
+
+                }
+
+
+
+
 
 
                 //* old -repo version
@@ -4283,41 +4313,6 @@ document.addEventListener("DOMContentLoaded", function () {
         return array; // Return the modified array
     }
     
-    // Utility: Check if a node intersects an edge
-    function isNodeIntersectingEdge(nodePos, sourcePos, targetPos) {
-        // todo: the text label of the dragged node and other dragged nodes are interfering with the dragged node intersecting an edge
-        // todo: the text label is part of the entire node's bounding box, so instead we could set the intersection boundaries of the node
-        // todo: ... to just within the node itself, perhaps a square within the node.  
-        const distance = pointLineDistance(nodePos, sourcePos, targetPos);
-    
-        // Check if the point is near the line segment
-        const isCloseEnough = distance < 10; // Adjust threshold as needed
-    
-        // Ensure the intersection lies on the edge (between source and target)
-        const withinBounds =
-            Math.min(sourcePos.x, targetPos.x) <= nodePos.x &&
-            nodePos.x <= Math.max(sourcePos.x, targetPos.x) &&
-            Math.min(sourcePos.y, targetPos.y) <= nodePos.y &&
-            nodePos.y <= Math.max(sourcePos.y, targetPos.y);
-    
-        return isCloseEnough && withinBounds;
-    }
-    
-    // Utility: Calculate the distance of a point to a line segment
-    function pointLineDistance(point, lineStart, lineEnd) {
-        const x0 = point.x, y0 = point.y;
-        const x1 = lineStart.x, y1 = lineStart.y;
-        const x2 = lineEnd.x, y2 = lineEnd.y;
-    
-        const numerator = Math.abs(
-            (y2 - y1) * x0 - (x2 - x1) * y0 + x2 * y1 - y2 * x1
-        );
-        const denominator = Math.sqrt(
-            Math.pow(y2 - y1, 2) + Math.pow(x2 - x1, 2)
-        );
-    
-        return numerator / denominator;
-    }
 
     // messages to historyCy throttling
     setInterval(() => {
