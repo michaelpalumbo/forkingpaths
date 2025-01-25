@@ -3342,14 +3342,16 @@ document.addEventListener("DOMContentLoaded", function () {
                     // ...      // code for the blockSize delay
                     // ...  }
 
-                    // todo add the feedbackDelayNode
+                    // add the feedbackDelayNode
                     let feedbackDelayNodeID = `feedbackDelayNode_${uuidv7()}`
                     updateSynthWorklet('addNode', feedbackDelayNodeID, 'feedbackDelayNode' )
 
                     // todoto updateSynthWorklet: add 2 connections: {source: src, target: feedbackDelayNode.IN} & {source: feedbackDelayNode.IN, target: targ}
-                    updateSynthWorklet('addCable', { source: src, target: targ, feedback: cycle})                    
-
+                    updateSynthWorklet('addCable', { source: src, target: feedbackDelayNodeID + '.IN', feedback: cycle})                    
+                    updateSynthWorklet('addCable', { source: feedbackDelayNodeID + '.OUT', target: targ, feedback: cycle})  
+                    
                     //todo to amDoc.synth.graph.connections: add 2 connections: {source: src, target: feedbackDelayNode.IN} & {source: feedbackDelayNode.IN, target: targ}
+                    
                     amDoc = applyChange(amDoc, (amDoc) => {
                         amDoc.elements.push({
                             type: 'edge',
@@ -3360,7 +3362,10 @@ document.addEventListener("DOMContentLoaded", function () {
                         amDoc.changeType = {
                             msg: 'connect'
                         }
-                        amDoc.synth.graph.connections.push( { source: src, target: targ, feedback: cycle })
+                        // todo figure out synth.graph.connections 
+                        // amDoc.synth.graph.connections.push( { source: src, target: targ, feedback: cycle })
+
+                        // amDoc.synth.graph.connections.push( { source: src, target: feedbackDelayNodeID + '.IN', feedback: cycle}, { source: feedbackDelayNodeID + '.OUT', target: targ, feedback: cycle})
                         audioGraphDirty = true
                     }, onChange,  `connect ${temporaryCables.local.source.data().label} to ${temporaryCables.local.targetNode.data().label}$PARENTS ${parentSourceID} ${parentTargetID}`);
                     

@@ -151,6 +151,27 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                     this.currentState.nodes[moduleName] = biquad
                 }
             break
+
+            case 'feedbackDelayNode':
+                let feedbackDelayNode = {
+                    node: 'feedbackDelayNode',
+                    output: new Float32Array(128) // Fixed output buffer for block size
+                }
+
+                if(loadState){
+                    this.nextState.nodes[moduleName] = feedbackDelayNode
+                    console.log(this.nextState.nodes[moduleName])
+                } else {
+                    this.currentState.nodes[moduleName] = feedbackDelayNode
+                    console.log(this.currentState.nodes[moduleName])
+                }
+                console.log(feedbackDelayNode)
+
+                
+
+                
+            break;
+
             default: 
         }
 
@@ -200,6 +221,10 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                 // repopulate given automerge version of synth graph
                 Object.keys(synthGraph.modules).forEach((moduleID)=>{
                     const module = synthGraph.modules[moduleID]
+                    let moduleParams = null // set to null in case the node is a feedbackDelayNode
+                    if(module.params){
+                        moduleParams = module.params // node is a webAudioNode and we want its params
+                    }
                     this.audioNodeBuilder(module.type, moduleID, module.params, 'loadstate')
                 })
 
@@ -230,19 +255,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                     this.audioNodeBuilder(msg.data.module, msg.data.moduleName, msg.data.audioGraph.params)
    
                 } else if (msg.structure === 'feedbackDelayNode'){
-                    let moduleName = msg.data
-                    let delay = {
-                        node: 'Delay',
-                        baseParams: {
-                            delayTime: (128 * 1000) / sampleRate
-                        },
-                        modulatedParams: {
-                            // delayTime: 0, // Offset for modulation
-                        },
-                        output: new Float32Array(128),
-                    }
-    
-                    console.log(delay)
+                    this.audioNodeBuilder('feedbackDelayNode', msg.data)
                     
                 } else {
                     console.log('code for loading rnbo devices has not been written')
@@ -474,9 +487,16 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                 const node = state.nodes[id];
                 if (!node) return;
 
+
                 // Sum inputs from connected nodes
                 const inputBuffer = new Float32Array(128);
                 const inputConnections = state.signalConnections.filter(conn => conn.target.split('.')[0] === id);
+
+                console.log(`Connections for ${id}:`, inputConnections);
+
+                if (node.node === 'feedbackDelayNode') {
+                    console.log('feedbackDelayNode inputBuffer:', inputBuffer);
+                }
 
                 for (const conn of inputConnections) {
                     processNode(conn.source.split('.')[0]); // Process the source node first
@@ -763,6 +783,39 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
             
                         signalBuffers[id][i] = output;
                     }
+                }
+                else if (node.node === 'feedbackDelayNode') {
+                    
+                    // Initialize the delay buffer if it doesn't exist
+                    if (!node.delayBuffer) {
+                        console.log(`Initializing delay buffer for node ${id}`);
+
+                        node.delayBuffer = new Float32Array(128); // Fixed-size delay buffer for one block
+                        node.delayIndex = 0; // Write position in the delay buffer
+                    }
+                
+                    // Process the signal
+                    const input = inputBuffer; // Input signal to be delayed
+                    const output = signalBuffers[id]; // Output signal after delay
+
+                    console.log('Input:', inputBuffer);
+                    
+                
+                    for (let i = 0; i < input.length; i++) {
+                        // Read the delayed sample
+                        const delayedSample = node.delayBuffer[node.delayIndex];
+                
+                        // Write the delayed sample to the output
+                        output[i] = delayedSample;
+                
+                        // Store the current input sample in the delay buffer
+                        node.delayBuffer[node.delayIndex] = input[i];
+                
+                        // Increment the delay buffer index (with wraparound)
+                        node.delayIndex = (node.delayIndex + 1) % node.delayBuffer.length;
+                    }
+
+                    console.log('Output:', output);
                 }
             
 
