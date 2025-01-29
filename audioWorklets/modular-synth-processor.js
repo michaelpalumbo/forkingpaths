@@ -109,8 +109,9 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                     node: 'Delay',
                     baseParams: {
                         delayTime: parseFloat(params.delayTime) || 500,
-                        timeAttenuverter: parseFloat(params.timeAttenuverter) || 100,
-                        feedback: 0.5
+                        'time cv +/-': parseFloat(params['time cv +/-']) || 100,
+                        feedback: 0.5,
+                        wetMix: 0.4
                     },
                     connections: {
                         feedback: null, // Will store a Web Audio GainNode for feedback
@@ -678,6 +679,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                         // create delaybuffer
                         node.delayBuffer = new Float32Array(128); // 1-blockSize delay buffer
                         node.delayIndex = 0;
+                        console.log('feedback cable added')
                     }
                     const delaySamples = Math.min(128, node.delayBuffer.length);
 
@@ -685,8 +687,12 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                         const delayedSampleIndex = (node.delayIndex - delaySamples + node.delayBuffer.length) % node.delayBuffer.length;
                         const delayedSample = node.delayBuffer[delayedSampleIndex];
 
-                        signalBuffers[id][i] = delayedSample
-
+                        // Store input first so the buffer accumulates signal
+                        // const inputSample = inputBuffer[i] || 0;
+                        // node.delayBuffer[node.delayIndex] = inputSample; 
+                        
+                        signalBuffers[id][i] = inputBuffer[i] + delayedSample
+                        
                         // Store the processed signal in the delay buffer
                         node.delayBuffer[node.delayIndex] = signalBuffers[id][i];
 
@@ -695,9 +701,10 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                         
                     }
                 }
+                
                 else if (node.node === 'Delay') {
                     if (!node.delayBuffer) {
-                        const effectiveDelayTime = getEffectiveParam(node, 'delayTime', node.baseParams['timeAttenuverter']);
+                        const effectiveDelayTime = getEffectiveParam(node, 'delayTime', node.baseParams['time cv +/-']);
                         const delayTime = Math.round(effectiveDelayTime * sampleRate / 1000)
                         node.delayBuffer = new Float32Array(sampleRate); // 1-second delay buffer
                         node.delayIndex = 0;
@@ -706,12 +713,14 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                         node.lpfCutoff = node.baseParams.lpfCutoff || 3000; // Default cutoff at 3kHz
                         node.lpfPreviousSample = 0; // Filter memory
                     }
-                        const delaySamples = Math.min(getEffectiveParam(node, 'delayTime', node.baseParams['timeAttenuverter']) * sampleRate, node.delayBuffer.length);
-                        
+                        const effectiveDelayTime = getEffectiveParam(node, 'delayTime', node.baseParams['time cv +/-']);    
+                        const delayTime = Math.round((effectiveDelayTime / 1000) * sampleRate)
+
+                        // const delayTime = Math.min(getEffectiveParam(node, 'delayTime', node.baseParams['time cv +/-']) * sampleRate, node.delayBuffer.length);
                         const feedbackParam = typeof node.baseParams.feedback === 'number' ? node.baseParams.feedback : 0.5;
                         
-                        const wetMix = node.baseParams.wetMix || 0.5; // Default wet/dry balance (0.5 = 50/50)
-                        const dryMix = 1.0 - wetMix; // Ensure proper mix balance
+                        const wetMix = node.baseParams.wetMix || 0.2; // Default wet/dry balance (0.5 = 50/50)
+                        const dryMix = 0.05; // Ensure proper mix balance
                         
                         // console.log(wetMix, dryMix)
                         // Set up Lowpass Filter Coefficient
@@ -719,7 +728,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                         const alpha = sampleRate / (sampleRate + RC); // 1st order LPF coefficient
                         
                     for (let i = 0; i < signalBuffers[id].length; i++) {
-                        const delayedSampleIndex = (node.delayIndex - delaySamples + node.delayBuffer.length) % node.delayBuffer.length;
+                        const delayedSampleIndex = (node.delayIndex - delayTime + node.delayBuffer.length) % node.delayBuffer.length;
                         const delayedSample = node.delayBuffer[delayedSampleIndex];
 
                         // Apply Lowpass Filter to Feedback Signal
