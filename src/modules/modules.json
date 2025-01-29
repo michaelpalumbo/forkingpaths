@@ -9,6 +9,17 @@
       ],
       "outputs": []
     },
+    "feedbackDelayNode": {
+      "parameters": {},
+      "paramNames": [],
+      "cv": {},
+      "inputs": [
+        "IN"
+      ],
+      "outputs": [
+        "OUT"
+      ]
+    },
     "Gain": {
       "parameters": {
         "gain": {
@@ -290,7 +301,8 @@
         }
       },
       "paramNames": [
-        "delayTime, time cv +/-"
+        "delayTime",
+        "time cv +/-"
       ],
       "cvNames": [
         "delayTime"

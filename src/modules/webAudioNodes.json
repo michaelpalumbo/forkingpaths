@@ -6,6 +6,13 @@
     "inputs": ["IN"],
     "outputs": []
   },
+  "feedbackDelayNode": {
+    "parameters": {},
+    "paramNames": [],
+    "cv": {},
+    "inputs": ["IN"],
+    "outputs": ["OUT"]
+  },
   "Gain": {
     "parameters": {
       "gain": {
@@ -240,7 +247,7 @@
         "modulationDescription": "The attenuverter of the delayTime CV input"
       }
     },
-    "paramNames": ["delayTime, time cv +/-"],
+    "paramNames": ["delayTime", "time cv +/-"],
     "cvNames": ["delayTime"],
     "cv": {
       "delayTime": {

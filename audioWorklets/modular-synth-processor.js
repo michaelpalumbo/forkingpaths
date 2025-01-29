@@ -1,5 +1,4 @@
-import { parse } from 'marked';
-import audioNodes from '../src/modules/modules.json' assert { type: 'json'}
+
 import cloneDeep from 'lodash/cloneDeep';
 
 class ModularSynthProcessor extends AudioWorkletProcessor {
@@ -111,6 +110,10 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                     baseParams: {
                         delayTime: parseFloat(params.delayTime) || 500,
                         timeAttenuverter: parseFloat(params.timeAttenuverter) || 100,
+                        feedback: 0.5
+                    },
+                    connections: {
+                        feedback: null, // Will store a Web Audio GainNode for feedback
                     },
                     modulatedParams: {
                         delayTime: 0, // Offset for modulation
@@ -160,12 +163,12 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
 
                 if(loadState){
                     this.nextState.nodes[moduleName] = feedbackDelayNode
-                    console.log(this.nextState.nodes[moduleName])
+                    // console.log(this.nextState.nodes[moduleName])
                 } else {
                     this.currentState.nodes[moduleName] = feedbackDelayNode
-                    console.log(this.currentState.nodes[moduleName])
+                    // console.log(this.currentState.nodes[moduleName])
                 }
-                console.log(feedbackDelayNode)
+                // console.log(feedbackDelayNode)
 
                 
 
@@ -475,7 +478,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
 
         // Step 2: Define a recursive function to process each node
 
-                // Process each state
+        // Process each state
         const processGraph = (state, signalBuffers, stateVersion) => {
             const visited = new Set();
 
@@ -492,13 +495,14 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                 const inputBuffer = new Float32Array(128);
                 const inputConnections = state.signalConnections.filter(conn => conn.target.split('.')[0] === id);
 
-                console.log(`Connections for ${id}:`, inputConnections);
+                // console.log('Signal Connections:', state.signalConnections);
+                // console.log('CV Connections:', state.cvConnections);
+                // console.log(`Connections for ${id}:`, inputConnections);
 
-                if (node.node === 'feedbackDelayNode') {
-                    console.log('feedbackDelayNode inputBuffer:', inputBuffer);
-                }
+
 
                 for (const conn of inputConnections) {
+                    // console.log('conn', conn)
                     processNode(conn.source.split('.')[0]); // Process the source node first
                     const sourceBuffer = signalBuffers[conn.source.split('.')[0]];
                     if (!sourceBuffer) {
@@ -599,8 +603,10 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                                 signalBuffers[id][i] = Math.sin(2 * Math.PI * node.phase) * effectiveGain;
                         }
                     }
+
+                    // console.log(`Oscillator (${id}) output:`, signalBuffers[id]);
                 }
-                
+                    
                 
                 else if (node.node === 'Gain') {
                     const effectiveGain = getEffectiveParam(node, 'gain', node.baseParams['gain']); // Combines base and modulated gain
@@ -624,22 +630,122 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                 //     }
                 // }
                 
+                // node.webAudioNode.delayTime.setValueAtTime(effectiveDelayTime, this.audioContext.currentTime);
+
+                // else if (node.node === 'Delay') {
+                //     if (!node.delayBuffer) {
+                //         console.log(`Initializing Delay Buffer for (${id})`);
+                
+                //         // Allocate buffer for max delay time (1 sec)
+                //         node.delayBuffer = new Float32Array(sampleRate);
+                //         node.delayIndex = 0; // Write position in the delay buffer
+                //     }
+                
+                //     const effectiveDelayTime = getEffectiveParam(node, 'delayTime', node.baseParams['timeAttenuverter']);
+
+                //     // Convert delay time (ms) to samples
+                //     const delaySamples = Math.round((effectiveDelayTime / 1000) * sampleRate);
+
+                
+                //     // Make sure delay time doesn't exceed buffer size
+                //     const safeDelaySamples = Math.min(delaySamples, node.delayBuffer.length - 1);
+                
+                //     // Ensure feedback is a valid number
+                //     const feedback = typeof node.baseParams.feedback === 'number' ? node.baseParams.feedback : 0;
+                
+                //     for (let i = 0; i < signalBuffers[id].length; i++) {
+                //         // Read the delayed sample
+                //         const readIndex = (node.delayIndex - safeDelaySamples + node.delayBuffer.length) % node.delayBuffer.length;
+                //         const delayedSample = node.delayBuffer[readIndex];
+                
+                //         // Compute output (mix input with delayed sample, applying feedback)
+                //         const inputSample = inputBuffer[i] || 0;
+                //         const outputSample = inputSample + delayedSample * feedback;
+                
+                //         // Write output sample to the delay buffer
+                //         node.delayBuffer[node.delayIndex] = outputSample;
+                
+                //         // Store the delayed output
+                //         signalBuffers[id][i] = outputSample;
+                
+                //         // Increment buffer index, wrap around circular buffer
+                //         node.delayIndex = (node.delayIndex + 1) % node.delayBuffer.length;
+                //     }
+                // }
+                
+                else if (node.node === 'feedbackDelayNode') {
+                    if (!node.delayBuffer) {
+                        // create delaybuffer
+                        node.delayBuffer = new Float32Array(128); // 1-blockSize delay buffer
+                        node.delayIndex = 0;
+                    }
+                    const delaySamples = Math.min(128, node.delayBuffer.length);
+
+                    for (let i = 0; i < signalBuffers[id].length; i++) {
+                        const delayedSampleIndex = (node.delayIndex - delaySamples + node.delayBuffer.length) % node.delayBuffer.length;
+                        const delayedSample = node.delayBuffer[delayedSampleIndex];
+
+                        signalBuffers[id][i] = delayedSample
+
+                        // Store the processed signal in the delay buffer
+                        node.delayBuffer[node.delayIndex] = signalBuffers[id][i];
+
+                        // Increment buffer index, ensuring circular buffer behavior
+                        node.delayIndex = (node.delayIndex + 1) % node.delayBuffer.length;
+                        
+                    }
+                }
                 else if (node.node === 'Delay') {
                     if (!node.delayBuffer) {
                         const effectiveDelayTime = getEffectiveParam(node, 'delayTime', node.baseParams['timeAttenuverter']);
                         const delayTime = Math.round(effectiveDelayTime * sampleRate / 1000)
                         node.delayBuffer = new Float32Array(sampleRate); // 1-second delay buffer
                         node.delayIndex = 0;
+
+                        // Initialize Lowpass Filter State (Simple 1-Pole)
+                        node.lpfCutoff = node.baseParams.lpfCutoff || 3000; // Default cutoff at 3kHz
+                        node.lpfPreviousSample = 0; // Filter memory
                     }
-                    const delaySamples = Math.min(getEffectiveParam(node, 'delayTime', node.baseParams['timeAttenuverter']) * sampleRate, node.delayBuffer.length);
+                        const delaySamples = Math.min(getEffectiveParam(node, 'delayTime', node.baseParams['timeAttenuverter']) * sampleRate, node.delayBuffer.length);
+                        
+                        const feedbackParam = typeof node.baseParams.feedback === 'number' ? node.baseParams.feedback : 0.5;
+                        
+                        const wetMix = node.baseParams.wetMix || 0.5; // Default wet/dry balance (0.5 = 50/50)
+                        const dryMix = 1.0 - wetMix; // Ensure proper mix balance
+                        
+                        // console.log(wetMix, dryMix)
+                        // Set up Lowpass Filter Coefficient
+                        const RC = 1.0 / (2 * Math.PI * node.lpfCutoff);
+                        const alpha = sampleRate / (sampleRate + RC); // 1st order LPF coefficient
+                        
                     for (let i = 0; i < signalBuffers[id].length; i++) {
-                        const delayedSample = node.delayBuffer[(node.delayIndex - delaySamples + node.delayBuffer.length) % node.delayBuffer.length];
-                        signalBuffers[id][i] = inputBuffer[i] + delayedSample * node.feedback;
+                        const delayedSampleIndex = (node.delayIndex - delaySamples + node.delayBuffer.length) % node.delayBuffer.length;
+                        const delayedSample = node.delayBuffer[delayedSampleIndex];
+
+                        // Apply Lowpass Filter to Feedback Signal
+                        let filteredFeedback = alpha * delayedSample + (1 - alpha) * node.lpfPreviousSample;
+                        node.lpfPreviousSample = filteredFeedback; // Store for next iteration
+
+                        // Attenuate feedback before applying it
+                        const feedbackGain = 0.8; // Adjust this (lower = less buildup, higher = more resonance)
+
+                        const feedbackSample = filteredFeedback * feedbackParam * feedbackGain
+
+                        // ✅ Mix Input and Filtered Feedback Using Dry/Wet Control
+                        const inputSample = inputBuffer[i] || 0;
+                        const wetSignal = delayedSample + feedbackSample;
+                        const drySignal = inputSample;
+                        
+             
+                        // Compute the final signal with proper mix balance
+                        signalBuffers[id][i] = clamp((drySignal * dryMix) + (wetSignal * wetMix), -1.0, 1.0);
+
+                        // 
                         node.delayBuffer[node.delayIndex] = signalBuffers[id][i];
                         node.delayIndex = (node.delayIndex + 1) % node.delayBuffer.length;
                     }
                 } 
-
+                
                 if (node.node === 'BiquadFilter') {
                     const effectiveFrequency = clamp(
                         getEffectiveParam(node, 'frequency', node.baseParams['freq cv +/-']),
@@ -784,8 +890,9 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                         signalBuffers[id][i] = output;
                     }
                 }
+                /*
                 else if (node.node === 'feedbackDelayNode') {
-                    
+                    // console.log(`Feedback Delay Node (${id}) input:`, inputBuffer);
                     // Initialize the delay buffer if it doesn't exist
                     if (!node.delayBuffer) {
                         console.log(`Initializing delay buffer for node ${id}`);
@@ -798,7 +905,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                     const input = inputBuffer; // Input signal to be delayed
                     const output = signalBuffers[id]; // Output signal after delay
 
-                    console.log('Input:', inputBuffer);
+                    // console.log('Input:', inputBuffer);
                     
                 
                     for (let i = 0; i < input.length; i++) {
@@ -815,10 +922,10 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                         node.delayIndex = (node.delayIndex + 1) % node.delayBuffer.length;
                     }
 
-                    console.log('Output:', output);
+                    // console.log('Output:', output);
                 }
             
-
+                */
                 // Add processed signal to the node's output buffer
                 for (let i = 0; i < signalBuffers[id].length; i++) {
                     signalBuffers[id][i] += inputBuffer[i];

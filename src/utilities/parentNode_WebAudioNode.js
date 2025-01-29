@@ -15,6 +15,8 @@ const moduleBackgrounds = {
 // const modules = audioNodes.webAudioNodes
 export class ParentNode_WebAudioNode {
     constructor(module, position, children, structure) {
+
+        
         this.animal = chance.animal().split(' ').pop()
         const hash = `${this.animal}_${uuidv7().split('-').pop()}`       
         this.moduleName = `${module}_${hash.split('-')[0]}`
@@ -31,6 +33,7 @@ export class ParentNode_WebAudioNode {
             nodeIDs: [],
             structure: structure
         }
+
         this.nodeIDs = [] // store parent and child ids for later reference
         // sift through modules.json, construct node
         
@@ -45,6 +48,7 @@ export class ParentNode_WebAudioNode {
         this. moduleColour = null
         this.knobs = []
 
+    
         // module background colour:
         switch(this.module){
             case 'Oscillator':
