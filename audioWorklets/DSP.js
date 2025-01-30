@@ -6,6 +6,10 @@ class DSP extends AudioWorkletProcessor {
         this.currentState = { nodes: {}, signalConnections: [], outputConnections: [], cvConnections: [] };
         this.nextState = { nodes: {}, signalConnections: [], outputConnections: [], cvConnections: [] };
         this.signalBuffers = {}; // Persistent signal buffers
+
+        // state persistence for crossfading 
+        this.signalBuffersCurrent ={}
+        this.signalBuffersNext = {}
         this.feedbackBuffers = {}; // Separate buffers for feedback nodes
         this.crossfadeInProgress = false;
         this.crossfadeProgress = 0;
@@ -367,19 +371,20 @@ class DSP extends AudioWorkletProcessor {
             }
         }
 
-        const signalBuffersCurrent = {};
-        const signalBuffersNext = {};
+        this.signalBuffersCurrent = this.signalBuffersCurrent || {};
+        this.signalBuffersNext = this.signalBuffersNext || {};
 
         //! maybe this is where feedback patching fails, because we're setting the signalBuffersCurrent to new arrays each time?
         // Allocate separate buffers for current state
         for (const id in this.currentState.nodes) {
-            signalBuffersCurrent[id] = new Float32Array(128);
+            if (!this.signalBuffersCurrent[id]) {
+                this.signalBuffersCurrent[id] = new Float32Array(128);
+            }
         }
-
-        // Allocate separate buffers for next state
-        if (this.nextState) {
-            for (const id in this.nextState.nodes) {
-                signalBuffersNext[id] = new Float32Array(128);
+        
+        for (const id in this.nextState.nodes) {
+            if (!this.signalBuffersNext[id]) {
+                this.signalBuffersNext[id] = new Float32Array(128);
             }
         }
 
@@ -396,12 +401,28 @@ class DSP extends AudioWorkletProcessor {
                 if (!signalBuffers[id]) signalBuffers[id] = new Float32Array(128);
                 const inputBuffer = new Float32Array(128);
                 
+                // process input connections 
                 state.signalConnections.filter(conn => conn.target.includes(id)).forEach(conn => {
+                    console.log(`🔌 Connection: ${conn.source} → ${conn.target}`);
+
                     const sourceId = conn.source.split('.')[0];
                     processNode(sourceId);
                     const sourceBuffer = signalBuffers[sourceId] || new Float32Array(128);
                     for (let i = 0; i < 128; i++) inputBuffer[i] += sourceBuffer[i];
-                    if (conn.target.startsWith("feedbackDelayNode")) feedbackBuffers[sourceId] = sourceBuffer.slice();
+                    if (conn.target.startsWith("feedbackDelayNode")){
+                        // feedbackBuffers[sourceId] = sourceBuffer.slice();
+                        const feedbackNodeId = conn.target.split('.')[0]; // Get feedback delay node ID
+                        if (!feedbackBuffers[feedbackNodeId]) {
+                            feedbackBuffers[feedbackNodeId] = new Float32Array(128); // Ensure buffer exists
+                        }
+                    
+                        // Sum all signals feeding into this feedback buffer
+                        for (let i = 0; i < 128; i++) {
+                            feedbackBuffers[feedbackNodeId][i] += sourceBuffer[i];
+                        }
+                        console.log(`📡 Stored feedback signal for ${feedbackNodeId} from ${sourceId}`);
+
+                    } 
                 });
 
 
@@ -492,7 +513,11 @@ class DSP extends AudioWorkletProcessor {
                 else if (node.node === 'feedbackDelayNode') {
                     if (!node.delayBuffer) node.delayBuffer = new Float32Array(128);
                     for (let i = 0; i < 128; i++) {
+                        // console.log(`🔄 feedbackDelayNode(${id}): feedbackBuffers[${id}] (First 10 Samples):`, feedbackBuffers[id]?.slice(0, 10));
+
                         const feedbackInput = feedbackBuffers[id]?.[i] || 0;
+
+                        console.log(`🌀 feedbackDelayNode(${id}) | Feedback Input: ${feedbackInput} | Delayed Sample: ${delayedSample}`);
                         const delayedSample = node.delayBuffer[(node.delayIndex - 1 + 128) % 128];
                         signalBuffers[id][i] = delayedSample;
                         node.delayBuffer[node.delayIndex] = feedbackInput;
@@ -503,8 +528,8 @@ class DSP extends AudioWorkletProcessor {
             state.outputConnections.forEach(id => processNode(id.split('.')[0]));
         };
 
-        processGraph(this.currentState, signalBuffersCurrent, this.feedbackBuffers);
-        if (this.nextState.outputConnections) processGraph(this.nextState, signalBuffersNext, this.feedbackBuffers);
+        processGraph(this.currentState, this.signalBuffersCurrent, this.feedbackBuffers);
+        if (this.nextState.outputConnections) processGraph(this.nextState, this.signalBuffersNext, this.feedbackBuffers);
 
         for (let i = 0; i < output.length; i++) {
             let currentSample = 0;
@@ -513,13 +538,13 @@ class DSP extends AudioWorkletProcessor {
             // Get output from current state buffer
             if (this.currentState.outputConnections.length > 0) {
                 const currentOutputId = this.currentState.outputConnections[0].split('.')[0];
-                currentSample = signalBuffersCurrent[currentOutputId]?.[i] || 0;
+                currentSample = this.signalBuffersCurrent[currentOutputId]?.[i] || 0;
             }
         
             // Get output from next state buffer
             if (this.nextState.outputConnections.length > 0) {
                 const nextOutputId = this.nextState.outputConnections[0].split('.')[0];
-                nextSample = signalBuffersNext[nextOutputId]?.[i] || 0;
+                nextSample = this.signalBuffersNext[nextOutputId]?.[i] || 0;
             }
         
             // 🚀 **Correct Crossfade Logic**
