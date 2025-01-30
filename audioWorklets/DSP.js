@@ -341,6 +341,10 @@ class DSP extends AudioWorkletProcessor {
         }
     }
 
+    clamp(value, min, max) {
+        return Math.min(Math.max(value, min), max)
+    }
+
     process(inputs, outputs) {
         const output = outputs[0][0];
         output.fill(0); // Start with silence
@@ -511,6 +515,74 @@ class DSP extends AudioWorkletProcessor {
                         node.delayIndex = (node.delayIndex + 1) % 128;
                     }
                 }
+                else if (node.node === 'Delay') {
+                    if (!node.delayBuffer) {
+                        node.delayBuffer = new Float32Array(sampleRate); // 1-second delay buffer
+                        node.delayIndex = 0;
+                        node.lpfCutoff = node.baseParams.lpfCutoff || 3000;
+                        node.lpfPreviousSample = 0;
+                        node.previousDelayTime = getEffectiveParam(node, 'delayTime', node.baseParams['time cv +/-']);
+                
+                        // 🎛️ Allpass filter memory for smoothing
+                        node.allpassMem1 = 0;
+                        node.allpassMem2 = 0;
+                    }
+                
+                    // 🚀 Smooth delay time modulation
+                    const newDelayTime = getEffectiveParam(node, 'delayTime', node.baseParams['time cv +/-']);
+                    const delayTime = node.previousDelayTime + 0.1 * (newDelayTime - node.previousDelayTime);
+                    node.previousDelayTime = delayTime;
+                
+                    // 🕒 Convert to samples
+                    const delaySamples = (delayTime / 1000) * sampleRate;
+                
+                    // 🔀 Split integer and fractional parts
+                    const intDelaySamples = Math.floor(delaySamples);
+                    const frac = delaySamples - intDelaySamples; // Fractional part for allpass interpolation
+                
+                    // 🎛️ Feedback and mix parameters
+                    const feedbackParam = typeof node.baseParams.feedback === 'number' ? node.baseParams.feedback : 0.5;
+                    const wetMix = node.baseParams.wetMix || 0.2;
+                    const dryMix = 0.3;
+                
+                    // 🎚️ Lowpass filter coefficient
+                    const RC = 1.0 / (2 * Math.PI * node.lpfCutoff);
+                    const alpha = sampleRate / (sampleRate + RC);
+                
+                    for (let i = 0; i < 128; i++) {
+                        // 🕘 Get delayed samples
+                        const indexA = (node.delayIndex - intDelaySamples + node.delayBuffer.length) % node.delayBuffer.length;
+                        const indexB = (indexA - 1 + node.delayBuffer.length) % node.delayBuffer.length;
+                
+                        const sampleA = node.delayBuffer[indexA];
+                        const sampleB = node.delayBuffer[indexB];
+                
+                        // 🎛️ Allpass interpolation
+                        const delayedSample = sampleB + frac * (sampleA - node.allpassMem1);
+                        node.allpassMem1 = delayedSample; // Store last sample
+                
+                        // 🎚️ Apply Lowpass Filter to Feedback
+                        let filteredFeedback = alpha * delayedSample + (1 - alpha) * node.lpfPreviousSample;
+                        node.lpfPreviousSample = filteredFeedback; // Store for next iteration
+                
+                        // 🎤 Retrieve feedback input
+                        const feedbackInput = feedbackBuffers[id]?.[i] || 0;
+                        const feedbackSample = filteredFeedback * feedbackParam + feedbackInput;
+                
+                        // 🎵 Dry/Wet Mix
+                        const inputSample = inputBuffer[i] || 0;
+                        const wetSignal = delayedSample + feedbackSample;
+                        const drySignal = inputSample;
+                        signalBuffers[id][i] = this.clamp((drySignal * dryMix) + (wetSignal * wetMix), -1.0, 1.0);
+                
+                        // 🔁 Store in delay buffer
+                        node.delayBuffer[node.delayIndex] = signalBuffers[id][i];
+                        node.delayIndex = (node.delayIndex + 1) % node.delayBuffer.length;
+                    }
+                }
+                
+                
+                
             };
             state.outputConnections.forEach(id => processNode(id.split('.')[0]));
         };
