@@ -1,0 +1,1864 @@
+{
+  "filename": "filename.fpsynth",
+  "visualGraph": {
+    "elements": {
+      "nodes": [
+        {
+          "data": {
+            "id": "AudioDestination_Angelfish_918b26343b4d",
+            "label": "AudioDestination Angelfish",
+            "kind": "module",
+            "rnboName": "AudioDestination",
+            "moduleSpec": {
+              "parameters": {},
+              "paramNames": [],
+              "cv": {},
+              "inputs": [
+                "IN"
+              ],
+              "outputs": []
+            },
+            "structure": "webAudioNodes",
+            "bgcolour": "#E6CCFF"
+          },
+          "position": {
+            "x": 275.5,
+            "y": 730
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ":parent"
+        },
+        {
+          "data": {
+            "id": "AudioDestination_Angelfish_918b26343b4d.IN",
+            "parent": "AudioDestination_Angelfish_918b26343b4d",
+            "label": "IN",
+            "kind": "input",
+            "bgcolour": "#FC9A4F",
+            "ghostCableShape": "rectangle",
+            "ghostCableColour": "#5C9AE3",
+            "description": null
+          },
+          "position": {
+            "x": 290,
+            "y": 730
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "HighPassFilter_Cow_743b29f9213f",
+            "label": "HighPassFilter Cow",
+            "kind": "module",
+            "rnboName": "HighPassFilter",
+            "moduleSpec": {
+              "parameters": {
+                "freq": {
+                  "min": 20,
+                  "max": 20000,
+                  "default": 1000,
+                  "units": "Hz",
+                  "description": "The cutoff frequency of the high-pass filter.",
+                  "modulatable": true,
+                  "modulationDescription": "Modulating the cutoff frequency allows for dynamic filtering effects.",
+                  "kind": "paramAnchorNode",
+                  "name": "freq",
+                  "ui": "knob"
+                },
+                "Q": {
+                  "min": 0.1,
+                  "max": 10,
+                  "default": 1,
+                  "units": "resonance",
+                  "description": "The resonance or quality factor of the filter.",
+                  "modulatable": true,
+                  "modulationDescription": "Higher Q values emphasize frequencies around the cutoff point.",
+                  "kind": "paramAnchorNode",
+                  "name": "Q",
+                  "ui": "knob"
+                }
+              },
+              "paramNames": [
+                "freq",
+                "Q"
+              ],
+              "cvNames": [
+                "freq cv +/-",
+                "Q cv +/-"
+              ],
+              "cv": {
+                "freq cv +/-": {
+                  "min": 20,
+                  "max": 20000,
+                  "default": 1000,
+                  "units": "Hz",
+                  "description": "Control Voltage input for dynamically modulating the cutoff frequency.",
+                  "modulatable": true,
+                  "modulationDescription": "Allows for sweeps or envelope-controlled filtering.",
+                  "kind": "input",
+                  "name": "freq cv +/-",
+                  "ui": "knob"
+                },
+                "Q cv +/-": {
+                  "min": 0.1,
+                  "max": 10,
+                  "default": 1,
+                  "units": "resonance",
+                  "description": "Control Voltage input for dynamically modulating the resonance.",
+                  "modulatable": true,
+                  "modulationDescription": "Modulating the Q value changes how sharply the filter emphasizes the cutoff frequency.",
+                  "kind": "input",
+                  "name": "Q cv +/-",
+                  "ui": "knob"
+                }
+              },
+              "inputs": [
+                "IN"
+              ],
+              "outputs": [
+                "OUT"
+              ]
+            },
+            "structure": "webAudioNodes",
+            "bgcolour": "#E6CCFF"
+          },
+          "position": {
+            "x": 510,
+            "y": 582.5
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ":parent"
+        },
+        {
+          "data": {
+            "id": "HighPassFilter_Cow_743b29f9213f_freq",
+            "parent": "HighPassFilter_Cow_743b29f9213f",
+            "label": "freq",
+            "nameSpace": "HighPassFilter_Cow_743b29f9213f_freq.freq",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "HighPassFilter_Cow_743b29f9213f_freq",
+            "ui": "knob",
+            "min": 20,
+            "max": 20000,
+            "value": 1000,
+            "menuOptions": "none",
+            "description": "The cutoff frequency of the high-pass filter."
+          },
+          "position": {
+            "x": 570,
+            "y": 430
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "HighPassFilter_Cow_743b29f9213f_Q",
+            "parent": "HighPassFilter_Cow_743b29f9213f",
+            "label": "Q",
+            "nameSpace": "HighPassFilter_Cow_743b29f9213f_Q.Q",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "HighPassFilter_Cow_743b29f9213f_Q",
+            "ui": "knob",
+            "min": 0.1,
+            "max": 10,
+            "value": 1,
+            "menuOptions": "none",
+            "description": "The resonance or quality factor of the filter."
+          },
+          "position": {
+            "x": 570,
+            "y": 490
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "HighPassFilter_Cow_743b29f9213f.freq cv +/-",
+            "parent": "HighPassFilter_Cow_743b29f9213f",
+            "label": "freq cv +/-",
+            "kind": "input",
+            "bgcolour": "#FC9A4F",
+            "ghostCableShape": "rectangle",
+            "ghostCableColour": "#5C9AE3",
+            "description": "Allows for sweeps or envelope-controlled filtering."
+          },
+          "position": {
+            "x": 550,
+            "y": 550
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "HighPassFilter_Cow_743b29f9213f.Q cv +/-",
+            "parent": "HighPassFilter_Cow_743b29f9213f",
+            "label": "Q cv +/-",
+            "kind": "input",
+            "bgcolour": "#FC9A4F",
+            "ghostCableShape": "rectangle",
+            "ghostCableColour": "#5C9AE3",
+            "description": "Modulating the Q value changes how sharply the filter emphasizes the cutoff frequency."
+          },
+          "position": {
+            "x": 550,
+            "y": 610
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "HighPassFilter_Cow_743b29f9213f.IN",
+            "parent": "HighPassFilter_Cow_743b29f9213f",
+            "label": "IN",
+            "kind": "input",
+            "bgcolour": "#FC9A4F",
+            "ghostCableShape": "rectangle",
+            "ghostCableColour": "#5C9AE3",
+            "description": null
+          },
+          "position": {
+            "x": 550,
+            "y": 670
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "HighPassFilter_Cow_743b29f9213f.OUT",
+            "parent": "HighPassFilter_Cow_743b29f9213f",
+            "label": "OUT",
+            "kind": "output",
+            "bgcolour": "#6FB1FC",
+            "ghostCableShape": "triangle",
+            "ghostCableColour": "#E68942",
+            "description": null
+          },
+          "position": {
+            "x": 550,
+            "y": 730
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "Oscillator_Camel_eb22e4fe03f5",
+            "label": "Oscillator Camel",
+            "kind": "module",
+            "rnboName": "Oscillator",
+            "moduleSpec": {
+              "parameters": {
+                "frequency": {
+                  "min": 110,
+                  "max": 3000,
+                  "default": 440,
+                  "units": "Hz",
+                  "description": "The frequency of the oscillator.",
+                  "modulatable": true,
+                  "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects.",
+                  "kind": "paramAnchorNode",
+                  "name": "frequency",
+                  "ui": "knob"
+                },
+                "type": {
+                  "values": [
+                    "sine",
+                    "square",
+                    "sawtooth",
+                    "triangle",
+                    "custom"
+                  ],
+                  "default": "sine",
+                  "description": "The waveform shape of the oscillator.",
+                  "kind": "paramAnchorNode",
+                  "name": "type",
+                  "ui": "menu"
+                },
+                "freq cv +/-": {
+                  "min": -1000,
+                  "max": 1000,
+                  "default": 100,
+                  "units": "Hz",
+                  "description": "The attenuverter of the frequency CV input",
+                  "modulatable": false,
+                  "modulationDescription": "The attenuverter of the frequency CV input",
+                  "kind": "paramAnchorNode",
+                  "name": "freq cv +/-",
+                  "ui": "knob"
+                }
+              },
+              "paramNames": [
+                "frequency",
+                "freq cv +/-",
+                "type"
+              ],
+              "cvNames": [
+                "frequency"
+              ],
+              "cv": {
+                "frequency": {
+                  "min": 110,
+                  "max": 9000,
+                  "default": 440,
+                  "units": "Hz",
+                  "description": "The frequency of the oscillator.",
+                  "modulatable": true,
+                  "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects.",
+                  "kind": "input",
+                  "name": "frequency",
+                  "ui": "knob"
+                }
+              },
+              "inputs": [],
+              "outputs": [
+                "OUT"
+              ]
+            },
+            "structure": "webAudioNodes",
+            "bgcolour": "#CCCCCC"
+          },
+          "position": {
+            "x": 532,
+            "y": 222.5
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ":parent"
+        },
+        {
+          "data": {
+            "id": "Oscillator_Camel_eb22e4fe03f5_frequency",
+            "parent": "Oscillator_Camel_eb22e4fe03f5",
+            "label": "frequency",
+            "nameSpace": "Oscillator_Camel_eb22e4fe03f5_frequency.frequency",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "Oscillator_Camel_eb22e4fe03f5_frequency",
+            "ui": "knob",
+            "min": 110,
+            "max": 3000,
+            "value": 440,
+            "menuOptions": "none",
+            "description": "The frequency of the oscillator."
+          },
+          "position": {
+            "x": 590,
+            "y": 110
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "Oscillator_Camel_eb22e4fe03f5_freq cv +/-",
+            "parent": "Oscillator_Camel_eb22e4fe03f5",
+            "label": "freq cv +/-",
+            "nameSpace": "Oscillator_Camel_eb22e4fe03f5_freq cv +/-.freq cv +/-",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "Oscillator_Camel_eb22e4fe03f5_freq cv +/-",
+            "ui": "knob",
+            "min": -1000,
+            "max": 1000,
+            "value": 100,
+            "menuOptions": "none",
+            "description": "The attenuverter of the frequency CV input"
+          },
+          "position": {
+            "x": 590,
+            "y": 170
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "Oscillator_Camel_eb22e4fe03f5_type",
+            "parent": "Oscillator_Camel_eb22e4fe03f5",
+            "label": "type",
+            "nameSpace": "Oscillator_Camel_eb22e4fe03f5_type.type",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "Oscillator_Camel_eb22e4fe03f5_type",
+            "ui": "menu",
+            "min": 0,
+            "max": 1,
+            "value": "sine",
+            "menuOptions": [
+              "sine",
+              "square",
+              "sawtooth",
+              "triangle",
+              "custom"
+            ],
+            "description": "The waveform shape of the oscillator."
+          },
+          "position": {
+            "x": 590,
+            "y": 230
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "Oscillator_Camel_eb22e4fe03f5.frequency",
+            "parent": "Oscillator_Camel_eb22e4fe03f5",
+            "label": "frequency",
+            "kind": "input",
+            "bgcolour": "#FC9A4F",
+            "ghostCableShape": "rectangle",
+            "ghostCableColour": "#5C9AE3",
+            "description": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects."
+          },
+          "position": {
+            "x": 570,
+            "y": 270
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "Oscillator_Camel_eb22e4fe03f5.OUT",
+            "parent": "Oscillator_Camel_eb22e4fe03f5",
+            "label": "OUT",
+            "kind": "output",
+            "bgcolour": "#6FB1FC",
+            "ghostCableShape": "triangle",
+            "ghostCableColour": "#E68942",
+            "description": null
+          },
+          "position": {
+            "x": 570,
+            "y": 330
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "LFO_Pig_eb090b819737",
+            "label": "LFO Pig",
+            "kind": "module",
+            "rnboName": "LFO",
+            "moduleSpec": {
+              "parameters": {
+                "frequency": {
+                  "min": 0.01,
+                  "max": 10,
+                  "default": 1,
+                  "units": "Hz",
+                  "description": "The frequency of the low frequency oscillator.",
+                  "modulatable": true,
+                  "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects.",
+                  "kind": "paramAnchorNode",
+                  "name": "frequency",
+                  "ui": "knob"
+                },
+                "type": {
+                  "values": [
+                    "sine",
+                    "square",
+                    "sawtooth",
+                    "triangle",
+                    "custom"
+                  ],
+                  "default": "sine",
+                  "description": "The waveform shape of the oscillator.",
+                  "kind": "paramAnchorNode",
+                  "name": "type",
+                  "ui": "menu"
+                },
+                "freq cv +/-": {
+                  "min": -20,
+                  "max": 20,
+                  "default": 10,
+                  "units": "Hz",
+                  "description": "The attenuverter of the frequency CV input",
+                  "modulatable": false,
+                  "modulationDescription": "The attenuverter of the frequency CV input",
+                  "kind": "paramAnchorNode",
+                  "name": "freq cv +/-",
+                  "ui": "knob"
+                }
+              },
+              "paramNames": [
+                "frequency",
+                "freq cv +/-",
+                "type"
+              ],
+              "cvNames": [
+                "frequency"
+              ],
+              "cv": {
+                "frequency": {
+                  "min": 0.01,
+                  "max": 10,
+                  "default": 5,
+                  "units": "Hz",
+                  "description": "The frequency of the oscillator.",
+                  "modulatable": true,
+                  "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects.",
+                  "kind": "input",
+                  "name": "frequency",
+                  "ui": "knob"
+                }
+              },
+              "inputs": [],
+              "outputs": [
+                "OUT"
+              ]
+            },
+            "structure": "webAudioNodes",
+            "bgcolour": "#CCCCCC"
+          },
+          "position": {
+            "x": 92,
+            "y": 192.5
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ":parent"
+        },
+        {
+          "data": {
+            "id": "LFO_Pig_eb090b819737_frequency",
+            "parent": "LFO_Pig_eb090b819737",
+            "label": "frequency",
+            "nameSpace": "LFO_Pig_eb090b819737_frequency.frequency",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "LFO_Pig_eb090b819737_frequency",
+            "ui": "knob",
+            "min": 0.01,
+            "max": 10,
+            "value": 1,
+            "menuOptions": "none",
+            "description": "The frequency of the low frequency oscillator."
+          },
+          "position": {
+            "x": 150,
+            "y": 70
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "LFO_Pig_eb090b819737_freq cv +/-",
+            "parent": "LFO_Pig_eb090b819737",
+            "label": "freq cv +/-",
+            "nameSpace": "LFO_Pig_eb090b819737_freq cv +/-.freq cv +/-",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "LFO_Pig_eb090b819737_freq cv +/-",
+            "ui": "knob",
+            "min": -20,
+            "max": 20,
+            "value": 10,
+            "menuOptions": "none",
+            "description": "The attenuverter of the frequency CV input"
+          },
+          "position": {
+            "x": 150,
+            "y": 130
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "LFO_Pig_eb090b819737_type",
+            "parent": "LFO_Pig_eb090b819737",
+            "label": "type",
+            "nameSpace": "LFO_Pig_eb090b819737_type.type",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "LFO_Pig_eb090b819737_type",
+            "ui": "menu",
+            "min": 0,
+            "max": 1,
+            "value": "sine",
+            "menuOptions": [
+              "sine",
+              "square",
+              "sawtooth",
+              "triangle",
+              "custom"
+            ],
+            "description": "The waveform shape of the oscillator."
+          },
+          "position": {
+            "x": 150,
+            "y": 190
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "LFO_Pig_eb090b819737.frequency",
+            "parent": "LFO_Pig_eb090b819737",
+            "label": "frequency",
+            "kind": "input",
+            "bgcolour": "#FC9A4F",
+            "ghostCableShape": "rectangle",
+            "ghostCableColour": "#5C9AE3",
+            "description": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects."
+          },
+          "position": {
+            "x": 130,
+            "y": 250
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "LFO_Pig_eb090b819737.OUT",
+            "parent": "LFO_Pig_eb090b819737",
+            "label": "OUT",
+            "kind": "output",
+            "bgcolour": "#6FB1FC",
+            "ghostCableShape": "triangle",
+            "ghostCableColour": "#E68942",
+            "description": null
+          },
+          "position": {
+            "x": 130,
+            "y": 310
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "LFO_Icefish_c01e67b48828",
+            "label": "LFO Icefish",
+            "kind": "module",
+            "rnboName": "LFO",
+            "moduleSpec": {
+              "parameters": {
+                "frequency": {
+                  "min": 0.01,
+                  "max": 10,
+                  "default": 1,
+                  "units": "Hz",
+                  "description": "The frequency of the low frequency oscillator.",
+                  "modulatable": true,
+                  "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects.",
+                  "kind": "paramAnchorNode",
+                  "name": "frequency",
+                  "ui": "knob"
+                },
+                "type": {
+                  "values": [
+                    "sine",
+                    "square",
+                    "sawtooth",
+                    "triangle",
+                    "custom"
+                  ],
+                  "default": "sine",
+                  "description": "The waveform shape of the oscillator.",
+                  "kind": "paramAnchorNode",
+                  "name": "type",
+                  "ui": "menu"
+                },
+                "freq cv +/-": {
+                  "min": -20,
+                  "max": 20,
+                  "default": 10,
+                  "units": "Hz",
+                  "description": "The attenuverter of the frequency CV input",
+                  "modulatable": false,
+                  "modulationDescription": "The attenuverter of the frequency CV input",
+                  "kind": "paramAnchorNode",
+                  "name": "freq cv +/-",
+                  "ui": "knob"
+                }
+              },
+              "paramNames": [
+                "frequency",
+                "freq cv +/-",
+                "type"
+              ],
+              "cvNames": [
+                "frequency"
+              ],
+              "cv": {
+                "frequency": {
+                  "min": 0.01,
+                  "max": 10,
+                  "default": 5,
+                  "units": "Hz",
+                  "description": "The frequency of the oscillator.",
+                  "modulatable": true,
+                  "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects.",
+                  "kind": "input",
+                  "name": "frequency",
+                  "ui": "knob"
+                }
+              },
+              "inputs": [],
+              "outputs": [
+                "OUT"
+              ]
+            },
+            "structure": "webAudioNodes",
+            "bgcolour": "#CCCCCC"
+          },
+          "position": {
+            "x": 812,
+            "y": 222.5
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ":parent"
+        },
+        {
+          "data": {
+            "id": "LFO_Icefish_c01e67b48828_frequency",
+            "parent": "LFO_Icefish_c01e67b48828",
+            "label": "frequency",
+            "nameSpace": "LFO_Icefish_c01e67b48828_frequency.frequency",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "LFO_Icefish_c01e67b48828_frequency",
+            "ui": "knob",
+            "min": 0.01,
+            "max": 10,
+            "value": 1,
+            "menuOptions": "none",
+            "description": "The frequency of the low frequency oscillator."
+          },
+          "position": {
+            "x": 870,
+            "y": 110
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "LFO_Icefish_c01e67b48828_freq cv +/-",
+            "parent": "LFO_Icefish_c01e67b48828",
+            "label": "freq cv +/-",
+            "nameSpace": "LFO_Icefish_c01e67b48828_freq cv +/-.freq cv +/-",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "LFO_Icefish_c01e67b48828_freq cv +/-",
+            "ui": "knob",
+            "min": -20,
+            "max": 20,
+            "value": 10,
+            "menuOptions": "none",
+            "description": "The attenuverter of the frequency CV input"
+          },
+          "position": {
+            "x": 870,
+            "y": 170
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "LFO_Icefish_c01e67b48828_type",
+            "parent": "LFO_Icefish_c01e67b48828",
+            "label": "type",
+            "nameSpace": "LFO_Icefish_c01e67b48828_type.type",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "LFO_Icefish_c01e67b48828_type",
+            "ui": "menu",
+            "min": 0,
+            "max": 1,
+            "value": "sine",
+            "menuOptions": [
+              "sine",
+              "square",
+              "sawtooth",
+              "triangle",
+              "custom"
+            ],
+            "description": "The waveform shape of the oscillator."
+          },
+          "position": {
+            "x": 870,
+            "y": 230
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "LFO_Icefish_c01e67b48828.frequency",
+            "parent": "LFO_Icefish_c01e67b48828",
+            "label": "frequency",
+            "kind": "input",
+            "bgcolour": "#FC9A4F",
+            "ghostCableShape": "rectangle",
+            "ghostCableColour": "#5C9AE3",
+            "description": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects."
+          },
+          "position": {
+            "x": 850,
+            "y": 270
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "LFO_Icefish_c01e67b48828.OUT",
+            "parent": "LFO_Icefish_c01e67b48828",
+            "label": "OUT",
+            "kind": "output",
+            "bgcolour": "#6FB1FC",
+            "ghostCableShape": "triangle",
+            "ghostCableColour": "#E68942",
+            "description": null
+          },
+          "position": {
+            "x": 850,
+            "y": 330
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "VCA_Lion_4052948d4983",
+            "label": "VCA Lion",
+            "kind": "module",
+            "rnboName": "VCA",
+            "moduleSpec": {
+              "parameters": {
+                "gain": {
+                  "min": 0,
+                  "max": 1,
+                  "default": 1,
+                  "units": "linear gain",
+                  "description": "Sets the base gain applied to the input signal.",
+                  "modulatable": true,
+                  "modulationDescription": "Audio-rate modulation of gain for tremolo or dynamic volume changes.",
+                  "kind": "paramAnchorNode",
+                  "name": "gain",
+                  "ui": "knob"
+                },
+                "gain cv +/-": {
+                  "min": 0,
+                  "max": 1,
+                  "default": 0.5,
+                  "units": "linear scale",
+                  "description": "Attenuates the effect of the CV input on gain modulation.",
+                  "modulatable": false,
+                  "modulationDescription": "N/A",
+                  "kind": "paramAnchorNode",
+                  "name": "gain cv +/-",
+                  "ui": "knob"
+                }
+              },
+              "paramNames": [
+                "gain",
+                "gain cv +/-"
+              ],
+              "cvNames": [
+                "gain"
+              ],
+              "cv": {
+                "gain": {
+                  "min": 0,
+                  "max": 1,
+                  "default": 0,
+                  "units": "linear gain",
+                  "description": "Control Voltage input for dynamic gain modulation.",
+                  "modulatable": true,
+                  "modulationDescription": "Audio-rate modulation to control gain dynamically.",
+                  "kind": "input",
+                  "name": "gain",
+                  "ui": "knob"
+                }
+              },
+              "inputs": [
+                "IN"
+              ],
+              "outputs": [
+                "OUT"
+              ]
+            },
+            "structure": "webAudioNodes",
+            "bgcolour": "#E6CCFF"
+          },
+          "position": {
+            "x": 293,
+            "y": 322.5
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ":parent"
+        },
+        {
+          "data": {
+            "id": "VCA_Lion_4052948d4983_gain",
+            "parent": "VCA_Lion_4052948d4983",
+            "label": "gain",
+            "nameSpace": "VCA_Lion_4052948d4983_gain.gain",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "VCA_Lion_4052948d4983_gain",
+            "ui": "knob",
+            "min": 0,
+            "max": 1,
+            "value": 1,
+            "menuOptions": "none",
+            "description": "Sets the base gain applied to the input signal."
+          },
+          "position": {
+            "x": 330,
+            "y": 210
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "VCA_Lion_4052948d4983_gain cv +/-",
+            "parent": "VCA_Lion_4052948d4983",
+            "label": "gain cv +/-",
+            "nameSpace": "VCA_Lion_4052948d4983_gain cv +/-.gain cv +/-",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "VCA_Lion_4052948d4983_gain cv +/-",
+            "ui": "knob",
+            "min": 0,
+            "max": 1,
+            "value": 0.5,
+            "menuOptions": "none",
+            "description": "Attenuates the effect of the CV input on gain modulation."
+          },
+          "position": {
+            "x": 330,
+            "y": 270
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "VCA_Lion_4052948d4983.gain",
+            "parent": "VCA_Lion_4052948d4983",
+            "label": "gain",
+            "kind": "input",
+            "bgcolour": "#FC9A4F",
+            "ghostCableShape": "rectangle",
+            "ghostCableColour": "#5C9AE3",
+            "description": "Audio-rate modulation to control gain dynamically."
+          },
+          "position": {
+            "x": 310,
+            "y": 310
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "VCA_Lion_4052948d4983.IN",
+            "parent": "VCA_Lion_4052948d4983",
+            "label": "IN",
+            "kind": "input",
+            "bgcolour": "#FC9A4F",
+            "ghostCableShape": "rectangle",
+            "ghostCableColour": "#5C9AE3",
+            "description": null
+          },
+          "position": {
+            "x": 310,
+            "y": 370
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "VCA_Lion_4052948d4983.OUT",
+            "parent": "VCA_Lion_4052948d4983",
+            "label": "OUT",
+            "kind": "output",
+            "bgcolour": "#6FB1FC",
+            "ghostCableShape": "triangle",
+            "ghostCableColour": "#E68942",
+            "description": null
+          },
+          "position": {
+            "x": 310,
+            "y": 430
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        }
+      ]
+    },
+    "style": [
+      {
+        "selector": "node",
+        "style": {
+          "background-color": "data(bgcolour)",
+          "label": "data(label)",
+          "font-size": "18px",
+          "width": "30px",
+          "height": "30px",
+          "color": "rgb(0,0,0)",
+          "text-valign": "center",
+          "text-halign": "left",
+          "text-margin-x": "-10px"
+        }
+      },
+      {
+        "selector": "node[bgcolour]",
+        "style": {
+          "background-color": "data(bgcolour)"
+        }
+      },
+      {
+        "selector": "node[kind = \"input\"]",
+        "style": {
+          "shape": "triangle"
+        }
+      },
+      {
+        "selector": "node[kind = \"output\"]",
+        "style": {
+          "shape": "rectangle"
+        }
+      },
+      {
+        "selector": ":parent",
+        "style": {
+          "background-opacity": "0.5",
+          "background-color": "data(bgcolour)",
+          "border-color": "rgb(245,122,65)",
+          "border-width": "1px",
+          "label": "data(label)",
+          "text-valign": "top",
+          "text-halign": "center",
+          "color": "rgb(255,0,0)",
+          "font-size": "20px",
+          "text-margin-y": "-10px"
+        }
+      },
+      {
+        "selector": "node.highlighted",
+        "style": {
+          "border-color": "rgb(34,139,34)",
+          "border-width": "10px"
+        }
+      },
+      {
+        "selector": "node.ghostNode",
+        "style": {
+          "background-color": "rgb(255,255,255)",
+          "opacity": "0.8",
+          "width": "27px",
+          "height": "27px",
+          "border-width": "0px",
+          "label": ""
+        }
+      },
+      {
+        "selector": "edge",
+        "style": {
+          "width": "6px",
+          "line-color": "rgb(204,204,204)",
+          "target-arrow-shape": "triangle",
+          "source-arrow-shape": "triangle",
+          "source-arrow-color": "rgb(0,0,0)",
+          "target-arrow-color": "rgb(0,0,0)",
+          "target-arrow-width": "20px",
+          "source-arrow-width": "50px",
+          "curve-style": "unbundled-bezier",
+          "control-point-weights": "0.25 0.75",
+          "control-point-distances": "20px -20px"
+        }
+      },
+      {
+        "selector": "edge.highlighted",
+        "style": {
+          "line-color": "rgb(255,0,0)",
+          "target-arrow-color": "rgb(255,0,0)",
+          "source-arrow-color": "rgb(255,0,0)",
+          "width": "10px"
+        }
+      },
+      {
+        "selector": "edge.connectedEdges",
+        "style": {
+          "line-color": "rgb(34,139,34)",
+          "target-arrow-color": "rgb(34,139,34)",
+          "source-arrow-color": "rgb(34,139,34)",
+          "width": "6px"
+        }
+      },
+      {
+        "selector": ".peerPointer",
+        "style": {
+          "background-color": "data(colour)",
+          "width": "15px",
+          "height": "15px",
+          "shape": "star",
+          "text-valign": "center",
+          "text-halign": "right",
+          "text-margin-x": "10px"
+        }
+      },
+      {
+        "selector": ".paramAnchorNode",
+        "style": {
+          "background-color": "rgb(245,164,93)",
+          "background-opacity": "0",
+          "shape": "ellipse",
+          "width": "20px",
+          "height": "20px",
+          "label": "",
+          "text-opacity": "0",
+          "outline-width": "0px",
+          "events": "no"
+        }
+      },
+      {
+        "selector": "._gridParentPadding",
+        "style": {
+          "compound-sizing-wrt-labels": "exclude",
+          "padding": "20px"
+        }
+      },
+      {
+        "selector": "._gridParentPadding",
+        "style": {
+          "compound-sizing-wrt-labels": "exclude",
+          "padding": "20px"
+        }
+      }
+    ],
+    "data": {},
+    "zoomingEnabled": true,
+    "userZoomingEnabled": false,
+    "zoom": 1,
+    "minZoom": 1e-50,
+    "maxZoom": 1e+50,
+    "panningEnabled": true,
+    "userPanningEnabled": false,
+    "pan": {
+      "x": 0,
+      "y": 0
+    },
+    "boxSelectionEnabled": true,
+    "renderer": {
+      "name": "canvas"
+    }
+  },
+  "paramUIOverlays": {
+    "AudioDestination_Angelfish_918b26343b4d": [],
+    "HighPassFilter_Cow_743b29f9213f": [
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      }
+    ],
+    "Oscillator_Camel_eb22e4fe03f5": [
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      }
+    ],
+    "LFO_Pig_eb090b819737": [
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      }
+    ],
+    "LFO_Icefish_c01e67b48828": [
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      }
+    ],
+    "VCA_Lion_4052948d4983": [
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      }
+    ]
+  },
+  "audioGraph": {
+    "modules": {
+      "AudioDestination_Angelfish_918b26343b4d": {
+        "type": "AudioDestination",
+        "params": {},
+        "moduleSpec": {
+          "parameters": {},
+          "paramNames": [],
+          "cv": {},
+          "inputs": [
+            "IN"
+          ],
+          "outputs": []
+        },
+        "nodeIDs": [
+          "AudioDestination_Angelfish_918b26343b4d",
+          "AudioDestination_Angelfish_918b26343b4d.IN"
+        ],
+        "structure": "webAudioNodes"
+      },
+      "HighPassFilter_Cow_743b29f9213f": {
+        "type": "HighPassFilter",
+        "params": {
+          "freq": 1000,
+          "Q": 1
+        },
+        "moduleSpec": {
+          "parameters": {
+            "freq": {
+              "min": 20,
+              "max": 20000,
+              "default": 1000,
+              "units": "Hz",
+              "description": "The cutoff frequency of the high-pass filter.",
+              "modulatable": true,
+              "modulationDescription": "Modulating the cutoff frequency allows for dynamic filtering effects.",
+              "kind": "paramAnchorNode",
+              "name": "freq",
+              "ui": "knob"
+            },
+            "Q": {
+              "min": 0.1,
+              "max": 10,
+              "default": 1,
+              "units": "resonance",
+              "description": "The resonance or quality factor of the filter.",
+              "modulatable": true,
+              "modulationDescription": "Higher Q values emphasize frequencies around the cutoff point.",
+              "kind": "paramAnchorNode",
+              "name": "Q",
+              "ui": "knob"
+            }
+          },
+          "paramNames": [
+            "freq",
+            "Q"
+          ],
+          "cvNames": [
+            "freq cv +/-",
+            "Q cv +/-"
+          ],
+          "cv": {
+            "freq cv +/-": {
+              "min": 20,
+              "max": 20000,
+              "default": 1000,
+              "units": "Hz",
+              "description": "Control Voltage input for dynamically modulating the cutoff frequency.",
+              "modulatable": true,
+              "modulationDescription": "Allows for sweeps or envelope-controlled filtering.",
+              "kind": "input",
+              "name": "freq cv +/-",
+              "ui": "knob"
+            },
+            "Q cv +/-": {
+              "min": 0.1,
+              "max": 10,
+              "default": 1,
+              "units": "resonance",
+              "description": "Control Voltage input for dynamically modulating the resonance.",
+              "modulatable": true,
+              "modulationDescription": "Modulating the Q value changes how sharply the filter emphasizes the cutoff frequency.",
+              "kind": "input",
+              "name": "Q cv +/-",
+              "ui": "knob"
+            }
+          },
+          "inputs": [
+            "IN"
+          ],
+          "outputs": [
+            "OUT"
+          ]
+        },
+        "nodeIDs": [
+          "HighPassFilter_Cow_743b29f9213f",
+          "HighPassFilter_Cow_743b29f9213f_freq-anchorNode",
+          "HighPassFilter_Cow_743b29f9213f_Q-anchorNode",
+          "HighPassFilter_Cow_743b29f9213f.freq cv +/-",
+          "HighPassFilter_Cow_743b29f9213f.Q cv +/-",
+          "HighPassFilter_Cow_743b29f9213f.IN",
+          "HighPassFilter_Cow_743b29f9213f.OUT"
+        ],
+        "structure": "webAudioNodes"
+      },
+      "Oscillator_Camel_eb22e4fe03f5": {
+        "type": "Oscillator",
+        "params": {
+          "frequency": 440,
+          "freq cv +/-": 100,
+          "type": "sine"
+        },
+        "moduleSpec": {
+          "parameters": {
+            "frequency": {
+              "min": 110,
+              "max": 3000,
+              "default": 440,
+              "units": "Hz",
+              "description": "The frequency of the oscillator.",
+              "modulatable": true,
+              "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects.",
+              "kind": "paramAnchorNode",
+              "name": "frequency",
+              "ui": "knob"
+            },
+            "type": {
+              "values": [
+                "sine",
+                "square",
+                "sawtooth",
+                "triangle",
+                "custom"
+              ],
+              "default": "sine",
+              "description": "The waveform shape of the oscillator.",
+              "kind": "paramAnchorNode",
+              "name": "type",
+              "ui": "menu"
+            },
+            "freq cv +/-": {
+              "min": -1000,
+              "max": 1000,
+              "default": 100,
+              "units": "Hz",
+              "description": "The attenuverter of the frequency CV input",
+              "modulatable": false,
+              "modulationDescription": "The attenuverter of the frequency CV input",
+              "kind": "paramAnchorNode",
+              "name": "freq cv +/-",
+              "ui": "knob"
+            }
+          },
+          "paramNames": [
+            "frequency",
+            "freq cv +/-",
+            "type"
+          ],
+          "cvNames": [
+            "frequency"
+          ],
+          "cv": {
+            "frequency": {
+              "min": 110,
+              "max": 9000,
+              "default": 440,
+              "units": "Hz",
+              "description": "The frequency of the oscillator.",
+              "modulatable": true,
+              "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects.",
+              "kind": "input",
+              "name": "frequency",
+              "ui": "knob"
+            }
+          },
+          "inputs": [],
+          "outputs": [
+            "OUT"
+          ]
+        },
+        "nodeIDs": [
+          "Oscillator_Camel_eb22e4fe03f5",
+          "Oscillator_Camel_eb22e4fe03f5_frequency-anchorNode",
+          "Oscillator_Camel_eb22e4fe03f5_freq cv +/--anchorNode",
+          "Oscillator_Camel_eb22e4fe03f5_type-anchorNode",
+          "Oscillator_Camel_eb22e4fe03f5.frequency",
+          "Oscillator_Camel_eb22e4fe03f5.OUT"
+        ],
+        "structure": "webAudioNodes"
+      },
+      "LFO_Pig_eb090b819737": {
+        "type": "LFO",
+        "params": {
+          "frequency": 1,
+          "freq cv +/-": 10,
+          "type": "sine"
+        },
+        "moduleSpec": {
+          "parameters": {
+            "frequency": {
+              "min": 0.01,
+              "max": 10,
+              "default": 1,
+              "units": "Hz",
+              "description": "The frequency of the low frequency oscillator.",
+              "modulatable": true,
+              "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects.",
+              "kind": "paramAnchorNode",
+              "name": "frequency",
+              "ui": "knob"
+            },
+            "type": {
+              "values": [
+                "sine",
+                "square",
+                "sawtooth",
+                "triangle",
+                "custom"
+              ],
+              "default": "sine",
+              "description": "The waveform shape of the oscillator.",
+              "kind": "paramAnchorNode",
+              "name": "type",
+              "ui": "menu"
+            },
+            "freq cv +/-": {
+              "min": -20,
+              "max": 20,
+              "default": 10,
+              "units": "Hz",
+              "description": "The attenuverter of the frequency CV input",
+              "modulatable": false,
+              "modulationDescription": "The attenuverter of the frequency CV input",
+              "kind": "paramAnchorNode",
+              "name": "freq cv +/-",
+              "ui": "knob"
+            }
+          },
+          "paramNames": [
+            "frequency",
+            "freq cv +/-",
+            "type"
+          ],
+          "cvNames": [
+            "frequency"
+          ],
+          "cv": {
+            "frequency": {
+              "min": 0.01,
+              "max": 10,
+              "default": 5,
+              "units": "Hz",
+              "description": "The frequency of the oscillator.",
+              "modulatable": true,
+              "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects.",
+              "kind": "input",
+              "name": "frequency",
+              "ui": "knob"
+            }
+          },
+          "inputs": [],
+          "outputs": [
+            "OUT"
+          ]
+        },
+        "nodeIDs": [
+          "LFO_Pig_eb090b819737",
+          "LFO_Pig_eb090b819737_frequency-anchorNode",
+          "LFO_Pig_eb090b819737_freq cv +/--anchorNode",
+          "LFO_Pig_eb090b819737_type-anchorNode",
+          "LFO_Pig_eb090b819737.frequency",
+          "LFO_Pig_eb090b819737.OUT"
+        ],
+        "structure": "webAudioNodes"
+      },
+      "LFO_Icefish_c01e67b48828": {
+        "type": "LFO",
+        "params": {
+          "frequency": 1,
+          "freq cv +/-": 10,
+          "type": "sine"
+        },
+        "moduleSpec": {
+          "parameters": {
+            "frequency": {
+              "min": 0.01,
+              "max": 10,
+              "default": 1,
+              "units": "Hz",
+              "description": "The frequency of the low frequency oscillator.",
+              "modulatable": true,
+              "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects.",
+              "kind": "paramAnchorNode",
+              "name": "frequency",
+              "ui": "knob"
+            },
+            "type": {
+              "values": [
+                "sine",
+                "square",
+                "sawtooth",
+                "triangle",
+                "custom"
+              ],
+              "default": "sine",
+              "description": "The waveform shape of the oscillator.",
+              "kind": "paramAnchorNode",
+              "name": "type",
+              "ui": "menu"
+            },
+            "freq cv +/-": {
+              "min": -20,
+              "max": 20,
+              "default": 10,
+              "units": "Hz",
+              "description": "The attenuverter of the frequency CV input",
+              "modulatable": false,
+              "modulationDescription": "The attenuverter of the frequency CV input",
+              "kind": "paramAnchorNode",
+              "name": "freq cv +/-",
+              "ui": "knob"
+            }
+          },
+          "paramNames": [
+            "frequency",
+            "freq cv +/-",
+            "type"
+          ],
+          "cvNames": [
+            "frequency"
+          ],
+          "cv": {
+            "frequency": {
+              "min": 0.01,
+              "max": 10,
+              "default": 5,
+              "units": "Hz",
+              "description": "The frequency of the oscillator.",
+              "modulatable": true,
+              "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects.",
+              "kind": "input",
+              "name": "frequency",
+              "ui": "knob"
+            }
+          },
+          "inputs": [],
+          "outputs": [
+            "OUT"
+          ]
+        },
+        "nodeIDs": [
+          "LFO_Icefish_c01e67b48828",
+          "LFO_Icefish_c01e67b48828_frequency-anchorNode",
+          "LFO_Icefish_c01e67b48828_freq cv +/--anchorNode",
+          "LFO_Icefish_c01e67b48828_type-anchorNode",
+          "LFO_Icefish_c01e67b48828.frequency",
+          "LFO_Icefish_c01e67b48828.OUT"
+        ],
+        "structure": "webAudioNodes"
+      },
+      "VCA_Lion_4052948d4983": {
+        "type": "VCA",
+        "params": {
+          "gain": 1,
+          "gain cv +/-": 0.5
+        },
+        "moduleSpec": {
+          "parameters": {
+            "gain": {
+              "min": 0,
+              "max": 1,
+              "default": 1,
+              "units": "linear gain",
+              "description": "Sets the base gain applied to the input signal.",
+              "modulatable": true,
+              "modulationDescription": "Audio-rate modulation of gain for tremolo or dynamic volume changes.",
+              "kind": "paramAnchorNode",
+              "name": "gain",
+              "ui": "knob"
+            },
+            "gain cv +/-": {
+              "min": 0,
+              "max": 1,
+              "default": 0.5,
+              "units": "linear scale",
+              "description": "Attenuates the effect of the CV input on gain modulation.",
+              "modulatable": false,
+              "modulationDescription": "N/A",
+              "kind": "paramAnchorNode",
+              "name": "gain cv +/-",
+              "ui": "knob"
+            }
+          },
+          "paramNames": [
+            "gain",
+            "gain cv +/-"
+          ],
+          "cvNames": [
+            "gain"
+          ],
+          "cv": {
+            "gain": {
+              "min": 0,
+              "max": 1,
+              "default": 0,
+              "units": "linear gain",
+              "description": "Control Voltage input for dynamic gain modulation.",
+              "modulatable": true,
+              "modulationDescription": "Audio-rate modulation to control gain dynamically.",
+              "kind": "input",
+              "name": "gain",
+              "ui": "knob"
+            }
+          },
+          "inputs": [
+            "IN"
+          ],
+          "outputs": [
+            "OUT"
+          ]
+        },
+        "nodeIDs": [
+          "VCA_Lion_4052948d4983",
+          "VCA_Lion_4052948d4983_gain-anchorNode",
+          "VCA_Lion_4052948d4983_gain cv +/--anchorNode",
+          "VCA_Lion_4052948d4983.gain",
+          "VCA_Lion_4052948d4983.IN",
+          "VCA_Lion_4052948d4983.OUT"
+        ],
+        "structure": "webAudioNodes"
+      }
+    },
+    "connections": []
+  }
+}

@@ -194,7 +194,7 @@ class DSP extends AudioWorkletProcessor {
             case 'loadVersion':
                 
                 const synthGraph = msg.data
-   
+            console.log(synthGraph)
                 if (this.crossfadeInProgress) return; // Prevent loading mid-crossfade
     
                 this.nextState = {
@@ -647,6 +647,74 @@ class DSP extends AudioWorkletProcessor {
                     }
                 }
                 
+                else if (node.node === 'HighPassFilter') {
+                    console.log('added')
+                    // Ensure filter memory is initialized
+                    if (!node.coefficients) {
+                        node.coefficients = { a0: 0, a1: 0, a2: 0, b0: 0, b1: 0, b2: 0 };
+                        node.inputHistory = [0, 0];
+                        node.outputHistory = [0, 0];
+                    }
+                
+                    // Get effective parameters with modulation
+                    const effectiveFreq = clamp(
+                        getEffectiveParam(node, 'freq', node.baseParams['freq cv +/-']),
+                        20, 
+                        sampleRate / 2
+                    );
+                
+                    const effectiveQ = clamp(
+                        getEffectiveParam(node, 'Q', node.baseParams['Q cv +/-']),
+                        0.1,
+                        10
+                    );
+                
+                    // Compute filter coefficients
+                    const omega = (2 * Math.PI * effectiveFreq) / sampleRate;
+                    const alpha = Math.sin(omega) / (2 * effectiveQ);
+                
+                    let b0, b1, b2, a0, a1, a2;
+                
+                    // High-Pass Filter Coefficients (Based on BiQuad filter equations)
+                    b0 = (1 + Math.cos(omega)) / 2;
+                    b1 = -(1 + Math.cos(omega));
+                    b2 = (1 + Math.cos(omega)) / 2;
+                    a0 = 1 + alpha;
+                    a1 = -2 * Math.cos(omega);
+                    a2 = 1 - alpha;
+                
+                    // Normalize coefficients
+                    b0 /= a0;
+                    b1 /= a0;
+                    b2 /= a0;
+                    a1 /= a0;
+                    a2 /= a0;
+                
+                    // Store computed coefficients
+                    node.coefficients = { b0, b1, b2, a1, a2 };
+                
+                    // Apply filter to the signal buffer
+                    for (let i = 0; i < 128; i++) {
+                        const inputSample = inputBuffer[i];
+                
+                        // Apply BiQuad filtering equation
+                        const outputSample =
+                            node.coefficients.b0 * inputSample +
+                            node.coefficients.b1 * node.inputHistory[0] +
+                            node.coefficients.b2 * node.inputHistory[1] -
+                            node.coefficients.a1 * node.outputHistory[0] -
+                            node.coefficients.a2 * node.outputHistory[1];
+                
+                        // Update history for next iteration
+                        node.inputHistory[1] = node.inputHistory[0];
+                        node.inputHistory[0] = inputSample;
+                        node.outputHistory[1] = node.outputHistory[0];
+                        node.outputHistory[0] = outputSample;
+                
+                        // Write processed output to the signal buffer
+                        signalBuffers[id][i] = outputSample;
+                    }
+                }
                 
                 
             };

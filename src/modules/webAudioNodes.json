@@ -79,6 +79,53 @@
     "outputs": ["OUT"]
   },
 
+  "HighPassFilter": {
+    "parameters": {
+      "freq": {
+        "min": 20,
+        "max": 20000,
+        "default": 1000,
+        "units": "Hz",
+        "description": "The cutoff frequency of the high-pass filter.",
+        "modulatable": true,
+        "modulationDescription": "Modulating the cutoff frequency allows for dynamic filtering effects."
+      },
+      "Q": {
+        "min": 0.1,
+        "max": 10,
+        "default": 1,
+        "units": "resonance",
+        "description": "The resonance or quality factor of the filter.",
+        "modulatable": true,
+        "modulationDescription": "Higher Q values emphasize frequencies around the cutoff point."
+      }
+    },
+    "paramNames": ["freq", "Q"],
+    "cvNames": ["freq cv +/-", "Q cv +/-"],
+    "cv": {
+      "freq cv +/-": {
+        "min": 20,
+        "max": 20000,
+        "default": 1000,
+        "units": "Hz",
+        "description": "Control Voltage input for dynamically modulating the cutoff frequency.",
+        "modulatable": true,
+        "modulationDescription": "Allows for sweeps or envelope-controlled filtering."
+      },
+      "Q cv +/-": {
+        "min": 0.1,
+        "max": 10,
+        "default": 1,
+        "units": "resonance",
+        "description": "Control Voltage input for dynamically modulating the resonance.",
+        "modulatable": true,
+        "modulationDescription": "Modulating the Q value changes how sharply the filter emphasizes the cutoff frequency."
+      }
+    },
+    "inputs": ["IN"],
+    "outputs": ["OUT"]
+  },
+
   "Oscillator": {
     "parameters": {
       "frequency": {

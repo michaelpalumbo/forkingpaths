@@ -813,7 +813,7 @@ document.addEventListener("DOMContentLoaded", function () {
         webAudioNodeNames.forEach(item => {
             if(item != 'AudioDestination' && item != 'AudioWorklet' && item != "OutputLimiter"){
                 // all that are available at the moment
-                if(item === 'BiquadFilter' || item === 'Delay' || item === 'LFO' || item === 'Oscillator' || item === 'Gain' || item === 'VCA'){
+                if(item === 'BiquadFilter' || item === 'Delay' || item === 'LFO' || item === 'Oscillator' || item === 'Gain' || item === 'VCA' || item === 'HighPassFilter' ){
                     // Create a new <li> element
                     const listItem = document.createElement('li');
                     // Set the text of the <li> to the current item
