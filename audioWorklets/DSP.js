@@ -14,7 +14,6 @@ class DSP extends AudioWorkletProcessor {
         this.crossfadeInProgress = false;
         this.crossfadeProgress = 0;
         this.crossfadeStep = 1 / ((sampleRate / 128) * 0.1); // Adjust for crossfade duration
-        console.log(`crossfade step length ${this.crossfadeStep}`)
         this.outputVolume = 0.5;
         this.port.onmessage = (event) => this.handleMessage(event.data);
     }
@@ -137,22 +136,13 @@ class DSP extends AudioWorkletProcessor {
 
                 if(loadState){
                     this.nextState.nodes[moduleName] = feedbackDelayNode
-                    // console.log(this.nextState.nodes[moduleName])
                 } else {
                     this.currentState.nodes[moduleName] = feedbackDelayNode
-                    // console.log(this.currentState.nodes[moduleName])
-                }
-                // console.log(feedbackDelayNode)
-
-                
-
-                
+                }  
             break;
 
             default: 
-        }
-
-        
+        }     
     } 
 
     cableBuilder(){
@@ -259,7 +249,6 @@ class DSP extends AudioWorkletProcessor {
 
             case 'addCable':
                 
-                console.log(msg.data)
                 if(msg.data.target.includes('AudioDestination')){
                     this.currentState.outputConnections.push(msg.data.source);
                 } else if (msg.data.target.split('.')[1] === 'IN'){
@@ -395,7 +384,6 @@ class DSP extends AudioWorkletProcessor {
                 if (visited.has(id)) return;
                 visited.add(id);
                 const node = state.nodes[id];
-                // console.log(node)
                 if (!node) return;
                 
                 if (!signalBuffers[id]) signalBuffers[id] = new Float32Array(128);
@@ -403,7 +391,6 @@ class DSP extends AudioWorkletProcessor {
                 
                 // process input connections 
                 state.signalConnections.filter(conn => conn.target.includes(id)).forEach(conn => {
-                    console.log(`🔌 Connection: ${conn.source} → ${conn.target}`);
 
                     const sourceId = conn.source.split('.')[0];
                     processNode(sourceId);
@@ -420,8 +407,6 @@ class DSP extends AudioWorkletProcessor {
                         for (let i = 0; i < 128; i++) {
                             feedbackBuffers[feedbackNodeId][i] += sourceBuffer[i];
                         }
-                        console.log(`📡 Stored feedback signal for ${feedbackNodeId} from ${sourceId}`);
-
                     } 
                 });
 
@@ -483,8 +468,6 @@ class DSP extends AudioWorkletProcessor {
                         // signalBuffers[id][i] = Math.sin(2 * Math.PI * node.phase) * effectiveGain;
                         // Select the waveform based on node.baseParams['waveform']
 
-                        // console.log(`🎵 Oscillator Output BEFORE Writing to Buffer (${id}):`, signalBuffers[id].slice(0, 10));
-
                         switch (node.baseParams['type']) {
                     
                             
@@ -511,21 +494,17 @@ class DSP extends AudioWorkletProcessor {
                     for (let i = 0; i < 128; i++) signalBuffers[id][i] = inputBuffer[i] * node.baseParams.gain;
                 }
                 else if (node.node === 'feedbackDelayNode') {
-                    console.log(node)
                     if (!node.delayBuffer){
                         node.delayBuffer = new Float32Array(128);
                         node.delayIndex = 0;
                     } 
                     for (let i = 0; i < 128; i++) {
-                        // console.log(`🔄 feedbackDelayNode(${id}): feedbackBuffers[${id}] (First 10 Samples):`, feedbackBuffers[id]?.slice(0, 10));
-
                         const feedbackInput = feedbackBuffers[id]?.[i] || 0;
                         const delayIndex = (node.delayIndex - 1 + 128) % 128;
 
                         // Now define delayedSample after delayIndex is correctly computed
                         const delayedSample = node.delayBuffer[delayIndex] || 0;
 
-                        // console.log(`🌀 feedbackDelayNode(${id}) | Feedback Input: ${feedbackInput} | Delayed Sample: ${delayedSample}`);
                         // const delayedSample = node.delayBuffer[(node.delayIndex - 1 + 128) % 128];
                         signalBuffers[id][i] = delayedSample;
                         node.delayBuffer[node.delayIndex] = feedbackInput;
@@ -563,27 +542,6 @@ class DSP extends AudioWorkletProcessor {
             output[i] *= this.outputVolume; // Apply master volume
 
         }
-
-        // if (this.crossfadeInProgress) {
-        //     this.crossfadeProgress += this.crossfadeStep;
-        //     if (this.crossfadeProgress >= 1) {
-        //         this.crossfadeProgress = 1; // Ensure it's exactly 1
-        //         this.crossfadeInProgress = false; // Stop crossfade
-        
-        //         console.log("🚀 Crossfade complete! Promoting nextState to currentState.");
-                
-        //         // Make nextState the active one
-        //         this.currentState = cloneDeep(this.nextState);
-        
-        //         // Clear nextState so it's ready for future transitions
-        //         this.nextState = {
-        //             nodes: {},
-        //             signalConnections: [],
-        //             outputConnections: [],
-        //             cvConnections: []
-        //         };
-        //     }
-        // }
 
         return true;
     }
