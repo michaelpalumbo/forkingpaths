@@ -511,14 +511,22 @@ class DSP extends AudioWorkletProcessor {
                     for (let i = 0; i < 128; i++) signalBuffers[id][i] = inputBuffer[i] * node.baseParams.gain;
                 }
                 else if (node.node === 'feedbackDelayNode') {
-                    if (!node.delayBuffer) node.delayBuffer = new Float32Array(128);
+                    console.log(node)
+                    if (!node.delayBuffer){
+                        node.delayBuffer = new Float32Array(128);
+                        node.delayIndex = 0;
+                    } 
                     for (let i = 0; i < 128; i++) {
                         // console.log(`🔄 feedbackDelayNode(${id}): feedbackBuffers[${id}] (First 10 Samples):`, feedbackBuffers[id]?.slice(0, 10));
 
                         const feedbackInput = feedbackBuffers[id]?.[i] || 0;
+                        const delayIndex = (node.delayIndex - 1 + 128) % 128;
 
-                        console.log(`🌀 feedbackDelayNode(${id}) | Feedback Input: ${feedbackInput} | Delayed Sample: ${delayedSample}`);
-                        const delayedSample = node.delayBuffer[(node.delayIndex - 1 + 128) % 128];
+                        // Now define delayedSample after delayIndex is correctly computed
+                        const delayedSample = node.delayBuffer[delayIndex] || 0;
+
+                        // console.log(`🌀 feedbackDelayNode(${id}) | Feedback Input: ${feedbackInput} | Delayed Sample: ${delayedSample}`);
+                        // const delayedSample = node.delayBuffer[(node.delayIndex - 1 + 128) % 128];
                         signalBuffers[id][i] = delayedSample;
                         node.delayBuffer[node.delayIndex] = feedbackInput;
                         node.delayIndex = (node.delayIndex + 1) % 128;
