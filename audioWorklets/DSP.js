@@ -108,6 +108,42 @@ class DSP extends AudioWorkletProcessor {
                 }
                 
             break
+
+            case 'LFO2':
+                let lfo2 = {
+                    node: 'Oscillator',
+                    baseParams: {
+                        frequency: parseFloat(params.frequency),
+                        gain: parseFloat(1),
+                        "freq cv +/-": parseFloat(params["freq cv +/-"]),
+                    },
+                    modulatedParams: {
+                        // offsets for modulation
+                        frequency: 0, 
+                        gain: 0, 
+                    },
+                    // Separate output buffers for each waveform
+                    output: {
+                        sine: new Float32Array(128),
+                        square: new Float32Array(128),
+                        saw: new Float32Array(128),
+                        triangle: new Float32Array(128),
+                    },
+                    phase: 0,
+                    customWaveform: null,
+                    type: params.type,
+                    modulationTarget: null, // Target node or parameter for modulation
+                    startTime: null, // Optional: Scheduled start time
+                    stopTime: null,  // Optional: Scheduled stop time           
+    
+                };
+                if(loadState){
+                    this.nextState.nodes[moduleName] = lfo2
+                } else {
+                    this.currentState.nodes[moduleName] = lfo2
+                }
+                
+            break
             case 'Gain':
             case 'ModGain':
                 let gain = {
@@ -556,6 +592,22 @@ class DSP extends AudioWorkletProcessor {
                         }
                     }
 
+                }
+
+                else if (node.node === 'LFO2') {
+                    const effectiveFrequency = getEffectiveParam(node, 'frequency', node.baseParams['freq cv +/-']);
+                    const effectiveGain = getEffectiveParam(node, 'gain');
+                
+                    for (let i = 0; i < 128; i++) {
+                        node.phase += effectiveFrequency / sampleRate;
+                        if (node.phase >= 1) node.phase -= 1;
+                
+                        // Compute each waveform
+                        node.output.sine[i] = Math.sin(2 * Math.PI * node.phase) * effectiveGain;
+                        node.output.square[i] = (node.phase < 0.5 ? 1 : -1) * effectiveGain;
+                        node.output.saw[i] = (2 * node.phase - 1) * effectiveGain;
+                        node.output.triangle[i] = (node.phase < 0.5 ? 4 * node.phase - 1 : 3 - 4 * node.phase) * effectiveGain;
+                    }
                 }
 
                 else if (node.node === 'VCA') {

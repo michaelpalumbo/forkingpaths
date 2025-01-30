@@ -1065,6 +1065,53 @@
         "OUT"
       ]
     },
+    "LFO2": {
+      "parameters": {
+        "frequency": {
+          "min": 0.01,
+          "max": 10,
+          "default": 1,
+          "units": "Hz",
+          "description": "The frequency of the low frequency oscillator.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects."
+        },
+        "freq cv +/-": {
+          "min": -20,
+          "max": 20,
+          "default": 10,
+          "units": "Hz",
+          "description": "The attenuverter of the frequency CV input",
+          "modulatable": false,
+          "modulationDescription": "The attenuverter of the frequency CV input"
+        }
+      },
+      "paramNames": [
+        "frequency",
+        "freq cv +/-"
+      ],
+      "cvNames": [
+        "frequency"
+      ],
+      "cv": {
+        "frequency": {
+          "min": 0.01,
+          "max": 10,
+          "default": 5,
+          "units": "Hz",
+          "description": "The frequency of the oscillator.",
+          "modulatable": true,
+          "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects."
+        }
+      },
+      "inputs": [],
+      "outputs": [
+        "sine",
+        "tri",
+        "saw",
+        "square"
+      ]
+    },
     "OutputLimiter": {
       "parameters": {
         "threshold": {
