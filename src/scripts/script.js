@@ -6,12 +6,11 @@
 const ws = new WebSocket('ws://localhost:3000');
 
 import { ParentNode_WebAudioNode } from '../utilities/parentNode_WebAudioNode.js';
-import modules from '../modules/modules.json' assert { type: 'json'}
 import { uuidv7 } from "uuidv7";
 import randomColor from 'randomcolor';
 import { saveDocument, loadDocument, deleteDocument } from '../utilities/indexedDB.js';
 import { marked } from 'marked'
-import * as Tone from "tone";
+// import * as Tone from "tone";
 import 'jquery-knob';   // Import jQuery Knob plugin
 import { computePosition, flip, shift } from '@floating-ui/dom';
 
@@ -167,8 +166,8 @@ document.addEventListener("DOMContentLoaded", function () {
     // Audio context
     const audioContext = new window.AudioContext();
 
-    audioContext.audioWorklet.addModule('./audioWorklets/modular-synth-processor.js').then(() => {
-        synthWorklet = new AudioWorkletNode(audioContext, 'modular-synth-processor');
+    audioContext.audioWorklet.addModule('./audioWorklets/DSP.js').then(() => {
+        synthWorklet = new AudioWorkletNode(audioContext, 'DSP');
         synthWorklet.connect(audioContext.destination);
 
         // set volume
@@ -3367,7 +3366,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                         // amDoc.synth.graph.connections.push( { source: src, target: feedbackDelayNodeID + '.IN', feedback: cycle}, { source: feedbackDelayNodeID + '.OUT', target: targ, feedback: cycle})
                         audioGraphDirty = true
-                    }, onChange,  `connect ${temporaryCables.local.source.data().label} to ${temporaryCables.local.targetNode.data().label}$PARENTS ${parentSourceID} ${parentTargetID}`);
+                     }, onChange,  `connect ${temporaryCables.local.source.data().label} to ${temporaryCables.local.targetNode.data().label}$PARENTS ${parentSourceID} ${parentTargetID}`);
                     
 
                 } else {
