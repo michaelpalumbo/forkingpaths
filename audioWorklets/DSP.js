@@ -127,7 +127,7 @@ class DSP extends AudioWorkletProcessor {
                         sine: new Float32Array(128),
                         square: new Float32Array(128),
                         saw: new Float32Array(128),
-                        triangle: new Float32Array(128),
+                        tri: new Float32Array(128),
                     },
                     phase: 0,
                     customWaveform: null,
@@ -486,6 +486,7 @@ class DSP extends AudioWorkletProcessor {
                 const node = state.nodes[id];
                 if (!node) return;
                 
+               
                 // console.log(node.node)
                 if (!signalBuffers[id]) signalBuffers[id] = new Float32Array(128);
                 const inputBuffer = new Float32Array(128);
@@ -494,7 +495,25 @@ class DSP extends AudioWorkletProcessor {
                 state.signalConnections.filter(conn => conn.target.includes(id)).forEach(conn => {
 
                     const sourceId = conn.source.split('.')[0];
+                    const sourceOutput = conn.source.split('.')[1]
+
                     processNode(sourceId);
+
+                    // Check if source node has more than one outlet (or any multi-output module)
+                    if (state.nodes[sourceId] && state.nodes[sourceId].output && typeof state.nodes[sourceId].output === 'object') {
+                        // console.log('snared')
+                        const sourceBuffer = state.nodes[sourceId].output[sourceOutput] || new Float32Array(128);
+                        for (let i = 0; i < 128; i++) {
+                            inputBuffer[i] += sourceBuffer[i]; // Mix into input buffer
+                        }
+                    } else {
+                        // Fallback: Default single-output case
+                        const sourceBuffer = signalBuffers[sourceId] || new Float32Array(128);
+                        for (let i = 0; i < 128; i++) {
+                            inputBuffer[i] += sourceBuffer[i];
+                        }
+                    }
+                    
                     const sourceBuffer = signalBuffers[sourceId] || new Float32Array(128);
                     for (let i = 0; i < 128; i++) inputBuffer[i] += sourceBuffer[i];
                     if (conn.target.startsWith("feedbackDelayNode")){
@@ -606,7 +625,7 @@ class DSP extends AudioWorkletProcessor {
                         node.output.sine[i] = Math.sin(2 * Math.PI * node.phase) * effectiveGain;
                         node.output.square[i] = (node.phase < 0.5 ? 1 : -1) * effectiveGain;
                         node.output.saw[i] = (2 * node.phase - 1) * effectiveGain;
-                        node.output.triangle[i] = (node.phase < 0.5 ? 4 * node.phase - 1 : 3 - 4 * node.phase) * effectiveGain;
+                        node.output.tri[i] = (node.phase < 0.5 ? 4 * node.phase - 1 : 3 - 4 * node.phase) * effectiveGain;
                     }
                 }
 

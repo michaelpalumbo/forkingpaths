@@ -190,18 +190,17 @@ document.addEventListener("DOMContentLoaded", function () {
     } else {
         openGraphWindow();
     }
-    //! uncomment this
-    console.warn('make sure to uncomment the code below this message when finished making big changes to the history seq page')
+    // console.warn('make sure to uncomment the code below this message when finished making big changes to the history seq page')
     // Remove the flag when the graph window is closed
-    // window.addEventListener('beforeunload', () => {
-    //     if (historySequencerWindow) {
-    //         historySequencerWindow.close();
-    //         // console.warn('remember to uncomment the line above this warning')
-    //     }
-    //     localStorage.removeItem('historySequencerWindowOpen');
-    //     // console.warn('remember to uncomment the line above this warning')
+    window.addEventListener('beforeunload', () => {
+        if (historySequencerWindow) {
+            historySequencerWindow.close();
+            // console.warn('remember to uncomment the line above this warning')
+        }
+        localStorage.removeItem('historySequencerWindowOpen');
+        // console.warn('remember to uncomment the line above this warning')
 
-    // });
+    });
     document.getElementById('viewReadme').addEventListener('click', () => {
         fetch('./README.md') // Fetch the README file
             .then(response => response.text())
