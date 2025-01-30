@@ -221,7 +221,6 @@ class DSP extends AudioWorkletProcessor {
             case 'loadVersion':
                 
                 const synthGraph = msg.data
-                console.log(synthGraph)
                 if (this.crossfadeInProgress) return; // Prevent loading mid-crossfade
     
                 this.nextState = {
@@ -235,7 +234,7 @@ class DSP extends AudioWorkletProcessor {
                 // repopulate given automerge version of synth graph
                 Object.keys(synthGraph.modules).forEach((moduleID)=>{
                     const module = synthGraph.modules[moduleID]
-                    console.log('module', module)
+                   
 
                     let moduleParams = null // set to null in case the node is a feedbackDelayNode
                     if(module.params){
