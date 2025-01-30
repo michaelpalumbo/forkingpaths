@@ -9,7 +9,8 @@ class DSP extends AudioWorkletProcessor {
         this.feedbackBuffers = {}; // Separate buffers for feedback nodes
         this.crossfadeInProgress = false;
         this.crossfadeProgress = 0;
-        this.crossfadeStep = 1 / ((sampleRate / 128) * 0.03); // Adjust for crossfade duration
+        this.crossfadeStep = 1 / ((sampleRate / 128) * 0.1); // Adjust for crossfade duration
+        console.log(`crossfade step length ${this.crossfadeStep}`)
         this.outputVolume = 0.5;
         this.port.onmessage = (event) => this.handleMessage(event.data);
     }
@@ -357,7 +358,28 @@ class DSP extends AudioWorkletProcessor {
                 this.crossfadeProgress = 1;
                 this.crossfadeInProgress = false;
                 this.currentState = cloneDeep(this.nextState);
-                this.nextState = {};
+                this.nextState = {
+                    nodes: {},
+                    signalConnections: [],
+                    outputConnections: [],
+                    cvConnections: []
+                };
+            }
+        }
+
+        const signalBuffersCurrent = {};
+        const signalBuffersNext = {};
+
+        //! maybe this is where feedback patching fails, because we're setting the signalBuffersCurrent to new arrays each time?
+        // Allocate separate buffers for current state
+        for (const id in this.currentState.nodes) {
+            signalBuffersCurrent[id] = new Float32Array(128);
+        }
+
+        // Allocate separate buffers for next state
+        if (this.nextState) {
+            for (const id in this.nextState.nodes) {
+                signalBuffersNext[id] = new Float32Array(128);
             }
         }
 
@@ -368,7 +390,7 @@ class DSP extends AudioWorkletProcessor {
                 if (visited.has(id)) return;
                 visited.add(id);
                 const node = state.nodes[id];
-                console.log(node)
+                // console.log(node)
                 if (!node) return;
                 
                 if (!signalBuffers[id]) signalBuffers[id] = new Float32Array(128);
@@ -392,7 +414,7 @@ class DSP extends AudioWorkletProcessor {
                 
                     const modBuffer = signalBuffers[modSourceId] || new Float32Array(128);
                     const param = conn.param; // The parameter to modulate
-                    console.log(param)
+                    
                     if (!node.modulatedParams.hasOwnProperty(param)) {
                         console.warn(`Parameter ${param} not found for node ${id}`);
                         return;
@@ -481,15 +503,55 @@ class DSP extends AudioWorkletProcessor {
             state.outputConnections.forEach(id => processNode(id.split('.')[0]));
         };
 
-        processGraph(this.currentState, this.signalBuffers, this.feedbackBuffers);
-        if (this.nextState.outputConnections) processGraph(this.nextState, this.signalBuffers, this.feedbackBuffers);
+        processGraph(this.currentState, signalBuffersCurrent, this.feedbackBuffers);
+        if (this.nextState.outputConnections) processGraph(this.nextState, signalBuffersNext, this.feedbackBuffers);
 
         for (let i = 0; i < output.length; i++) {
-            let currentSample = this.signalBuffers[this.currentState.outputConnections?.[0]?.split('.')[0]]?.[i] || 0;
-            let nextSample = this.signalBuffers[this.nextState.outputConnections?.[0]?.split('.')[0]]?.[i] || 0;
-            output[i] = this.crossfadeInProgress ? (1 - this.crossfadeProgress) * currentSample + this.crossfadeProgress * nextSample : currentSample;
-            output[i] *= this.outputVolume;
+            let currentSample = 0;
+            let nextSample = 0;
+        
+            // Get output from current state buffer
+            if (this.currentState.outputConnections.length > 0) {
+                const currentOutputId = this.currentState.outputConnections[0].split('.')[0];
+                currentSample = signalBuffersCurrent[currentOutputId]?.[i] || 0;
+            }
+        
+            // Get output from next state buffer
+            if (this.nextState.outputConnections.length > 0) {
+                const nextOutputId = this.nextState.outputConnections[0].split('.')[0];
+                nextSample = signalBuffersNext[nextOutputId]?.[i] || 0;
+            }
+        
+            // 🚀 **Correct Crossfade Logic**
+            output[i] = this.crossfadeInProgress
+                ? (1 - this.crossfadeProgress) * currentSample + this.crossfadeProgress * nextSample
+                : currentSample;
+        
+            output[i] *= this.outputVolume; // Apply master volume
+
         }
+
+        // if (this.crossfadeInProgress) {
+        //     this.crossfadeProgress += this.crossfadeStep;
+        //     if (this.crossfadeProgress >= 1) {
+        //         this.crossfadeProgress = 1; // Ensure it's exactly 1
+        //         this.crossfadeInProgress = false; // Stop crossfade
+        
+        //         console.log("🚀 Crossfade complete! Promoting nextState to currentState.");
+                
+        //         // Make nextState the active one
+        //         this.currentState = cloneDeep(this.nextState);
+        
+        //         // Clear nextState so it's ready for future transitions
+        //         this.nextState = {
+        //             nodes: {},
+        //             signalConnections: [],
+        //             outputConnections: [],
+        //             cvConnections: []
+        //         };
+        //     }
+        // }
+
         return true;
     }
 }
