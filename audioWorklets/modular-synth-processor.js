@@ -34,6 +34,11 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
         console.log(`audiograph crossfade set to ${crossfadeDurationSeconds} seconds`)
         this.crossfadeStep = 1 / ((sampleRate / 128) * crossfadeDurationSeconds); // Calculate step size
         this.outputVolume = 0.5
+
+
+        this.signalBuffers = {}; // Initialize an empty object for signal buffers
+
+
     }
 
 
@@ -472,11 +477,18 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
         }
 
         // Step 1: Prepare buffers for all nodes
-        const signalBuffers = {};
-        for (const id in this.nodes) {
-            signalBuffers[id] = new Float32Array(128); // Temporary storage for node output
-        }
+        // const signalBuffers = {};
+        // for (const id in this.nodes) {
+        //     signalBuffers[id] = new Float32Array(128); // Temporary storage for node output
+        // }
 
+        const signalBuffers = this.signalBuffers || {}; // Preserve previous buffers if they exist
+        for (const id in this.nodes) {
+            if (!signalBuffers[id]) {
+                signalBuffers[id] = new Float32Array(128); // Allocate only if missing
+            }
+        }
+        this.signalBuffers = signalBuffers; // Store it persistently
 
         // Process each state
         const processGraph = (state, signalBuffers, stateVersion) => {
@@ -494,6 +506,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                 // console.log(`🔄 Processing order: ${id}`);
                 if (visited.has(id)) return; // Avoid re-processing the same node
                 visited.add(id);
+
 
                 const node = state.nodes[id];
                 if (!node) return;
@@ -532,8 +545,12 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                         if (!feedbackSignalBuffers[sourceId]) {
                             feedbackSignalBuffers[sourceId] = new Float32Array(128); // Ensure buffer exists
                         }
+
+
                         for (let i = 0; i < feedbackSignalBuffers[sourceId].length; i++) {
+
                             feedbackSignalBuffers[sourceId][i] = sourceBuffer[i]; // Copy feedback signal
+                    
                         }
                     }
                     
@@ -703,7 +720,8 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                 //     }
                 // }
                 
-                else if (node.node === 'feedbackDelayNode') {
+                else if (node.node === 'feedbackDelayNodeZZ') {
+                    console.log(`🔎 signalBuffers BEFORE processing feedbackDelayNode:`, JSON.stringify(signalBuffers));
 
                     // console.log(`Processing feedbackDelayNode for ID: ${id}`);
                     if (!node.delayBuffer) {
@@ -719,18 +737,24 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                         const delayedSample = node.delayBuffer[delayedSampleIndex];
 
 
+                        // ✅ Use feedbackSignalBuffers instead of inputBuffer
+                        const feedbackSourceId = state.signalConnections.find(conn => conn.target.split('.')[0] === id)?.source.split('.')[0];
+                        const feedbackInput = feedbackSourceId && feedbackSignalBuffers[feedbackSourceId]
+                            ? feedbackSignalBuffers[feedbackSourceId][i]
+                            : 0; // Default to 0 if no valid feedback input
+
+                        
                         signalBuffers[id][i] = delayedSample
                         // console.log(`feedbackDelayNode Output [${i}]: ${signalBuffers[id][i]}`);
 
                         // Get the current input sample
-                        //! const inputSample = inputBuffer[i] || 0;
-                        const inputSample = (inputBuffer[i] !== 0) ? inputBuffer[i] : Math.sin(2 * Math.PI * i / 128) * 0.5;
+                        // const inputSample = (inputBuffer[i] !== 0) ? inputBuffer[i] : Math.sin(2 * Math.PI * i / 128) * 0.5;
 
                         // console.log(`🔄 feedbackDelayNode: inputBuffer BEFORE writing to delayBuffer:`, inputBuffer.slice(0, 10));
                         // console.log('inputSample', inputSample)
                         // Store the current input in the delay buffer
                         // console.log(`Before Update - delayBuffer[${node.delayIndex}]: ${node.delayBuffer[node.delayIndex]}`);
-                        node.delayBuffer[node.delayIndex] = inputSample
+                        node.delayBuffer[node.delayIndex] = feedbackInput
                         // console.log(`After Update - delayBuffer[${node.delayIndex}]: ${node.delayBuffer[node.delayIndex]}`);
 
 
