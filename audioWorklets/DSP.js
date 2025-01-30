@@ -25,6 +25,31 @@ class DSP extends AudioWorkletProcessor {
     audioNodeBuilder(type, moduleName, params, loadState){
         switch (type){
                 
+            case 'VCA':
+                let vca = {
+                    node: 'VCA',
+                    baseParams: {
+                        gain: parseFloat(1),
+                        "gain cv +/-": parseFloat(params["gain cv +/-"]),
+                    },
+                    modulatedParams: {
+                        // offsets for modulation
+                        gain: 0, 
+                    },
+                    output: new Float32Array(128),
+                    modulationTarget: null, // Target node or parameter for modulation
+                    startTime: null, // Optional: Scheduled start time
+                    stopTime: null,  // Optional: Scheduled stop time           
+    
+                };
+                if(loadState){
+                    this.nextState.nodes[moduleName] = vca
+                } else {
+                    this.currentState.nodes[moduleName] = vca
+                }
+                
+            break
+
             case 'LFO':
             case 'Oscillator':
                 let osc = {
@@ -221,7 +246,6 @@ class DSP extends AudioWorkletProcessor {
                     this.audioNodeBuilder(msg.data.module, msg.data.moduleName, msg.data.audioGraph.params)
    
                 } else if (msg.structure === 'feedbackDelayNode'){
-                    console.log(msg.data)
                     this.audioNodeBuilder('feedbackDelayNode', msg.data)
                     
                 } else {
@@ -503,6 +527,39 @@ class DSP extends AudioWorkletProcessor {
                     }
 
                 }
+
+                else if (node.node === 'VCA') {
+                    const effectiveGain = getEffectiveParam(node, 'gain', node.baseParams['gain cv +/-']);
+                
+                    // Initialize DC-blocking filter state if not present
+                    if (!node.dcBlockState) {
+                        node.dcBlockState = { prevInput: 0, prevOutput: 0 };
+                    }
+                
+                    const cutoffFreq = 5; // Cutoff frequency for DC-blocking (5 Hz)
+                    const alpha = 1 - Math.exp(-2 * Math.PI * cutoffFreq / sampleRate);
+                
+                    for (let i = 0; i < 128; i++) {
+                        // Get input sample (default to 0 if no input)
+                        const inputSample = inputBuffer[i] || 0;
+                
+                        // Apply modulation from CV input if available
+                        let modulatedGain = (node.modulatedParams['gain'] || 0) * node.baseParams['gain cv +/-'];
+                
+                        // DC-blocking filter (1st-order high-pass filter)
+                        const filteredModulation = alpha * (modulatedGain - node.dcBlockState.prevInput) + node.dcBlockState.prevOutput;
+                        node.dcBlockState.prevInput = modulatedGain;
+                        node.dcBlockState.prevOutput = filteredModulation;
+                
+                        // Compute final gain (clamped between 0 and 1)
+                        const finalGain = this.clamp(effectiveGain + filteredModulation, 0, 1);
+                
+                        // Apply gain to the input signal
+                        signalBuffers[id][i] = inputSample * finalGain;
+                    }
+                }
+                
+                
                 else if (node.node === 'Gain') {
                     for (let i = 0; i < 128; i++) signalBuffers[id][i] = inputBuffer[i] * node.baseParams.gain;
                 }
