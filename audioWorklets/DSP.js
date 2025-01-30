@@ -50,6 +50,33 @@ class DSP extends AudioWorkletProcessor {
                 
             break
 
+            case 'HighPassFilter':
+                let hpf = {
+                    node: 'HighPassFilter',
+                    baseParams: {
+                        freq: parseFloat(params.freq),
+                        Q: parseFloat(params.Q),
+                        "freq cv +/-": parseFloat(params["freq cv +/-"]),
+                        "Q cv +/-": parseFloat(params["Q cv +/-"]),
+                    },
+                    modulatedParams: {
+                        // offsets for modulation
+                        freq: 0,
+                        Q: 0
+                    },
+                    output: new Float32Array(128),
+                    modulationTarget: null, // Target node or parameter for modulation
+                    startTime: null, // Optional: Scheduled start time
+                    stopTime: null,  // Optional: Scheduled stop time           
+    
+                };
+                if(loadState){
+                    this.nextState.nodes[moduleName] = hpf
+                } else {
+                    this.currentState.nodes[moduleName] = hpf
+                }
+                
+            break
             case 'LFO':
             case 'Oscillator':
                 let osc = {
@@ -194,7 +221,7 @@ class DSP extends AudioWorkletProcessor {
             case 'loadVersion':
                 
                 const synthGraph = msg.data
-            console.log(synthGraph)
+                console.log(synthGraph)
                 if (this.crossfadeInProgress) return; // Prevent loading mid-crossfade
     
                 this.nextState = {
@@ -208,6 +235,8 @@ class DSP extends AudioWorkletProcessor {
                 // repopulate given automerge version of synth graph
                 Object.keys(synthGraph.modules).forEach((moduleID)=>{
                     const module = synthGraph.modules[moduleID]
+                    console.log('module', module)
+
                     let moduleParams = null // set to null in case the node is a feedbackDelayNode
                     if(module.params){
                         moduleParams = module.params // node is a webAudioNode and we want its params
@@ -277,7 +306,7 @@ class DSP extends AudioWorkletProcessor {
             break
 
             case 'addCable':
-                
+                console.log(msg.data)
                 if(msg.data.target.includes('AudioDestination')){
                     this.currentState.outputConnections.push(msg.data.source);
                 } else if (msg.data.target.split('.')[1] === 'IN'){
@@ -305,7 +334,6 @@ class DSP extends AudioWorkletProcessor {
 
             case 'removeCable':
 
-                console.log(msg.data)
                 if(msg.data.target.includes('AudioDestination')){
                     const index = this.currentState.outputConnections.findIndex(
                         (item) => 
@@ -423,6 +451,7 @@ class DSP extends AudioWorkletProcessor {
                 const node = state.nodes[id];
                 if (!node) return;
                 
+                // console.log(node.node)
                 if (!signalBuffers[id]) signalBuffers[id] = new Float32Array(128);
                 const inputBuffer = new Float32Array(128);
                 
@@ -470,6 +499,8 @@ class DSP extends AudioWorkletProcessor {
                     }
                     modValue /= 128; // Compute average modulation value
                 
+ 
+                    
                     // Update the modulated parameter
                     node.modulatedParams[param] = modValue;
                 });
@@ -648,34 +679,34 @@ class DSP extends AudioWorkletProcessor {
                 }
                 
                 else if (node.node === 'HighPassFilter') {
-                    console.log('added')
-                    // Ensure filter memory is initialized
                     if (!node.coefficients) {
                         node.coefficients = { a0: 0, a1: 0, a2: 0, b0: 0, b1: 0, b2: 0 };
-                        node.inputHistory = [0, 0];
-                        node.outputHistory = [0, 0];
+                        node.inputHistory1 = [0, 0];
+                        node.outputHistory1 = [0, 0];
+                        node.inputHistory2 = [0, 0];  // Second stage for cascaded filtering
+                        node.outputHistory2 = [0, 0];
                     }
                 
-                    // Get effective parameters with modulation
-                    const effectiveFreq = clamp(
+
+                    const effectiveFreq = this.clamp(
                         getEffectiveParam(node, 'freq', node.baseParams['freq cv +/-']),
-                        20, 
-                        sampleRate / 2
+                        80, 
+                        10000
                     );
                 
-                    const effectiveQ = clamp(
+                    const effectiveQ = this.clamp(
                         getEffectiveParam(node, 'Q', node.baseParams['Q cv +/-']),
                         0.1,
-                        10
+                        20
                     );
                 
-                    // Compute filter coefficients
+                    // Compute filter coefficients for biquad high-pass
                     const omega = (2 * Math.PI * effectiveFreq) / sampleRate;
                     const alpha = Math.sin(omega) / (2 * effectiveQ);
                 
                     let b0, b1, b2, a0, a1, a2;
                 
-                    // High-Pass Filter Coefficients (Based on BiQuad filter equations)
+                    // High-Pass Filter Coefficients (Biquad formula)
                     b0 = (1 + Math.cos(omega)) / 2;
                     b1 = -(1 + Math.cos(omega));
                     b2 = (1 + Math.cos(omega)) / 2;
@@ -693,28 +724,43 @@ class DSP extends AudioWorkletProcessor {
                     // Store computed coefficients
                     node.coefficients = { b0, b1, b2, a1, a2 };
                 
-                    // Apply filter to the signal buffer
+                    // Apply cascaded biquad filter for **stronger** high-pass effect
                     for (let i = 0; i < 128; i++) {
                         const inputSample = inputBuffer[i];
                 
-                        // Apply BiQuad filtering equation
-                        const outputSample =
+                        // First stage
+                        let filtered1 =
                             node.coefficients.b0 * inputSample +
-                            node.coefficients.b1 * node.inputHistory[0] +
-                            node.coefficients.b2 * node.inputHistory[1] -
-                            node.coefficients.a1 * node.outputHistory[0] -
-                            node.coefficients.a2 * node.outputHistory[1];
+                            node.coefficients.b1 * node.inputHistory1[0] +
+                            node.coefficients.b2 * node.inputHistory1[1] -
+                            node.coefficients.a1 * node.outputHistory1[0] -
+                            node.coefficients.a2 * node.outputHistory1[1];
                 
-                        // Update history for next iteration
-                        node.inputHistory[1] = node.inputHistory[0];
-                        node.inputHistory[0] = inputSample;
-                        node.outputHistory[1] = node.outputHistory[0];
-                        node.outputHistory[0] = outputSample;
+                        // Update history for first stage
+                        node.inputHistory1[1] = node.inputHistory1[0];
+                        node.inputHistory1[0] = inputSample;
+                        node.outputHistory1[1] = node.outputHistory1[0];
+                        node.outputHistory1[0] = filtered1;
                 
-                        // Write processed output to the signal buffer
-                        signalBuffers[id][i] = outputSample;
+                        // Second stage for stronger effect
+                        let filtered2 =
+                            node.coefficients.b0 * filtered1 +
+                            node.coefficients.b1 * node.inputHistory2[0] +
+                            node.coefficients.b2 * node.inputHistory2[1] -
+                            node.coefficients.a1 * node.outputHistory2[0] -
+                            node.coefficients.a2 * node.outputHistory2[1];
+                
+                        // Update history for second stage
+                        node.inputHistory2[1] = node.inputHistory2[0];
+                        node.inputHistory2[0] = filtered1;
+                        node.outputHistory2[1] = node.outputHistory2[0];
+                        node.outputHistory2[0] = filtered2;
+                
+                        // Write final output to buffer
+                        signalBuffers[id][i] = filtered2;
                     }
                 }
+                
                 
                 
             };
