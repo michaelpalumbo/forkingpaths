@@ -169,7 +169,7 @@ class DSP extends AudioWorkletProcessor {
             case 'loadVersion':
                 
                 const synthGraph = msg.data
-
+   
                 if (this.crossfadeInProgress) return; // Prevent loading mid-crossfade
     
                 this.nextState = {
@@ -187,7 +187,11 @@ class DSP extends AudioWorkletProcessor {
                     if(module.params){
                         moduleParams = module.params // node is a webAudioNode and we want its params
                     }
-                    this.audioNodeBuilder(module.type, moduleID, module.params, 'loadstate')
+                    // console.log(moduleID)
+                    if(moduleID.startsWith('feedbackDelayNode')){
+                        this.audioNodeBuilder('feedbackDelayNode', moduleID, null, 'loadstate')
+                    } 
+                    else this.audioNodeBuilder(module.type, moduleID, module.params, 'loadstate')
                 })
 
                 synthGraph.connections.forEach((cable)=>{
@@ -217,6 +221,7 @@ class DSP extends AudioWorkletProcessor {
                     this.audioNodeBuilder(msg.data.module, msg.data.moduleName, msg.data.audioGraph.params)
    
                 } else if (msg.structure === 'feedbackDelayNode'){
+                    console.log(msg.data)
                     this.audioNodeBuilder('feedbackDelayNode', msg.data)
                     
                 } else {
@@ -275,6 +280,8 @@ class DSP extends AudioWorkletProcessor {
             break;
 
             case 'removeCable':
+
+                console.log(msg.data)
                 if(msg.data.target.includes('AudioDestination')){
                     const index = this.currentState.outputConnections.findIndex(
                         (item) => 
@@ -288,6 +295,8 @@ class DSP extends AudioWorkletProcessor {
                         this.currentState.outputConnections.splice(index, 1);
                     }
                 } else if (msg.data.target.split('.')[1] === 'IN'){
+
+                    
                     const index = this.currentState.signalConnections.findIndex(
                         (item) => 
  

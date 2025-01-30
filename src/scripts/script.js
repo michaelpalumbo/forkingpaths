@@ -3345,7 +3345,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     let feedbackDelayNodeID = `feedbackDelayNode_${uuidv7()}`
                     updateSynthWorklet('addNode', feedbackDelayNodeID, 'feedbackDelayNode' )
 
-                    // todoto updateSynthWorklet: add 2 connections: {source: src, target: feedbackDelayNode.IN} & {source: feedbackDelayNode.IN, target: targ}
+                    // updateSynthWorklet: add 2 connections: {source: src, target: feedbackDelayNode.IN} & {source: feedbackDelayNode.IN, target: targ}
                     updateSynthWorklet('addCable', { source: src, target: feedbackDelayNodeID + '.IN', feedback: cycle})                    
                     updateSynthWorklet('addCable', { source: feedbackDelayNodeID + '.OUT', target: targ, feedback: cycle})  
                     
@@ -3361,10 +3361,12 @@ document.addEventListener("DOMContentLoaded", function () {
                         amDoc.changeType = {
                             msg: 'connect'
                         }
+                        // todo add feedbackDelayNode to synth.graph
+                        amDoc.synth.graph.modules[feedbackDelayNodeID] = {}
                         // todo figure out synth.graph.connections 
-                        // amDoc.synth.graph.connections.push( { source: src, target: targ, feedback: cycle })
+                        amDoc.synth.graph.connections.push( { source: src, target: feedbackDelayNodeID + '.IN', feedback: cycle} )
+                        amDoc.synth.graph.connections.push( { source: feedbackDelayNodeID + '.OUT', target: targ, feedback: cycle} )
 
-                        // amDoc.synth.graph.connections.push( { source: src, target: feedbackDelayNodeID + '.IN', feedback: cycle}, { source: feedbackDelayNodeID + '.OUT', target: targ, feedback: cycle})
                         audioGraphDirty = true
                      }, onChange,  `connect ${temporaryCables.local.source.data().label} to ${temporaryCables.local.targetNode.data().label}$PARENTS ${parentSourceID} ${parentTargetID}`);
                     
