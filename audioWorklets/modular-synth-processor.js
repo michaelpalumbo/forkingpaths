@@ -480,13 +480,12 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
 
         // Process each state
         const processGraph = (state, signalBuffers, stateVersion) => {
-                    // Step 2: Define a recursive function to process each node
-        const feedbackConnections = state.signalConnections.filter(conn => conn.target.split('.')[0] === 'feedbackDelayNode');
-        // console.log(`Connections to feedbackDelayNode:`, feedbackConnections);
+
+            // Step 2: Define a recursive function to process each node
             const visited = new Set();
 
             const processNode = (id) => {
-
+                
                 if (visited.has(id)) return; // Avoid re-processing the same node
                 visited.add(id);
 
@@ -516,6 +515,8 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                         inputBuffer[i] += sourceBuffer[i]; // Sum signals from inputs
                     }
                 }
+                console.log(`⚡ feedbackDelayNode Input Connections:`, inputConnections);
+                console.log(`⚡ feedbackDelayNode inputBuffer BEFORE processing:`, inputBuffer);
 
                 // Process Modulation Connections
                 // const modulationConnections = this.signalConnections.filter(conn => conn.target === id && conn.param);
@@ -695,9 +696,12 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
 
                         // Get the current input sample
                         const inputSample = inputBuffer[i] || 0;
-                        // console.log(inputSample)
+                        // console.log('inputSample', inputSample)
                         // Store the current input in the delay buffer
-                        node.delayBuffer[node.delayIndex] = inputSample
+                        // console.log(`Before Update - delayBuffer[${node.delayIndex}]: ${node.delayBuffer[node.delayIndex]}`);
+                        node.delayBuffer[node.delayIndex] = inputBuffer[i];
+                        // console.log(`After Update - delayBuffer[${node.delayIndex}]: ${node.delayBuffer[node.delayIndex]}`);
+
 
                         // Increment buffer index
                         node.delayIndex = (node.delayIndex + 1) % node.delayBuffer.length;
@@ -954,6 +958,13 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
             for (const id of state.outputConnections) {
                 processNode(id.split('.')[0]); // process the node first
             }
+
+            // Ensure ALL feedback delay nodes are processed
+            Object.keys(state.nodes).forEach(nodeId => {
+                if (nodeId.startsWith('feedbackDelayNode_')) {
+                    processNode(nodeId);
+                }
+            });
         }
 
         
