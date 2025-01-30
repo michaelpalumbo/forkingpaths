@@ -484,8 +484,14 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
             // Step 2: Define a recursive function to process each node
             const visited = new Set();
 
+            // Initialize separate buffers for feedback connections
+            const feedbackSignalBuffers = {};
+            for (const id in state.nodes) {
+                feedbackSignalBuffers[id] = new Float32Array(128); // Same block size
+            }
+
             const processNode = (id) => {
-                
+                // console.log(`🔄 Processing order: ${id}`);
                 if (visited.has(id)) return; // Avoid re-processing the same node
                 visited.add(id);
 
@@ -495,28 +501,45 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
 
                 // Sum inputs from connected nodes
                 const inputBuffer = new Float32Array(128);
-                const inputConnections = state.signalConnections.filter(conn => conn.target.split('.')[0] === id);
+                //! const inputConnections = state.signalConnections.filter(conn => conn.target.split('.')[0] === id);
 
                 // console.log('Signal Connections:', state.signalConnections);
                 // console.log('CV Connections:', state.cvConnections);
                 // console.log(`Connections for ${id}:`, inputConnections);
 
+                // ✅ Ensure all source nodes are processed FIRST
+                const inputConnections = state.signalConnections.filter(conn => conn.target.includes(id));
 
 
                 for (const conn of inputConnections) {
+                    const sourceId = conn.source.split('.')[0];
+                    if (!visited.has(sourceId)) {
+                        processNode(sourceId); // Process the source FIRST
+                    }
                     // console.log('conn', conn)
-                    processNode(conn.source.split('.')[0]); // Process the source node first
                     const sourceBuffer = signalBuffers[conn.source.split('.')[0]];
                     if (!sourceBuffer) {
                         console.warn(`Source buffer for node ${conn.source.split('.')[0]} is undefined`);
                         continue; // Skip this modulation if the buffer is unavailable
                     }
+
                     for (let i = 0; i < inputBuffer.length; i++) {
                         inputBuffer[i] += sourceBuffer[i]; // Sum signals from inputs
                     }
+
+                    // if this connection leads to a feedbackDelayNode, store it separately
+                    if (conn.target.startsWith("feedbackDelayNode")) {
+                        if (!feedbackSignalBuffers[sourceId]) {
+                            feedbackSignalBuffers[sourceId] = new Float32Array(128); // Ensure buffer exists
+                        }
+                        for (let i = 0; i < feedbackSignalBuffers[sourceId].length; i++) {
+                            feedbackSignalBuffers[sourceId][i] = sourceBuffer[i]; // Copy feedback signal
+                        }
+                    }
+                    
                 }
-                console.log(`⚡ feedbackDelayNode Input Connections:`, inputConnections);
-                console.log(`⚡ feedbackDelayNode inputBuffer BEFORE processing:`, inputBuffer);
+                // console.log(`⚡ feedbackDelayNode Input Connections:`, inputConnections);
+                // console.log(`⚡ feedbackDelayNode inputBuffer BEFORE processing:`, inputBuffer);
 
                 // Process Modulation Connections
                 // const modulationConnections = this.signalConnections.filter(conn => conn.target === id && conn.param);
@@ -588,8 +611,12 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                         if (node.phase >= 1) node.phase -= 1;
                         // signalBuffers[id][i] = Math.sin(2 * Math.PI * node.phase) * effectiveGain;
                         // Select the waveform based on node.baseParams['waveform']
+
+                        // console.log(`🎵 Oscillator Output BEFORE Writing to Buffer (${id}):`, signalBuffers[id].slice(0, 10));
+
                         switch (node.baseParams['type']) {
                     
+                            
                             case 'sine':
                                 signalBuffers[id][i] = Math.sin(2 * Math.PI * node.phase) * effectiveGain;
                                 break;
@@ -608,10 +635,9 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                         }
                     }
 
-                    // console.log(`Oscillator (${id}) output:`, signalBuffers[id]);
                 }
                     
-                
+            
                 else if (node.node === 'Gain') {
                     const effectiveGain = getEffectiveParam(node, 'gain', node.baseParams['gain']); // Combines base and modulated gain
 
@@ -678,6 +704,7 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                 // }
                 
                 else if (node.node === 'feedbackDelayNode') {
+
                     // console.log(`Processing feedbackDelayNode for ID: ${id}`);
                     if (!node.delayBuffer) {
                         // create delaybuffer
@@ -691,15 +718,19 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                         const delayedSampleIndex = (node.delayIndex - delaySamples + node.delayBuffer.length) % node.delayBuffer.length;
                         const delayedSample = node.delayBuffer[delayedSampleIndex];
 
+
                         signalBuffers[id][i] = delayedSample
                         // console.log(`feedbackDelayNode Output [${i}]: ${signalBuffers[id][i]}`);
 
                         // Get the current input sample
-                        const inputSample = inputBuffer[i] || 0;
+                        //! const inputSample = inputBuffer[i] || 0;
+                        const inputSample = (inputBuffer[i] !== 0) ? inputBuffer[i] : Math.sin(2 * Math.PI * i / 128) * 0.5;
+
+                        // console.log(`🔄 feedbackDelayNode: inputBuffer BEFORE writing to delayBuffer:`, inputBuffer.slice(0, 10));
                         // console.log('inputSample', inputSample)
                         // Store the current input in the delay buffer
                         // console.log(`Before Update - delayBuffer[${node.delayIndex}]: ${node.delayBuffer[node.delayIndex]}`);
-                        node.delayBuffer[node.delayIndex] = inputBuffer[i];
+                        node.delayBuffer[node.delayIndex] = inputSample
                         // console.log(`After Update - delayBuffer[${node.delayIndex}]: ${node.delayBuffer[node.delayIndex]}`);
 
 
@@ -952,8 +983,13 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                 for (const param in node.modulatedParams) {
                     node.modulatedParams[param] = 0;
                 }
-            };
 
+                // console.log(`📡 AFTER processNode(${id}), signalBuffers[${id}] (First 10 Samples):`, signalBuffers[id]?.slice(0, 10));
+
+            };
+            
+
+      
             // Step 3: Process all nodes connected to the output
             for (const id of state.outputConnections) {
                 processNode(id.split('.')[0]); // process the node first
@@ -965,9 +1001,11 @@ class ModularSynthProcessor extends AudioWorkletProcessor {
                     processNode(nodeId);
                 }
             });
+          
+   
         }
 
-        
+
         // Process current and next state
         if(this.currentState.outputConnections){
             processGraph(this.currentState, signalBuffersCurrent, 'current');
