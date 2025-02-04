@@ -28,6 +28,7 @@ class DSP extends AudioWorkletProcessor {
             case 'VCA':
                 let vca = {
                     node: 'VCA',
+                    structure: 'webAudioNode',
                     baseParams: {
                         gain: parseFloat(1),
                         "gain cv +/-": parseFloat(params["gain cv +/-"]),
@@ -53,6 +54,7 @@ class DSP extends AudioWorkletProcessor {
             case 'HighPassFilter':
                 let hpf = {
                     node: 'HighPassFilter',
+                    structure: 'webAudioNode',
                     baseParams: {
                         freq: parseFloat(params.freq),
                         Q: parseFloat(params.Q),
@@ -81,6 +83,7 @@ class DSP extends AudioWorkletProcessor {
             case 'Oscillator':
                 let osc = {
                     node: 'Oscillator',
+                    structure: 'webAudioNode',
                     baseParams: {
                         frequency: parseFloat(params.frequency),
                         gain: parseFloat(1),
@@ -112,6 +115,7 @@ class DSP extends AudioWorkletProcessor {
             case 'LFO2':
                 let lfo2 = {
                     node: 'Oscillator',
+                    structure: 'webAudioNode',
                     baseParams: {
                         frequency: parseFloat(params.frequency),
                         gain: parseFloat(1),
@@ -148,6 +152,7 @@ class DSP extends AudioWorkletProcessor {
             case 'ModGain':
                 let gain = {
                     node: 'Gain',
+                    structure: 'webAudioNode',
                     baseParams: {
                         gain: parseFloat(params.gain) || 1,
                     },
@@ -167,6 +172,7 @@ class DSP extends AudioWorkletProcessor {
             case 'Delay':
                 let delay = {
                     node: 'Delay',
+                    structure: 'webAudioNode',
                     baseParams: {
                         delayTime: parseFloat(params.delayTime) || 500,
                         'time cv +/-': parseFloat(params['time cv +/-']) || 100,
@@ -192,6 +198,7 @@ class DSP extends AudioWorkletProcessor {
             case 'BiquadFilter':
                 let biquad = {
                     node: 'BiquadFilter',
+                    structure: 'webAudioNode',
                     baseParams: {
                         frequency: parseFloat(params.frequency) || 350,
                         "freq cv +/-": parseFloat(params["freq cv +/-"]),
@@ -219,6 +226,7 @@ class DSP extends AudioWorkletProcessor {
             case 'feedbackDelayNode':
                 let feedbackDelayNode = {
                     node: 'feedbackDelayNode',
+                    structure: 'webAudioNode',
                     output: new Float32Array(128) // Fixed output buffer for block size
                 }
 
@@ -232,6 +240,7 @@ class DSP extends AudioWorkletProcessor {
             case 'GateSequencer':
                 let gateSeq = {
                     node: 'GateSequencer',
+                    structure: 'webAudioNode',
                     baseParams: {
                         stepCount: parseFloat(params.stepCount) || 8,
                         tempo: parseFloat(params.tempo) || 120,
@@ -257,6 +266,34 @@ class DSP extends AudioWorkletProcessor {
         }     
     } 
 
+
+    rnboDeviceBuilder(deviceName, moduleName, rnboDefinition, loadState) {
+        let rnboDevice = {
+            node: deviceName,
+            structure: 'RNBO',
+            rnboDesc: rnboDefinition.desc, // Store RNBO metadata
+            rnboSrc: rnboDefinition.src,   // Store DSP source code
+            baseParams: {},                // Store parameter values
+            modulatedParams: {},           // Offsets for modulation
+            output: new Float32Array(128), // Single output buffer
+            dspInstance: null              // Will store compiled RNBO DSP function
+        };
+    
+        // Initialize parameters based on RNBO description
+        rnboDefinition.desc.parameters.forEach(param => {
+            rnboDevice.baseParams[param.paramId] = param.initialValue;
+            rnboDevice.modulatedParams[param.paramId] = 0;
+        });
+    
+        // Store in current or next state
+        if (loadState) {
+            this.nextState.nodes[moduleName] = rnboDevice;
+        } else {
+            this.currentState.nodes[moduleName] = rnboDevice;
+        }
+    }
+
+    
     cableBuilder(){
 
     }
@@ -279,7 +316,6 @@ class DSP extends AudioWorkletProcessor {
             break
 
             case 'loadVersion':
-                
                 const synthGraph = msg.data
                 if (this.crossfadeInProgress) return; // Prevent loading mid-crossfade
     
@@ -305,6 +341,8 @@ class DSP extends AudioWorkletProcessor {
                         this.audioNodeBuilder('feedbackDelayNode', moduleID, null, 'loadstate')
                     } 
                     else this.audioNodeBuilder(module.type, moduleID, module.params, 'loadstate')
+                    console.warn('if any module is ade with RNBO, need to run it through this.rnboDeviceBuilder')
+
                 })
 
                 synthGraph.connections.forEach((cable)=>{
@@ -336,10 +374,15 @@ class DSP extends AudioWorkletProcessor {
                 } else if (msg.structure === 'feedbackDelayNode'){
                     this.audioNodeBuilder('feedbackDelayNode', msg.data)
                     
-                } else {
+                } else if (msg.structure === 'RNBO'){
+                    this.rnboDeviceBuilder(msg.data.module, )
                     console.log('code for loading rnbo devices has not been written')
                     // todo: run this in this.rnboDeviceBuilder()
                     // todo reason: similar to audioNodeBuilder(), we need to be able to both build devices through addNode, and also through case 'loadVersion'
+                } 
+                
+                else {
+                    
                 }
                 
             break
