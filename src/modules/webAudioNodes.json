@@ -901,6 +901,58 @@
     "inputs": [],
     "outputs": ["sine", "tri", "saw", "square"]
   },
+  "GateSequencer": {
+    "parameters": {
+      "stepCount": {
+        "min": 1,
+        "max": 16,
+        "default": 8,
+        "units": "steps",
+        "description": "Number of steps in the sequence.",
+        "modulatable": false
+      },
+      "tempo": {
+        "min": 20,
+        "max": 300,
+        "default": 120,
+        "units": "BPM",
+        "description": "Controls the speed of the sequence.",
+        "modulatable": true,
+        "modulationDescription": "Can be modulated for tempo variations."
+      },
+      "gateLength": {
+        "min": 0.05,
+        "max": 1,
+        "default": 0.5,
+        "units": "ratio",
+        "description": "Fraction of a step where the gate is active.",
+        "modulatable": true,
+        "modulationDescription": "Can be modulated for dynamic gate timing."
+      }
+    },
+    "paramNames": ["stepCount", "tempo", "gateLength"],
+    "cvNames": ["tempo", "gateLength"],
+    "cv": {
+      "tempo": {
+        "min": 20,
+        "max": 300,
+        "default": 120,
+        "units": "BPM",
+        "description": "Modulation input for tempo control.",
+        "modulatable": true
+      },
+      "gateLength": {
+        "min": 0.05,
+        "max": 1,
+        "default": 0.5,
+        "units": "ratio",
+        "description": "Modulation input for gate length.",
+        "modulatable": true
+      }
+    },
+    "inputs": [],
+    "outputs": ["OUT"]
+  },
   "OutputLimiter": {
     "parameters": {
       "threshold": {

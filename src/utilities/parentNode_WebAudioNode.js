@@ -179,7 +179,8 @@ export class ParentNode_WebAudioNode {
                     max: child.max || child.maximum || 1,
                     value: child.default || child.value || 0,
                     menuOptions: child.values || 'none',
-                    description: child.description
+                    description: child.description,
+                    units: child.units || 'unspecified'
                     
                 },
                 position: {

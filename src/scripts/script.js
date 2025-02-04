@@ -2359,8 +2359,18 @@ document.addEventListener("DOMContentLoaded", function () {
         if (param.data.ui === 'knob'){
             let lastValue = null; // use this to filter out repeated values
 
+            let unit = 'float'
 
-            const stepSize = determineStepSize(param.data.min, param.data.max, 'logarithmic', 100 )
+            let stepSize = determineStepSize(param.data.min, param.data.max, 'logarithmic', 100 )
+
+            if(param.data.units === 'steps' || param.data.units === 'BPM'){
+                unit = 'integer'
+                if(stepSize < 1) stepSize++
+                stepSize = parseInt(stepSize, 10)
+            }
+            
+        
+
             // Initialize jQuery Knob on the input
             $(paramDiv).knob({
                 min: param.data.min || param.data.sliderMin || 0,
@@ -2380,6 +2390,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 change: (value) => {
                     
                     let newValue = Math.round(value * 100) / 100
+                    if(unit = 'integer'){
+                        
+                        newValue = parseInt(newValue, 10)
+                    }
+                    console.log('value', newValue)
                     // filter out repeated values
                     if (newValue !== lastValue) {
                         lastValue = newValue;

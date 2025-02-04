@@ -229,6 +229,30 @@ class DSP extends AudioWorkletProcessor {
                 }  
             break;
 
+            case 'GateSequencer':
+                let gateSeq = {
+                    node: 'GateSequencer',
+                    baseParams: {
+                        stepCount: parseFloat(params.stepCount) || 8,
+                        tempo: parseFloat(params.tempo) || 120,
+                        gateLength: parseFloat(params.gateLength) || 0.5
+                    },
+                    modulatedParams: {
+                        tempo: 0,
+                        gateLength: 0
+                    },
+                    output: new Float32Array(128), // Single output buffer
+                    stepIndex: 0,
+                    clockPhase: 0
+                };
+
+                if (loadState) {
+                    this.nextState.nodes[moduleName] = gateSeq;
+                } else {
+                    this.currentState.nodes[moduleName] = gateSeq;
+                }
+            break;
+
             default: 
         }     
     } 
@@ -493,12 +517,12 @@ class DSP extends AudioWorkletProcessor {
                 
                 // process input connections 
                 state.signalConnections.filter(conn => conn.target.includes(id)).forEach(conn => {
-
+                    
                     const sourceId = conn.source.split('.')[0];
                     const sourceOutput = conn.source.split('.')[1]
 
                     processNode(sourceId);
-
+                    
                     // Check if source node has more than one outlet (or any multi-output module)
                     if (state.nodes[sourceId] && state.nodes[sourceId].output && typeof state.nodes[sourceId].output === 'object') {
                         // console.log('snared')
@@ -533,7 +557,6 @@ class DSP extends AudioWorkletProcessor {
 
                 state.cvConnections.filter(conn => conn.target.split('.')[0] === id).forEach(conn => {
                     const modSourceId = conn.source.split('.')[0];
-                
                     if (!visited.has(modSourceId)) {
                         processNode(modSourceId); // Ensure modulation sources are processed
                     }
@@ -830,6 +853,41 @@ class DSP extends AudioWorkletProcessor {
                         signalBuffers[id][i] = filtered2;
                     }
                 }
+
+                else if (node.node === 'GateSequencer') {
+                    const effectiveTempo = getEffectiveParam(node, 'tempo');
+                    const stepDuration = (60 / effectiveTempo) * sampleRate;
+                    
+
+                    // Pulse duration should be **very short** (e.g., 1–5ms)
+                    const pulseSamples = Math.max(1, Math.round(sampleRate * 0.05)); // 5ms pulse
+                    
+                    for (let i = 0; i < 128; i++) {
+                        // Move clock forward
+                        node.clockPhase += 1;
+                        
+                        // If we reach a new step, reset and output a short pulse
+                        if (node.clockPhase >= stepDuration) {
+                            node.clockPhase = 0;
+                            node.stepIndex = (node.stepIndex + 1) % node.baseParams.stepCount;
+                            
+                            // Generate **short pulse** at transition
+                            node.pulseCounter = pulseSamples;
+
+
+                            console.log(`Step ${node.stepIndex} | pulseCounter=${node.pulseCounter} | output[${i}]=${node.output[i]}`);
+
+                        }
+                
+                        // Output pulse only for a few samples
+                        node.output[i] = node.pulseCounter > 0 ? 1.0 : 0.0;
+                        if (node.pulseCounter > 0) node.pulseCounter -= 1; // Count down pulse
+
+
+                    }
+                }
+                
+                
                 
                 
                 
