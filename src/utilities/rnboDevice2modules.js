@@ -43,7 +43,7 @@ async function getJsonFiles(directoryPath) {
                 const decompressedBinary = pako.inflate(compressedBinary);
 
                 // Write binary data to separate file
-                const wasmFilePath = `./public/wasm/${moduleName}.wasm`;
+                const wasmFilePath = `./public/wasm/${moduleName}.wasm.js`;
                 await writeFile(wasmFilePath, decompressedBinary);
                 
                 modules.rnboDevices[moduleName] = {

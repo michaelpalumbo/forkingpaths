@@ -38,7 +38,11 @@ export class ParentNode_WebAudioNode {
         
         this.moduleSpec = audioNodes[structure][module]
 
-        console.log('moduleSpec', this.moduleSpec)
+        if(this.moduleSpec.structure === 'rnboDevice'){
+            console.log('need to store wasm', this.moduleSpec.src)
+            this.moduleSpec.dspInstance = this.loadWASM(this.moduleSpec.src)
+        }
+        
         this.structure = structure // whether it is a basic web audio node or a rnboDevice
         this.inputs = this.moduleSpec.inputs
         this.outputs = this.moduleSpec.outputs
@@ -117,24 +121,54 @@ export class ParentNode_WebAudioNode {
        
     }
 
-    async getDefinition(RNBODeviceName){
-        console.log('sserhj')
-        try {
-            let fileName = `${RNBODeviceName}.json`
-            // load the RNBO desc and src
-            // Fetch RNBO JSON file
-            const response = await fetch(`/export/${fileName}`);
-            if (!response.ok) throw new Error(`Failed to load RNBO device: ${fileName}`);
 
-            const rnboDefinition = await response.json();
-            console.log(rnboDefinition.desc)
-            return rnboDefinition
+    async loadRNBOForWorklet(audioContext, moduleName) {
+        try {
+            // Dynamically load RNBO WebAssembly JavaScript (wasm.js)
+            const rnboModule = await import(`/public/wasm/${moduleName}.wasm.js`);
+            
+            // Wait for WebAssembly to initialize
+            const rnboInstance = await rnboModule.default();
+    
+            console.log(`✅ RNBO WebAssembly Loaded: ${moduleName}`, rnboInstance);
+    
+            // Add the AudioWorkletProcessor script
+            await audioContext.audioWorklet.addModule('/worklets/rnboProcessor.js');
+    
+            // Create the AudioWorkletNode and pass RNBO WASM instance
+            const rnboNode = new AudioWorkletNode(audioContext, 'rnbo-processor');
+            rnboNode.port.postMessage({
+                type: 'load-rnbo',
+                instance: rnboInstance
+            });
+    
+            return rnboNode;
         } catch (error) {
-            console.error(`❌ Error loading RNBO module (${filePath}):`, error);
+            console.error(`❌ Failed to load RNBO WebAssembly: ${moduleName}`, error);
         }
     }
+    
 
+    
+    async loadWASM(filePath) {
+        try {
+            // ✅ Fetch the binary file (stored separately)
+            const response = await fetch(filePath);
+            if (!response.ok) throw new Error(`Failed to fetch ${filePath}`);
+    
+            // ✅ Convert to ArrayBuffer
+            const wasmBuffer = await response.arrayBuffer();
+    
+            // ✅ Instantiate WebAssembly
+            const { instance } = await WebAssembly.instantiate(wasmBuffer);
+            // device.dspInstance = instance;
+            console.log(`✅ Successfully loaded RNBO device: ${filePath}`);
 
+            return instance
+        } catch (error) {
+            console.error(`❌ Failed to load RNBO DSP:`, error);
+        }
+    }
     findMatchingObject(obj, searchKey) {
         for (const [key, value] of Object.entries(obj)) {
             // Recursively search through nested objects

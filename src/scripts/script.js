@@ -166,17 +166,49 @@ document.addEventListener("DOMContentLoaded", function () {
     // Audio context
     const audioContext = new window.AudioContext();
 
-    audioContext.audioWorklet.addModule('./audioWorklets/DSP.js').then(() => {
-        synthWorklet = new AudioWorkletNode(audioContext, 'DSP');
-        synthWorklet.connect(audioContext.destination);
+    // audioContext.audioWorklet.addModule('./audioWorklets/DSP.js').then(() => {
+    //     synthWorklet = new AudioWorkletNode(audioContext, 'DSP');
+    //     synthWorklet.connect(audioContext.destination);
 
-        // set volume
-        updateSynthWorklet('setOutputVolume', savedVolume)
-    }).catch((error) => {
-        console.error('Error loading the worklet:', error);
-    });
+    //     // set volume
+    //     updateSynthWorklet('setOutputVolume', savedVolume)
+    // }).catch((error) => {
+    //     console.error('Error loading the worklet:', error);
+    // });
     
 
+    async function setupAudioWorklet() {
+        try {
+            console.log("⏳ Loading AudioWorklet...");
+
+            // Load the worklet module **first**
+            await audioContext.audioWorklet.addModule('./audioWorklets/DSP.js');
+            console.log("✅ AudioWorklet loaded!");
+
+            // Now we safely create the worklet **after** it has loaded
+            synthWorklet = new AudioWorkletNode(audioContext, 'DSP');
+            synthWorklet.connect(audioContext.destination);
+            console.log("🎛️ AudioWorkletNode created!");
+
+            // Set volume after the worklet is ready
+            updateSynthWorklet('setOutputVolume', savedVolume);
+
+            // ✅ Safely attach event listeners now
+            synthWorklet.port.onmessage = (event) => {
+                if (event.data.type === 'status-update') {
+                    console.log('🎛️ DSP Status:', event.data.message);
+                } else if (event.data.type === 'performance-metrics') {
+                    console.log('📊 DSP Load:', event.data.load.toFixed(2), '%');
+                }
+            };
+
+        } catch (error) {
+            console.error("❌ Failed to initialize AudioWorklet:", error);
+        }
+    }
+
+    // 🚀 Call setup function
+    setupAudioWorklet();
 
 
     // on load, check if historySequencer window is already open:
@@ -2703,6 +2735,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
 //*
 //*
+//* AUFDIO WORKLET COMMUNICATION
+//* Functions that communicate between main app and audio worklet
+//*
+
+
+
+//*
+//*
 //* APP COMMUNICATION
 //* Functions that communicate between main app and history app 
 //*
@@ -4736,6 +4776,55 @@ document.addEventListener("DOMContentLoaded", function () {
         return edgeInCycle; // Return true if the edge belongs to any cycle
     }
     
+
+    async function loadRNBOForWorklet(audioContext, moduleName) {
+        try {
+            // Dynamically load RNBO WebAssembly JavaScript (wasm.js)
+            const rnboModule = await import(`./public/wasm/${moduleName}.wasm.js`);
+            
+            // Wait for WebAssembly to initialize
+            const rnboInstance = await rnboModule.default();
+    
+            console.log(`✅ RNBO WebAssembly Loaded: ${moduleName}`, rnboInstance);
+    
+            // Add the AudioWorkletProcessor script
+            await audioContext.audioWorklet.addModule('/worklets/rnboProcessor.js');
+    
+            // Create the AudioWorkletNode and pass RNBO WASM instance
+            const rnboNode = new AudioWorkletNode(audioContext, 'rnbo-processor');
+            rnboNode.port.postMessage({
+                type: 'load-rnbo',
+                instance: rnboInstance
+            });
+    
+            return rnboNode;
+        } catch (error) {
+            console.error(`❌ Failed to load RNBO WebAssembly: ${moduleName}`, error);
+        }
+    }
+
+    async function addRNBODevice(audioContext, rnboDeviceName, rnboWasmPath, rnboDesc) {
+        try {
+            // Fetch and compile the WebAssembly binary
+            const response = await fetch(rnboWasmPath);
+            const wasmBinary = await response.arrayBuffer();
+            const { instance } = await WebAssembly.instantiate(wasmBinary);
+    
+            console.log(`✅ RNBO WebAssembly loaded for ${rnboDeviceName}`);
+    
+            // Post RNBO device to the AudioWorklet
+            const dspNode = audioContext.workletNode; // Reference to existing AudioWorkletNode
+            dspNode.port.postMessage({
+                type: 'add-rnbo-device',
+                name: rnboDeviceName,
+                rnboDesc,   // RNBO parameter descriptions
+                instance,   // Compiled WebAssembly instance
+            });
+    
+        } catch (error) {
+            console.error(`❌ Error loading RNBO WASM for ${rnboDeviceName}:`, error);
+        }
+    }
 
 });
 

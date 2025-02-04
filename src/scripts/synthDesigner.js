@@ -1121,7 +1121,6 @@ document.addEventListener("DOMContentLoaded", function () {
         cy.add(parentNodeData);
         cy.add(childrenNodes);
         
-        console.log(parentNode)
         debugVar = parentNodeData.data.id
         // index determines the left or right positioning of each knob
         let index = 0
@@ -1202,6 +1201,9 @@ document.addEventListener("DOMContentLoaded", function () {
         // Remove each matching div
         matchingDivs.forEach(div => div.remove());
     }
+
+
+
 });
 
 

@@ -287,20 +287,20 @@ class DSP extends AudioWorkletProcessor {
                 rnboDevice.modulatedParams[param.paramId] = 0;
             });
     
-            try {
-                console.log(rnboSrc)
-                // Ensure rnboBinary is an ArrayBuffer before instantiating
-                if (!(rnboSrc instanceof ArrayBuffer)) {
-                    throw new Error("RNBO WebAssembly binary is not an ArrayBuffer");
-                }
-                // ✅ Load WebAssembly module
-                const wasmModule = await WebAssembly.instantiate(rnboSrc);
-                rnboDevice.dspInstance = wasmModule.instance.exports;
+            // try {
+            //     console.log(rnboSrc)
+            //     // Ensure rnboBinary is an ArrayBuffer before instantiating
+            //     if (!(rnboSrc instanceof ArrayBuffer)) {
+            //         throw new Error("RNBO WebAssembly binary is not an ArrayBuffer");
+            //     }
+            //     // ✅ Load WebAssembly module
+            //     const wasmModule = await WebAssembly.instantiate(rnboSrc);
+            //     rnboDevice.dspInstance = wasmModule.instance.exports;
         
-                console.log(`✅ RNBO WebAssembly DSP initialized for ${deviceName}`);
-            } catch (error) {
-                console.error(`❌ Failed to initialize RNBO WebAssembly: ${error}`);
-            }
+            //     console.log(`✅ RNBO WebAssembly DSP initialized for ${deviceName}`);
+            // } catch (error) {
+            //     console.error(`❌ Failed to initialize RNBO WebAssembly: ${error}`);
+            // }
 
             // Store in current or next state
             if (loadState) {
@@ -364,7 +364,9 @@ class DSP extends AudioWorkletProcessor {
                         this.audioNodeBuilder(module.type, moduleID, module.params, 'loadstate')
                     }
                     else if(module.structure === 'rnboDevices'){
-                        console.log('rnbo', module)
+                        console.warn('send message back to main thread requesting to add a device using addRNBODevice(), since the wasm needs to be instantiated for each device')
+                        
+                        this.port.postMessage({ type: 'performance-metrics', load: Math.random() * 100 });
                         this.rnboDeviceBuilder(module.type, module.moduleSpec.desc, module.moduleSpec.src, 'loadstate')
                         // console.warn('if any module is ade with rnboDevices, need to run it through this.rnboDeviceBuilder')
                     }
