@@ -334,7 +334,7 @@ class DSP extends AudioWorkletProcessor {
                 Object.keys(synthGraph.modules).forEach((moduleID)=>{
                     const module = synthGraph.modules[moduleID]
                    
-                    
+                    console.log(module.structure)
                     
                     let moduleParams = null // set to null in case the node is a feedbackDelayNode
                     if(module.params){
@@ -345,7 +345,7 @@ class DSP extends AudioWorkletProcessor {
                         this.audioNodeBuilder('feedbackDelayNode', moduleID, null, 'loadstate')
                     } 
 
-                    else if(module.structure === 'webAudioNode'){
+                    else if(module.structure === 'webAudioNodes'){
                         this.audioNodeBuilder(module.type, moduleID, module.params, 'loadstate')
                     }
                     else if(module.structure === 'rnboDevices'){
@@ -497,6 +497,7 @@ class DSP extends AudioWorkletProcessor {
                 // this.currentState.nodes[msg.data.parent][msg.data.param] = msg.data.value
                 // update the baseParam (the value associated with the knob/control)
                 const targetNode = this.currentState.nodes[msg.data.parent];
+                console.log(this.currentState, targetNode)
                 if (targetNode && targetNode.baseParams[msg.data.param] !== undefined) {
                     const newValue = parseFloat(msg.data.value); // Ensure the value is a number
                     if (!isNaN(newValue)) {
@@ -509,9 +510,9 @@ class DSP extends AudioWorkletProcessor {
                     
                     console.warn(`Parameter ${msg.data.param} not found for node ${msg.data.parent}`);
                 }
-                break;
+            break;
 
-            break
+            
             
             default: console.log(`no switch case exists for ${msg.cmd}`)
         }

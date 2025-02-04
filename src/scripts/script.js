@@ -4206,27 +4206,11 @@ document.addEventListener("DOMContentLoaded", function () {
             break
             
             case 'addNode':
-
-                if(structure === 'RNBO'){
-  
-                    let rnboDefinition = getDefinition(data.module)
-                    console.log(rnboDefinition)
-                    data.rnboDefinition = rnboDefinition
-
-                    synthWorklet.port.postMessage({ 
-                        cmd: 'addNode', 
-                        data: data,
-                        structure: structure
-                    });
-                } else {
-                    synthWorklet.port.postMessage({ 
-                        cmd: 'addNode', 
-                        data: data,
-                        structure: structure
-                    });
-                }
-
-                
+                synthWorklet.port.postMessage({ 
+                    cmd: 'addNode', 
+                    data: data,
+                    structure: structure
+                });
             break
 
             case 'removeNode':
