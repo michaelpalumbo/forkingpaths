@@ -273,7 +273,7 @@ class DSP extends AudioWorkletProcessor {
                 node: deviceName,
                 structure: 'rnboDevices',
                 rnboDesc: rnboDesc, // Store RNBO metadata
-                rnboSrc: rnboSrc,   // Store DSP source code
+                // rnboSrc: rnboSrc,   // Store DSP source code
                 baseParams: {},                // Store parameter values
                 modulatedParams: {},           // Offsets for modulation
                 output: new Float32Array(128), // Single output buffer
@@ -287,6 +287,20 @@ class DSP extends AudioWorkletProcessor {
                 rnboDevice.modulatedParams[param.paramId] = 0;
             });
     
+            try {
+                console.log(rnboSrc)
+                // Ensure rnboBinary is an ArrayBuffer before instantiating
+                if (!(rnboSrc instanceof ArrayBuffer)) {
+                    throw new Error("RNBO WebAssembly binary is not an ArrayBuffer");
+                }
+                // ✅ Load WebAssembly module
+                const wasmModule = await WebAssembly.instantiate(rnboSrc);
+                rnboDevice.dspInstance = wasmModule.instance.exports;
+        
+                console.log(`✅ RNBO WebAssembly DSP initialized for ${deviceName}`);
+            } catch (error) {
+                console.error(`❌ Failed to initialize RNBO WebAssembly: ${error}`);
+            }
 
             // Store in current or next state
             if (loadState) {

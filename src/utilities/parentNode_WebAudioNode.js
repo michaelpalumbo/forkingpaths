@@ -38,6 +38,7 @@ export class ParentNode_WebAudioNode {
         
         this.moduleSpec = audioNodes[structure][module]
 
+        console.log('moduleSpec', this.moduleSpec)
         this.structure = structure // whether it is a basic web audio node or a rnboDevice
         this.inputs = this.moduleSpec.inputs
         this.outputs = this.moduleSpec.outputs

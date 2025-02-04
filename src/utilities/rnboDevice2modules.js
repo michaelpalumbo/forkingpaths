@@ -42,6 +42,10 @@ async function getJsonFiles(directoryPath) {
                 // ✅ Step 2: Decompress zlib (using pako.js or similar library)
                 const decompressedBinary = pako.inflate(compressedBinary);
 
+                // Write binary data to separate file
+                const wasmFilePath = `./public/wasm/${moduleName}.wasm`;
+                await writeFile(wasmFilePath, decompressedBinary);
+                
                 modules.rnboDevices[moduleName] = {
                     parameters: {},
                     paramNames: [],
@@ -50,57 +54,60 @@ async function getJsonFiles(directoryPath) {
                     inputs: [],
                     outputs: [],
                     structure: 'rnboDevice',
-                    src: decompressedBinary.buffer,
+                    src: wasmFilePath,
                     desc: jsonData.desc
                 }
+                
+                      // console.log(jsonData.src)
+                jsonData.desc.inlets.forEach((input) =>{
+                    if(input.meta){
+                        modules.rnboDevices[moduleName].inputs.push(input.meta)
+                    }else {
+                        modules.rnboDevices[moduleName].inputs.push(input.tag)
+                    }
+                })
+                
+                jsonData.desc.outlets.forEach((output) =>{
+                
+                    if(output.meta){
+                        modules.rnboDevices[moduleName].outputs.push(output.meta.name)
+                    } else {
+                        modules.rnboDevices[moduleName].outputs.push(output.tag)
+                    }
+                })
 
+
+                jsonData.desc.parameters.forEach((param) =>{
+                    
+                    const paramName = param.name
+                    modules.rnboDevices[moduleName].paramNames.push(paramName)
+                    modules.rnboDevices[moduleName].cvNames.push(paramName)
+
+                    modules.rnboDevices[moduleName].parameters[paramName] = param
+                    modules.rnboDevices[moduleName].cv[paramName] = param
+
+                    if(param.meta && param.meta.description){
+                        modules.rnboDevices[moduleName].parameters[paramName].description = param.description
+                        modules.rnboDevices[moduleName].cv[paramName].description = param.description
+
+                    } else {
+                        modules.rnboDevices[moduleName].cv[paramName].description = param.name
+                        modules.rnboDevices[moduleName].parameters[paramName].description = param.name
+                    }
+                    
+                    
+                })
+                
                 // const decodedCode = atob(jsonData.src.code); // Decode Base64 if necessary
                 // modules.rnboDevices[moduleName].src = new Function('"use strict"; return ' + decodedCode)();
                 console.log(`✅ RNBO DSP initialized for ${moduleName}`);
                 console.log(modules.rnboDevices[moduleName])
+                
             } catch (error) {
                 console.error(`❌ Failed to initialize RNBO DSP: ${error}`);
             }
 
-            // console.log(jsonData.src)
-            jsonData.desc.inlets.forEach((input) =>{
-                if(input.meta){
-                    modules.rnboDevices[moduleName].inputs.push(input.meta)
-                }else {
-                    modules.rnboDevices[moduleName].inputs.push(input.tag)
-                }
-            })
-            
-            jsonData.desc.outlets.forEach((output) =>{
-               
-                if(output.meta){
-                    modules.rnboDevices[moduleName].outputs.push(output.meta.name)
-                }else {
-                    modules.rnboDevices[moduleName].outputs.push(output.tag)
-                }
-            })
-
-
-            jsonData.desc.parameters.forEach((param) =>{
-                
-                const paramName = param.name
-                modules.rnboDevices[moduleName].paramNames.push(paramName)
-                modules.rnboDevices[moduleName].cvNames.push(paramName)
-
-                modules.rnboDevices[moduleName].parameters[paramName] = param
-                modules.rnboDevices[moduleName].cv[paramName] = param
-
-                if(param.meta && param.meta.description){
-                    modules.rnboDevices[moduleName].parameters[paramName].description = param.description
-                    modules.rnboDevices[moduleName].cv[paramName].description = param.description
-
-                } else {
-                    modules.rnboDevices[moduleName].cv[paramName].description = param.name
-                    modules.rnboDevices[moduleName].parameters[paramName].description = param.name
-                }
-                
-                
-            })
+      
             
         }
 
