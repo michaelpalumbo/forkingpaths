@@ -1,7 +1,7 @@
 import { readdir, readFile, writeFile } from 'fs/promises';
 import { extname, resolve, join } from 'path';
 import audioNodes from '../modules/webAudioNodes.json' assert { type: 'json'}
-
+import pako from 'pako'
 async function getJsonFiles(directoryPath) {
     try {
         // Read all files in the directory
@@ -30,18 +30,39 @@ async function getJsonFiles(directoryPath) {
 
             const moduleName = file.split('.export.json')[0]
 
-            modules.rnboDevices[moduleName] = {
-                parameters: {},
-                paramNames: [],
-                cvNames: [],
-                cv: {},
-                inputs: [],
-                outputs: [],
-                structure: 'rnboDevice',
-                src: jsonData.src,
-                desc: jsonData.desc
+
+
+
+
+            try {
+                
+                // ✅ Step 1: Decode Base64 to binary
+                const compressedBinary = Uint8Array.from(atob(jsonData.src[0].code), c => c.charCodeAt(0));
+
+                // ✅ Step 2: Decompress zlib (using pako.js or similar library)
+                const decompressedBinary = pako.inflate(compressedBinary);
+
+                modules.rnboDevices[moduleName] = {
+                    parameters: {},
+                    paramNames: [],
+                    cvNames: [],
+                    cv: {},
+                    inputs: [],
+                    outputs: [],
+                    structure: 'rnboDevice',
+                    src: decompressedBinary.buffer,
+                    desc: jsonData.desc
+                }
+
+                // const decodedCode = atob(jsonData.src.code); // Decode Base64 if necessary
+                // modules.rnboDevices[moduleName].src = new Function('"use strict"; return ' + decodedCode)();
+                console.log(`✅ RNBO DSP initialized for ${moduleName}`);
+                console.log(modules.rnboDevices[moduleName])
+            } catch (error) {
+                console.error(`❌ Failed to initialize RNBO DSP: ${error}`);
             }
-            console.log(jsonData.src)
+
+            // console.log(jsonData.src)
             jsonData.desc.inlets.forEach((input) =>{
                 if(input.meta){
                     modules.rnboDevices[moduleName].inputs.push(input.meta)

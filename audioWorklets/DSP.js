@@ -286,7 +286,8 @@ class DSP extends AudioWorkletProcessor {
                 rnboDevice.baseParams[param.paramId] = param.initialValue;
                 rnboDevice.modulatedParams[param.paramId] = 0;
             });
-        
+    
+
             // Store in current or next state
             if (loadState) {
                 this.nextState.nodes[deviceName] = rnboDevice;
@@ -659,6 +660,7 @@ class DSP extends AudioWorkletProcessor {
                     return result;
                 };
                 
+                // handle modules written using RNBO in Max/MSP
                 if(node.structure === 'rnboDevices'){
                     if (!node.dspInstance) {
                         try {
@@ -684,6 +686,8 @@ class DSP extends AudioWorkletProcessor {
                     }
                     
                 }
+
+                // handle modules written using JS (this works and is stable but the process to write the modules is clunky, hence the switch to rnbo)
                 else if (node.structure === 'webAudioNode'){
                     if (node.node === 'Oscillator') {
                         const effectiveFrequency = getEffectiveParam(node, 'frequency', node.baseParams['freq cv +/-']);
