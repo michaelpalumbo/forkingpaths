@@ -1301,7 +1301,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // only rebuild the UI if needed
         if(cmd === 'buildUI'){
-            console.log('buildUI')
             parentNodePositions = []; // Array to store positions of all parent nodes
 
             // Step 1: Extract all parent nodes from the given document
@@ -4753,22 +4752,7 @@ document.addEventListener("DOMContentLoaded", function () {
         return edgeInCycle; // Return true if the edge belongs to any cycle
     }
     
-    async function getDefinition(RNBODeviceName){
-        console.log('sserhj')
-        try {
-            let fileName = `${RNBODeviceName}.json`
-            // load the RNBO desc and src
-            // Fetch RNBO JSON file
-            const response = await fetch(`/export/${fileName}`);
-            if (!response.ok) throw new Error(`Failed to load RNBO device: ${fileName}`);
 
-            const rnboDefinition = await response.json();
-            console.log(rnboDefinition.desc)
-            return rnboDefinition
-        } catch (error) {
-            console.error(`❌ Error loading RNBO module (${filePath}):`, error);
-        }
-    }
 });
 
 

@@ -267,11 +267,11 @@ class DSP extends AudioWorkletProcessor {
     } 
 
 
-    async rnboDeviceBuilder(deviceName, rnboDesc, rnboSrc) {
+    async rnboDeviceBuilder(deviceName, rnboDesc, rnboSrc, loadState) {
 
             let rnboDevice = {
                 node: deviceName,
-                structure: 'RNBO',
+                structure: 'rnboDevices',
                 rnboDesc: rnboDesc, // Store RNBO metadata
                 rnboSrc: rnboSrc,   // Store DSP source code
                 baseParams: {},                // Store parameter values
@@ -280,17 +280,18 @@ class DSP extends AudioWorkletProcessor {
                 dspInstance: null              // Will store compiled RNBO DSP function
             };
         
+            
             // Initialize parameters based on RNBO description
-            rnboDefinition.desc.parameters.forEach(param => {
+            rnboDesc.parameters.forEach(param => {
                 rnboDevice.baseParams[param.paramId] = param.initialValue;
                 rnboDevice.modulatedParams[param.paramId] = 0;
             });
         
             // Store in current or next state
             if (loadState) {
-                this.nextState.nodes[moduleName] = rnboDevice;
+                this.nextState.nodes[deviceName] = rnboDevice;
             } else {
-                this.currentState.nodes[moduleName] = rnboDevice;
+                this.currentState.nodes[deviceName] = rnboDevice;
             }
         
     }
@@ -334,7 +335,7 @@ class DSP extends AudioWorkletProcessor {
                     const module = synthGraph.modules[moduleID]
                    
                     
-
+                    
                     let moduleParams = null // set to null in case the node is a feedbackDelayNode
                     if(module.params){
                         moduleParams = module.params // node is a webAudioNode and we want its params
@@ -344,13 +345,13 @@ class DSP extends AudioWorkletProcessor {
                         this.audioNodeBuilder('feedbackDelayNode', moduleID, null, 'loadstate')
                     } 
 
-                    else if(module.moduleSpec.structure === 'webAudioNode'){
+                    else if(module.structure === 'webAudioNode'){
                         this.audioNodeBuilder(module.type, moduleID, module.params, 'loadstate')
                     }
-                    else if(module.moduleSpec.structure === 'webAudioNode'){
-                        console.log(module)
-                        this.rnboDeviceBuilder(module.type, module.moduleSpec.desc, module.moduleSpec.src)
-                        // console.warn('if any module is ade with RNBO, need to run it through this.rnboDeviceBuilder')
+                    else if(module.structure === 'rnboDevices'){
+                        console.log('rnbo', module)
+                        this.rnboDeviceBuilder(module.type, module.moduleSpec.desc, module.moduleSpec.src, 'loadstate')
+                        // console.warn('if any module is ade with rnboDevices, need to run it through this.rnboDeviceBuilder')
                     }
 
 
@@ -385,7 +386,7 @@ class DSP extends AudioWorkletProcessor {
                 } else if (msg.structure === 'feedbackDelayNode'){
                     this.audioNodeBuilder('feedbackDelayNode', msg.data)
                     
-                } else if (msg.structure === 'RNBO'){
+                } else if (msg.structure === 'rnboDevices'){
                     // deviceName, moduleName, rnboDefinition, loadState
                     this.rnboDeviceBuilder(msg.data.module, msg.data.rnboDefinition)
                     console.log('code for loading rnbo devices has not been written')
@@ -657,7 +658,7 @@ class DSP extends AudioWorkletProcessor {
                     return result;
                 };
                 
-                if(node.structure === 'RNBO'){
+                if(node.structure === 'rnboDevices'){
                     if (!node.dspInstance) {
                         try {
                             // Lazy load the RNBO DSP function (sandboxed)
