@@ -267,13 +267,13 @@ class DSP extends AudioWorkletProcessor {
     } 
 
 
-    async rnboDeviceBuilder(deviceName, rnboDefinition) {
+    async rnboDeviceBuilder(deviceName, rnboDesc, rnboSrc) {
 
             let rnboDevice = {
                 node: deviceName,
                 structure: 'RNBO',
-                rnboDesc: rnboDefinition.desc, // Store RNBO metadata
-                rnboSrc: rnboDefinition.src,   // Store DSP source code
+                rnboDesc: rnboDesc, // Store RNBO metadata
+                rnboSrc: rnboSrc,   // Store DSP source code
                 baseParams: {},                // Store parameter values
                 modulatedParams: {},           // Offsets for modulation
                 output: new Float32Array(128), // Single output buffer
@@ -333,6 +333,7 @@ class DSP extends AudioWorkletProcessor {
                 Object.keys(synthGraph.modules).forEach((moduleID)=>{
                     const module = synthGraph.modules[moduleID]
                    
+                    
 
                     let moduleParams = null // set to null in case the node is a feedbackDelayNode
                     if(module.params){
@@ -342,10 +343,16 @@ class DSP extends AudioWorkletProcessor {
                     if(moduleID.startsWith('feedbackDelayNode')){
                         this.audioNodeBuilder('feedbackDelayNode', moduleID, null, 'loadstate')
                     } 
-                    else this.audioNodeBuilder(module.type, moduleID, module.params, 'loadstate')
-                    console.log(module.type, moduleID, module.params, 'loadstate')
-                    this.rnboDeviceBuilder(module.type)
-                    console.warn('if any module is ade with RNBO, need to run it through this.rnboDeviceBuilder')
+
+                    else if(module.moduleSpec.structure === 'webAudioNode'){
+                        this.audioNodeBuilder(module.type, moduleID, module.params, 'loadstate')
+                    }
+                    else if(module.moduleSpec.structure === 'webAudioNode'){
+                        console.log(module)
+                        this.rnboDeviceBuilder(module.type, module.moduleSpec.desc, module.moduleSpec.src)
+                        // console.warn('if any module is ade with RNBO, need to run it through this.rnboDeviceBuilder')
+                    }
+
 
                 })
 

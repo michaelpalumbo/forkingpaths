@@ -25,7 +25,6 @@ export class ParentNode_WebAudioNode {
         this.children = children;
         this.isDraggingEnabled = false; // Flag to track if dragging is enabled
         this.module = module;
-        console.log(audioNodes[structure][module])
         this.audioGraph = {
             type: module,
             params: {},
@@ -34,9 +33,6 @@ export class ParentNode_WebAudioNode {
             structure: structure
         }
 
-        // if(structure === 'RNBO'){
-        //     this.audioGraph.RNBO[module].src =  
-        // }
         this.nodeIDs = [] // store parent and child ids for later reference
         // sift through modules.json, construct node
         
