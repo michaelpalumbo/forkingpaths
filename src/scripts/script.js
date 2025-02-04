@@ -4207,11 +4207,26 @@ document.addEventListener("DOMContentLoaded", function () {
             break
             
             case 'addNode':
-                synthWorklet.port.postMessage({ 
-                    cmd: 'addNode', 
-                    data: data,
-                    structure: structure
-                });
+
+                if(structure === 'RNBO'){
+  
+                    let rnboDefinition = getDefinition(data.module)
+                    console.log(rnboDefinition)
+                    data.rnboDefinition = rnboDefinition
+
+                    synthWorklet.port.postMessage({ 
+                        cmd: 'addNode', 
+                        data: data,
+                        structure: structure
+                    });
+                } else {
+                    synthWorklet.port.postMessage({ 
+                        cmd: 'addNode', 
+                        data: data,
+                        structure: structure
+                    });
+                }
+
                 
             break
 
@@ -4738,6 +4753,22 @@ document.addEventListener("DOMContentLoaded", function () {
         return edgeInCycle; // Return true if the edge belongs to any cycle
     }
     
+    async function getDefinition(RNBODeviceName){
+        console.log('sserhj')
+        try {
+            let fileName = `${RNBODeviceName}.json`
+            // load the RNBO desc and src
+            // Fetch RNBO JSON file
+            const response = await fetch(`/export/${fileName}`);
+            if (!response.ok) throw new Error(`Failed to load RNBO device: ${fileName}`);
+
+            const rnboDefinition = await response.json();
+            console.log(rnboDefinition.desc)
+            return rnboDefinition
+        } catch (error) {
+            console.error(`❌ Error loading RNBO module (${filePath}):`, error);
+        }
+    }
 });
 
 

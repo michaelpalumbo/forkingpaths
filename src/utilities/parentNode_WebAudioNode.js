@@ -25,7 +25,7 @@ export class ParentNode_WebAudioNode {
         this.children = children;
         this.isDraggingEnabled = false; // Flag to track if dragging is enabled
         this.module = module;
-      
+        console.log(audioNodes[structure][module])
         this.audioGraph = {
             type: module,
             params: {},
@@ -34,10 +34,14 @@ export class ParentNode_WebAudioNode {
             structure: structure
         }
 
+        // if(structure === 'RNBO'){
+        //     this.audioGraph.RNBO[module].src =  
+        // }
         this.nodeIDs = [] // store parent and child ids for later reference
         // sift through modules.json, construct node
         
         this.moduleSpec = audioNodes[structure][module]
+
         this.structure = structure // whether it is a basic web audio node or a rnboDevice
         this.inputs = this.moduleSpec.inputs
         this.outputs = this.moduleSpec.outputs
@@ -115,6 +119,24 @@ export class ParentNode_WebAudioNode {
         
        
     }
+
+    async getDefinition(RNBODeviceName){
+        console.log('sserhj')
+        try {
+            let fileName = `${RNBODeviceName}.json`
+            // load the RNBO desc and src
+            // Fetch RNBO JSON file
+            const response = await fetch(`/export/${fileName}`);
+            if (!response.ok) throw new Error(`Failed to load RNBO device: ${fileName}`);
+
+            const rnboDefinition = await response.json();
+            console.log(rnboDefinition.desc)
+            return rnboDefinition
+        } catch (error) {
+            console.error(`❌ Error loading RNBO module (${filePath}):`, error);
+        }
+    }
+
 
     findMatchingObject(obj, searchKey) {
         for (const [key, value] of Object.entries(obj)) {
