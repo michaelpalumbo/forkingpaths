@@ -4822,34 +4822,38 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log('🔄 Loading RNBO module:', module.moduleSpec.src);
     
         try {
-            const rnboPath = `/src/wasm/${module.type}.wasm.js`; // Construct path
+            const rnboPath = `/src/wasm/${module.type}.wasm.js`;
+            console.log('🔍 Looking for RNBO Path:', rnboPath);
+            console.log('📂 Available RNBO Modules:', rnboModules);
+    
             if (!rnboModules[rnboPath]) {
                 throw new Error(`❌ RNBO module not found: ${rnboPath}`);
             }
-
-            // Load the module dynamically
-            const rnboModule = await rnboModules[rnboPath]();
-            console.log(rnboModule)
-            // if (!rnboModule.default) {
-            //     throw new Error("Invalid RNBO module format.");
-            // }
-        
-                    // Check the keys in the loaded module
-            console.log('Module Keys:', Object.keys(rnboModule));
-
-            // Attempt to extract the correct function from the module
-            const rnboFunction = rnboModule.default || rnboModule[rnboPath] || rnboModule.init || Object.values(rnboModule)[0];
-
-            if (!rnboFunction) {
-                throw new Error("❌ RNBO function not found in module.");
+    
+            // ✅ Get the preloaded module
+            const rnboModule = rnboModules[rnboPath];
+            console.log('✅ RNBO Module Imported:', rnboModule);
+            console.log('🔍 Checking RNBO Module Contents:', Object.keys(rnboModule));
+    
+            // ✅ Call the module function
+            if (typeof rnboModule.default !== 'function') {
+                throw new Error(`❌ RNBO module default export is not a function!`);
             }
-
-            console.log(`✅ RNBO Module Imported: ${module.type}`);
-
-            module.rnboCode = rnboFunction.toString()
-
-            console.log(module.rnboCode)
-            // 📩 Send the RNBO module (as a string) to the Worklet
+    
+            const rnboInstance = await rnboModule.default();  
+            console.log(`🎛️ RNBO Instance Ready for ${module.type}:`, rnboInstance);
+            console.log('🧐 Instance Keys:', Object.keys(rnboInstance));
+    
+            if (!rnboInstance || Object.keys(rnboInstance).length === 0) {
+                throw new Error(`❌ RNBO module ${module.type} returned an empty instance.`);
+            }
+    
+            // ✅ Extract the actual function/code inside rnboInstance
+            module.rnboCode = rnboInstance.code || rnboInstance;
+    
+            console.log('📩 Sending RNBO module to Worklet:', module.rnboCode);
+    
+            // 📩 Send the RNBO module (as an object) to the AudioWorklet
             synthWorklet.port.postMessage({
                 cmd: 'add-rnbo-device',
                 data: module
@@ -4859,6 +4863,8 @@ document.addEventListener("DOMContentLoaded", function () {
             console.error(`❌ Error loading RNBO module:`, error);
         }
     }
+    
+    
     
 
 });
