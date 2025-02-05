@@ -777,29 +777,29 @@ document.addEventListener("DOMContentLoaded", function () {
     function updateModuleLibrary(){
         
         const webAudioNodeNames = Object.keys(modules.webAudioNodes).sort()
-        const RNBODeviceNames = Object.keys(modules.rnboDevices).sort()
+        // const RNBODeviceNames = Object.keys(modules.rnboDevices).sort()
 
         // Reference the list element
         const listElement = document.getElementById('moduleList');
         // RNBO device category
-        const heading1 = document.createElement('li');
-        heading1.textContent = 'RNBO Devices';
-        heading1.style.fontWeight = 'bold'; // Make the heading stand out
-        heading1.style.pointerEvents = 'none'; // Disable interaction
+        // const heading1 = document.createElement('li');
+        // heading1.textContent = 'RNBO Devices';
+        // heading1.style.fontWeight = 'bold'; // Make the heading stand out
+        // heading1.style.pointerEvents = 'none'; // Disable interaction
 
-        listElement.appendChild(heading1);
-         // Loop through the array and create list items
-         RNBODeviceNames.forEach(item => {
-            // Create a new <li> element
-            const listItem = document.createElement('li');
-            // Set the text of the <li> to the current item
-            listItem.textContent = item;
-            listItem.dataset.structure = 'rnboDevices'
-            // Append the <li> to the list
-            listElement.appendChild(listItem);
+        // listElement.appendChild(heading1);
+        //  // Loop through the array and create list items
+        //  RNBODeviceNames.forEach(item => {
+        //     // Create a new <li> element
+        //     const listItem = document.createElement('li');
+        //     // Set the text of the <li> to the current item
+        //     listItem.textContent = item;
+        //     listItem.dataset.structure = 'rnboDevices'
+        //     // Append the <li> to the list
+        //     listElement.appendChild(listItem);
             
 
-        });       
+        // });       
 
 
         // Web Audio Node category
@@ -811,9 +811,8 @@ document.addEventListener("DOMContentLoaded", function () {
         listElement.appendChild(heading2);
         // Loop through the array and create list items
         webAudioNodeNames.forEach(item => {
-            if(item != 'AudioDestination' && item != 'AudioWorklet' && item != "OutputLimiter"){
+            if(item != 'AudioDestination' && item != 'AudioWorklet' && item != "OutputLimiter" && item != "feedbackDelayNode"){
                 // all that are available at the moment
-                if(item === 'BiquadFilter' || item === 'Delay' || item === 'LFO' || item === 'LFO2' || item === 'GateSequencer' || item === 'Oscillator' || item === 'Gain' || item === 'VCA' || item === 'HighPassFilter' ){
                     // Create a new <li> element
                     const listItem = document.createElement('li');
                     // Set the text of the <li> to the current item
@@ -822,7 +821,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     listItem.dataset.structure = 'webAudioNodes'
                     // Append the <li> to the list
                     listElement.appendChild(listItem);
-                }
+                
       
             }
 

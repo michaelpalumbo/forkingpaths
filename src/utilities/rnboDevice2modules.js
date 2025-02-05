@@ -2,23 +2,28 @@ import { readdir, readFile, writeFile } from 'fs/promises';
 import { extname, resolve, join } from 'path';
 import audioNodes from '../modules/webAudioNodes.json' assert { type: 'json'}
 import pako from 'pako'
+
+//! note that we pivoted from using RNBO in this project due to many reasons
+
 async function getJsonFiles(directoryPath) {
     try {
-        // Read all files in the directory
-        const files = await readdir(directoryPath);
+        // // Read all files in the directory
+        // const files = await readdir(directoryPath);
 
-        // Filter out only .json files
-        const jsonFiles = files.filter(file => extname(file).toLowerCase() === '.json');
-        const rnboFiles = jsonFiles.filter(item => !['modules.json', 'dependencies.json'].includes(item));
+        // // Filter out only .json files
+        // const jsonFiles = files.filter(file => extname(file).toLowerCase() === '.json');
+        // const rnboFiles = jsonFiles.filter(item => !['modules.json', 'dependencies.json'].includes(item));
 
 
-        
+        Object.keys(audioNodes).forEach((module) => {
+            console.log(`processed module: ${module}`)
+        })
         let modules = {
             webAudioNodes: audioNodes, // this is easy, just add the audioNodes directly
-            rnboDevices: {}
+            // rnboDevices: {}
         }
         // const folderPath = join(process.cwd(), './public/export/'); // Folder to process
-
+        /*
         // Loop through the RNBO files
         for (const file of rnboFiles) {
             const filePath = join(folderPath, file);
@@ -133,15 +138,12 @@ async function getJsonFiles(directoryPath) {
                 console.error(`❌ Failed to initialize RNBO DSP: ${error}`);
             }
 
-      
-            
+        
         }
-
+        */
+            
         await writeFile('./src/modules/modules.json', JSON.stringify(modules, null, 2));
 
-        // console.log(modules.rnboDevices)
-            // console.log('JSON files:', rnboModules);
-            // return rnboModules;
     } catch (error) {
         console.error('Error reading directory:', error.message);
         return [];
