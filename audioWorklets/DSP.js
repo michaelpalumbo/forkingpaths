@@ -946,15 +946,14 @@ class DSP extends AudioWorkletProcessor {
                     const effectiveTempo = getEffectiveParam(node, 'tempo');
                     const stepDuration = (60 / effectiveTempo) * sampleRate;
                 
-                    // Retrieve the effective pulseWidth (a fraction between 0 and 1).
-                    const effectivePulseWidth = getEffectiveParam(node, 'pulseWidth');
+                    // Retrieve the effective pulseWidth (a fraction between 0 and 1). clamp it between 0-0.999 if modulation pushes it to 1.0 or greater
+                    const effectivePulseWidth = Math.min(Math.max(getEffectiveParam(node, 'pulseWidth'), 0), 0.999);
                     // Calculate the pulse duration (in samples) as a fraction of the step duration.
                     // If effectivePulseWidth is 0, then no pulse is generated.
                     const pulseSamples = effectivePulseWidth > 0
                         ? Math.max(1, Math.round(effectivePulseWidth * stepDuration))
                         : 0;
                 
-                        console.log(pulseSamples, effectivePulseWidth)
                     // Ensure that state variables are initialized.
                     node.clockPhase = node.clockPhase || 0;
                     node.stepIndex = node.stepIndex || 0;
