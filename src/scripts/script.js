@@ -4848,7 +4848,10 @@ document.addEventListener("DOMContentLoaded", function () {
             // Assume myAudioWorkletNode is already created and connected.
             synthWorklet.port.postMessage({
                 cmd: 'add-rnbo-device',
-                data: rnboJson,
+                data: {
+                    code: rnboJson,
+                    moduleName: 'oscillator'
+                }
             });
     
         // } catch (error) {
