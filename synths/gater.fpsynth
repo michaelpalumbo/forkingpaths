@@ -396,10 +396,10 @@
         },
         {
           "data": {
-            "id": "GateSequencer_Goose_352e1cf3487d",
-            "label": "GateSequencer Goose",
+            "id": "Pulses_Goose_352e1cf3487d",
+            "label": "Pulses Goose",
             "kind": "module",
-            "rnboName": "GateSequencer",
+            "rnboName": "Pulses",
             "moduleSpec": {
               "parameters": {
                 "stepCount": {
@@ -494,14 +494,14 @@
         },
         {
           "data": {
-            "id": "GateSequencer_Goose_352e1cf3487d_stepCount",
-            "parent": "GateSequencer_Goose_352e1cf3487d",
+            "id": "Pulses_Goose_352e1cf3487d_stepCount",
+            "parent": "Pulses_Goose_352e1cf3487d",
             "label": "stepCount",
-            "nameSpace": "GateSequencer_Goose_352e1cf3487d_stepCount.stepCount",
+            "nameSpace": "Pulses_Goose_352e1cf3487d_stepCount.stepCount",
             "kind": "paramAnchorNode",
             "shape": "ellipse",
             "bgcolour": "#CCCCCC",
-            "hash": "GateSequencer_Goose_352e1cf3487d_stepCount",
+            "hash": "Pulses_Goose_352e1cf3487d_stepCount",
             "ui": "knob",
             "min": 1,
             "max": 16,
@@ -525,14 +525,14 @@
         },
         {
           "data": {
-            "id": "GateSequencer_Goose_352e1cf3487d_tempo",
-            "parent": "GateSequencer_Goose_352e1cf3487d",
+            "id": "Pulses_Goose_352e1cf3487d_tempo",
+            "parent": "Pulses_Goose_352e1cf3487d",
             "label": "tempo",
-            "nameSpace": "GateSequencer_Goose_352e1cf3487d_tempo.tempo",
+            "nameSpace": "Pulses_Goose_352e1cf3487d_tempo.tempo",
             "kind": "paramAnchorNode",
             "shape": "ellipse",
             "bgcolour": "#CCCCCC",
-            "hash": "GateSequencer_Goose_352e1cf3487d_tempo",
+            "hash": "Pulses_Goose_352e1cf3487d_tempo",
             "ui": "knob",
             "min": 20,
             "max": 300,
@@ -556,14 +556,14 @@
         },
         {
           "data": {
-            "id": "GateSequencer_Goose_352e1cf3487d_gateLength",
-            "parent": "GateSequencer_Goose_352e1cf3487d",
+            "id": "Pulses_Goose_352e1cf3487d_gateLength",
+            "parent": "Pulses_Goose_352e1cf3487d",
             "label": "gateLength",
-            "nameSpace": "GateSequencer_Goose_352e1cf3487d_gateLength.gateLength",
+            "nameSpace": "Pulses_Goose_352e1cf3487d_gateLength.gateLength",
             "kind": "paramAnchorNode",
             "shape": "ellipse",
             "bgcolour": "#CCCCCC",
-            "hash": "GateSequencer_Goose_352e1cf3487d_gateLength",
+            "hash": "Pulses_Goose_352e1cf3487d_gateLength",
             "ui": "knob",
             "min": 0.05,
             "max": 1,
@@ -587,8 +587,8 @@
         },
         {
           "data": {
-            "id": "GateSequencer_Goose_352e1cf3487d.tempo",
-            "parent": "GateSequencer_Goose_352e1cf3487d",
+            "id": "Pulses_Goose_352e1cf3487d.tempo",
+            "parent": "Pulses_Goose_352e1cf3487d",
             "label": "tempo",
             "kind": "input",
             "bgcolour": "#FC9A4F",
@@ -611,8 +611,8 @@
         },
         {
           "data": {
-            "id": "GateSequencer_Goose_352e1cf3487d.gateLength",
-            "parent": "GateSequencer_Goose_352e1cf3487d",
+            "id": "Pulses_Goose_352e1cf3487d.gateLength",
+            "parent": "Pulses_Goose_352e1cf3487d",
             "label": "gateLength",
             "kind": "input",
             "bgcolour": "#FC9A4F",
@@ -635,8 +635,8 @@
         },
         {
           "data": {
-            "id": "GateSequencer_Goose_352e1cf3487d.OUT",
-            "parent": "GateSequencer_Goose_352e1cf3487d",
+            "id": "Pulses_Goose_352e1cf3487d.OUT",
+            "parent": "Pulses_Goose_352e1cf3487d",
             "label": "OUT",
             "kind": "output",
             "bgcolour": "#6FB1FC",
@@ -1070,7 +1070,7 @@
         "containerDiv": {}
       }
     ],
-    "GateSequencer_Goose_352e1cf3487d": [
+    "Pulses_Goose_352e1cf3487d": [
       {
         "containerDiv": {}
       },
@@ -1228,8 +1228,8 @@
         ],
         "structure": "webAudioNodes"
       },
-      "GateSequencer_Goose_352e1cf3487d": {
-        "type": "GateSequencer",
+      "Pulses_Goose_352e1cf3487d": {
+        "type": "Pulses",
         "params": {
           "stepCount": 8,
           "tempo": 120,
@@ -1312,13 +1312,13 @@
           ]
         },
         "nodeIDs": [
-          "GateSequencer_Goose_352e1cf3487d",
-          "GateSequencer_Goose_352e1cf3487d_stepCount-anchorNode",
-          "GateSequencer_Goose_352e1cf3487d_tempo-anchorNode",
-          "GateSequencer_Goose_352e1cf3487d_gateLength-anchorNode",
-          "GateSequencer_Goose_352e1cf3487d.tempo",
-          "GateSequencer_Goose_352e1cf3487d.gateLength",
-          "GateSequencer_Goose_352e1cf3487d.OUT"
+          "Pulses_Goose_352e1cf3487d",
+          "Pulses_Goose_352e1cf3487d_stepCount-anchorNode",
+          "Pulses_Goose_352e1cf3487d_tempo-anchorNode",
+          "Pulses_Goose_352e1cf3487d_gateLength-anchorNode",
+          "Pulses_Goose_352e1cf3487d.tempo",
+          "Pulses_Goose_352e1cf3487d.gateLength",
+          "Pulses_Goose_352e1cf3487d.OUT"
         ],
         "structure": "webAudioNodes"
       },

@@ -2424,11 +2424,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 change: (value) => {
                     
                     let newValue = Math.round(value * 100) / 100
-                    if(unit = 'integer'){
+                    if(unit === 'integer'){
                         
                         newValue = parseInt(newValue, 10)
                     }
-                    console.log('value', newValue)
                     // filter out repeated values
                     if (newValue !== lastValue) {
                         lastValue = newValue;

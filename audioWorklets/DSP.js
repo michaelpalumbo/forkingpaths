@@ -245,18 +245,18 @@ class DSP extends AudioWorkletProcessor {
                 }  
             break;
 
-            case 'GateSequencer':
+            case 'Pulses':
                 let gateSeq = {
-                    node: 'GateSequencer',
+                    node: 'Pulses',
                     structure: 'webAudioNode',
                     baseParams: {
                         stepCount: parseFloat(params.stepCount) || 8,
                         tempo: parseFloat(params.tempo) || 120,
-                        gateLength: parseFloat(params.gateLength) || 0.5
+                        pulseWidth: parseFloat(params.gateLength) || 0.5
                     },
                     modulatedParams: {
                         tempo: 0,
-                        gateLength: 0
+                        pulseWidth: 0
                     },
                     output: new Float32Array(128), // Single output buffer
                     stepIndex: 0,
@@ -689,320 +689,334 @@ class DSP extends AudioWorkletProcessor {
                     return result;
                 };
                 
-                // handle modules written using RNBO in Max/MSP
-                if(node.structure === 'rnboDevices'){
-                    if (!node.dspInstance) {
-                        try {
-                            // Lazy load the RNBO DSP function (sandboxed)
-                            node.dspInstance = new Function('"use strict"; return ' + node.rnboSrc[0].code)();
-                        } catch (error) {
-                            console.error(`Failed to load RNBO DSP: ${error}`);
-                            return;
-                        }
-                    }
 
-                    // Get parameter values (modulated + base)
-                    const paramValues = {};
-                    node.rnboDesc.parameters.forEach(param => {
-                        paramValues[param.paramId] = getEffectiveParam(node, param.paramId);
-                    });
+                if (node.node === 'Oscillator') {
+                    const effectiveFrequency = getEffectiveParam(node, 'frequency', node.baseParams['freq cv +/-']);
+                    // const formattedFrequency = parseFloat(effectiveFrequency.toFixed(2));
+                    const effectiveGain = getEffectiveParam(node, 'gain');
+                    
+                    for (let i = 0; i < signalBuffers[id].length; i++) {
+                        node.phase += effectiveFrequency/ sampleRate;
+                        if (node.phase >= 1) node.phase -= 1;
+                        // signalBuffers[id][i] = Math.sin(2 * Math.PI * node.phase) * effectiveGain;
+                        // Select the waveform based on node.baseParams['waveform']
 
-                    // Call RNBO DSP function (handle exceptions safely)
-                    try {
-                        node.dspInstance.process(inputBuffer, signalBuffers[id], paramValues);
-                    } catch (error) {
-                        console.error(`RNBO DSP execution error: ${error}`);
-                    }
+                        switch (node.baseParams['type']) {
                     
-                }
-
-                // handle modules written using JS (this works and is stable but the process to write the modules is clunky, hence the switch to rnbo)
-                else if (node.structure === 'webAudioNode'){
-                    if (node.node === 'Oscillator') {
-                        const effectiveFrequency = getEffectiveParam(node, 'frequency', node.baseParams['freq cv +/-']);
-                        // const formattedFrequency = parseFloat(effectiveFrequency.toFixed(2));
-                        const effectiveGain = getEffectiveParam(node, 'gain');
-                        
-                        for (let i = 0; i < signalBuffers[id].length; i++) {
-                            node.phase += effectiveFrequency/ sampleRate;
-                            if (node.phase >= 1) node.phase -= 1;
-                            // signalBuffers[id][i] = Math.sin(2 * Math.PI * node.phase) * effectiveGain;
-                            // Select the waveform based on node.baseParams['waveform']
-    
-                            switch (node.baseParams['type']) {
-                        
-                                
-                                case 'sine':
-                                    signalBuffers[id][i] = Math.sin(2 * Math.PI * node.phase) * effectiveGain;
-                                    break;
-                                case 'square':
-                                    signalBuffers[id][i] = (node.phase < 0.5 ? 1 : -1) * effectiveGain * Math.SQRT1_2; // Scale by 1/sqrt(2)
-                                    break;
-                                case 'sawtooth':
-                                    signalBuffers[id][i] = (2 * node.phase - 1) * effectiveGain; // Scale by sqrt(1/3)
-                                    break;
-                                case 'triangle':
-                                    signalBuffers[id][i] = (node.phase < 0.5 ? 4 * node.phase - 1 : 3 - 4 * node.phase) * effectiveGain; // Scale by sqrt(1/3)
-                                    break;                 
-                                default:
-                                    // Fallback to sine wave if the waveform is undefined or unrecognized
-                                    signalBuffers[id][i] = Math.sin(2 * Math.PI * node.phase) * effectiveGain;
-                            }
-                        }
-    
-                    }
-    
-                    else if (node.node === 'LFO2') {
-                        const effectiveFrequency = getEffectiveParam(node, 'frequency', node.baseParams['freq cv +/-']);
-                        const effectiveGain = getEffectiveParam(node, 'gain');
-                    
-                        for (let i = 0; i < 128; i++) {
-                            node.phase += effectiveFrequency / sampleRate;
-                            if (node.phase >= 1) node.phase -= 1;
-                    
-                            // Compute each waveform
-                            node.output.sine[i] = Math.sin(2 * Math.PI * node.phase) * effectiveGain;
-                            node.output.square[i] = (node.phase < 0.5 ? 1 : -1) * effectiveGain;
-                            node.output.saw[i] = (2 * node.phase - 1) * effectiveGain;
-                            node.output.tri[i] = (node.phase < 0.5 ? 4 * node.phase - 1 : 3 - 4 * node.phase) * effectiveGain;
-                        }
-                    }
-    
-                    else if (node.node === 'VCA') {
-                        const effectiveGain = getEffectiveParam(node, 'gain', node.baseParams['gain cv +/-']);
-                    
-                        // Initialize DC-blocking filter state if not present
-                        if (!node.dcBlockState) {
-                            node.dcBlockState = { prevInput: 0, prevOutput: 0 };
-                        }
-                    
-                        const cutoffFreq = 5; // Cutoff frequency for DC-blocking (5 Hz)
-                        const alpha = 1 - Math.exp(-2 * Math.PI * cutoffFreq / sampleRate);
-                    
-                        for (let i = 0; i < 128; i++) {
-                            // Get input sample (default to 0 if no input)
-                            const inputSample = inputBuffer[i] || 0;
-                    
-                            // Apply modulation from CV input if available
-                            let modulatedGain = (node.modulatedParams['gain'] || 0) * node.baseParams['gain cv +/-'];
-                    
-                            // DC-blocking filter (1st-order high-pass filter)
-                            const filteredModulation = alpha * (modulatedGain - node.dcBlockState.prevInput) + node.dcBlockState.prevOutput;
-                            node.dcBlockState.prevInput = modulatedGain;
-                            node.dcBlockState.prevOutput = filteredModulation;
-                    
-                            // Compute final gain (clamped between 0 and 1)
-                            const finalGain = this.clamp(effectiveGain + filteredModulation, 0, 1);
-                    
-                            // Apply gain to the input signal
-                            signalBuffers[id][i] = inputSample * finalGain;
-                        }
-                    }
-                    
-                    
-                    else if (node.node === 'Gain') {
-                        for (let i = 0; i < 128; i++) signalBuffers[id][i] = inputBuffer[i] * node.baseParams.gain;
-                    }
-                    else if (node.node === 'feedbackDelayNode') {
-                        if (!node.delayBuffer){
-                            node.delayBuffer = new Float32Array(128);
-                            node.delayIndex = 0;
-                        } 
-                        for (let i = 0; i < 128; i++) {
-                            const feedbackInput = feedbackBuffers[id]?.[i] || 0;
-                            const delayIndex = (node.delayIndex - 1 + 128) % 128;
-    
-                            // Now define delayedSample after delayIndex is correctly computed
-                            const delayedSample = node.delayBuffer[delayIndex] || 0;
-    
-                            // const delayedSample = node.delayBuffer[(node.delayIndex - 1 + 128) % 128];
-                            signalBuffers[id][i] = delayedSample;
-                            node.delayBuffer[node.delayIndex] = feedbackInput;
-                            node.delayIndex = (node.delayIndex + 1) % 128;
-                        }
-                    }
-                    else if (node.node === 'Delay') {
-                        if (!node.delayBuffer) {
-                            node.delayBuffer = new Float32Array(sampleRate); // 1-second delay buffer
-                            node.delayIndex = 0;
-                            node.lpfCutoff = node.baseParams.lpfCutoff || 3000;
-                            node.lpfPreviousSample = 0;
-                            node.previousDelayTime = getEffectiveParam(node, 'delayTime', node.baseParams['time cv +/-']);
-                    
-                            // 🎛️ Allpass filter memory for smoothing
-                            node.allpassMem1 = 0;
-                            node.allpassMem2 = 0;
-                        }
-                    
-                        // 🚀 Smooth delay time modulation
-                        const newDelayTime = getEffectiveParam(node, 'delayTime', node.baseParams['time cv +/-']);
-                        const delayTime = node.previousDelayTime + 0.1 * (newDelayTime - node.previousDelayTime);
-                        node.previousDelayTime = delayTime;
-                    
-                        // 🕒 Convert to samples
-                        const delaySamples = (delayTime / 1000) * sampleRate;
-                    
-                        // 🔀 Split integer and fractional parts
-                        const intDelaySamples = Math.floor(delaySamples);
-                        const frac = delaySamples - intDelaySamples; // Fractional part for allpass interpolation
-                    
-                        // 🎛️ Feedback and mix parameters
-                        const feedbackParam = typeof node.baseParams.feedback === 'number' ? node.baseParams.feedback : 0.5;
-                        const wetMix = node.baseParams.wetMix || 0.2;
-                        const dryMix = 0.3;
-                    
-                        // 🎚️ Lowpass filter coefficient
-                        const RC = 1.0 / (2 * Math.PI * node.lpfCutoff);
-                        const alpha = sampleRate / (sampleRate + RC);
-                    
-                        for (let i = 0; i < 128; i++) {
-                            // 🕘 Get delayed samples
-                            const indexA = (node.delayIndex - intDelaySamples + node.delayBuffer.length) % node.delayBuffer.length;
-                            const indexB = (indexA - 1 + node.delayBuffer.length) % node.delayBuffer.length;
-                    
-                            const sampleA = node.delayBuffer[indexA];
-                            const sampleB = node.delayBuffer[indexB];
-                    
-                            // 🎛️ Allpass interpolation
-                            const delayedSample = sampleB + frac * (sampleA - node.allpassMem1);
-                            node.allpassMem1 = delayedSample; // Store last sample
-                    
-                            // 🎚️ Apply Lowpass Filter to Feedback
-                            let filteredFeedback = alpha * delayedSample + (1 - alpha) * node.lpfPreviousSample;
-                            node.lpfPreviousSample = filteredFeedback; // Store for next iteration
-                    
-                            // 🎤 Retrieve feedback input
-                            const feedbackInput = feedbackBuffers[id]?.[i] || 0;
-                            const feedbackSample = filteredFeedback * feedbackParam + feedbackInput;
-                    
-                            // 🎵 Dry/Wet Mix
-                            const inputSample = inputBuffer[i] || 0;
-                            const wetSignal = delayedSample + feedbackSample;
-                            const drySignal = inputSample;
-                            signalBuffers[id][i] = this.clamp((drySignal * dryMix) + (wetSignal * wetMix), -1.0, 1.0);
-                    
-                            // 🔁 Store in delay buffer
-                            node.delayBuffer[node.delayIndex] = signalBuffers[id][i];
-                            node.delayIndex = (node.delayIndex + 1) % node.delayBuffer.length;
-                        }
-                    }
-                    
-                    else if (node.node === 'HighPassFilter') {
-                        if (!node.coefficients) {
-                            node.coefficients = { a0: 0, a1: 0, a2: 0, b0: 0, b1: 0, b2: 0 };
-                            node.inputHistory1 = [0, 0];
-                            node.outputHistory1 = [0, 0];
-                            node.inputHistory2 = [0, 0];  // Second stage for cascaded filtering
-                            node.outputHistory2 = [0, 0];
-                        }
-                    
-    
-                        const effectiveFreq = this.clamp(
-                            getEffectiveParam(node, 'freq', node.baseParams['freq cv +/-']),
-                            80, 
-                            10000
-                        );
-                    
-                        const effectiveQ = this.clamp(
-                            getEffectiveParam(node, 'Q', node.baseParams['Q cv +/-']),
-                            0.1,
-                            20
-                        );
-                    
-                        // Compute filter coefficients for biquad high-pass
-                        const omega = (2 * Math.PI * effectiveFreq) / sampleRate;
-                        const alpha = Math.sin(omega) / (2 * effectiveQ);
-                    
-                        let b0, b1, b2, a0, a1, a2;
-                    
-                        // High-Pass Filter Coefficients (Biquad formula)
-                        b0 = (1 + Math.cos(omega)) / 2;
-                        b1 = -(1 + Math.cos(omega));
-                        b2 = (1 + Math.cos(omega)) / 2;
-                        a0 = 1 + alpha;
-                        a1 = -2 * Math.cos(omega);
-                        a2 = 1 - alpha;
-                    
-                        // Normalize coefficients
-                        b0 /= a0;
-                        b1 /= a0;
-                        b2 /= a0;
-                        a1 /= a0;
-                        a2 /= a0;
-                    
-                        // Store computed coefficients
-                        node.coefficients = { b0, b1, b2, a1, a2 };
-                    
-                        // Apply cascaded biquad filter for **stronger** high-pass effect
-                        for (let i = 0; i < 128; i++) {
-                            const inputSample = inputBuffer[i];
-                    
-                            // First stage
-                            let filtered1 =
-                                node.coefficients.b0 * inputSample +
-                                node.coefficients.b1 * node.inputHistory1[0] +
-                                node.coefficients.b2 * node.inputHistory1[1] -
-                                node.coefficients.a1 * node.outputHistory1[0] -
-                                node.coefficients.a2 * node.outputHistory1[1];
-                    
-                            // Update history for first stage
-                            node.inputHistory1[1] = node.inputHistory1[0];
-                            node.inputHistory1[0] = inputSample;
-                            node.outputHistory1[1] = node.outputHistory1[0];
-                            node.outputHistory1[0] = filtered1;
-                    
-                            // Second stage for stronger effect
-                            let filtered2 =
-                                node.coefficients.b0 * filtered1 +
-                                node.coefficients.b1 * node.inputHistory2[0] +
-                                node.coefficients.b2 * node.inputHistory2[1] -
-                                node.coefficients.a1 * node.outputHistory2[0] -
-                                node.coefficients.a2 * node.outputHistory2[1];
-                    
-                            // Update history for second stage
-                            node.inputHistory2[1] = node.inputHistory2[0];
-                            node.inputHistory2[0] = filtered1;
-                            node.outputHistory2[1] = node.outputHistory2[0];
-                            node.outputHistory2[0] = filtered2;
-                    
-                            // Write final output to buffer
-                            signalBuffers[id][i] = filtered2;
-                        }
-                    }
-    
-                    else if (node.node === 'GateSequencer') {
-                        const effectiveTempo = getEffectiveParam(node, 'tempo');
-                        const stepDuration = (60 / effectiveTempo) * sampleRate;
-                        
-    
-                        // Pulse duration should be **very short** (e.g., 1–5ms)
-                        const pulseSamples = Math.max(1, Math.round(sampleRate * 0.05)); // 5ms pulse
-                        
-                        for (let i = 0; i < 128; i++) {
-                            // Move clock forward
-                            node.clockPhase += 1;
                             
-                            // If we reach a new step, reset and output a short pulse
-                            if (node.clockPhase >= stepDuration) {
-                                node.clockPhase = 0;
-                                node.stepIndex = (node.stepIndex + 1) % node.baseParams.stepCount;
-                                
-                                // Generate **short pulse** at transition
-                                node.pulseCounter = pulseSamples;
-    
-    
-                                console.log(`Step ${node.stepIndex} | pulseCounter=${node.pulseCounter} | output[${i}]=${node.output[i]}`);
-    
-                            }
-                    
-                            // Output pulse only for a few samples
-                            node.output[i] = node.pulseCounter > 0 ? 1.0 : 0.0;
-                            if (node.pulseCounter > 0) node.pulseCounter -= 1; // Count down pulse
-    
-    
+                            case 'sine':
+                                signalBuffers[id][i] = Math.sin(2 * Math.PI * node.phase) * effectiveGain;
+                                break;
+                            case 'square':
+                                signalBuffers[id][i] = (node.phase < 0.5 ? 1 : -1) * effectiveGain * Math.SQRT1_2; // Scale by 1/sqrt(2)
+                                break;
+                            case 'sawtooth':
+                                signalBuffers[id][i] = (2 * node.phase - 1) * effectiveGain; // Scale by sqrt(1/3)
+                                break;
+                            case 'triangle':
+                                signalBuffers[id][i] = (node.phase < 0.5 ? 4 * node.phase - 1 : 3 - 4 * node.phase) * effectiveGain; // Scale by sqrt(1/3)
+                                break;                 
+                            default:
+                                // Fallback to sine wave if the waveform is undefined or unrecognized
+                                signalBuffers[id][i] = Math.sin(2 * Math.PI * node.phase) * effectiveGain;
+                        }
+                    }
+
+                }
+
+                else if (node.node === 'LFO2') {
+                    const effectiveFrequency = getEffectiveParam(node, 'frequency', node.baseParams['freq cv +/-']);
+                    const effectiveGain = getEffectiveParam(node, 'gain');
+                
+                    for (let i = 0; i < 128; i++) {
+                        node.phase += effectiveFrequency / sampleRate;
+                        if (node.phase >= 1) node.phase -= 1;
+                
+                        // Compute each waveform
+                        node.output.sine[i] = Math.sin(2 * Math.PI * node.phase) * effectiveGain;
+                        node.output.square[i] = (node.phase < 0.5 ? 1 : -1) * effectiveGain;
+                        node.output.saw[i] = (2 * node.phase - 1) * effectiveGain;
+                        node.output.tri[i] = (node.phase < 0.5 ? 4 * node.phase - 1 : 3 - 4 * node.phase) * effectiveGain;
+                    }
+                }
+
+                else if (node.node === 'VCA') {
+                    const effectiveGain = getEffectiveParam(node, 'gain', node.baseParams['gain cv +/-']);
+                
+                    // Initialize DC-blocking filter state if not present
+                    if (!node.dcBlockState) {
+                        node.dcBlockState = { prevInput: 0, prevOutput: 0 };
+                    }
+                
+                    const cutoffFreq = 5; // Cutoff frequency for DC-blocking (5 Hz)
+                    const alpha = 1 - Math.exp(-2 * Math.PI * cutoffFreq / sampleRate);
+                
+                    for (let i = 0; i < 128; i++) {
+                        // Get input sample (default to 0 if no input)
+                        const inputSample = inputBuffer[i] || 0;
+                
+                        // Apply modulation from CV input if available
+                        let modulatedGain = (node.modulatedParams['gain'] || 0) * node.baseParams['gain cv +/-'];
+                
+                        // DC-blocking filter (1st-order high-pass filter)
+                        const filteredModulation = alpha * (modulatedGain - node.dcBlockState.prevInput) + node.dcBlockState.prevOutput;
+                        node.dcBlockState.prevInput = modulatedGain;
+                        node.dcBlockState.prevOutput = filteredModulation;
+                
+                        // Compute final gain (clamped between 0 and 1)
+                        const finalGain = this.clamp(effectiveGain + filteredModulation, 0, 1);
+                
+                        // Apply gain to the input signal
+                        signalBuffers[id][i] = inputSample * finalGain;
+                    }
+                }
+                
+                
+                else if (node.node === 'Gain') {
+                    for (let i = 0; i < 128; i++) signalBuffers[id][i] = inputBuffer[i] * node.baseParams.gain;
+                }
+                else if (node.node === 'feedbackDelayNode') {
+                    if (!node.delayBuffer){
+                        node.delayBuffer = new Float32Array(128);
+                        node.delayIndex = 0;
+                    } 
+                    for (let i = 0; i < 128; i++) {
+                        const feedbackInput = feedbackBuffers[id]?.[i] || 0;
+                        const delayIndex = (node.delayIndex - 1 + 128) % 128;
+
+                        // Now define delayedSample after delayIndex is correctly computed
+                        const delayedSample = node.delayBuffer[delayIndex] || 0;
+
+                        // const delayedSample = node.delayBuffer[(node.delayIndex - 1 + 128) % 128];
+                        signalBuffers[id][i] = delayedSample;
+                        node.delayBuffer[node.delayIndex] = feedbackInput;
+                        node.delayIndex = (node.delayIndex + 1) % 128;
+                    }
+                }
+                else if (node.node === 'Delay') {
+                    if (!node.delayBuffer) {
+                        node.delayBuffer = new Float32Array(sampleRate); // 1-second delay buffer
+                        node.delayIndex = 0;
+                        node.lpfCutoff = node.baseParams.lpfCutoff || 3000;
+                        node.lpfPreviousSample = 0;
+                        node.previousDelayTime = getEffectiveParam(node, 'delayTime', node.baseParams['time cv +/-']);
+                
+                        // 🎛️ Allpass filter memory for smoothing
+                        node.allpassMem1 = 0;
+                        node.allpassMem2 = 0;
+                    }
+                
+                    // 🚀 Smooth delay time modulation
+                    const newDelayTime = getEffectiveParam(node, 'delayTime', node.baseParams['time cv +/-']);
+                    const delayTime = node.previousDelayTime + 0.1 * (newDelayTime - node.previousDelayTime);
+                    node.previousDelayTime = delayTime;
+                
+                    // 🕒 Convert to samples
+                    const delaySamples = (delayTime / 1000) * sampleRate;
+                
+                    // 🔀 Split integer and fractional parts
+                    const intDelaySamples = Math.floor(delaySamples);
+                    const frac = delaySamples - intDelaySamples; // Fractional part for allpass interpolation
+                
+                    // 🎛️ Feedback and mix parameters
+                    const feedbackParam = typeof node.baseParams.feedback === 'number' ? node.baseParams.feedback : 0.5;
+                    const wetMix = node.baseParams.wetMix || 0.2;
+                    const dryMix = 0.3;
+                
+                    // 🎚️ Lowpass filter coefficient
+                    const RC = 1.0 / (2 * Math.PI * node.lpfCutoff);
+                    const alpha = sampleRate / (sampleRate + RC);
+                
+                    for (let i = 0; i < 128; i++) {
+                        // 🕘 Get delayed samples
+                        const indexA = (node.delayIndex - intDelaySamples + node.delayBuffer.length) % node.delayBuffer.length;
+                        const indexB = (indexA - 1 + node.delayBuffer.length) % node.delayBuffer.length;
+                
+                        const sampleA = node.delayBuffer[indexA];
+                        const sampleB = node.delayBuffer[indexB];
+                
+                        // 🎛️ Allpass interpolation
+                        const delayedSample = sampleB + frac * (sampleA - node.allpassMem1);
+                        node.allpassMem1 = delayedSample; // Store last sample
+                
+                        // 🎚️ Apply Lowpass Filter to Feedback
+                        let filteredFeedback = alpha * delayedSample + (1 - alpha) * node.lpfPreviousSample;
+                        node.lpfPreviousSample = filteredFeedback; // Store for next iteration
+                
+                        // 🎤 Retrieve feedback input
+                        const feedbackInput = feedbackBuffers[id]?.[i] || 0;
+                        const feedbackSample = filteredFeedback * feedbackParam + feedbackInput;
+                
+                        // 🎵 Dry/Wet Mix
+                        const inputSample = inputBuffer[i] || 0;
+                        const wetSignal = delayedSample + feedbackSample;
+                        const drySignal = inputSample;
+                        signalBuffers[id][i] = this.clamp((drySignal * dryMix) + (wetSignal * wetMix), -1.0, 1.0);
+                
+                        // 🔁 Store in delay buffer
+                        node.delayBuffer[node.delayIndex] = signalBuffers[id][i];
+                        node.delayIndex = (node.delayIndex + 1) % node.delayBuffer.length;
+                    }
+                }
+                
+                else if (node.node === 'HighPassFilter') {
+                    if (!node.coefficients) {
+                        node.coefficients = { a0: 0, a1: 0, a2: 0, b0: 0, b1: 0, b2: 0 };
+                        node.inputHistory1 = [0, 0];
+                        node.outputHistory1 = [0, 0];
+                        node.inputHistory2 = [0, 0];  // Second stage for cascaded filtering
+                        node.outputHistory2 = [0, 0];
+                    }
+                
+
+                    const effectiveFreq = this.clamp(
+                        getEffectiveParam(node, 'freq', node.baseParams['freq cv +/-']),
+                        80, 
+                        10000
+                    );
+                
+                    const effectiveQ = this.clamp(
+                        getEffectiveParam(node, 'Q', node.baseParams['Q cv +/-']),
+                        0.1,
+                        20
+                    );
+                
+                    // Compute filter coefficients for biquad high-pass
+                    const omega = (2 * Math.PI * effectiveFreq) / sampleRate;
+                    const alpha = Math.sin(omega) / (2 * effectiveQ);
+                
+                    let b0, b1, b2, a0, a1, a2;
+                
+                    // High-Pass Filter Coefficients (Biquad formula)
+                    b0 = (1 + Math.cos(omega)) / 2;
+                    b1 = -(1 + Math.cos(omega));
+                    b2 = (1 + Math.cos(omega)) / 2;
+                    a0 = 1 + alpha;
+                    a1 = -2 * Math.cos(omega);
+                    a2 = 1 - alpha;
+                
+                    // Normalize coefficients
+                    b0 /= a0;
+                    b1 /= a0;
+                    b2 /= a0;
+                    a1 /= a0;
+                    a2 /= a0;
+                
+                    // Store computed coefficients
+                    node.coefficients = { b0, b1, b2, a1, a2 };
+                
+                    // Apply cascaded biquad filter for **stronger** high-pass effect
+                    for (let i = 0; i < 128; i++) {
+                        const inputSample = inputBuffer[i];
+                
+                        // First stage
+                        let filtered1 =
+                            node.coefficients.b0 * inputSample +
+                            node.coefficients.b1 * node.inputHistory1[0] +
+                            node.coefficients.b2 * node.inputHistory1[1] -
+                            node.coefficients.a1 * node.outputHistory1[0] -
+                            node.coefficients.a2 * node.outputHistory1[1];
+                
+                        // Update history for first stage
+                        node.inputHistory1[1] = node.inputHistory1[0];
+                        node.inputHistory1[0] = inputSample;
+                        node.outputHistory1[1] = node.outputHistory1[0];
+                        node.outputHistory1[0] = filtered1;
+                
+                        // Second stage for stronger effect
+                        let filtered2 =
+                            node.coefficients.b0 * filtered1 +
+                            node.coefficients.b1 * node.inputHistory2[0] +
+                            node.coefficients.b2 * node.inputHistory2[1] -
+                            node.coefficients.a1 * node.outputHistory2[0] -
+                            node.coefficients.a2 * node.outputHistory2[1];
+                
+                        // Update history for second stage
+                        node.inputHistory2[1] = node.inputHistory2[0];
+                        node.inputHistory2[0] = filtered1;
+                        node.outputHistory2[1] = node.outputHistory2[0];
+                        node.outputHistory2[0] = filtered2;
+                
+                        // Write final output to buffer
+                        signalBuffers[id][i] = filtered2;
+                    }
+                }
+                else if (node.node === 'Pulses') {
+                    // Retrieve the effective tempo and compute the duration (in samples) of each step.
+                    const effectiveTempo = getEffectiveParam(node, 'tempo');
+                    const stepDuration = (60 / effectiveTempo) * sampleRate;
+                
+                    // Retrieve the effective pulseWidth (a fraction between 0 and 1).
+                    const effectivePulseWidth = getEffectiveParam(node, 'pulseWidth');
+                    // Calculate the pulse duration (in samples) as a fraction of the step duration.
+                    // If effectivePulseWidth is 0, then no pulse is generated.
+                    const pulseSamples = effectivePulseWidth > 0
+                        ? Math.max(1, Math.round(effectivePulseWidth * stepDuration))
+                        : 0;
+                
+                        console.log(pulseSamples, effectivePulseWidth)
+                    // Ensure that state variables are initialized.
+                    node.clockPhase = node.clockPhase || 0;
+                    node.stepIndex = node.stepIndex || 0;
+                    node.pulseCounter = node.pulseCounter || 0;
+                
+                    // Process each sample in the block.
+                    for (let i = 0; i < 128; i++) {
+                        // Advance the clock by one sample.
+                        node.clockPhase += 1;
+                
+                        // If we've reached the end of the current step, reset the clock
+                        // and trigger a new pulse with the calculated duration.
+                        if (node.clockPhase >= stepDuration) {
+                            node.clockPhase = 0;
+                            node.stepIndex = (node.stepIndex + 1) % node.baseParams.stepCount;
+                            node.pulseCounter = pulseSamples; // Set the pulse counter based on gateLength.
+                        }
+                        
+                        // Output a pulse (1.0) if the pulse counter is active, otherwise output 0.
+                        signalBuffers[id][i] = (node.pulseCounter > 0 ? 1.0 : 0.0);
+                        
+                        // Decrement the pulse counter if it's active.
+                        if (node.pulseCounter > 0) {
+                            node.pulseCounter -= 1;
                         }
                     }
                 }
+                
+                
+                // else if (node.node === 'Pulses') {
+                //     const effectiveTempo = getEffectiveParam(node, 'tempo');
+                //     const stepDuration = (60 / effectiveTempo) * sampleRate;
+                    
+
+                //     // Pulse duration should be **very short** (e.g., 1–5ms)
+                //     const pulseSamples = Math.max(1, Math.round(sampleRate * 0.05)); // 5ms pulse
+                    
+                //     for (let i = 0; i < 128; i++) {
+                //         // Move clock forward
+                //         node.clockPhase += 1;
+                        
+                //         // If we reach a new step, reset and output a short pulse
+                //         if (node.clockPhase >= stepDuration) {
+                //             node.clockPhase = 0;
+                //             node.stepIndex = (node.stepIndex + 1) % node.baseParams.stepCount;
+                            
+                //             // Generate **short pulse** at transition
+                //             node.pulseCounter = pulseSamples;
+
+
+                //             console.log(`Step ${node.stepIndex} | pulseCounter=${node.pulseCounter} | output[${i}]=${node.output[i]}`);
+
+                //         }
+                
+                //         // Output pulse only for a few samples
+                //         node.output[i] = node.pulseCounter > 0 ? 1.0 : 0.0;
+                //         if (node.pulseCounter > 0) node.pulseCounter -= 1; // Count down pulse
+
+
+                //     }
+                // }
+                
                 
                 
                 
@@ -1051,20 +1065,14 @@ class DSP extends AudioWorkletProcessor {
             }
             const rms = Math.sqrt(sumSq / output.length);
 
-            // Optionally, you can also send the raw waveform data (or a downsampled version)
-            // to the main thread for oscilloscope visualization.
             this.analyzerFrameCount = (this.analyzerFrameCount || 0) + 1;
-            // Throttle the messaging so that it doesn't happen on every block:
+            // Throttle the messaging so that it sends every 100 blocks:
             if (this.analyzerFrameCount % 100 === 0) {
-                // Note: Sending the entire waveform every 10 blocks (about 340 times/second for 128-sample blocks)
-                // may still be heavy; adjust the modulo value as needed.
                 this.port.postMessage({
                     cmd: 'analyzerData',
-                    rms: rms,
-                    // waveform: output.slice(0) // Create a copy of the output array
-                });
+                    rms: rms                });
             }
-        // === End Analyzer Code ===
+        
         }
         
         
