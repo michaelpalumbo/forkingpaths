@@ -68,7 +68,7 @@ async function getJsonFiles(directoryPath) {
                         `;
                         
                                 // ✅ Write the modified file back
-                await writeFile(wasmFilePath, wrappedContent, 'utf8');
+                await writeFile(wasmFilePath, content, 'utf8');
                 console.log(`✅ Wrapped RNBO module as ES6: ${wasmFilePath}`);
                 
 

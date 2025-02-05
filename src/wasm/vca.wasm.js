@@ -1,9 +1,4 @@
-export default async function loadRNBO() {
-                    return new Promise((resolve, reject) => {
-                        try {
-                            let Module = {};
-                            (function() {
-                                
+
 var rnbo_module = (() => {
   var _scriptDir = typeof document !== 'undefined' && document.currentScript ? document.currentScript.src : undefined;
   if (typeof __filename !== 'undefined') _scriptDir = _scriptDir || __filename;
@@ -24,12 +19,3 @@ else if (typeof define === 'function' && define['amd'])
   define([], function() { return rnbo_module; });
 else if (typeof exports === 'object')
   exports["rnbo_module"] = rnbo_module;
-
-                            })();
-                            resolve(Module);
-                        } catch (error) {
-                            reject(error);
-                        }
-                    });
-                };
-                        

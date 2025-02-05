@@ -17,6 +17,14 @@ class DSP extends AudioWorkletProcessor {
         this.crossfadeStep = 1 / ((sampleRate / 128) * 0.1); // Adjust for crossfade duration
         this.outputVolume = 0.5;
         this.port.onmessage = (event) => this.handleMessage(event.data);
+        
+        // RNBO
+        this.rnboInstance = null;
+        this.rnboDesc = null // store metadata
+
+
+  
+  
     }
 
     getSampleRate(){
@@ -399,6 +407,43 @@ class DSP extends AudioWorkletProcessor {
 
             case 'add-rnbo-device':
                 console.log('received rnbo device:', msg.data)
+
+                const rnboJson = msg.data.code
+
+                this.rnboDesc = rnboJson.rnboDesc
+
+                // Get the decompressed code string.
+                const decompressedCode = rnboJson.src.decompressedCode;
+                console.log(decompressedCode)
+                // Dynamically recreate the factory function from the code string.
+                // Note: This uses dynamic evaluation (new Function), so ensure that
+                // you trust the source of this code and that it meets your security requirements.
+                try {
+                    // Wrap the decompressed code in parentheses to ensure it is treated as an expression.
+                    const evaluated = new Function('return (' + decompressedCode + ')')();
+                    console.log('Evaluated RNBO export:', evaluated);
+          
+                    // Extract the factory function from the evaluated code.
+                    let rnboFactory;
+                    if (typeof evaluated === 'function') {
+                        rnboFactory = evaluated;
+                    } else if (evaluated && typeof evaluated.default === 'function') {
+                        rnboFactory = evaluated.default;
+                    } else if (evaluated && typeof evaluated.factory === 'function') {
+                        rnboFactory = evaluated.factory;
+                    } else {
+                        console.error('RNBO export did not return a factory function:', evaluated);
+                        throw new Error("No RNBO factory function found in the exported code.");
+                    }
+                    // Instantiate the RNBO device.
+                    this.rnboInstance = rnboFactory();
+
+                    // Notify the main thread that loading was successful.
+                    console.log({ type: 'rnboLoaded', success: true });
+                } catch (error) {
+                    // Notify the main thread of the error.
+                    console.warn({ type: 'rnboLoaded', success: false, error: error.message });
+                }
                 // this.rnboDeviceBuilder(module.type, module.moduleSpec.desc, module.moduleSpec.src, 'loadstate')
             break
 
