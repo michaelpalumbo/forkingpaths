@@ -18,9 +18,8 @@ class DSP extends AudioWorkletProcessor {
         this.outputVolume = 0.5;
         this.port.onmessage = (event) => this.handleMessage(event.data);
         
-        // RNBO
-        this.rnboInstance = null;
-        this.rnboDesc = null // store metadata
+        // signal analysis
+        this.analyze = false
 
 
   
@@ -405,46 +404,9 @@ class DSP extends AudioWorkletProcessor {
 
             break;
 
-            case 'add-rnbo-device':
-                console.log('received rnbo device:', msg.data)
-
-                const rnboJson = msg.data.code
-
-                this.rnboDesc = rnboJson.rnboDesc
-
-                // Get the decompressed code string.
-                const decompressedCode = rnboJson.src.decompressedCode;
-                console.log(decompressedCode)
-                // Dynamically recreate the factory function from the code string.
-                // Note: This uses dynamic evaluation (new Function), so ensure that
-                // you trust the source of this code and that it meets your security requirements.
-                try {
-                    // Wrap the decompressed code in parentheses to ensure it is treated as an expression.
-                    const evaluated = new Function('return (' + decompressedCode + ')')();
-                    console.log('Evaluated RNBO export:', evaluated);
-          
-                    // Extract the factory function from the evaluated code.
-                    let rnboFactory;
-                    if (typeof evaluated === 'function') {
-                        rnboFactory = evaluated;
-                    } else if (evaluated && typeof evaluated.default === 'function') {
-                        rnboFactory = evaluated.default;
-                    } else if (evaluated && typeof evaluated.factory === 'function') {
-                        rnboFactory = evaluated.factory;
-                    } else {
-                        console.error('RNBO export did not return a factory function:', evaluated);
-                        throw new Error("No RNBO factory function found in the exported code.");
-                    }
-                    // Instantiate the RNBO device.
-                    this.rnboInstance = rnboFactory();
-
-                    // Notify the main thread that loading was successful.
-                    console.log({ type: 'rnboLoaded', success: true });
-                } catch (error) {
-                    // Notify the main thread of the error.
-                    console.warn({ type: 'rnboLoaded', success: false, error: error.message });
-                }
-                // this.rnboDeviceBuilder(module.type, module.moduleSpec.desc, module.moduleSpec.src, 'loadstate')
+            case 'setSignalAnalysis':
+                this.analyze = msg.data
+                console.log(this.analyze)
             break
 
             case 'addNode':
@@ -1079,6 +1041,33 @@ class DSP extends AudioWorkletProcessor {
 
         }
 
+        // === Begin Analyzer Code ===
+
+        if(this.analyze === true){
+            // Calculate the RMS amplitude of the output buffer
+            let sumSq = 0;
+            for (let i = 0; i < output.length; i++) {
+                sumSq += output[i] * output[i];
+            }
+            const rms = Math.sqrt(sumSq / output.length);
+
+            // Optionally, you can also send the raw waveform data (or a downsampled version)
+            // to the main thread for oscilloscope visualization.
+            this.analyzerFrameCount = (this.analyzerFrameCount || 0) + 1;
+            // Throttle the messaging so that it doesn't happen on every block:
+            if (this.analyzerFrameCount % 100 === 0) {
+                // Note: Sending the entire waveform every 10 blocks (about 340 times/second for 128-sample blocks)
+                // may still be heavy; adjust the modulo value as needed.
+                this.port.postMessage({
+                    cmd: 'analyzerData',
+                    rms: rms,
+                    // waveform: output.slice(0) // Create a copy of the output array
+                });
+            }
+        // === End Analyzer Code ===
+        }
+        
+        
         return true;
     }
 }

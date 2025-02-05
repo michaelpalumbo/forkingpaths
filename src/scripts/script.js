@@ -18,11 +18,11 @@ import { computePosition, flip, shift } from '@floating-ui/dom';
 // TODO: look for comments with this: //* old -repo version 
 // TODO: when new automerge implementation is working, remove their related code sections
 
-let debugVar
+
 // * Audio 
 let audioGraphDirty = false
 let synthWorklet; // the audioWorklet for managing and running the audio graph
-
+let signalAnalysisSetting = false
 
 // * UI
 const baseKnobSize = 45; // Default size in pixels
@@ -182,8 +182,11 @@ document.addEventListener("DOMContentLoaded", function () {
             // ✅ Safely attach event listeners now
             synthWorklet.port.onmessage = (event) => {
                 switch(event.data.cmd){
-              
-                    default: console.warn('no switch case exists for message from wynthWorklet:', event.data)
+                    case 'analyzerData':
+                        
+                        document.getElementById('signalAnalysisDisplay').textContent = `rms: ${event.data.rms}`
+                    break
+                    default: console.warn('no switch case exists for message from synthWorklet:', event.data)
                    
                 }
                 if (event.data.type === 'status-update') {
@@ -2248,6 +2251,15 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
     }
+
+    const displaySignalAnalysisButton = document.getElementById('displaySignalAnalysisButton');
+
+    displaySignalAnalysisButton.addEventListener("click", async () => {
+        signalAnalysisSetting = !signalAnalysisSetting
+        console.log(signalAnalysisSetting)
+        updateSynthWorklet('setSignalAnalysis', signalAnalysisSetting)
+    })
+
     function setSynthToolTip(description){
         const element = document.getElementById('cytoscapeTooltipText');
         // Set new text content
@@ -4236,7 +4248,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 // }
             break
 
-
+            case 'setSignalAnalysis':
+                synthWorklet.port.postMessage({ 
+                    cmd: 'setSignalAnalysis', 
+                    data: data
+                });
+            break
             
             case 'addNode':
                 synthWorklet.port.postMessage({ 
