@@ -398,7 +398,8 @@ class DSP extends AudioWorkletProcessor {
             break;
 
             case 'add-rnbo-device':
-                this.rnboDeviceBuilder(module.type, module.moduleSpec.desc, module.moduleSpec.src, 'loadstate')
+                console.log('received rnbo device:', msg.data)
+                // this.rnboDeviceBuilder(module.type, module.moduleSpec.desc, module.moduleSpec.src, 'loadstate')
             break
 
             case 'addNode':

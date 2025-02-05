@@ -1,5 +1,5 @@
 export default async function loadRNBO() {
-   return new Promise((resolve, reject) => {
+                    return new Promise((resolve, reject) => {
                         try {
                             let Module = {};
                             (function() {

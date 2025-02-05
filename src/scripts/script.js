@@ -14,6 +14,9 @@ import { marked } from 'marked'
 import 'jquery-knob';   // Import jQuery Knob plugin
 import { computePosition, flip, shift } from '@floating-ui/dom';
 
+
+import pako from 'pako'
+
 // Automatically import all RNBO .wasm.js files in /public/wasm
 const rnboModules = import.meta.glob('/src/wasm/*.wasm.js', { eager: true });
 console.log('✅ RNBO Modules Preloaded:', rnboModules);
@@ -171,32 +174,32 @@ document.addEventListener("DOMContentLoaded", function () {
     const savedVolume = parseFloat(localStorage.getItem('volume')) || 0.5;
 
     async function preloadRNBODevices() {
-        for (const path in rnboModules) {
-            const module = rnboModules[path];
+        // for (const path in rnboModules) {
+        //     const module = rnboModules[path];
     
-            console.log(`🔍 Checking RNBO module: ${path}`, module);
+        //     console.log(`🔍 Checking RNBO module: ${path}`, module);
     
-            if (!module) {
-                console.error(`❌ ERROR: RNBO module at ${path} is undefined.`);
-                continue;
-            }
+        //     if (!module) {
+        //         console.error(`❌ ERROR: RNBO module at ${path} is undefined.`);
+        //         continue;
+        //     }
     
-            // Log module structure
-            console.log(`📦 Module structure for ${path}:`, module);
+        //     // Log module structure
+        //     console.log(`📦 Module structure for ${path}:`, module);
     
-            // If module.default is missing, we have a packaging issue.
-            if (!module.default) {
-                console.error(`❌ RNBO module at ${path} did not load correctly`, module);
-                continue;
-            }
+        //     // If module.default is missing, we have a packaging issue.
+        //     if (!module.default) {
+        //         console.error(`❌ RNBO module at ${path} did not load correctly`, module);
+        //         continue;
+        //     }
     
-            // Extract module name
-            const moduleName = path.split('/').pop().replace('.wasm.js', '');
-            rnboCache[moduleName] = module.default;
+        //     // Extract module name
+        //     const moduleName = path.split('/').pop().replace('.wasm.js', '');
+        //     rnboCache[moduleName] = module.default;
     
-            console.log(`✅ Loaded RNBO module: ${moduleName}`, rnboCache[moduleName]);
-        }
-        console.log("✅ All RNBO modules preloaded:", Object.keys(rnboCache));
+        //     console.log(`✅ Loaded RNBO module: ${moduleName}`, rnboCache[moduleName]);
+        // }
+        // console.log("✅ All RNBO modules preloaded:", Object.keys(rnboCache));
     }
     
     
@@ -209,16 +212,16 @@ document.addEventListener("DOMContentLoaded", function () {
         // Run preload before initializing the Worklet
         await preloadRNBODevices();
         try {
-            console.log("⏳ Loading AudioWorklet...");
+           
 
             // Load the worklet module **first**
             await audioContext.audioWorklet.addModule('./audioWorklets/DSP.js');
-            console.log("✅ AudioWorklet loaded!");
+          
 
             // Now we safely create the worklet **after** it has loaded
             synthWorklet = new AudioWorkletNode(audioContext, 'DSP');
             synthWorklet.connect(audioContext.destination);
-            console.log("🎛️ AudioWorkletNode created!");
+         
 
             // Set volume after the worklet is ready
             updateSynthWorklet('setOutputVolume', savedVolume);
@@ -228,7 +231,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 switch(event.data.cmd){
                     case 'fetchRNBOsrc':
                         case 'fetchRNBOsrc':
+                            // addRNBODevice(event.data.data)
                             addRNBODevice(event.data.data)
+                    
                         break
                     break
                 }
@@ -4816,56 +4821,101 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     
 
-
-
     async function addRNBODevice(module) {
-        console.log('🔄 Loading RNBO module:', module.moduleSpec.src);
+        console.log('🔄 Loading RNBO module:', module);
     
-        try {
-            const rnboPath = `/src/wasm/${module.type}.wasm.js`;
-            console.log('🔍 Looking for RNBO Path:', rnboPath);
-            console.log('📂 Available RNBO Modules:', rnboModules);
-    
-            if (!rnboModules[rnboPath]) {
-                throw new Error(`❌ RNBO module not found: ${rnboPath}`);
-            }
-    
-            // ✅ Get the preloaded module
-            const rnboModule = rnboModules[rnboPath];
-            console.log('✅ RNBO Module Imported:', rnboModule);
-            console.log('🔍 Checking RNBO Module Contents:', Object.keys(rnboModule));
-    
-            // ✅ Call the module function
-            if (typeof rnboModule.default !== 'function') {
-                throw new Error(`❌ RNBO module default export is not a function!`);
-            }
-    
-            const rnboInstance = await rnboModule.default();  
-            console.log(`🎛️ RNBO Instance Ready for ${module.type}:`, rnboInstance);
-            console.log('🧐 Instance Keys:', Object.keys(rnboInstance));
-    
-            if (!rnboInstance || Object.keys(rnboInstance).length === 0) {
-                throw new Error(`❌ RNBO module ${module.type} returned an empty instance.`);
-            }
-    
-            // ✅ Extract the actual function/code inside rnboInstance
-            module.rnboCode = rnboInstance.code || rnboInstance;
-    
-            console.log('📩 Sending RNBO module to Worklet:', module.rnboCode);
-    
-            // 📩 Send the RNBO module (as an object) to the AudioWorklet
+        // try {
+            // Load the RNBO JSON export.
+            const rnboJson = await fetch('/public/export/oscillator.export.json').then((res) =>
+                res.json()
+            );
+        
+            // Decompress the code:
+            // 1. Extract the compressed, base64-encoded string.
+            const compressedBase64 = rnboJson.src[0].code;
+            // 2. Decode base64 into a Uint8Array.
+            const compressedArray = base64ToUint8Array(compressedBase64);
+            // 3. Decompress the data (zlib decompression using pako).
+            const decompressedArray = pako.inflate(compressedArray);
+            // 4. Convert the Uint8Array to a UTF-8 string.
+            const decompressedCode = new TextDecoder('utf-8').decode(decompressedArray);
+        
+            // Optionally, add the decompressed code to the JSON object for easier access.
+            rnboJson.src.decompressedCode = decompressedCode;
+        
+            console.log(rnboJson)
+            // Now send the entire JSON object (with metadata and decompressed code) to the AudioWorklet.
+            // Assume myAudioWorkletNode is already created and connected.
             synthWorklet.port.postMessage({
                 cmd: 'add-rnbo-device',
-                data: module
+                data: rnboJson,
             });
     
-        } catch (error) {
-            console.error(`❌ Error loading RNBO module:`, error);
-        }
+        // } catch (error) {
+        //     // console.error(`❌ Error loading RNBO module:`, error);
+        // }
     }
+
     
     
+
+    // async function addRNBODevice(module) {
+    //     console.log('🔄 Loading RNBO module:', module.moduleSpec.src);
     
+    //     try {
+    //         const rnboPath = `/src/wasm/${module.type}.wasm.js`;
+    //         console.log('🔍 Looking for RNBO Path:', rnboPath);
+    //         console.log('📂 Available RNBO Modules:', rnboModules);
+    
+    //         if (!rnboModules[rnboPath]) {
+    //             throw new Error(`❌ RNBO module not found: ${rnboPath}`);
+    //         }
+    
+    //         // ✅ Get the preloaded module
+    //         const rnboModule = rnboModules[rnboPath];
+    //         console.log('✅ RNBO Module Imported:', rnboModule);
+    //         console.log('🔍 Checking RNBO Module Contents:', Object.keys(rnboModule));
+    
+    //         // ✅ Call the module function
+    //         if (typeof rnboModule.default !== 'function') {
+    //             throw new Error(`❌ RNBO module default export is not a function!`);
+    //         }
+    
+    //         const rnboInstance = await rnboModule.default();  
+    //         console.log(`🎛️ RNBO Instance Ready for ${module.type}:`, rnboInstance);
+    //         console.log('🧐 Instance Keys:', Object.keys(rnboInstance));
+    
+    //         if (!rnboInstance || Object.keys(rnboInstance).length === 0) {
+    //             throw new Error(`❌ RNBO module ${module.type} returned an empty instance.`);
+    //         }
+    
+    //         // ✅ Extract the actual function/code inside rnboInstance
+    //         module.rnboCode = rnboInstance.code || rnboInstance;
+    
+    //         console.log('📩 Sending RNBO module to Worklet:', module.rnboCode);
+    
+    //         // 📩 Send the RNBO module (as an object) to the AudioWorklet
+    //         synthWorklet.port.postMessage({
+    //             cmd: 'add-rnbo-device',
+    //             data: module
+    //         });
+    
+    //     } catch (error) {
+    //         console.error(`❌ Error loading RNBO module:`, error);
+    //     }
+    // }
+    
+    
+    // Helper: Convert a base64-encoded string to a Uint8Array.
+    function base64ToUint8Array(base64) {
+        const binaryString = atob(base64);
+        const len = binaryString.length;
+        const bytes = new Uint8Array(len);
+        for (let i = 0; i < len; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+        }
+        return bytes;
+    }
 
 });
 
