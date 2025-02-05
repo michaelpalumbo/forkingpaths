@@ -14,6 +14,13 @@ import { marked } from 'marked'
 import 'jquery-knob';   // Import jQuery Knob plugin
 import { computePosition, flip, shift } from '@floating-ui/dom';
 
+// Automatically import all RNBO .wasm.js files in /public/wasm
+const rnboModules = import.meta.glob('/src/wasm/*.wasm.js', { eager: true });
+console.log('✅ RNBO Modules Preloaded:', rnboModules);
+
+const rnboCache = {}; // Store loaded RNBO modules
+
+
 // TODO: look for comments with this: //* old -repo version 
 // TODO: when new automerge implementation is working, remove their related code sections
 
@@ -163,21 +170,44 @@ document.addEventListener("DOMContentLoaded", function () {
     // Get the saved volume level from localStorage, default to 0.5 (50%)
     const savedVolume = parseFloat(localStorage.getItem('volume')) || 0.5;
 
+    async function preloadRNBODevices() {
+        for (const path in rnboModules) {
+            const module = rnboModules[path];
+    
+            console.log(`🔍 Checking RNBO module: ${path}`, module);
+    
+            if (!module) {
+                console.error(`❌ ERROR: RNBO module at ${path} is undefined.`);
+                continue;
+            }
+    
+            // Log module structure
+            console.log(`📦 Module structure for ${path}:`, module);
+    
+            // If module.default is missing, we have a packaging issue.
+            if (!module.default) {
+                console.error(`❌ RNBO module at ${path} did not load correctly`, module);
+                continue;
+            }
+    
+            // Extract module name
+            const moduleName = path.split('/').pop().replace('.wasm.js', '');
+            rnboCache[moduleName] = module.default;
+    
+            console.log(`✅ Loaded RNBO module: ${moduleName}`, rnboCache[moduleName]);
+        }
+        console.log("✅ All RNBO modules preloaded:", Object.keys(rnboCache));
+    }
+    
+    
+
+
     // Audio context
     const audioContext = new window.AudioContext();
 
-    // audioContext.audioWorklet.addModule('./audioWorklets/DSP.js').then(() => {
-    //     synthWorklet = new AudioWorkletNode(audioContext, 'DSP');
-    //     synthWorklet.connect(audioContext.destination);
-
-    //     // set volume
-    //     updateSynthWorklet('setOutputVolume', savedVolume)
-    // }).catch((error) => {
-    //     console.error('Error loading the worklet:', error);
-    // });
-    
-
     async function setupAudioWorklet() {
+        // Run preload before initializing the Worklet
+        await preloadRNBODevices();
         try {
             console.log("⏳ Loading AudioWorklet...");
 
@@ -195,6 +225,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // ✅ Safely attach event listeners now
             synthWorklet.port.onmessage = (event) => {
+                switch(event.data.cmd){
+                    case 'fetchRNBOsrc':
+                        case 'fetchRNBOsrc':
+                            addRNBODevice(event.data.data)
+                        break
+                    break
+                }
                 if (event.data.type === 'status-update') {
                     console.log('🎛️ DSP Status:', event.data.message);
                 } else if (event.data.type === 'performance-metrics') {
@@ -4244,6 +4281,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
                 // }
             break
+
+
             
             case 'addNode':
                 synthWorklet.port.postMessage({ 
@@ -4777,54 +4816,50 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     
 
-    async function loadRNBOForWorklet(audioContext, moduleName) {
-        try {
-            // Dynamically load RNBO WebAssembly JavaScript (wasm.js)
-            const rnboModule = await import(`./public/wasm/${moduleName}.wasm.js`);
-            
-            // Wait for WebAssembly to initialize
-            const rnboInstance = await rnboModule.default();
-    
-            console.log(`✅ RNBO WebAssembly Loaded: ${moduleName}`, rnboInstance);
-    
-            // Add the AudioWorkletProcessor script
-            await audioContext.audioWorklet.addModule('/worklets/rnboProcessor.js');
-    
-            // Create the AudioWorkletNode and pass RNBO WASM instance
-            const rnboNode = new AudioWorkletNode(audioContext, 'rnbo-processor');
-            rnboNode.port.postMessage({
-                type: 'load-rnbo',
-                instance: rnboInstance
-            });
-    
-            return rnboNode;
-        } catch (error) {
-            console.error(`❌ Failed to load RNBO WebAssembly: ${moduleName}`, error);
-        }
-    }
 
-    async function addRNBODevice(audioContext, rnboDeviceName, rnboWasmPath, rnboDesc) {
+
+    async function addRNBODevice(module) {
+        console.log('🔄 Loading RNBO module:', module.moduleSpec.src);
+    
         try {
-            // Fetch and compile the WebAssembly binary
-            const response = await fetch(rnboWasmPath);
-            const wasmBinary = await response.arrayBuffer();
-            const { instance } = await WebAssembly.instantiate(wasmBinary);
-    
-            console.log(`✅ RNBO WebAssembly loaded for ${rnboDeviceName}`);
-    
-            // Post RNBO device to the AudioWorklet
-            const dspNode = audioContext.workletNode; // Reference to existing AudioWorkletNode
-            dspNode.port.postMessage({
-                type: 'add-rnbo-device',
-                name: rnboDeviceName,
-                rnboDesc,   // RNBO parameter descriptions
-                instance,   // Compiled WebAssembly instance
+            const rnboPath = `/src/wasm/${module.type}.wasm.js`; // Construct path
+            if (!rnboModules[rnboPath]) {
+                throw new Error(`❌ RNBO module not found: ${rnboPath}`);
+            }
+
+            // Load the module dynamically
+            const rnboModule = await rnboModules[rnboPath]();
+            console.log(rnboModule)
+            // if (!rnboModule.default) {
+            //     throw new Error("Invalid RNBO module format.");
+            // }
+        
+                    // Check the keys in the loaded module
+            console.log('Module Keys:', Object.keys(rnboModule));
+
+            // Attempt to extract the correct function from the module
+            const rnboFunction = rnboModule.default || rnboModule[rnboPath] || rnboModule.init || Object.values(rnboModule)[0];
+
+            if (!rnboFunction) {
+                throw new Error("❌ RNBO function not found in module.");
+            }
+
+            console.log(`✅ RNBO Module Imported: ${module.type}`);
+
+            module.rnboCode = rnboFunction.toString()
+
+            console.log(module.rnboCode)
+            // 📩 Send the RNBO module (as a string) to the Worklet
+            synthWorklet.port.postMessage({
+                cmd: 'add-rnbo-device',
+                data: module
             });
     
         } catch (error) {
-            console.error(`❌ Error loading RNBO WASM for ${rnboDeviceName}:`, error);
+            console.error(`❌ Error loading RNBO module:`, error);
         }
     }
+    
 
 });
 

@@ -1,5 +1,6 @@
 import cloneDeep from 'lodash/cloneDeep';
 
+
 class DSP extends AudioWorkletProcessor {
     constructor() {
         super();
@@ -349,7 +350,7 @@ class DSP extends AudioWorkletProcessor {
                 Object.keys(synthGraph.modules).forEach((moduleID)=>{
                     const module = synthGraph.modules[moduleID]
                    
-                    console.log(module.structure)
+                    
                     
                     let moduleParams = null // set to null in case the node is a feedbackDelayNode
                     if(module.params){
@@ -364,10 +365,9 @@ class DSP extends AudioWorkletProcessor {
                         this.audioNodeBuilder(module.type, moduleID, module.params, 'loadstate')
                     }
                     else if(module.structure === 'rnboDevices'){
-                        console.warn('send message back to main thread requesting to add a device using addRNBODevice(), since the wasm needs to be instantiated for each device')
                         
-                        this.port.postMessage({ type: 'performance-metrics', load: Math.random() * 100 });
-                        this.rnboDeviceBuilder(module.type, module.moduleSpec.desc, module.moduleSpec.src, 'loadstate')
+                        this.port.postMessage({ cmd: 'fetchRNBOsrc', data: module });
+                        // this.rnboDeviceBuilder(module.type, module.moduleSpec.desc, module.moduleSpec.src, 'loadstate')
                         // console.warn('if any module is ade with rnboDevices, need to run it through this.rnboDeviceBuilder')
                     }
 
@@ -396,6 +396,11 @@ class DSP extends AudioWorkletProcessor {
                 this.crossfadeProgress = 0;
 
             break;
+
+            case 'add-rnbo-device':
+                this.rnboDeviceBuilder(module.type, module.moduleSpec.desc, module.moduleSpec.src, 'loadstate')
+            break
+
             case 'addNode':
                 if(msg.structure === 'webAudioNodes'){
                     this.audioNodeBuilder(msg.data.moduleName)

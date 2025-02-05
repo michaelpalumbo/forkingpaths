@@ -122,31 +122,31 @@ export class ParentNode_WebAudioNode {
     }
 
 
-    async loadRNBOForWorklet(audioContext, moduleName) {
-        try {
-            // Dynamically load RNBO WebAssembly JavaScript (wasm.js)
-            const rnboModule = await import(`/public/wasm/${moduleName}.wasm.js`);
+    // async loadRNBOForWorklet(audioContext, moduleName) {
+    //     try {
+    //         // Dynamically load RNBO WebAssembly JavaScript (wasm.js)
+    //         const rnboModule = await import(`/public/wasm/${moduleName}.wasm.js`);
             
-            // Wait for WebAssembly to initialize
-            const rnboInstance = await rnboModule.default();
+    //         // Wait for WebAssembly to initialize
+    //         const rnboInstance = await rnboModule.default();
     
-            console.log(`✅ RNBO WebAssembly Loaded: ${moduleName}`, rnboInstance);
+    //         console.log(`✅ RNBO WebAssembly Loaded: ${moduleName}`, rnboInstance);
     
-            // Add the AudioWorkletProcessor script
-            await audioContext.audioWorklet.addModule('/worklets/rnboProcessor.js');
+    //         // Add the AudioWorkletProcessor script
+    //         await audioContext.audioWorklet.addModule('/worklets/rnboProcessor.js');
     
-            // Create the AudioWorkletNode and pass RNBO WASM instance
-            const rnboNode = new AudioWorkletNode(audioContext, 'rnbo-processor');
-            rnboNode.port.postMessage({
-                type: 'load-rnbo',
-                instance: rnboInstance
-            });
+    //         // Create the AudioWorkletNode and pass RNBO WASM instance
+    //         const rnboNode = new AudioWorkletNode(audioContext, 'rnbo-processor');
+    //         rnboNode.port.postMessage({
+    //             type: 'load-rnbo',
+    //             instance: rnboInstance
+    //         });
     
-            return rnboNode;
-        } catch (error) {
-            console.error(`❌ Failed to load RNBO WebAssembly: ${moduleName}`, error);
-        }
-    }
+    //         return rnboNode;
+    //     } catch (error) {
+    //         console.error(`❌ Failed to load RNBO WebAssembly: ${moduleName}`, error);
+    //     }
+    // }
     
 
     

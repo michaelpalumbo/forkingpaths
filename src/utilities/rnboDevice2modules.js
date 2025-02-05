@@ -40,12 +40,39 @@ async function getJsonFiles(directoryPath) {
                 const compressedBinary = Uint8Array.from(atob(jsonData.src[0].code), c => c.charCodeAt(0));
 
                 // ✅ Step 2: Decompress zlib (using pako.js or similar library)
-                const decompressedBinary = pako.inflate(compressedBinary);
+                let decompressedBinary = pako.inflate(compressedBinary);
 
                 // Write binary data to separate file
-                const wasmFilePath = `./public/wasm/${moduleName}.wasm.js`;
+                const wasmFilePath = `./src/wasm/${moduleName}.wasm.js`;
+
                 await writeFile(wasmFilePath, decompressedBinary);
                 
+                // ✅ Step 4: Read the newly written file (await required)
+                let content = await readFile(wasmFilePath, 'utf8');
+
+                // ✅ Wrap the entire RNBO script inside a function
+                const wrappedContent = 
+                `export default async function loadRNBO() {
+                    return new Promise((resolve, reject) => {
+                        try {
+                            let Module = {};
+                            (function() {
+                                ${content}
+                            })();
+                            resolve(Module);
+                        } catch (error) {
+                            reject(error);
+                        }
+                    });
+                };
+                        `;
+                        
+                                // ✅ Write the modified file back
+                await writeFile(wasmFilePath, wrappedContent, 'utf8');
+                console.log(`✅ Wrapped RNBO module as ES6: ${wasmFilePath}`);
+                
+
+
                 modules.rnboDevices[moduleName] = {
                     parameters: {},
                     paramNames: [],
@@ -100,8 +127,7 @@ async function getJsonFiles(directoryPath) {
                 
                 // const decodedCode = atob(jsonData.src.code); // Decode Base64 if necessary
                 // modules.rnboDevices[moduleName].src = new Function('"use strict"; return ' + decodedCode)();
-                console.log(`✅ RNBO DSP initialized for ${moduleName}`);
-                console.log(modules.rnboDevices[moduleName])
+                console.log(`✅ RNBO DSP initialized for ${moduleName}`)
                 
             } catch (error) {
                 console.error(`❌ Failed to initialize RNBO DSP: ${error}`);
@@ -122,6 +148,9 @@ async function getJsonFiles(directoryPath) {
     }
 }
 
+
+
 // Replace with your directory path
 const folderPath = resolve('./public/export');
 getJsonFiles(folderPath)
+
