@@ -12,6 +12,14 @@ const moduleBackgrounds = {
     orange: "#CCCCCC"
 }
 
+// Configuration for grid layout
+const maxRows = 4;       // Maximum number of items per column
+const cellWidth = 120;   // Width allocated for each cell (adjust as needed)
+const cellHeight = 60;   // Height allocated for each cell (adjust as needed)
+const horizontalPadding = 10;
+const verticalPadding = 10;
+
+
 // const modules = audioNodes.webAudioNodes
 export class ParentNode_WebAudioNode {
     constructor(module, position, children, structure) {
@@ -37,11 +45,6 @@ export class ParentNode_WebAudioNode {
         // sift through modules.json, construct node
         
         this.moduleSpec = audioNodes[structure][module]
-
-        if(this.moduleSpec.structure === 'rnboDevice'){
-            console.log('need to store wasm', this.moduleSpec.src)
-            this.moduleSpec.dspInstance = this.loadWASM(this.moduleSpec.src)
-        }
         
         this.structure = structure // whether it is a basic web audio node or a rnboDevice
         this.inputs = this.moduleSpec.inputs
@@ -60,7 +63,7 @@ export class ParentNode_WebAudioNode {
             case 'LFO':
                 this.moduleColour = moduleBackgrounds.orange
             break
-            case 'BiquadFilter':
+            case 'HighPassFilter':
                 this.moduleColour = moduleBackgrounds.green
 
             break
@@ -120,55 +123,9 @@ export class ParentNode_WebAudioNode {
         
        
     }
-
-
-    // async loadRNBOForWorklet(audioContext, moduleName) {
-    //     try {
-    //         // Dynamically load RNBO WebAssembly JavaScript (wasm.js)
-    //         const rnboModule = await import(`/public/wasm/${moduleName}.wasm.js`);
-            
-    //         // Wait for WebAssembly to initialize
-    //         const rnboInstance = await rnboModule.default();
-    
-    //         console.log(`✅ RNBO WebAssembly Loaded: ${moduleName}`, rnboInstance);
-    
-    //         // Add the AudioWorkletProcessor script
-    //         await audioContext.audioWorklet.addModule('/worklets/rnboProcessor.js');
-    
-    //         // Create the AudioWorkletNode and pass RNBO WASM instance
-    //         const rnboNode = new AudioWorkletNode(audioContext, 'rnbo-processor');
-    //         rnboNode.port.postMessage({
-    //             type: 'load-rnbo',
-    //             instance: rnboInstance
-    //         });
-    
-    //         return rnboNode;
-    //     } catch (error) {
-    //         console.error(`❌ Failed to load RNBO WebAssembly: ${moduleName}`, error);
-    //     }
-    // }
     
 
     
-    async loadWASM(filePath) {
-        try {
-            // ✅ Fetch the binary file (stored separately)
-            const response = await fetch(filePath);
-            if (!response.ok) throw new Error(`Failed to fetch ${filePath}`);
-    
-            // ✅ Convert to ArrayBuffer
-            const wasmBuffer = await response.arrayBuffer();
-    
-            // ✅ Instantiate WebAssembly
-            const { instance } = await WebAssembly.instantiate(wasmBuffer);
-            // device.dspInstance = instance;
-            console.log(`✅ Successfully loaded RNBO device: ${filePath}`);
-
-            return instance
-        } catch (error) {
-            console.error(`❌ Failed to load RNBO DSP:`, error);
-        }
-    }
     findMatchingObject(obj, searchKey) {
         for (const [key, value] of Object.entries(obj)) {
             // Recursively search through nested objects
@@ -198,8 +155,16 @@ export class ParentNode_WebAudioNode {
         const childrenNodes = this.children.flatMap((child, index) => {
 
         // Arrange the child nodes in a vertical line below the parent node
-        const offsetY = index * 60; // Each child node is 60px below the previous one
-        const offsetX = 0; // Keep the X position the same for a vertical arrangement
+        // const offsetY = index * 60; // Each child node is 60px below the previous one
+        // const offsetX = 0; // Keep the X position the same for a vertical arrangement
+
+        // New grid-based approach
+        const row = index % maxRows;
+        const col = Math.floor(index / maxRows);
+
+        const offsetX = col * (cellWidth + horizontalPadding);
+        const offsetY = row * (cellHeight + verticalPadding);
+
         if(typeof child.default === 'string'){
             // make it a dropdown menu
             child.ui = 'menu'
@@ -237,7 +202,7 @@ export class ParentNode_WebAudioNode {
                     
                 },
                 position: {
-                    x: this.position.x + 20,
+                    x: this.position.x + offsetX + 20,
                     y: this.position.y + offsetY + 10// Match Y-position with the track
                 },
                 classes: 'paramAnchorNode'
