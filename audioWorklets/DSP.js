@@ -281,7 +281,6 @@ class DSP extends AudioWorkletProcessor {
                         tempo: parseFloat(params.tempo) || 120,
                         "tempo cv +/-": parseFloat(params["tempo cv +/-"]) || 10,
                         ratchet: parseInt(params.ratchet) || 0,
-                        pulseWidth: parseFloat(params.gateLength) || 0.5
                     },
                     modulatedParams: {
                         tempo: 0,

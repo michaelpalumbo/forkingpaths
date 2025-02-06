@@ -514,18 +514,9 @@
         "units": "steps",
         "description": "Number of ratchets per active step.",
         "modulatable": false
-      },
-      "pulseWidth": {
-        "min": 0.05,
-        "max": 1,
-        "default": 0.5,
-        "units": "%",
-        "description": "Width of the gate relative to the tempo",
-        "modulatable": true,
-        "modulationDescription": "Can be modulated for dynamic gate timing."
       }
     },
-    "paramNames": ["stepCount", "activeSteps", "tempo", "tempo cv +/-", "ratchet", "pulseWidth"],
+    "paramNames": ["stepCount", "activeSteps", "tempo", "tempo cv +/-", "ratchet"],
     "cvNames": ["tempo", "pulseWidth"],
     "cv": {
       "tempo": {
