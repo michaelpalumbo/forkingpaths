@@ -1124,7 +1124,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // index determines the left or right positioning of each knob
         let index = 0
         paramUIOverlays[parentNodeData.data.id] = []
-
+        console.log(parentNode)
         // let tempOverlayArray = [ ]
         childrenNodes.forEach((param)=>{
             

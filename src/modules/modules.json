@@ -523,6 +523,15 @@
           "modulatable": true,
           "modulationDescription": "Can be modulated for tempo variations."
         },
+        "tempo cv +/-": {
+          "min": -100,
+          "max": 100,
+          "default": 10,
+          "units": "BPM",
+          "description": "The attenuverter of the tempo CV input",
+          "modulatable": false,
+          "modulationDescription": "The attenuverter of the tempo CV input"
+        },
         "pulseWidth": {
           "min": 0.05,
           "max": 1,
@@ -536,6 +545,96 @@
       "paramNames": [
         "stepCount",
         "tempo",
+        "tempo cv +/-",
+        "pulseWidth"
+      ],
+      "cvNames": [
+        "tempo",
+        "pulseWidth"
+      ],
+      "cv": {
+        "tempo": {
+          "min": 20,
+          "max": 300,
+          "default": 120,
+          "units": "BPM",
+          "description": "Modulation input for tempo control.",
+          "modulatable": true
+        },
+        "pulseWidth": {
+          "min": 0.05,
+          "max": 1,
+          "default": 0.5,
+          "units": "%",
+          "description": "Width of the gate relative to the tempo",
+          "modulatable": true
+        }
+      },
+      "inputs": [],
+      "outputs": [
+        "OUT"
+      ]
+    },
+    "Euclid": {
+      "parameters": {
+        "stepCount": {
+          "min": 1,
+          "max": 16,
+          "default": 8,
+          "units": "steps",
+          "description": "Number of available steps in the sequence.",
+          "modulatable": false
+        },
+        "activeSteps": {
+          "min": 1,
+          "max": 16,
+          "default": 1,
+          "units": "steps",
+          "description": "Number of active steps in the sequence.",
+          "modulatable": false
+        },
+        "tempo": {
+          "min": 20,
+          "max": 300,
+          "default": 120,
+          "units": "BPM",
+          "description": "Controls the speed of the sequence.",
+          "modulatable": true,
+          "modulationDescription": "Can be modulated for tempo variations."
+        },
+        "tempo cv +/-": {
+          "min": -100,
+          "max": 100,
+          "default": 10,
+          "units": "BPM",
+          "description": "The attenuverter of the tempo CV input",
+          "modulatable": false,
+          "modulationDescription": "The attenuverter of the tempo CV input"
+        },
+        "ratchet": {
+          "min": 0,
+          "max": 16,
+          "default": 0,
+          "units": "steps",
+          "description": "Number of ratchets per active step.",
+          "modulatable": false
+        },
+        "pulseWidth": {
+          "min": 0.05,
+          "max": 1,
+          "default": 0.5,
+          "units": "%",
+          "description": "Width of the gate relative to the tempo",
+          "modulatable": true,
+          "modulationDescription": "Can be modulated for dynamic gate timing."
+        }
+      },
+      "paramNames": [
+        "stepCount",
+        "activeSteps",
+        "tempo",
+        "tempo cv +/-",
+        "ratchet",
         "pulseWidth"
       ],
       "cvNames": [

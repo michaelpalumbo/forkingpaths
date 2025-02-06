@@ -246,12 +246,13 @@ class DSP extends AudioWorkletProcessor {
             break;
 
             case 'Pulses':
-                let gateSeq = {
+                let pulses = {
                     node: 'Pulses',
                     structure: 'webAudioNode',
                     baseParams: {
                         stepCount: parseFloat(params.stepCount) || 8,
                         tempo: parseFloat(params.tempo) || 120,
+                        "tempo cv +/-": parseFloat(params["tempo cv +/-"]) || 10,
                         pulseWidth: parseFloat(params.gateLength) || 0.5
                     },
                     modulatedParams: {
@@ -264,9 +265,37 @@ class DSP extends AudioWorkletProcessor {
                 };
 
                 if (loadState) {
-                    this.nextState.nodes[moduleName] = gateSeq;
+                    this.nextState.nodes[moduleName] = pulses;
                 } else {
-                    this.currentState.nodes[moduleName] = gateSeq;
+                    this.currentState.nodes[moduleName] = pulses;
+                }
+            break;
+
+            case 'Euclid':
+                let euclideanPulses = {
+                    node: 'Euclid',
+                    structure: 'webAudioNode',
+                    baseParams: {
+                        stepCount: parseInt(params.stepCount) || 8,
+                        activeSteps: parseInt(params.activeSteps) || 8,
+                        tempo: parseFloat(params.tempo) || 120,
+                        "tempo cv +/-": parseFloat(params["tempo cv +/-"]) || 10,
+                        ratchet: parseInt(params.ratchet) || 0,
+                        pulseWidth: parseFloat(params.gateLength) || 0.5
+                    },
+                    modulatedParams: {
+                        tempo: 0,
+                        pulseWidth: 0
+                    },
+                    output: new Float32Array(128), // Single output buffer
+                    stepIndex: 0,
+                    clockPhase: 0
+                };
+
+                if (loadState) {
+                    this.nextState.nodes[moduleName] = euclideanPulses;
+                } else {
+                    this.currentState.nodes[moduleName] = euclideanPulses;
                 }
             break;
 
@@ -943,9 +972,8 @@ class DSP extends AudioWorkletProcessor {
                 }
                 else if (node.node === 'Pulses') {
                     // Retrieve the effective tempo and compute the duration (in samples) of each step.
-                    const effectiveTempo = getEffectiveParam(node, 'tempo');
+                    const effectiveTempo = getEffectiveParam(node, 'tempo', node.baseParams["tempo cv +/-"]);
                     const stepDuration = (60 / effectiveTempo) * sampleRate;
-                
                     // Retrieve the effective pulseWidth (a fraction between 0 and 1). clamp it between 0-0.999 if modulation pushes it to 1.0 or greater
                     const effectivePulseWidth = Math.min(Math.max(getEffectiveParam(node, 'pulseWidth'), 0), 0.999);
                     // Calculate the pulse duration (in samples) as a fraction of the step duration.
@@ -981,6 +1009,188 @@ class DSP extends AudioWorkletProcessor {
                         }
                     }
                 }
+
+                else if (node.node === 'Euclid') {
+                    // Retrieve the effective tempo and compute the duration (in samples) of each step.
+                    const effectiveTempo = getEffectiveParam(node, 'tempo', node.baseParams["tempo cv +/-"]);
+                    const stepDuration = (60 / effectiveTempo) * sampleRate;
+                    
+                    // Retrieve the effective pulseWidth (a fraction between 0 and 1) and clamp it.
+                    // (Though for the ratchet pulse we later use a fixed short duration.)
+                    const effectivePulseWidth = Math.min(Math.max(getEffectiveParam(node, 'pulseWidth'), 0), 1);
+                    // Instead of calculating pulseSamples as a fraction of the step,
+                    // we use a fixed very short pulse duration of 0.5ms.
+                    const pulseSamples = Math.max(1, Math.round(sampleRate * 0.0005)); // 0.5ms pulse
+                
+                    // Retrieve the stepCount and activeSteps parameters.
+                    // (Ensure stepCount is at least 1 and activeSteps is between 0 and stepCount.)
+                    const stepCountParam = Math.max(1, Math.floor(getEffectiveParam(node, 'stepCount')));
+                    const activeStepsParam = Math.max(0, Math.min(stepCountParam, Math.floor(getEffectiveParam(node, 'activeSteps'))));
+                    
+                    // Generate the Euclidean pattern for the current step configuration.
+                    // The pattern is an array of length stepCountParam containing 1's (active) and 0's (inactive).
+                    const pattern = generateEuclideanPattern(activeStepsParam, stepCountParam);
+                    
+                    // Retrieve the ratchet parameter. If less than 1, default to 1 (i.e. no ratcheting).
+                    const effectiveRatchet = Math.max(1, Math.floor(getEffectiveParam(node, 'ratchet')));
+                    // For non-ratchet mode, the whole step is used.
+                    // For ratchet mode, subdivide the step duration into effectiveRatchet subintervals.
+                    let ratchetInterval = stepDuration;
+                    let ratchetPulseSamples = pulseSamples;
+                    if (effectiveRatchet > 1) {
+                        ratchetInterval = stepDuration / effectiveRatchet;
+                        // Determine the duration (in samples) of each ratchet pulse.
+                        // (Here you can also incorporate effectivePulseWidth if you want it to modulate
+                        // the ratchet pulse duration; for now we follow your fixed short pulse approach.)
+                        ratchetPulseSamples = effectivePulseWidth > 0 
+                            ? Math.max(1, Math.round(effectivePulseWidth * ratchetInterval))
+                            : pulseSamples;
+                    }
+                    
+                    // Ensure that state variables are initialized.
+                    node.clockPhase = node.clockPhase || 0;
+                    node.stepIndex = node.stepIndex || 0;
+                    // Set whether the current step is active based on the Euclidean pattern.
+                    node.currentStepActive = (pattern[node.stepIndex] === 1);
+                    
+                    // Process each sample in the block.
+                    for (let i = 0; i < 128; i++) {
+                        // Advance the clock by one sample.
+                        node.clockPhase += 1;
+                        
+                        // When we reach the end of the current step, wrap the clock and move to the next step.
+                        if (node.clockPhase >= stepDuration) {
+                            node.clockPhase -= stepDuration;
+                            node.stepIndex = (node.stepIndex + 1) % stepCountParam;
+                            node.currentStepActive = (pattern[node.stepIndex] === 1);
+                        }
+                        
+                        let outputVal = 0;
+                        if (node.currentStepActive) {
+                            if (effectiveRatchet > 1) {
+                                // In ratchet mode, determine our position within the current ratchet subinterval.
+                                const subphase = node.clockPhase % ratchetInterval;
+                                if (subphase < ratchetPulseSamples) {
+                                    outputVal = 1.0;
+                                }
+                            } else {
+                                // Non-ratchet mode: output a pulse if we're within the fixed pulseSamples at the start of the step.
+                                if (node.clockPhase < pulseSamples) {
+                                    outputVal = 1.0;
+                                }
+                            }
+                        }
+                        // Write the output for this sample.
+                        signalBuffers[id][i] = outputVal;
+                    }
+                    
+                    // Helper function: Generate a Euclidean rhythm pattern.
+                    // This simple algorithm distributes 'pulses' evenly across 'steps'.
+                    function generateEuclideanPattern(pulses, steps) {
+                        let pattern = [];
+                        let bucket = 0;
+                        for (let i = 0; i < steps; i++) {
+                            bucket += pulses;
+                            if (bucket >= steps) {
+                                bucket -= steps;
+                                pattern.push(1);
+                            } else {
+                                pattern.push(0);
+                            }
+                        }
+                        return pattern;
+                    }
+                }
+
+                
+                // else if (node.node === 'Euclid') {
+                //     // Retrieve the effective tempo and compute the duration (in samples) of each step.
+                //     const effectiveTempo = getEffectiveParam(node, 'tempo', node.baseParams["tempo cv +/-"]);
+                //     const stepDuration = (60 / effectiveTempo) * sampleRate;
+                    
+                //     // Retrieve the effective pulseWidth (a fraction between 0 and 1) and clamp it.
+                //     const effectivePulseWidth = Math.min(Math.max(getEffectiveParam(node, 'pulseWidth'), 0), 1);
+                //     // Calculate the pulse duration (in samples) as a fraction of the step duration.
+                //     let pulseSamples = effectivePulseWidth > 0
+                //         ? Math.max(1, Math.round(effectivePulseWidth * stepDuration))
+                //         : 0;
+                //     //  pulseSamples = 0.05
+                //     pulseSamples = Math.max(1, Math.round(sampleRate * 0.0005)); // 0.5ms pulse
+                //     // Retrieve the stepCount and activeSteps parameters.
+                //     // (Ensure stepCount is at least 1 and activeSteps is between 0 and stepCount.)
+                //     const stepCountParam = Math.max(1, Math.floor(getEffectiveParam(node, 'stepCount')));
+                //     const activeStepsParam = Math.max(0, Math.min(stepCountParam, Math.floor(getEffectiveParam(node, 'activeSteps'))));
+                    
+                //     // Generate the Euclidean pattern for the current step configuration.
+                //     // The pattern is an array of length stepCountParam containing 1's (active) and 0's (inactive).
+                //     const pattern = generateEuclideanPattern(activeStepsParam, stepCountParam);
+                    
+                //     // Retrieve the ratchet parameter. If less than 1, default to 1 (i.e. no ratcheting).
+                //     const effectiveRatchet = Math.max(1, Math.floor(getEffectiveParam(node, 'ratchet')));
+                //     let ratchetInterval = 0, ratchetPulseSamples = 0;
+                //     if (effectiveRatchet > 1) {
+                //         // Subdivide the step duration into effectiveRatchet subintervals.
+                //         ratchetInterval = stepDuration / effectiveRatchet;
+                //         // Determine the duration (in samples) of each ratchet pulse.
+                //         ratchetPulseSamples = effectivePulseWidth > 0 
+                //             ? Math.max(1, Math.round(effectivePulseWidth * ratchetInterval))
+                //             : 0;
+                //     }
+                    
+                //     // Ensure that state variables are initialized.
+                //     node.clockPhase = node.clockPhase || 0;
+                //     node.stepIndex = node.stepIndex || 0;
+                //     node.pulseCounter = node.pulseCounter || 0;
+
+                //     // Store whether the current step is active.
+                //     node.currentStepActive = pattern[node.stepIndex] === 1;
+
+                    
+                //     // Process each sample in the block.
+                //     for (let i = 0; i < 128; i++) {
+                //         // Advance the clock by one sample.
+                //         node.clockPhase += 1;
+                        
+                //         // When we reach the end of the current step...
+                //         if (node.clockPhase >= stepDuration) {
+                //             node.clockPhase = 0;
+                //             // Check whether the current step is active according to the Euclidean pattern.
+                //             if (pattern[node.stepIndex] === 1) {
+                //                 node.pulseCounter = pulseSamples; // Trigger a pulse.
+                //             } else {
+                //                 node.pulseCounter = 0; // No pulse for this step.
+                //             }
+                //             // Advance to the next step (wrapping around).
+                //             node.stepIndex = (node.stepIndex + 1) % stepCountParam;
+                //         }
+                        
+                //         // Output a pulse (1.0) if the pulse counter is active, otherwise output 0.
+                //         signalBuffers[id][i] = node.pulseCounter > 0 ? 1.0 : 0.0;
+                        
+                //         // Decrement the pulse counter if it's active.
+                //         if (node.pulseCounter > 0) {
+                //             node.pulseCounter -= 1;
+                //         }
+                //     }
+                    
+                //     // Helper function: Generate a Euclidean rhythm pattern.
+                //     // This simple algorithm distributes 'pulses' evenly across 'steps'.
+                //     function generateEuclideanPattern(pulses, steps) {
+                //         let pattern = [];
+                //         let bucket = 0;
+                //         for (let i = 0; i < steps; i++) {
+                //             bucket += pulses;
+                //             if (bucket >= steps) {
+                //                 bucket -= steps;
+                //                 pattern.push(1);
+                //             } else {
+                //                 pattern.push(0);
+                //             }
+                //         }
+                //         return pattern;
+                //     }
+                // }
+                
                 
                 
                 // else if (node.node === 'Pulses') {
