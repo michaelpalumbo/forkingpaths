@@ -155,15 +155,15 @@ export class ParentNode_WebAudioNode {
         const childrenNodes = this.children.flatMap((child, index) => {
 
         // Arrange the child nodes in a vertical line below the parent node
-        // const offsetY = index * 60; // Each child node is 60px below the previous one
-        // const offsetX = 0; // Keep the X position the same for a vertical arrangement
+        const offsetY = index * 70; // Each child node is 60px below the previous one
+        const offsetX = 0; // Keep the X position the same for a vertical arrangement
 
         // New grid-based approach
-        const row = index % maxRows;
-        const col = Math.floor(index / maxRows);
+        // const row = index % maxRows;
+        // const col = Math.floor(index / maxRows);
 
-        const offsetX = col * (cellWidth + horizontalPadding);
-        const offsetY = row * (cellHeight + verticalPadding);
+        // const offsetX = col * (cellWidth + horizontalPadding);
+        // const offsetY = row * (cellHeight + verticalPadding);
 
         if(typeof child.default === 'string'){
             // make it a dropdown menu
@@ -202,7 +202,7 @@ export class ParentNode_WebAudioNode {
                     
                 },
                 position: {
-                    x: this.position.x + offsetX + 20,
+                    x: this.position.x + 20,
                     y: this.position.y + offsetY + 10// Match Y-position with the track
                 },
                 classes: 'paramAnchorNode'
