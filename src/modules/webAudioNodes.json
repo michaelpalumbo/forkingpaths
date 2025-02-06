@@ -538,7 +538,35 @@
     },
     "inputs": [],
     "outputs": ["OUT"]
+  },
+  "Mixer": {
+    "parameters": {
+      "gainA": {
+        "min": 0,
+        "max": 1,
+        "default": 1,
+        "units": "linear",
+        "description": "Gain level for input A.",
+        "modulatable": true,
+        "modulationDescription": "Allows modulation of input A's amplitude."
+      },
+      "gainB": {
+        "min": 0,
+        "max": 1,
+        "default": 1,
+        "units": "linear",
+        "description": "Gain level for input B.",
+        "modulatable": true,
+        "modulationDescription": "Allows modulation of input B's amplitude."
+      }
+    },
+    "paramNames": ["gainA", "gainB"],
+    "cvNames": [],
+    "cv": { },
+    "inputs": ["IN_A", "IN_B"],
+    "outputs": ["OUT"]
   }
+
 
 
 

@@ -1,0 +1,2357 @@
+{
+  "filename": "filename.fpsynth",
+  "visualGraph": {
+    "elements": {
+      "nodes": [
+        {
+          "data": {
+            "id": "AudioDestination_Dove_994a608185e0",
+            "label": "AudioDestination Dove",
+            "kind": "module",
+            "rnboName": "AudioDestination",
+            "moduleSpec": {
+              "parameters": {},
+              "paramNames": [],
+              "cv": {},
+              "inputs": [
+                "IN"
+              ],
+              "outputs": []
+            },
+            "structure": "webAudioNodes",
+            "bgcolour": "#E6CCFF"
+          },
+          "position": {
+            "x": 675.5,
+            "y": 750
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ":parent"
+        },
+        {
+          "data": {
+            "id": "AudioDestination_Dove_994a608185e0.IN",
+            "parent": "AudioDestination_Dove_994a608185e0",
+            "label": "IN",
+            "kind": "input",
+            "bgcolour": "#FC9A4F",
+            "ghostCableShape": "rectangle",
+            "ghostCableColour": "#5C9AE3",
+            "description": null
+          },
+          "position": {
+            "x": 690,
+            "y": 750
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "Mixer_Snake_4f9a438e3e66",
+            "label": "Mixer Snake",
+            "kind": "module",
+            "rnboName": "Mixer",
+            "moduleSpec": {
+              "parameters": {
+                "gainA": {
+                  "min": 0,
+                  "max": 1,
+                  "default": 1,
+                  "units": "linear",
+                  "description": "Gain level for input A.",
+                  "modulatable": true,
+                  "modulationDescription": "Allows modulation of input A's amplitude.",
+                  "kind": "paramAnchorNode",
+                  "name": "gainA",
+                  "ui": "knob"
+                },
+                "gainB": {
+                  "min": 0,
+                  "max": 1,
+                  "default": 1,
+                  "units": "linear",
+                  "description": "Gain level for input B.",
+                  "modulatable": true,
+                  "modulationDescription": "Allows modulation of input B's amplitude.",
+                  "kind": "paramAnchorNode",
+                  "name": "gainB",
+                  "ui": "knob"
+                }
+              },
+              "paramNames": [
+                "gainA",
+                "gainB"
+              ],
+              "cvNames": [],
+              "cv": {},
+              "inputs": [
+                "IN_A",
+                "IN_B"
+              ],
+              "outputs": [
+                "OUT"
+              ]
+            },
+            "structure": "webAudioNodes",
+            "bgcolour": "#E6CCFF"
+          },
+          "position": {
+            "x": 592.5,
+            "y": 502.5
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ":parent"
+        },
+        {
+          "data": {
+            "id": "Mixer_Snake_4f9a438e3e66_gainA",
+            "parent": "Mixer_Snake_4f9a438e3e66",
+            "label": "gainA",
+            "nameSpace": "Mixer_Snake_4f9a438e3e66_gainA.gainA",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "Mixer_Snake_4f9a438e3e66_gainA",
+            "ui": "knob",
+            "min": 0,
+            "max": 1,
+            "value": 1,
+            "menuOptions": "none",
+            "description": "Gain level for input A.",
+            "units": "linear"
+          },
+          "position": {
+            "x": 630,
+            "y": 390
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "Mixer_Snake_4f9a438e3e66_gainB",
+            "parent": "Mixer_Snake_4f9a438e3e66",
+            "label": "gainB",
+            "nameSpace": "Mixer_Snake_4f9a438e3e66_gainB.gainB",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "Mixer_Snake_4f9a438e3e66_gainB",
+            "ui": "knob",
+            "min": 0,
+            "max": 1,
+            "value": 1,
+            "menuOptions": "none",
+            "description": "Gain level for input B.",
+            "units": "linear"
+          },
+          "position": {
+            "x": 630,
+            "y": 450
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "Mixer_Snake_4f9a438e3e66.IN_A",
+            "parent": "Mixer_Snake_4f9a438e3e66",
+            "label": "IN_A",
+            "kind": "input",
+            "bgcolour": "#FC9A4F",
+            "ghostCableShape": "rectangle",
+            "ghostCableColour": "#5C9AE3",
+            "description": null
+          },
+          "position": {
+            "x": 610,
+            "y": 490
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "Mixer_Snake_4f9a438e3e66.IN_B",
+            "parent": "Mixer_Snake_4f9a438e3e66",
+            "label": "IN_B",
+            "kind": "input",
+            "bgcolour": "#FC9A4F",
+            "ghostCableShape": "rectangle",
+            "ghostCableColour": "#5C9AE3",
+            "description": null
+          },
+          "position": {
+            "x": 610,
+            "y": 550
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "Mixer_Snake_4f9a438e3e66.OUT",
+            "parent": "Mixer_Snake_4f9a438e3e66",
+            "label": "OUT",
+            "kind": "output",
+            "bgcolour": "#6FB1FC",
+            "ghostCableShape": "triangle",
+            "ghostCableColour": "#E68942",
+            "description": null
+          },
+          "position": {
+            "x": 610,
+            "y": 610
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "HighPassFilter_Coral_b9e0792651fa",
+            "label": "HighPassFilter Coral",
+            "kind": "module",
+            "rnboName": "HighPassFilter",
+            "moduleSpec": {
+              "parameters": {
+                "freq": {
+                  "min": 80,
+                  "max": 10000,
+                  "default": 1000,
+                  "units": "Hz",
+                  "description": "The cutoff frequency of the high-pass filter.",
+                  "modulatable": true,
+                  "modulationDescription": "Modulating the cutoff frequency allows for dynamic filtering effects.",
+                  "kind": "paramAnchorNode",
+                  "name": "freq",
+                  "ui": "knob"
+                },
+                "Q": {
+                  "min": 0.1,
+                  "max": 20,
+                  "default": 10,
+                  "units": "resonance",
+                  "description": "The resonance or quality factor of the filter.",
+                  "modulatable": true,
+                  "modulationDescription": "Higher Q values emphasize frequencies around the cutoff point.",
+                  "kind": "paramAnchorNode",
+                  "name": "Q",
+                  "ui": "knob"
+                },
+                "freq cv +/-": {
+                  "min": 80,
+                  "max": 10000,
+                  "default": 1000,
+                  "units": "Hz",
+                  "description": "Control Voltage input for dynamically modulating the cutoff frequency.",
+                  "modulatable": true,
+                  "modulationDescription": "Allows for sweeps or envelope-controlled filtering.",
+                  "kind": "paramAnchorNode",
+                  "name": "freq cv +/-",
+                  "ui": "knob"
+                },
+                "Q cv +/-": {
+                  "min": 0.1,
+                  "max": 20,
+                  "default": 1,
+                  "units": "resonance",
+                  "description": "Control Voltage input for dynamically modulating the resonance.",
+                  "modulatable": true,
+                  "modulationDescription": "Modulating the Q value changes how sharply the filter emphasizes the cutoff frequency.",
+                  "kind": "paramAnchorNode",
+                  "name": "Q cv +/-",
+                  "ui": "knob"
+                }
+              },
+              "paramNames": [
+                "freq",
+                "Q",
+                "freq cv +/-",
+                "Q cv +/-"
+              ],
+              "cvNames": [
+                "freq",
+                "Q"
+              ],
+              "cv": {
+                "freq": {
+                  "min": 80,
+                  "max": 10000,
+                  "default": 1000,
+                  "units": "Hz",
+                  "description": "Control Voltage input for dynamically modulating the cutoff frequency.",
+                  "modulatable": true,
+                  "modulationDescription": "Allows for sweeps or envelope-controlled filtering.",
+                  "kind": "input",
+                  "name": "freq",
+                  "ui": "knob"
+                },
+                "Q": {
+                  "min": 0.1,
+                  "max": 20,
+                  "default": 10,
+                  "units": "resonance",
+                  "description": "Control Voltage input for dynamically modulating the resonance.",
+                  "modulatable": true,
+                  "modulationDescription": "Modulating the Q value changes how sharply the filter emphasizes the cutoff frequency.",
+                  "kind": "input",
+                  "name": "Q",
+                  "ui": "knob"
+                }
+              },
+              "inputs": [
+                "IN"
+              ],
+              "outputs": [
+                "OUT"
+              ]
+            },
+            "structure": "webAudioNodes",
+            "bgcolour": "#E6CCFF"
+          },
+          "position": {
+            "x": 333,
+            "y": 302.5
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ":parent"
+        },
+        {
+          "data": {
+            "id": "HighPassFilter_Coral_b9e0792651fa_freq",
+            "parent": "HighPassFilter_Coral_b9e0792651fa",
+            "label": "freq",
+            "nameSpace": "HighPassFilter_Coral_b9e0792651fa_freq.freq",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "HighPassFilter_Coral_b9e0792651fa_freq",
+            "ui": "knob",
+            "min": 80,
+            "max": 10000,
+            "value": 1000,
+            "menuOptions": "none",
+            "description": "The cutoff frequency of the high-pass filter.",
+            "units": "Hz"
+          },
+          "position": {
+            "x": 370,
+            "y": 90
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "HighPassFilter_Coral_b9e0792651fa_Q",
+            "parent": "HighPassFilter_Coral_b9e0792651fa",
+            "label": "Q",
+            "nameSpace": "HighPassFilter_Coral_b9e0792651fa_Q.Q",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "HighPassFilter_Coral_b9e0792651fa_Q",
+            "ui": "knob",
+            "min": 0.1,
+            "max": 20,
+            "value": 10,
+            "menuOptions": "none",
+            "description": "The resonance or quality factor of the filter.",
+            "units": "resonance"
+          },
+          "position": {
+            "x": 370,
+            "y": 150
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "HighPassFilter_Coral_b9e0792651fa_freq cv +/-",
+            "parent": "HighPassFilter_Coral_b9e0792651fa",
+            "label": "freq cv +/-",
+            "nameSpace": "HighPassFilter_Coral_b9e0792651fa_freq cv +/-.freq cv +/-",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "HighPassFilter_Coral_b9e0792651fa_freq cv +/-",
+            "ui": "knob",
+            "min": 80,
+            "max": 10000,
+            "value": 1000,
+            "menuOptions": "none",
+            "description": "Control Voltage input for dynamically modulating the cutoff frequency.",
+            "units": "Hz"
+          },
+          "position": {
+            "x": 370,
+            "y": 210
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "HighPassFilter_Coral_b9e0792651fa_Q cv +/-",
+            "parent": "HighPassFilter_Coral_b9e0792651fa",
+            "label": "Q cv +/-",
+            "nameSpace": "HighPassFilter_Coral_b9e0792651fa_Q cv +/-.Q cv +/-",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "HighPassFilter_Coral_b9e0792651fa_Q cv +/-",
+            "ui": "knob",
+            "min": 0.1,
+            "max": 20,
+            "value": 1,
+            "menuOptions": "none",
+            "description": "Control Voltage input for dynamically modulating the resonance.",
+            "units": "resonance"
+          },
+          "position": {
+            "x": 370,
+            "y": 270
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "HighPassFilter_Coral_b9e0792651fa.freq",
+            "parent": "HighPassFilter_Coral_b9e0792651fa",
+            "label": "freq",
+            "kind": "input",
+            "bgcolour": "#FC9A4F",
+            "ghostCableShape": "rectangle",
+            "ghostCableColour": "#5C9AE3",
+            "description": "Allows for sweeps or envelope-controlled filtering."
+          },
+          "position": {
+            "x": 350,
+            "y": 330
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "HighPassFilter_Coral_b9e0792651fa.Q",
+            "parent": "HighPassFilter_Coral_b9e0792651fa",
+            "label": "Q",
+            "kind": "input",
+            "bgcolour": "#FC9A4F",
+            "ghostCableShape": "rectangle",
+            "ghostCableColour": "#5C9AE3",
+            "description": "Modulating the Q value changes how sharply the filter emphasizes the cutoff frequency."
+          },
+          "position": {
+            "x": 350,
+            "y": 390
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "HighPassFilter_Coral_b9e0792651fa.IN",
+            "parent": "HighPassFilter_Coral_b9e0792651fa",
+            "label": "IN",
+            "kind": "input",
+            "bgcolour": "#FC9A4F",
+            "ghostCableShape": "rectangle",
+            "ghostCableColour": "#5C9AE3",
+            "description": null
+          },
+          "position": {
+            "x": 350,
+            "y": 450
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "HighPassFilter_Coral_b9e0792651fa.OUT",
+            "parent": "HighPassFilter_Coral_b9e0792651fa",
+            "label": "OUT",
+            "kind": "output",
+            "bgcolour": "#6FB1FC",
+            "ghostCableShape": "triangle",
+            "ghostCableColour": "#E68942",
+            "description": null
+          },
+          "position": {
+            "x": 350,
+            "y": 510
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "Euclid_Barbet_2f385ff2424d",
+            "label": "Euclid Barbet",
+            "kind": "module",
+            "rnboName": "Euclid",
+            "moduleSpec": {
+              "parameters": {
+                "stepCount": {
+                  "min": 1,
+                  "max": 16,
+                  "default": 8,
+                  "units": "steps",
+                  "description": "Number of available steps in the sequence.",
+                  "modulatable": false,
+                  "kind": "paramAnchorNode",
+                  "name": "stepCount",
+                  "ui": "knob"
+                },
+                "activeSteps": {
+                  "min": 1,
+                  "max": 16,
+                  "default": 1,
+                  "units": "steps",
+                  "description": "Number of active steps in the sequence.",
+                  "modulatable": false,
+                  "kind": "paramAnchorNode",
+                  "name": "activeSteps",
+                  "ui": "knob"
+                },
+                "tempo": {
+                  "min": 20,
+                  "max": 300,
+                  "default": 120,
+                  "units": "BPM",
+                  "description": "Controls the speed of the sequence.",
+                  "modulatable": true,
+                  "modulationDescription": "Can be modulated for tempo variations.",
+                  "kind": "paramAnchorNode",
+                  "name": "tempo",
+                  "ui": "knob"
+                },
+                "tempo cv +/-": {
+                  "min": -100,
+                  "max": 100,
+                  "default": 10,
+                  "units": "BPM",
+                  "description": "The attenuverter of the tempo CV input",
+                  "modulatable": false,
+                  "modulationDescription": "The attenuverter of the tempo CV input",
+                  "kind": "paramAnchorNode",
+                  "name": "tempo cv +/-",
+                  "ui": "knob"
+                },
+                "ratchet": {
+                  "min": 0,
+                  "max": 16,
+                  "default": 0,
+                  "units": "steps",
+                  "description": "Number of ratchets per active step.",
+                  "modulatable": false,
+                  "kind": "paramAnchorNode",
+                  "name": "ratchet",
+                  "ui": "knob"
+                }
+              },
+              "paramNames": [
+                "stepCount",
+                "activeSteps",
+                "tempo",
+                "tempo cv +/-",
+                "ratchet"
+              ],
+              "cvNames": [
+                "tempo",
+                "pulseWidth"
+              ],
+              "cv": {
+                "tempo": {
+                  "min": 20,
+                  "max": 300,
+                  "default": 120,
+                  "units": "BPM",
+                  "description": "Modulation input for tempo control.",
+                  "modulatable": true,
+                  "kind": "input",
+                  "name": "tempo",
+                  "ui": "knob"
+                },
+                "pulseWidth": {
+                  "min": 0.05,
+                  "max": 1,
+                  "default": 0.5,
+                  "units": "%",
+                  "description": "Width of the gate relative to the tempo",
+                  "modulatable": true,
+                  "kind": "input",
+                  "name": "pulseWidth",
+                  "ui": "knob"
+                }
+              },
+              "inputs": [],
+              "outputs": [
+                "OUT"
+              ]
+            },
+            "structure": "webAudioNodes",
+            "bgcolour": "#E6CCFF"
+          },
+          "position": {
+            "x": 146.5,
+            "y": 272.5
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ":parent"
+        },
+        {
+          "data": {
+            "id": "Euclid_Barbet_2f385ff2424d_stepCount",
+            "parent": "Euclid_Barbet_2f385ff2424d",
+            "label": "stepCount",
+            "nameSpace": "Euclid_Barbet_2f385ff2424d_stepCount.stepCount",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "Euclid_Barbet_2f385ff2424d_stepCount",
+            "ui": "knob",
+            "min": 1,
+            "max": 16,
+            "value": 8,
+            "menuOptions": "none",
+            "description": "Number of available steps in the sequence.",
+            "units": "steps"
+          },
+          "position": {
+            "x": 210,
+            "y": 70
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "Euclid_Barbet_2f385ff2424d_activeSteps",
+            "parent": "Euclid_Barbet_2f385ff2424d",
+            "label": "activeSteps",
+            "nameSpace": "Euclid_Barbet_2f385ff2424d_activeSteps.activeSteps",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "Euclid_Barbet_2f385ff2424d_activeSteps",
+            "ui": "knob",
+            "min": 1,
+            "max": 16,
+            "value": 1,
+            "menuOptions": "none",
+            "description": "Number of active steps in the sequence.",
+            "units": "steps"
+          },
+          "position": {
+            "x": 210,
+            "y": 130
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "Euclid_Barbet_2f385ff2424d_tempo",
+            "parent": "Euclid_Barbet_2f385ff2424d",
+            "label": "tempo",
+            "nameSpace": "Euclid_Barbet_2f385ff2424d_tempo.tempo",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "Euclid_Barbet_2f385ff2424d_tempo",
+            "ui": "knob",
+            "min": 20,
+            "max": 300,
+            "value": 120,
+            "menuOptions": "none",
+            "description": "Controls the speed of the sequence.",
+            "units": "BPM"
+          },
+          "position": {
+            "x": 210,
+            "y": 190
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "Euclid_Barbet_2f385ff2424d_tempo cv +/-",
+            "parent": "Euclid_Barbet_2f385ff2424d",
+            "label": "tempo cv +/-",
+            "nameSpace": "Euclid_Barbet_2f385ff2424d_tempo cv +/-.tempo cv +/-",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "Euclid_Barbet_2f385ff2424d_tempo cv +/-",
+            "ui": "knob",
+            "min": -100,
+            "max": 100,
+            "value": 10,
+            "menuOptions": "none",
+            "description": "The attenuverter of the tempo CV input",
+            "units": "BPM"
+          },
+          "position": {
+            "x": 210,
+            "y": 250
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "Euclid_Barbet_2f385ff2424d_ratchet",
+            "parent": "Euclid_Barbet_2f385ff2424d",
+            "label": "ratchet",
+            "nameSpace": "Euclid_Barbet_2f385ff2424d_ratchet.ratchet",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "Euclid_Barbet_2f385ff2424d_ratchet",
+            "ui": "knob",
+            "min": 0,
+            "max": 16,
+            "value": 0,
+            "menuOptions": "none",
+            "description": "Number of ratchets per active step.",
+            "units": "steps"
+          },
+          "position": {
+            "x": 210,
+            "y": 310
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "Euclid_Barbet_2f385ff2424d.tempo",
+            "parent": "Euclid_Barbet_2f385ff2424d",
+            "label": "tempo",
+            "kind": "input",
+            "bgcolour": "#FC9A4F",
+            "ghostCableShape": "rectangle",
+            "ghostCableColour": "#5C9AE3",
+            "description": null
+          },
+          "position": {
+            "x": 190,
+            "y": 350
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "Euclid_Barbet_2f385ff2424d.pulseWidth",
+            "parent": "Euclid_Barbet_2f385ff2424d",
+            "label": "pulseWidth",
+            "kind": "input",
+            "bgcolour": "#FC9A4F",
+            "ghostCableShape": "rectangle",
+            "ghostCableColour": "#5C9AE3",
+            "description": null
+          },
+          "position": {
+            "x": 190,
+            "y": 410
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "Euclid_Barbet_2f385ff2424d.OUT",
+            "parent": "Euclid_Barbet_2f385ff2424d",
+            "label": "OUT",
+            "kind": "output",
+            "bgcolour": "#6FB1FC",
+            "ghostCableShape": "triangle",
+            "ghostCableColour": "#E68942",
+            "description": null
+          },
+          "position": {
+            "x": 190,
+            "y": 470
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "Pulses_Turkey_ebd83294a293",
+            "label": "Pulses Turkey",
+            "kind": "module",
+            "rnboName": "Pulses",
+            "moduleSpec": {
+              "parameters": {
+                "stepCount": {
+                  "min": 1,
+                  "max": 16,
+                  "default": 8,
+                  "units": "steps",
+                  "description": "Number of steps in the sequence.",
+                  "modulatable": false,
+                  "kind": "paramAnchorNode",
+                  "name": "stepCount",
+                  "ui": "knob"
+                },
+                "tempo": {
+                  "min": 20,
+                  "max": 300,
+                  "default": 120,
+                  "units": "BPM",
+                  "description": "Controls the speed of the sequence.",
+                  "modulatable": true,
+                  "modulationDescription": "Can be modulated for tempo variations.",
+                  "kind": "paramAnchorNode",
+                  "name": "tempo",
+                  "ui": "knob"
+                },
+                "tempo cv +/-": {
+                  "min": -100,
+                  "max": 100,
+                  "default": 10,
+                  "units": "BPM",
+                  "description": "The attenuverter of the tempo CV input",
+                  "modulatable": false,
+                  "modulationDescription": "The attenuverter of the tempo CV input",
+                  "kind": "paramAnchorNode",
+                  "name": "tempo cv +/-",
+                  "ui": "knob"
+                },
+                "pulseWidth": {
+                  "min": 0.05,
+                  "max": 1,
+                  "default": 0.5,
+                  "units": "%",
+                  "description": "Width of the gate relative to the tempo",
+                  "modulatable": true,
+                  "modulationDescription": "Can be modulated for dynamic gate timing.",
+                  "kind": "paramAnchorNode",
+                  "name": "pulseWidth",
+                  "ui": "knob"
+                }
+              },
+              "paramNames": [
+                "stepCount",
+                "tempo",
+                "tempo cv +/-",
+                "pulseWidth"
+              ],
+              "cvNames": [
+                "tempo",
+                "pulseWidth"
+              ],
+              "cv": {
+                "tempo": {
+                  "min": 20,
+                  "max": 300,
+                  "default": 120,
+                  "units": "BPM",
+                  "description": "Modulation input for tempo control.",
+                  "modulatable": true,
+                  "kind": "input",
+                  "name": "tempo",
+                  "ui": "knob"
+                },
+                "pulseWidth": {
+                  "min": 0.05,
+                  "max": 1,
+                  "default": 0.5,
+                  "units": "%",
+                  "description": "Width of the gate relative to the tempo",
+                  "modulatable": true,
+                  "kind": "input",
+                  "name": "pulseWidth",
+                  "ui": "knob"
+                }
+              },
+              "inputs": [],
+              "outputs": [
+                "OUT"
+              ]
+            },
+            "structure": "webAudioNodes",
+            "bgcolour": "#E6CCFF"
+          },
+          "position": {
+            "x": 126.5,
+            "y": 782.5
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ":parent"
+        },
+        {
+          "data": {
+            "id": "Pulses_Turkey_ebd83294a293_stepCount",
+            "parent": "Pulses_Turkey_ebd83294a293",
+            "label": "stepCount",
+            "nameSpace": "Pulses_Turkey_ebd83294a293_stepCount.stepCount",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "Pulses_Turkey_ebd83294a293_stepCount",
+            "ui": "knob",
+            "min": 1,
+            "max": 16,
+            "value": 8,
+            "menuOptions": "none",
+            "description": "Number of steps in the sequence.",
+            "units": "steps"
+          },
+          "position": {
+            "x": 190,
+            "y": 610
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "Pulses_Turkey_ebd83294a293_tempo",
+            "parent": "Pulses_Turkey_ebd83294a293",
+            "label": "tempo",
+            "nameSpace": "Pulses_Turkey_ebd83294a293_tempo.tempo",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "Pulses_Turkey_ebd83294a293_tempo",
+            "ui": "knob",
+            "min": 20,
+            "max": 300,
+            "value": 120,
+            "menuOptions": "none",
+            "description": "Controls the speed of the sequence.",
+            "units": "BPM"
+          },
+          "position": {
+            "x": 190,
+            "y": 670
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "Pulses_Turkey_ebd83294a293_tempo cv +/-",
+            "parent": "Pulses_Turkey_ebd83294a293",
+            "label": "tempo cv +/-",
+            "nameSpace": "Pulses_Turkey_ebd83294a293_tempo cv +/-.tempo cv +/-",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "Pulses_Turkey_ebd83294a293_tempo cv +/-",
+            "ui": "knob",
+            "min": -100,
+            "max": 100,
+            "value": 10,
+            "menuOptions": "none",
+            "description": "The attenuverter of the tempo CV input",
+            "units": "BPM"
+          },
+          "position": {
+            "x": 190,
+            "y": 730
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "Pulses_Turkey_ebd83294a293_pulseWidth",
+            "parent": "Pulses_Turkey_ebd83294a293",
+            "label": "pulseWidth",
+            "nameSpace": "Pulses_Turkey_ebd83294a293_pulseWidth.pulseWidth",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "Pulses_Turkey_ebd83294a293_pulseWidth",
+            "ui": "knob",
+            "min": 0.05,
+            "max": 1,
+            "value": 0.5,
+            "menuOptions": "none",
+            "description": "Width of the gate relative to the tempo",
+            "units": "%"
+          },
+          "position": {
+            "x": 190,
+            "y": 790
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "Pulses_Turkey_ebd83294a293.tempo",
+            "parent": "Pulses_Turkey_ebd83294a293",
+            "label": "tempo",
+            "kind": "input",
+            "bgcolour": "#FC9A4F",
+            "ghostCableShape": "rectangle",
+            "ghostCableColour": "#5C9AE3",
+            "description": null
+          },
+          "position": {
+            "x": 170,
+            "y": 830
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "Pulses_Turkey_ebd83294a293.pulseWidth",
+            "parent": "Pulses_Turkey_ebd83294a293",
+            "label": "pulseWidth",
+            "kind": "input",
+            "bgcolour": "#FC9A4F",
+            "ghostCableShape": "rectangle",
+            "ghostCableColour": "#5C9AE3",
+            "description": null
+          },
+          "position": {
+            "x": 170,
+            "y": 890
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "Pulses_Turkey_ebd83294a293.OUT",
+            "parent": "Pulses_Turkey_ebd83294a293",
+            "label": "OUT",
+            "kind": "output",
+            "bgcolour": "#6FB1FC",
+            "ghostCableShape": "triangle",
+            "ghostCableColour": "#E68942",
+            "description": null
+          },
+          "position": {
+            "x": 170,
+            "y": 950
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "HighPassFilter_Pigeon_27520fe56d35",
+            "label": "HighPassFilter Pigeon",
+            "kind": "module",
+            "rnboName": "HighPassFilter",
+            "moduleSpec": {
+              "parameters": {
+                "freq": {
+                  "min": 80,
+                  "max": 10000,
+                  "default": 1000,
+                  "units": "Hz",
+                  "description": "The cutoff frequency of the high-pass filter.",
+                  "modulatable": true,
+                  "modulationDescription": "Modulating the cutoff frequency allows for dynamic filtering effects.",
+                  "kind": "paramAnchorNode",
+                  "name": "freq",
+                  "ui": "knob"
+                },
+                "Q": {
+                  "min": 0.1,
+                  "max": 20,
+                  "default": 10,
+                  "units": "resonance",
+                  "description": "The resonance or quality factor of the filter.",
+                  "modulatable": true,
+                  "modulationDescription": "Higher Q values emphasize frequencies around the cutoff point.",
+                  "kind": "paramAnchorNode",
+                  "name": "Q",
+                  "ui": "knob"
+                },
+                "freq cv +/-": {
+                  "min": 80,
+                  "max": 10000,
+                  "default": 1000,
+                  "units": "Hz",
+                  "description": "Control Voltage input for dynamically modulating the cutoff frequency.",
+                  "modulatable": true,
+                  "modulationDescription": "Allows for sweeps or envelope-controlled filtering.",
+                  "kind": "paramAnchorNode",
+                  "name": "freq cv +/-",
+                  "ui": "knob"
+                },
+                "Q cv +/-": {
+                  "min": 0.1,
+                  "max": 20,
+                  "default": 1,
+                  "units": "resonance",
+                  "description": "Control Voltage input for dynamically modulating the resonance.",
+                  "modulatable": true,
+                  "modulationDescription": "Modulating the Q value changes how sharply the filter emphasizes the cutoff frequency.",
+                  "kind": "paramAnchorNode",
+                  "name": "Q cv +/-",
+                  "ui": "knob"
+                }
+              },
+              "paramNames": [
+                "freq",
+                "Q",
+                "freq cv +/-",
+                "Q cv +/-"
+              ],
+              "cvNames": [
+                "freq",
+                "Q"
+              ],
+              "cv": {
+                "freq": {
+                  "min": 80,
+                  "max": 10000,
+                  "default": 1000,
+                  "units": "Hz",
+                  "description": "Control Voltage input for dynamically modulating the cutoff frequency.",
+                  "modulatable": true,
+                  "modulationDescription": "Allows for sweeps or envelope-controlled filtering.",
+                  "kind": "input",
+                  "name": "freq",
+                  "ui": "knob"
+                },
+                "Q": {
+                  "min": 0.1,
+                  "max": 20,
+                  "default": 10,
+                  "units": "resonance",
+                  "description": "Control Voltage input for dynamically modulating the resonance.",
+                  "modulatable": true,
+                  "modulationDescription": "Modulating the Q value changes how sharply the filter emphasizes the cutoff frequency.",
+                  "kind": "input",
+                  "name": "Q",
+                  "ui": "knob"
+                }
+              },
+              "inputs": [
+                "IN"
+              ],
+              "outputs": [
+                "OUT"
+              ]
+            },
+            "structure": "webAudioNodes",
+            "bgcolour": "#E6CCFF"
+          },
+          "position": {
+            "x": 373,
+            "y": 822.5
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ":parent"
+        },
+        {
+          "data": {
+            "id": "HighPassFilter_Pigeon_27520fe56d35_freq",
+            "parent": "HighPassFilter_Pigeon_27520fe56d35",
+            "label": "freq",
+            "nameSpace": "HighPassFilter_Pigeon_27520fe56d35_freq.freq",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "HighPassFilter_Pigeon_27520fe56d35_freq",
+            "ui": "knob",
+            "min": 80,
+            "max": 10000,
+            "value": 1000,
+            "menuOptions": "none",
+            "description": "The cutoff frequency of the high-pass filter.",
+            "units": "Hz"
+          },
+          "position": {
+            "x": 410,
+            "y": 610
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "HighPassFilter_Pigeon_27520fe56d35_Q",
+            "parent": "HighPassFilter_Pigeon_27520fe56d35",
+            "label": "Q",
+            "nameSpace": "HighPassFilter_Pigeon_27520fe56d35_Q.Q",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "HighPassFilter_Pigeon_27520fe56d35_Q",
+            "ui": "knob",
+            "min": 0.1,
+            "max": 20,
+            "value": 10,
+            "menuOptions": "none",
+            "description": "The resonance or quality factor of the filter.",
+            "units": "resonance"
+          },
+          "position": {
+            "x": 410,
+            "y": 670
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "HighPassFilter_Pigeon_27520fe56d35_freq cv +/-",
+            "parent": "HighPassFilter_Pigeon_27520fe56d35",
+            "label": "freq cv +/-",
+            "nameSpace": "HighPassFilter_Pigeon_27520fe56d35_freq cv +/-.freq cv +/-",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "HighPassFilter_Pigeon_27520fe56d35_freq cv +/-",
+            "ui": "knob",
+            "min": 80,
+            "max": 10000,
+            "value": 1000,
+            "menuOptions": "none",
+            "description": "Control Voltage input for dynamically modulating the cutoff frequency.",
+            "units": "Hz"
+          },
+          "position": {
+            "x": 410,
+            "y": 730
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "HighPassFilter_Pigeon_27520fe56d35_Q cv +/-",
+            "parent": "HighPassFilter_Pigeon_27520fe56d35",
+            "label": "Q cv +/-",
+            "nameSpace": "HighPassFilter_Pigeon_27520fe56d35_Q cv +/-.Q cv +/-",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "HighPassFilter_Pigeon_27520fe56d35_Q cv +/-",
+            "ui": "knob",
+            "min": 0.1,
+            "max": 20,
+            "value": 1,
+            "menuOptions": "none",
+            "description": "Control Voltage input for dynamically modulating the resonance.",
+            "units": "resonance"
+          },
+          "position": {
+            "x": 410,
+            "y": 790
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "HighPassFilter_Pigeon_27520fe56d35.freq",
+            "parent": "HighPassFilter_Pigeon_27520fe56d35",
+            "label": "freq",
+            "kind": "input",
+            "bgcolour": "#FC9A4F",
+            "ghostCableShape": "rectangle",
+            "ghostCableColour": "#5C9AE3",
+            "description": "Allows for sweeps or envelope-controlled filtering."
+          },
+          "position": {
+            "x": 390,
+            "y": 850
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "HighPassFilter_Pigeon_27520fe56d35.Q",
+            "parent": "HighPassFilter_Pigeon_27520fe56d35",
+            "label": "Q",
+            "kind": "input",
+            "bgcolour": "#FC9A4F",
+            "ghostCableShape": "rectangle",
+            "ghostCableColour": "#5C9AE3",
+            "description": "Modulating the Q value changes how sharply the filter emphasizes the cutoff frequency."
+          },
+          "position": {
+            "x": 390,
+            "y": 910
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "HighPassFilter_Pigeon_27520fe56d35.IN",
+            "parent": "HighPassFilter_Pigeon_27520fe56d35",
+            "label": "IN",
+            "kind": "input",
+            "bgcolour": "#FC9A4F",
+            "ghostCableShape": "rectangle",
+            "ghostCableColour": "#5C9AE3",
+            "description": null
+          },
+          "position": {
+            "x": 390,
+            "y": 970
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "HighPassFilter_Pigeon_27520fe56d35.OUT",
+            "parent": "HighPassFilter_Pigeon_27520fe56d35",
+            "label": "OUT",
+            "kind": "output",
+            "bgcolour": "#6FB1FC",
+            "ghostCableShape": "triangle",
+            "ghostCableColour": "#E68942",
+            "description": null
+          },
+          "position": {
+            "x": 390,
+            "y": 1030
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        }
+      ]
+    },
+    "style": [
+      {
+        "selector": "node",
+        "style": {
+          "background-color": "data(bgcolour)",
+          "label": "data(label)",
+          "font-size": "18px",
+          "width": "30px",
+          "height": "30px",
+          "color": "rgb(0,0,0)",
+          "text-valign": "center",
+          "text-halign": "left",
+          "text-margin-x": "-10px"
+        }
+      },
+      {
+        "selector": "node[bgcolour]",
+        "style": {
+          "background-color": "data(bgcolour)"
+        }
+      },
+      {
+        "selector": "node[kind = \"input\"]",
+        "style": {
+          "shape": "triangle"
+        }
+      },
+      {
+        "selector": "node[kind = \"output\"]",
+        "style": {
+          "shape": "rectangle"
+        }
+      },
+      {
+        "selector": ":parent",
+        "style": {
+          "background-opacity": "0.5",
+          "background-color": "data(bgcolour)",
+          "border-color": "rgb(245,122,65)",
+          "border-width": "1px",
+          "label": "data(label)",
+          "text-valign": "top",
+          "text-halign": "center",
+          "color": "rgb(255,0,0)",
+          "font-size": "20px",
+          "text-margin-y": "-10px"
+        }
+      },
+      {
+        "selector": "node.highlighted",
+        "style": {
+          "border-color": "rgb(34,139,34)",
+          "border-width": "10px"
+        }
+      },
+      {
+        "selector": "node.ghostNode",
+        "style": {
+          "background-color": "rgb(255,255,255)",
+          "opacity": "0.8",
+          "width": "27px",
+          "height": "27px",
+          "border-width": "0px",
+          "label": ""
+        }
+      },
+      {
+        "selector": "edge",
+        "style": {
+          "width": "6px",
+          "line-color": "rgb(204,204,204)",
+          "target-arrow-shape": "triangle",
+          "source-arrow-shape": "triangle",
+          "source-arrow-color": "rgb(0,0,0)",
+          "target-arrow-color": "rgb(0,0,0)",
+          "target-arrow-width": "20px",
+          "source-arrow-width": "50px",
+          "curve-style": "unbundled-bezier",
+          "control-point-weights": "0.25 0.75",
+          "control-point-distances": "20px -20px"
+        }
+      },
+      {
+        "selector": "edge.highlighted",
+        "style": {
+          "line-color": "rgb(255,0,0)",
+          "target-arrow-color": "rgb(255,0,0)",
+          "source-arrow-color": "rgb(255,0,0)",
+          "width": "10px"
+        }
+      },
+      {
+        "selector": "edge.connectedEdges",
+        "style": {
+          "line-color": "rgb(34,139,34)",
+          "target-arrow-color": "rgb(34,139,34)",
+          "source-arrow-color": "rgb(34,139,34)",
+          "width": "6px"
+        }
+      },
+      {
+        "selector": ".peerPointer",
+        "style": {
+          "background-color": "data(colour)",
+          "width": "15px",
+          "height": "15px",
+          "shape": "star",
+          "text-valign": "center",
+          "text-halign": "right",
+          "text-margin-x": "10px"
+        }
+      },
+      {
+        "selector": ".paramAnchorNode",
+        "style": {
+          "background-color": "rgb(245,164,93)",
+          "background-opacity": "0",
+          "shape": "ellipse",
+          "width": "20px",
+          "height": "20px",
+          "label": "",
+          "text-opacity": "0",
+          "outline-width": "0px",
+          "events": "no"
+        }
+      },
+      {
+        "selector": "._gridParentPadding",
+        "style": {
+          "compound-sizing-wrt-labels": "exclude",
+          "padding": "20px"
+        }
+      },
+      {
+        "selector": "._gridParentPadding",
+        "style": {
+          "compound-sizing-wrt-labels": "exclude",
+          "padding": "20px"
+        }
+      }
+    ],
+    "data": {},
+    "zoomingEnabled": true,
+    "userZoomingEnabled": false,
+    "zoom": 1,
+    "minZoom": 1e-50,
+    "maxZoom": 1e+50,
+    "panningEnabled": true,
+    "userPanningEnabled": false,
+    "pan": {
+      "x": 0,
+      "y": 0
+    },
+    "boxSelectionEnabled": true,
+    "renderer": {
+      "name": "canvas"
+    }
+  },
+  "paramUIOverlays": {
+    "AudioDestination_Dove_994a608185e0": [],
+    "Mixer_Snake_4f9a438e3e66": [
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      }
+    ],
+    "HighPassFilter_Coral_b9e0792651fa": [
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      }
+    ],
+    "Euclid_Barbet_2f385ff2424d": [
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      }
+    ],
+    "Pulses_Turkey_ebd83294a293": [
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      }
+    ],
+    "HighPassFilter_Pigeon_27520fe56d35": [
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      }
+    ]
+  },
+  "audioGraph": {
+    "modules": {
+      "AudioDestination_Dove_994a608185e0": {
+        "type": "AudioDestination",
+        "params": {},
+        "moduleSpec": {
+          "parameters": {},
+          "paramNames": [],
+          "cv": {},
+          "inputs": [
+            "IN"
+          ],
+          "outputs": []
+        },
+        "nodeIDs": [
+          "AudioDestination_Dove_994a608185e0",
+          "AudioDestination_Dove_994a608185e0.IN"
+        ],
+        "structure": "webAudioNodes"
+      },
+      "Mixer_Snake_4f9a438e3e66": {
+        "type": "Mixer",
+        "params": {
+          "gainA": 1,
+          "gainB": 1
+        },
+        "moduleSpec": {
+          "parameters": {
+            "gainA": {
+              "min": 0,
+              "max": 1,
+              "default": 1,
+              "units": "linear",
+              "description": "Gain level for input A.",
+              "modulatable": true,
+              "modulationDescription": "Allows modulation of input A's amplitude.",
+              "kind": "paramAnchorNode",
+              "name": "gainA",
+              "ui": "knob"
+            },
+            "gainB": {
+              "min": 0,
+              "max": 1,
+              "default": 1,
+              "units": "linear",
+              "description": "Gain level for input B.",
+              "modulatable": true,
+              "modulationDescription": "Allows modulation of input B's amplitude.",
+              "kind": "paramAnchorNode",
+              "name": "gainB",
+              "ui": "knob"
+            }
+          },
+          "paramNames": [
+            "gainA",
+            "gainB"
+          ],
+          "cvNames": [],
+          "cv": {},
+          "inputs": [
+            "IN_A",
+            "IN_B"
+          ],
+          "outputs": [
+            "OUT"
+          ]
+        },
+        "nodeIDs": [
+          "Mixer_Snake_4f9a438e3e66",
+          "Mixer_Snake_4f9a438e3e66_gainA-anchorNode",
+          "Mixer_Snake_4f9a438e3e66_gainB-anchorNode",
+          "Mixer_Snake_4f9a438e3e66.IN_A",
+          "Mixer_Snake_4f9a438e3e66.IN_B",
+          "Mixer_Snake_4f9a438e3e66.OUT"
+        ],
+        "structure": "webAudioNodes"
+      },
+      "HighPassFilter_Coral_b9e0792651fa": {
+        "type": "HighPassFilter",
+        "params": {
+          "freq": 1000,
+          "Q": 10,
+          "freq cv +/-": 1000,
+          "Q cv +/-": 1
+        },
+        "moduleSpec": {
+          "parameters": {
+            "freq": {
+              "min": 80,
+              "max": 10000,
+              "default": 1000,
+              "units": "Hz",
+              "description": "The cutoff frequency of the high-pass filter.",
+              "modulatable": true,
+              "modulationDescription": "Modulating the cutoff frequency allows for dynamic filtering effects.",
+              "kind": "paramAnchorNode",
+              "name": "freq",
+              "ui": "knob"
+            },
+            "Q": {
+              "min": 0.1,
+              "max": 20,
+              "default": 10,
+              "units": "resonance",
+              "description": "The resonance or quality factor of the filter.",
+              "modulatable": true,
+              "modulationDescription": "Higher Q values emphasize frequencies around the cutoff point.",
+              "kind": "paramAnchorNode",
+              "name": "Q",
+              "ui": "knob"
+            },
+            "freq cv +/-": {
+              "min": 80,
+              "max": 10000,
+              "default": 1000,
+              "units": "Hz",
+              "description": "Control Voltage input for dynamically modulating the cutoff frequency.",
+              "modulatable": true,
+              "modulationDescription": "Allows for sweeps or envelope-controlled filtering.",
+              "kind": "paramAnchorNode",
+              "name": "freq cv +/-",
+              "ui": "knob"
+            },
+            "Q cv +/-": {
+              "min": 0.1,
+              "max": 20,
+              "default": 1,
+              "units": "resonance",
+              "description": "Control Voltage input for dynamically modulating the resonance.",
+              "modulatable": true,
+              "modulationDescription": "Modulating the Q value changes how sharply the filter emphasizes the cutoff frequency.",
+              "kind": "paramAnchorNode",
+              "name": "Q cv +/-",
+              "ui": "knob"
+            }
+          },
+          "paramNames": [
+            "freq",
+            "Q",
+            "freq cv +/-",
+            "Q cv +/-"
+          ],
+          "cvNames": [
+            "freq",
+            "Q"
+          ],
+          "cv": {
+            "freq": {
+              "min": 80,
+              "max": 10000,
+              "default": 1000,
+              "units": "Hz",
+              "description": "Control Voltage input for dynamically modulating the cutoff frequency.",
+              "modulatable": true,
+              "modulationDescription": "Allows for sweeps or envelope-controlled filtering.",
+              "kind": "input",
+              "name": "freq",
+              "ui": "knob"
+            },
+            "Q": {
+              "min": 0.1,
+              "max": 20,
+              "default": 10,
+              "units": "resonance",
+              "description": "Control Voltage input for dynamically modulating the resonance.",
+              "modulatable": true,
+              "modulationDescription": "Modulating the Q value changes how sharply the filter emphasizes the cutoff frequency.",
+              "kind": "input",
+              "name": "Q",
+              "ui": "knob"
+            }
+          },
+          "inputs": [
+            "IN"
+          ],
+          "outputs": [
+            "OUT"
+          ]
+        },
+        "nodeIDs": [
+          "HighPassFilter_Coral_b9e0792651fa",
+          "HighPassFilter_Coral_b9e0792651fa_freq-anchorNode",
+          "HighPassFilter_Coral_b9e0792651fa_Q-anchorNode",
+          "HighPassFilter_Coral_b9e0792651fa_freq cv +/--anchorNode",
+          "HighPassFilter_Coral_b9e0792651fa_Q cv +/--anchorNode",
+          "HighPassFilter_Coral_b9e0792651fa.freq",
+          "HighPassFilter_Coral_b9e0792651fa.Q",
+          "HighPassFilter_Coral_b9e0792651fa.IN",
+          "HighPassFilter_Coral_b9e0792651fa.OUT"
+        ],
+        "structure": "webAudioNodes"
+      },
+      "Euclid_Barbet_2f385ff2424d": {
+        "type": "Euclid",
+        "params": {
+          "stepCount": 8,
+          "activeSteps": 1,
+          "tempo": 120,
+          "tempo cv +/-": 10,
+          "ratchet": 0
+        },
+        "moduleSpec": {
+          "parameters": {
+            "stepCount": {
+              "min": 1,
+              "max": 16,
+              "default": 8,
+              "units": "steps",
+              "description": "Number of available steps in the sequence.",
+              "modulatable": false,
+              "kind": "paramAnchorNode",
+              "name": "stepCount",
+              "ui": "knob"
+            },
+            "activeSteps": {
+              "min": 1,
+              "max": 16,
+              "default": 1,
+              "units": "steps",
+              "description": "Number of active steps in the sequence.",
+              "modulatable": false,
+              "kind": "paramAnchorNode",
+              "name": "activeSteps",
+              "ui": "knob"
+            },
+            "tempo": {
+              "min": 20,
+              "max": 300,
+              "default": 120,
+              "units": "BPM",
+              "description": "Controls the speed of the sequence.",
+              "modulatable": true,
+              "modulationDescription": "Can be modulated for tempo variations.",
+              "kind": "paramAnchorNode",
+              "name": "tempo",
+              "ui": "knob"
+            },
+            "tempo cv +/-": {
+              "min": -100,
+              "max": 100,
+              "default": 10,
+              "units": "BPM",
+              "description": "The attenuverter of the tempo CV input",
+              "modulatable": false,
+              "modulationDescription": "The attenuverter of the tempo CV input",
+              "kind": "paramAnchorNode",
+              "name": "tempo cv +/-",
+              "ui": "knob"
+            },
+            "ratchet": {
+              "min": 0,
+              "max": 16,
+              "default": 0,
+              "units": "steps",
+              "description": "Number of ratchets per active step.",
+              "modulatable": false,
+              "kind": "paramAnchorNode",
+              "name": "ratchet",
+              "ui": "knob"
+            }
+          },
+          "paramNames": [
+            "stepCount",
+            "activeSteps",
+            "tempo",
+            "tempo cv +/-",
+            "ratchet"
+          ],
+          "cvNames": [
+            "tempo",
+            "pulseWidth"
+          ],
+          "cv": {
+            "tempo": {
+              "min": 20,
+              "max": 300,
+              "default": 120,
+              "units": "BPM",
+              "description": "Modulation input for tempo control.",
+              "modulatable": true,
+              "kind": "input",
+              "name": "tempo",
+              "ui": "knob"
+            },
+            "pulseWidth": {
+              "min": 0.05,
+              "max": 1,
+              "default": 0.5,
+              "units": "%",
+              "description": "Width of the gate relative to the tempo",
+              "modulatable": true,
+              "kind": "input",
+              "name": "pulseWidth",
+              "ui": "knob"
+            }
+          },
+          "inputs": [],
+          "outputs": [
+            "OUT"
+          ]
+        },
+        "nodeIDs": [
+          "Euclid_Barbet_2f385ff2424d",
+          "Euclid_Barbet_2f385ff2424d_stepCount-anchorNode",
+          "Euclid_Barbet_2f385ff2424d_activeSteps-anchorNode",
+          "Euclid_Barbet_2f385ff2424d_tempo-anchorNode",
+          "Euclid_Barbet_2f385ff2424d_tempo cv +/--anchorNode",
+          "Euclid_Barbet_2f385ff2424d_ratchet-anchorNode",
+          "Euclid_Barbet_2f385ff2424d.tempo",
+          "Euclid_Barbet_2f385ff2424d.pulseWidth",
+          "Euclid_Barbet_2f385ff2424d.OUT"
+        ],
+        "structure": "webAudioNodes"
+      },
+      "Pulses_Turkey_ebd83294a293": {
+        "type": "Pulses",
+        "params": {
+          "stepCount": 8,
+          "tempo": 120,
+          "tempo cv +/-": 10,
+          "pulseWidth": 0.5
+        },
+        "moduleSpec": {
+          "parameters": {
+            "stepCount": {
+              "min": 1,
+              "max": 16,
+              "default": 8,
+              "units": "steps",
+              "description": "Number of steps in the sequence.",
+              "modulatable": false,
+              "kind": "paramAnchorNode",
+              "name": "stepCount",
+              "ui": "knob"
+            },
+            "tempo": {
+              "min": 20,
+              "max": 300,
+              "default": 120,
+              "units": "BPM",
+              "description": "Controls the speed of the sequence.",
+              "modulatable": true,
+              "modulationDescription": "Can be modulated for tempo variations.",
+              "kind": "paramAnchorNode",
+              "name": "tempo",
+              "ui": "knob"
+            },
+            "tempo cv +/-": {
+              "min": -100,
+              "max": 100,
+              "default": 10,
+              "units": "BPM",
+              "description": "The attenuverter of the tempo CV input",
+              "modulatable": false,
+              "modulationDescription": "The attenuverter of the tempo CV input",
+              "kind": "paramAnchorNode",
+              "name": "tempo cv +/-",
+              "ui": "knob"
+            },
+            "pulseWidth": {
+              "min": 0.05,
+              "max": 1,
+              "default": 0.5,
+              "units": "%",
+              "description": "Width of the gate relative to the tempo",
+              "modulatable": true,
+              "modulationDescription": "Can be modulated for dynamic gate timing.",
+              "kind": "paramAnchorNode",
+              "name": "pulseWidth",
+              "ui": "knob"
+            }
+          },
+          "paramNames": [
+            "stepCount",
+            "tempo",
+            "tempo cv +/-",
+            "pulseWidth"
+          ],
+          "cvNames": [
+            "tempo",
+            "pulseWidth"
+          ],
+          "cv": {
+            "tempo": {
+              "min": 20,
+              "max": 300,
+              "default": 120,
+              "units": "BPM",
+              "description": "Modulation input for tempo control.",
+              "modulatable": true,
+              "kind": "input",
+              "name": "tempo",
+              "ui": "knob"
+            },
+            "pulseWidth": {
+              "min": 0.05,
+              "max": 1,
+              "default": 0.5,
+              "units": "%",
+              "description": "Width of the gate relative to the tempo",
+              "modulatable": true,
+              "kind": "input",
+              "name": "pulseWidth",
+              "ui": "knob"
+            }
+          },
+          "inputs": [],
+          "outputs": [
+            "OUT"
+          ]
+        },
+        "nodeIDs": [
+          "Pulses_Turkey_ebd83294a293",
+          "Pulses_Turkey_ebd83294a293_stepCount-anchorNode",
+          "Pulses_Turkey_ebd83294a293_tempo-anchorNode",
+          "Pulses_Turkey_ebd83294a293_tempo cv +/--anchorNode",
+          "Pulses_Turkey_ebd83294a293_pulseWidth-anchorNode",
+          "Pulses_Turkey_ebd83294a293.tempo",
+          "Pulses_Turkey_ebd83294a293.pulseWidth",
+          "Pulses_Turkey_ebd83294a293.OUT"
+        ],
+        "structure": "webAudioNodes"
+      },
+      "HighPassFilter_Pigeon_27520fe56d35": {
+        "type": "HighPassFilter",
+        "params": {
+          "freq": 1000,
+          "Q": 10,
+          "freq cv +/-": 1000,
+          "Q cv +/-": 1
+        },
+        "moduleSpec": {
+          "parameters": {
+            "freq": {
+              "min": 80,
+              "max": 10000,
+              "default": 1000,
+              "units": "Hz",
+              "description": "The cutoff frequency of the high-pass filter.",
+              "modulatable": true,
+              "modulationDescription": "Modulating the cutoff frequency allows for dynamic filtering effects.",
+              "kind": "paramAnchorNode",
+              "name": "freq",
+              "ui": "knob"
+            },
+            "Q": {
+              "min": 0.1,
+              "max": 20,
+              "default": 10,
+              "units": "resonance",
+              "description": "The resonance or quality factor of the filter.",
+              "modulatable": true,
+              "modulationDescription": "Higher Q values emphasize frequencies around the cutoff point.",
+              "kind": "paramAnchorNode",
+              "name": "Q",
+              "ui": "knob"
+            },
+            "freq cv +/-": {
+              "min": 80,
+              "max": 10000,
+              "default": 1000,
+              "units": "Hz",
+              "description": "Control Voltage input for dynamically modulating the cutoff frequency.",
+              "modulatable": true,
+              "modulationDescription": "Allows for sweeps or envelope-controlled filtering.",
+              "kind": "paramAnchorNode",
+              "name": "freq cv +/-",
+              "ui": "knob"
+            },
+            "Q cv +/-": {
+              "min": 0.1,
+              "max": 20,
+              "default": 1,
+              "units": "resonance",
+              "description": "Control Voltage input for dynamically modulating the resonance.",
+              "modulatable": true,
+              "modulationDescription": "Modulating the Q value changes how sharply the filter emphasizes the cutoff frequency.",
+              "kind": "paramAnchorNode",
+              "name": "Q cv +/-",
+              "ui": "knob"
+            }
+          },
+          "paramNames": [
+            "freq",
+            "Q",
+            "freq cv +/-",
+            "Q cv +/-"
+          ],
+          "cvNames": [
+            "freq",
+            "Q"
+          ],
+          "cv": {
+            "freq": {
+              "min": 80,
+              "max": 10000,
+              "default": 1000,
+              "units": "Hz",
+              "description": "Control Voltage input for dynamically modulating the cutoff frequency.",
+              "modulatable": true,
+              "modulationDescription": "Allows for sweeps or envelope-controlled filtering.",
+              "kind": "input",
+              "name": "freq",
+              "ui": "knob"
+            },
+            "Q": {
+              "min": 0.1,
+              "max": 20,
+              "default": 10,
+              "units": "resonance",
+              "description": "Control Voltage input for dynamically modulating the resonance.",
+              "modulatable": true,
+              "modulationDescription": "Modulating the Q value changes how sharply the filter emphasizes the cutoff frequency.",
+              "kind": "input",
+              "name": "Q",
+              "ui": "knob"
+            }
+          },
+          "inputs": [
+            "IN"
+          ],
+          "outputs": [
+            "OUT"
+          ]
+        },
+        "nodeIDs": [
+          "HighPassFilter_Pigeon_27520fe56d35",
+          "HighPassFilter_Pigeon_27520fe56d35_freq-anchorNode",
+          "HighPassFilter_Pigeon_27520fe56d35_Q-anchorNode",
+          "HighPassFilter_Pigeon_27520fe56d35_freq cv +/--anchorNode",
+          "HighPassFilter_Pigeon_27520fe56d35_Q cv +/--anchorNode",
+          "HighPassFilter_Pigeon_27520fe56d35.freq",
+          "HighPassFilter_Pigeon_27520fe56d35.Q",
+          "HighPassFilter_Pigeon_27520fe56d35.IN",
+          "HighPassFilter_Pigeon_27520fe56d35.OUT"
+        ],
+        "structure": "webAudioNodes"
+      }
+    },
+    "connections": []
+  }
+}

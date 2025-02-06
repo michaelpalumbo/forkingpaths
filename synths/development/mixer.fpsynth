@@ -1,0 +1,3417 @@
+{
+  "filename": "filename.fpsynth",
+  "visualGraph": {
+    "elements": {
+      "nodes": [
+        {
+          "data": {
+            "id": "AudioDestination_Buffalo_e28e710ba8e9",
+            "label": "AudioDestination Buffalo",
+            "kind": "module",
+            "rnboName": "AudioDestination",
+            "moduleSpec": {
+              "parameters": {},
+              "paramNames": [],
+              "cv": {},
+              "inputs": [
+                "IN"
+              ],
+              "outputs": []
+            },
+            "structure": "webAudioNodes",
+            "bgcolour": "#E6CCFF"
+          },
+          "position": {
+            "x": 735.5,
+            "y": 890
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ":parent"
+        },
+        {
+          "data": {
+            "id": "AudioDestination_Buffalo_e28e710ba8e9.IN",
+            "parent": "AudioDestination_Buffalo_e28e710ba8e9",
+            "label": "IN",
+            "kind": "input",
+            "bgcolour": "#FC9A4F",
+            "ghostCableShape": "rectangle",
+            "ghostCableColour": "#5C9AE3",
+            "description": null
+          },
+          "position": {
+            "x": 750,
+            "y": 890
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "Mixer_Owl_1f45772de2f2",
+            "label": "Mixer Owl",
+            "kind": "module",
+            "rnboName": "Mixer",
+            "moduleSpec": {
+              "parameters": {
+                "gainA": {
+                  "min": 0,
+                  "max": 1,
+                  "default": 0.5,
+                  "units": "linear",
+                  "description": "Gain level for input A.",
+                  "modulatable": true,
+                  "modulationDescription": "Allows modulation of input A's amplitude.",
+                  "kind": "paramAnchorNode",
+                  "name": "gainA",
+                  "ui": "knob"
+                },
+                "gainB": {
+                  "min": 0,
+                  "max": 1,
+                  "default": 0.5,
+                  "units": "linear",
+                  "description": "Gain level for input B.",
+                  "modulatable": true,
+                  "modulationDescription": "Allows modulation of input B's amplitude.",
+                  "kind": "paramAnchorNode",
+                  "name": "gainB",
+                  "ui": "knob"
+                }
+              },
+              "paramNames": [
+                "gainA",
+                "gainB"
+              ],
+              "cvNames": [],
+              "cv": {},
+              "inputs": [
+                "IN_A",
+                "IN_B"
+              ],
+              "outputs": [
+                "OUT"
+              ]
+            },
+            "structure": "webAudioNodes",
+            "bgcolour": "#E6CCFF"
+          },
+          "position": {
+            "x": 532.5,
+            "y": 732.5
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ":parent"
+        },
+        {
+          "data": {
+            "id": "Mixer_Owl_1f45772de2f2_gainA",
+            "parent": "Mixer_Owl_1f45772de2f2",
+            "label": "gainA",
+            "nameSpace": "Mixer_Owl_1f45772de2f2_gainA.gainA",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "Mixer_Owl_1f45772de2f2_gainA",
+            "ui": "knob",
+            "min": 0,
+            "max": 1,
+            "value": 0.5,
+            "menuOptions": "none",
+            "description": "Gain level for input A.",
+            "units": "linear"
+          },
+          "position": {
+            "x": 570,
+            "y": 610
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "Mixer_Owl_1f45772de2f2_gainB",
+            "parent": "Mixer_Owl_1f45772de2f2",
+            "label": "gainB",
+            "nameSpace": "Mixer_Owl_1f45772de2f2_gainB.gainB",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "Mixer_Owl_1f45772de2f2_gainB",
+            "ui": "knob",
+            "min": 0,
+            "max": 1,
+            "value": 0.5,
+            "menuOptions": "none",
+            "description": "Gain level for input B.",
+            "units": "linear"
+          },
+          "position": {
+            "x": 570,
+            "y": 670
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "Mixer_Owl_1f45772de2f2.IN_A",
+            "parent": "Mixer_Owl_1f45772de2f2",
+            "label": "IN_A",
+            "kind": "input",
+            "bgcolour": "#FC9A4F",
+            "ghostCableShape": "rectangle",
+            "ghostCableColour": "#5C9AE3",
+            "description": null
+          },
+          "position": {
+            "x": 550,
+            "y": 730
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "Mixer_Owl_1f45772de2f2.IN_B",
+            "parent": "Mixer_Owl_1f45772de2f2",
+            "label": "IN_B",
+            "kind": "input",
+            "bgcolour": "#FC9A4F",
+            "ghostCableShape": "rectangle",
+            "ghostCableColour": "#5C9AE3",
+            "description": null
+          },
+          "position": {
+            "x": 550,
+            "y": 790
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "Mixer_Owl_1f45772de2f2.OUT",
+            "parent": "Mixer_Owl_1f45772de2f2",
+            "label": "OUT",
+            "kind": "output",
+            "bgcolour": "#6FB1FC",
+            "ghostCableShape": "triangle",
+            "ghostCableColour": "#E68942",
+            "description": null
+          },
+          "position": {
+            "x": 550,
+            "y": 850
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "Euclid_Gelada_66e35216b7dc",
+            "label": "Euclid Gelada",
+            "kind": "module",
+            "rnboName": "Euclid",
+            "moduleSpec": {
+              "parameters": {
+                "stepCount": {
+                  "min": 1,
+                  "max": 16,
+                  "default": 8,
+                  "units": "steps",
+                  "description": "Number of available steps in the sequence.",
+                  "modulatable": false,
+                  "kind": "paramAnchorNode",
+                  "name": "stepCount",
+                  "ui": "knob"
+                },
+                "activeSteps": {
+                  "min": 1,
+                  "max": 16,
+                  "default": 1,
+                  "units": "steps",
+                  "description": "Number of active steps in the sequence.",
+                  "modulatable": false,
+                  "kind": "paramAnchorNode",
+                  "name": "activeSteps",
+                  "ui": "knob"
+                },
+                "tempo": {
+                  "min": 20,
+                  "max": 300,
+                  "default": 120,
+                  "units": "BPM",
+                  "description": "Controls the speed of the sequence.",
+                  "modulatable": true,
+                  "modulationDescription": "Can be modulated for tempo variations.",
+                  "kind": "paramAnchorNode",
+                  "name": "tempo",
+                  "ui": "knob"
+                },
+                "tempo cv +/-": {
+                  "min": -100,
+                  "max": 100,
+                  "default": 10,
+                  "units": "BPM",
+                  "description": "The attenuverter of the tempo CV input",
+                  "modulatable": false,
+                  "modulationDescription": "The attenuverter of the tempo CV input",
+                  "kind": "paramAnchorNode",
+                  "name": "tempo cv +/-",
+                  "ui": "knob"
+                },
+                "ratchet": {
+                  "min": 0,
+                  "max": 16,
+                  "default": 0,
+                  "units": "steps",
+                  "description": "Number of ratchets per active step.",
+                  "modulatable": false,
+                  "kind": "paramAnchorNode",
+                  "name": "ratchet",
+                  "ui": "knob"
+                }
+              },
+              "paramNames": [
+                "stepCount",
+                "activeSteps",
+                "tempo",
+                "tempo cv +/-",
+                "ratchet"
+              ],
+              "cvNames": [
+                "tempo",
+                "pulseWidth"
+              ],
+              "cv": {
+                "tempo": {
+                  "min": 20,
+                  "max": 300,
+                  "default": 120,
+                  "units": "BPM",
+                  "description": "Modulation input for tempo control.",
+                  "modulatable": true,
+                  "kind": "input",
+                  "name": "tempo",
+                  "ui": "knob"
+                },
+                "pulseWidth": {
+                  "min": 0.05,
+                  "max": 1,
+                  "default": 0.5,
+                  "units": "%",
+                  "description": "Width of the gate relative to the tempo",
+                  "modulatable": true,
+                  "kind": "input",
+                  "name": "pulseWidth",
+                  "ui": "knob"
+                }
+              },
+              "inputs": [],
+              "outputs": [
+                "OUT"
+              ]
+            },
+            "structure": "webAudioNodes",
+            "bgcolour": "#E6CCFF"
+          },
+          "position": {
+            "x": 126.5,
+            "y": 272.5
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ":parent"
+        },
+        {
+          "data": {
+            "id": "Euclid_Gelada_66e35216b7dc_stepCount",
+            "parent": "Euclid_Gelada_66e35216b7dc",
+            "label": "stepCount",
+            "nameSpace": "Euclid_Gelada_66e35216b7dc_stepCount.stepCount",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "Euclid_Gelada_66e35216b7dc_stepCount",
+            "ui": "knob",
+            "min": 1,
+            "max": 16,
+            "value": 8,
+            "menuOptions": "none",
+            "description": "Number of available steps in the sequence.",
+            "units": "steps"
+          },
+          "position": {
+            "x": 190,
+            "y": 70
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "Euclid_Gelada_66e35216b7dc_activeSteps",
+            "parent": "Euclid_Gelada_66e35216b7dc",
+            "label": "activeSteps",
+            "nameSpace": "Euclid_Gelada_66e35216b7dc_activeSteps.activeSteps",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "Euclid_Gelada_66e35216b7dc_activeSteps",
+            "ui": "knob",
+            "min": 1,
+            "max": 16,
+            "value": 1,
+            "menuOptions": "none",
+            "description": "Number of active steps in the sequence.",
+            "units": "steps"
+          },
+          "position": {
+            "x": 190,
+            "y": 130
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "Euclid_Gelada_66e35216b7dc_tempo",
+            "parent": "Euclid_Gelada_66e35216b7dc",
+            "label": "tempo",
+            "nameSpace": "Euclid_Gelada_66e35216b7dc_tempo.tempo",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "Euclid_Gelada_66e35216b7dc_tempo",
+            "ui": "knob",
+            "min": 20,
+            "max": 300,
+            "value": 120,
+            "menuOptions": "none",
+            "description": "Controls the speed of the sequence.",
+            "units": "BPM"
+          },
+          "position": {
+            "x": 190,
+            "y": 190
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "Euclid_Gelada_66e35216b7dc_tempo cv +/-",
+            "parent": "Euclid_Gelada_66e35216b7dc",
+            "label": "tempo cv +/-",
+            "nameSpace": "Euclid_Gelada_66e35216b7dc_tempo cv +/-.tempo cv +/-",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "Euclid_Gelada_66e35216b7dc_tempo cv +/-",
+            "ui": "knob",
+            "min": -100,
+            "max": 100,
+            "value": 10,
+            "menuOptions": "none",
+            "description": "The attenuverter of the tempo CV input",
+            "units": "BPM"
+          },
+          "position": {
+            "x": 190,
+            "y": 250
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "Euclid_Gelada_66e35216b7dc_ratchet",
+            "parent": "Euclid_Gelada_66e35216b7dc",
+            "label": "ratchet",
+            "nameSpace": "Euclid_Gelada_66e35216b7dc_ratchet.ratchet",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "Euclid_Gelada_66e35216b7dc_ratchet",
+            "ui": "knob",
+            "min": 0,
+            "max": 16,
+            "value": 0,
+            "menuOptions": "none",
+            "description": "Number of ratchets per active step.",
+            "units": "steps"
+          },
+          "position": {
+            "x": 190,
+            "y": 310
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "Euclid_Gelada_66e35216b7dc.tempo",
+            "parent": "Euclid_Gelada_66e35216b7dc",
+            "label": "tempo",
+            "kind": "input",
+            "bgcolour": "#FC9A4F",
+            "ghostCableShape": "rectangle",
+            "ghostCableColour": "#5C9AE3",
+            "description": null
+          },
+          "position": {
+            "x": 170,
+            "y": 350
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "Euclid_Gelada_66e35216b7dc.pulseWidth",
+            "parent": "Euclid_Gelada_66e35216b7dc",
+            "label": "pulseWidth",
+            "kind": "input",
+            "bgcolour": "#FC9A4F",
+            "ghostCableShape": "rectangle",
+            "ghostCableColour": "#5C9AE3",
+            "description": null
+          },
+          "position": {
+            "x": 170,
+            "y": 410
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "Euclid_Gelada_66e35216b7dc.OUT",
+            "parent": "Euclid_Gelada_66e35216b7dc",
+            "label": "OUT",
+            "kind": "output",
+            "bgcolour": "#6FB1FC",
+            "ghostCableShape": "triangle",
+            "ghostCableColour": "#E68942",
+            "description": null
+          },
+          "position": {
+            "x": 170,
+            "y": 470
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "HighPassFilter_Kultarr_d90cb1f1bd29",
+            "label": "HighPassFilter Kultarr",
+            "kind": "module",
+            "rnboName": "HighPassFilter",
+            "moduleSpec": {
+              "parameters": {
+                "freq": {
+                  "min": 80,
+                  "max": 10000,
+                  "default": 1000,
+                  "units": "Hz",
+                  "description": "The cutoff frequency of the high-pass filter.",
+                  "modulatable": true,
+                  "modulationDescription": "Modulating the cutoff frequency allows for dynamic filtering effects.",
+                  "kind": "paramAnchorNode",
+                  "name": "freq",
+                  "ui": "knob"
+                },
+                "Q": {
+                  "min": 0.1,
+                  "max": 20,
+                  "default": 10,
+                  "units": "resonance",
+                  "description": "The resonance or quality factor of the filter.",
+                  "modulatable": true,
+                  "modulationDescription": "Higher Q values emphasize frequencies around the cutoff point.",
+                  "kind": "paramAnchorNode",
+                  "name": "Q",
+                  "ui": "knob"
+                },
+                "freq cv +/-": {
+                  "min": 80,
+                  "max": 10000,
+                  "default": 1000,
+                  "units": "Hz",
+                  "description": "Control Voltage input for dynamically modulating the cutoff frequency.",
+                  "modulatable": true,
+                  "modulationDescription": "Allows for sweeps or envelope-controlled filtering.",
+                  "kind": "paramAnchorNode",
+                  "name": "freq cv +/-",
+                  "ui": "knob"
+                },
+                "Q cv +/-": {
+                  "min": 0.1,
+                  "max": 20,
+                  "default": 1,
+                  "units": "resonance",
+                  "description": "Control Voltage input for dynamically modulating the resonance.",
+                  "modulatable": true,
+                  "modulationDescription": "Modulating the Q value changes how sharply the filter emphasizes the cutoff frequency.",
+                  "kind": "paramAnchorNode",
+                  "name": "Q cv +/-",
+                  "ui": "knob"
+                }
+              },
+              "paramNames": [
+                "freq",
+                "Q",
+                "freq cv +/-",
+                "Q cv +/-"
+              ],
+              "cvNames": [
+                "freq",
+                "Q"
+              ],
+              "cv": {
+                "freq": {
+                  "min": 80,
+                  "max": 10000,
+                  "default": 1000,
+                  "units": "Hz",
+                  "description": "Control Voltage input for dynamically modulating the cutoff frequency.",
+                  "modulatable": true,
+                  "modulationDescription": "Allows for sweeps or envelope-controlled filtering.",
+                  "kind": "input",
+                  "name": "freq",
+                  "ui": "knob"
+                },
+                "Q": {
+                  "min": 0.1,
+                  "max": 20,
+                  "default": 10,
+                  "units": "resonance",
+                  "description": "Control Voltage input for dynamically modulating the resonance.",
+                  "modulatable": true,
+                  "modulationDescription": "Modulating the Q value changes how sharply the filter emphasizes the cutoff frequency.",
+                  "kind": "input",
+                  "name": "Q",
+                  "ui": "knob"
+                }
+              },
+              "inputs": [
+                "IN"
+              ],
+              "outputs": [
+                "OUT"
+              ]
+            },
+            "structure": "webAudioNodes",
+            "bgcolour": "#E6CCFF"
+          },
+          "position": {
+            "x": 353,
+            "y": 282.5
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ":parent"
+        },
+        {
+          "data": {
+            "id": "HighPassFilter_Kultarr_d90cb1f1bd29_freq",
+            "parent": "HighPassFilter_Kultarr_d90cb1f1bd29",
+            "label": "freq",
+            "nameSpace": "HighPassFilter_Kultarr_d90cb1f1bd29_freq.freq",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "HighPassFilter_Kultarr_d90cb1f1bd29_freq",
+            "ui": "knob",
+            "min": 80,
+            "max": 10000,
+            "value": 1000,
+            "menuOptions": "none",
+            "description": "The cutoff frequency of the high-pass filter.",
+            "units": "Hz"
+          },
+          "position": {
+            "x": 390,
+            "y": 70
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "HighPassFilter_Kultarr_d90cb1f1bd29_Q",
+            "parent": "HighPassFilter_Kultarr_d90cb1f1bd29",
+            "label": "Q",
+            "nameSpace": "HighPassFilter_Kultarr_d90cb1f1bd29_Q.Q",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "HighPassFilter_Kultarr_d90cb1f1bd29_Q",
+            "ui": "knob",
+            "min": 0.1,
+            "max": 20,
+            "value": 10,
+            "menuOptions": "none",
+            "description": "The resonance or quality factor of the filter.",
+            "units": "resonance"
+          },
+          "position": {
+            "x": 390,
+            "y": 130
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "HighPassFilter_Kultarr_d90cb1f1bd29_freq cv +/-",
+            "parent": "HighPassFilter_Kultarr_d90cb1f1bd29",
+            "label": "freq cv +/-",
+            "nameSpace": "HighPassFilter_Kultarr_d90cb1f1bd29_freq cv +/-.freq cv +/-",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "HighPassFilter_Kultarr_d90cb1f1bd29_freq cv +/-",
+            "ui": "knob",
+            "min": 80,
+            "max": 10000,
+            "value": 1000,
+            "menuOptions": "none",
+            "description": "Control Voltage input for dynamically modulating the cutoff frequency.",
+            "units": "Hz"
+          },
+          "position": {
+            "x": 390,
+            "y": 190
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "HighPassFilter_Kultarr_d90cb1f1bd29_Q cv +/-",
+            "parent": "HighPassFilter_Kultarr_d90cb1f1bd29",
+            "label": "Q cv +/-",
+            "nameSpace": "HighPassFilter_Kultarr_d90cb1f1bd29_Q cv +/-.Q cv +/-",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "HighPassFilter_Kultarr_d90cb1f1bd29_Q cv +/-",
+            "ui": "knob",
+            "min": 0.1,
+            "max": 20,
+            "value": 1,
+            "menuOptions": "none",
+            "description": "Control Voltage input for dynamically modulating the resonance.",
+            "units": "resonance"
+          },
+          "position": {
+            "x": 390,
+            "y": 250
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "HighPassFilter_Kultarr_d90cb1f1bd29.freq",
+            "parent": "HighPassFilter_Kultarr_d90cb1f1bd29",
+            "label": "freq",
+            "kind": "input",
+            "bgcolour": "#FC9A4F",
+            "ghostCableShape": "rectangle",
+            "ghostCableColour": "#5C9AE3",
+            "description": "Allows for sweeps or envelope-controlled filtering."
+          },
+          "position": {
+            "x": 370,
+            "y": 310
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "HighPassFilter_Kultarr_d90cb1f1bd29.Q",
+            "parent": "HighPassFilter_Kultarr_d90cb1f1bd29",
+            "label": "Q",
+            "kind": "input",
+            "bgcolour": "#FC9A4F",
+            "ghostCableShape": "rectangle",
+            "ghostCableColour": "#5C9AE3",
+            "description": "Modulating the Q value changes how sharply the filter emphasizes the cutoff frequency."
+          },
+          "position": {
+            "x": 370,
+            "y": 370
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "HighPassFilter_Kultarr_d90cb1f1bd29.IN",
+            "parent": "HighPassFilter_Kultarr_d90cb1f1bd29",
+            "label": "IN",
+            "kind": "input",
+            "bgcolour": "#FC9A4F",
+            "ghostCableShape": "rectangle",
+            "ghostCableColour": "#5C9AE3",
+            "description": null
+          },
+          "position": {
+            "x": 370,
+            "y": 430
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "HighPassFilter_Kultarr_d90cb1f1bd29.OUT",
+            "parent": "HighPassFilter_Kultarr_d90cb1f1bd29",
+            "label": "OUT",
+            "kind": "output",
+            "bgcolour": "#6FB1FC",
+            "ghostCableShape": "triangle",
+            "ghostCableColour": "#E68942",
+            "description": null
+          },
+          "position": {
+            "x": 370,
+            "y": 490
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "LFO_Bear_61624c379b67",
+            "label": "LFO Bear",
+            "kind": "module",
+            "rnboName": "LFO",
+            "moduleSpec": {
+              "parameters": {
+                "frequency": {
+                  "min": 0.01,
+                  "max": 10,
+                  "default": 1,
+                  "units": "Hz",
+                  "description": "The frequency of the low frequency oscillator.",
+                  "modulatable": true,
+                  "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects.",
+                  "kind": "paramAnchorNode",
+                  "name": "frequency",
+                  "ui": "knob"
+                },
+                "type": {
+                  "values": [
+                    "sine",
+                    "square",
+                    "sawtooth",
+                    "triangle",
+                    "custom"
+                  ],
+                  "default": "sine",
+                  "description": "The waveform shape of the oscillator.",
+                  "kind": "paramAnchorNode",
+                  "name": "type",
+                  "ui": "menu"
+                },
+                "freq cv +/-": {
+                  "min": -20,
+                  "max": 20,
+                  "default": 10,
+                  "units": "Hz",
+                  "description": "The attenuverter of the frequency CV input",
+                  "modulatable": false,
+                  "modulationDescription": "The attenuverter of the frequency CV input",
+                  "kind": "paramAnchorNode",
+                  "name": "freq cv +/-",
+                  "ui": "knob"
+                }
+              },
+              "paramNames": [
+                "frequency",
+                "freq cv +/-",
+                "type"
+              ],
+              "cvNames": [
+                "frequency"
+              ],
+              "cv": {
+                "frequency": {
+                  "min": 0.01,
+                  "max": 10,
+                  "default": 5,
+                  "units": "Hz",
+                  "description": "The frequency of the oscillator.",
+                  "modulatable": true,
+                  "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects.",
+                  "kind": "input",
+                  "name": "frequency",
+                  "ui": "knob"
+                }
+              },
+              "inputs": [],
+              "outputs": [
+                "OUT"
+              ]
+            },
+            "structure": "webAudioNodes",
+            "bgcolour": "#CCCCCC"
+          },
+          "position": {
+            "x": 852,
+            "y": 222.5
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ":parent"
+        },
+        {
+          "data": {
+            "id": "LFO_Bear_61624c379b67_frequency",
+            "parent": "LFO_Bear_61624c379b67",
+            "label": "frequency",
+            "nameSpace": "LFO_Bear_61624c379b67_frequency.frequency",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "LFO_Bear_61624c379b67_frequency",
+            "ui": "knob",
+            "min": 0.01,
+            "max": 10,
+            "value": 1,
+            "menuOptions": "none",
+            "description": "The frequency of the low frequency oscillator.",
+            "units": "Hz"
+          },
+          "position": {
+            "x": 910,
+            "y": 110
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "LFO_Bear_61624c379b67_freq cv +/-",
+            "parent": "LFO_Bear_61624c379b67",
+            "label": "freq cv +/-",
+            "nameSpace": "LFO_Bear_61624c379b67_freq cv +/-.freq cv +/-",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "LFO_Bear_61624c379b67_freq cv +/-",
+            "ui": "knob",
+            "min": -20,
+            "max": 20,
+            "value": 10,
+            "menuOptions": "none",
+            "description": "The attenuverter of the frequency CV input",
+            "units": "Hz"
+          },
+          "position": {
+            "x": 910,
+            "y": 170
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "LFO_Bear_61624c379b67_type",
+            "parent": "LFO_Bear_61624c379b67",
+            "label": "type",
+            "nameSpace": "LFO_Bear_61624c379b67_type.type",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "LFO_Bear_61624c379b67_type",
+            "ui": "menu",
+            "min": 0,
+            "max": 1,
+            "value": "sine",
+            "menuOptions": [
+              "sine",
+              "square",
+              "sawtooth",
+              "triangle",
+              "custom"
+            ],
+            "description": "The waveform shape of the oscillator.",
+            "units": "unspecified"
+          },
+          "position": {
+            "x": 910,
+            "y": 230
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "LFO_Bear_61624c379b67.frequency",
+            "parent": "LFO_Bear_61624c379b67",
+            "label": "frequency",
+            "kind": "input",
+            "bgcolour": "#FC9A4F",
+            "ghostCableShape": "rectangle",
+            "ghostCableColour": "#5C9AE3",
+            "description": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects."
+          },
+          "position": {
+            "x": 890,
+            "y": 270
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "LFO_Bear_61624c379b67.OUT",
+            "parent": "LFO_Bear_61624c379b67",
+            "label": "OUT",
+            "kind": "output",
+            "bgcolour": "#6FB1FC",
+            "ghostCableShape": "triangle",
+            "ghostCableColour": "#E68942",
+            "description": null
+          },
+          "position": {
+            "x": 890,
+            "y": 330
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "Oscillator_Turtles_bff520c86684",
+            "label": "Oscillator Turtles",
+            "kind": "module",
+            "rnboName": "Oscillator",
+            "moduleSpec": {
+              "parameters": {
+                "frequency": {
+                  "min": 110,
+                  "max": 3000,
+                  "default": 440,
+                  "units": "Hz",
+                  "description": "The frequency of the oscillator.",
+                  "modulatable": true,
+                  "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects.",
+                  "kind": "paramAnchorNode",
+                  "name": "frequency",
+                  "ui": "knob"
+                },
+                "type": {
+                  "values": [
+                    "sine",
+                    "square",
+                    "sawtooth",
+                    "triangle",
+                    "custom"
+                  ],
+                  "default": "sine",
+                  "description": "The waveform shape of the oscillator.",
+                  "kind": "paramAnchorNode",
+                  "name": "type",
+                  "ui": "menu"
+                },
+                "freq cv +/-": {
+                  "min": -1000,
+                  "max": 1000,
+                  "default": 100,
+                  "units": "Hz",
+                  "description": "The attenuverter of the frequency CV input",
+                  "modulatable": false,
+                  "modulationDescription": "The attenuverter of the frequency CV input",
+                  "kind": "paramAnchorNode",
+                  "name": "freq cv +/-",
+                  "ui": "knob"
+                }
+              },
+              "paramNames": [
+                "frequency",
+                "freq cv +/-",
+                "type"
+              ],
+              "cvNames": [
+                "frequency"
+              ],
+              "cv": {
+                "frequency": {
+                  "min": 110,
+                  "max": 9000,
+                  "default": 440,
+                  "units": "Hz",
+                  "description": "The frequency of the oscillator.",
+                  "modulatable": true,
+                  "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects.",
+                  "kind": "input",
+                  "name": "frequency",
+                  "ui": "knob"
+                }
+              },
+              "inputs": [],
+              "outputs": [
+                "OUT"
+              ]
+            },
+            "structure": "webAudioNodes",
+            "bgcolour": "#CCCCCC"
+          },
+          "position": {
+            "x": 612,
+            "y": 212.5
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ":parent"
+        },
+        {
+          "data": {
+            "id": "Oscillator_Turtles_bff520c86684_frequency",
+            "parent": "Oscillator_Turtles_bff520c86684",
+            "label": "frequency",
+            "nameSpace": "Oscillator_Turtles_bff520c86684_frequency.frequency",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "Oscillator_Turtles_bff520c86684_frequency",
+            "ui": "knob",
+            "min": 110,
+            "max": 3000,
+            "value": 440,
+            "menuOptions": "none",
+            "description": "The frequency of the oscillator.",
+            "units": "Hz"
+          },
+          "position": {
+            "x": 670,
+            "y": 90
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "Oscillator_Turtles_bff520c86684_freq cv +/-",
+            "parent": "Oscillator_Turtles_bff520c86684",
+            "label": "freq cv +/-",
+            "nameSpace": "Oscillator_Turtles_bff520c86684_freq cv +/-.freq cv +/-",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "Oscillator_Turtles_bff520c86684_freq cv +/-",
+            "ui": "knob",
+            "min": -1000,
+            "max": 1000,
+            "value": 100,
+            "menuOptions": "none",
+            "description": "The attenuverter of the frequency CV input",
+            "units": "Hz"
+          },
+          "position": {
+            "x": 670,
+            "y": 150
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "Oscillator_Turtles_bff520c86684_type",
+            "parent": "Oscillator_Turtles_bff520c86684",
+            "label": "type",
+            "nameSpace": "Oscillator_Turtles_bff520c86684_type.type",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "Oscillator_Turtles_bff520c86684_type",
+            "ui": "menu",
+            "min": 0,
+            "max": 1,
+            "value": "sine",
+            "menuOptions": [
+              "sine",
+              "square",
+              "sawtooth",
+              "triangle",
+              "custom"
+            ],
+            "description": "The waveform shape of the oscillator.",
+            "units": "unspecified"
+          },
+          "position": {
+            "x": 670,
+            "y": 210
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "Oscillator_Turtles_bff520c86684.frequency",
+            "parent": "Oscillator_Turtles_bff520c86684",
+            "label": "frequency",
+            "kind": "input",
+            "bgcolour": "#FC9A4F",
+            "ghostCableShape": "rectangle",
+            "ghostCableColour": "#5C9AE3",
+            "description": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects."
+          },
+          "position": {
+            "x": 650,
+            "y": 270
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "Oscillator_Turtles_bff520c86684.OUT",
+            "parent": "Oscillator_Turtles_bff520c86684",
+            "label": "OUT",
+            "kind": "output",
+            "bgcolour": "#6FB1FC",
+            "ghostCableShape": "triangle",
+            "ghostCableColour": "#E68942",
+            "description": null
+          },
+          "position": {
+            "x": 650,
+            "y": 330
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "Pulses_Goose_0d0dceafafbc",
+            "label": "Pulses Goose",
+            "kind": "module",
+            "rnboName": "Pulses",
+            "moduleSpec": {
+              "parameters": {
+                "stepCount": {
+                  "min": 1,
+                  "max": 16,
+                  "default": 8,
+                  "units": "steps",
+                  "description": "Number of steps in the sequence.",
+                  "modulatable": false,
+                  "kind": "paramAnchorNode",
+                  "name": "stepCount",
+                  "ui": "knob"
+                },
+                "tempo": {
+                  "min": 20,
+                  "max": 300,
+                  "default": 120,
+                  "units": "BPM",
+                  "description": "Controls the speed of the sequence.",
+                  "modulatable": true,
+                  "modulationDescription": "Can be modulated for tempo variations.",
+                  "kind": "paramAnchorNode",
+                  "name": "tempo",
+                  "ui": "knob"
+                },
+                "tempo cv +/-": {
+                  "min": -100,
+                  "max": 100,
+                  "default": 10,
+                  "units": "BPM",
+                  "description": "The attenuverter of the tempo CV input",
+                  "modulatable": false,
+                  "modulationDescription": "The attenuverter of the tempo CV input",
+                  "kind": "paramAnchorNode",
+                  "name": "tempo cv +/-",
+                  "ui": "knob"
+                },
+                "pulseWidth": {
+                  "min": 0.05,
+                  "max": 1,
+                  "default": 0.5,
+                  "units": "%",
+                  "description": "Width of the gate relative to the tempo",
+                  "modulatable": true,
+                  "modulationDescription": "Can be modulated for dynamic gate timing.",
+                  "kind": "paramAnchorNode",
+                  "name": "pulseWidth",
+                  "ui": "knob"
+                }
+              },
+              "paramNames": [
+                "stepCount",
+                "tempo",
+                "tempo cv +/-",
+                "pulseWidth"
+              ],
+              "cvNames": [
+                "tempo",
+                "pulseWidth"
+              ],
+              "cv": {
+                "tempo": {
+                  "min": 20,
+                  "max": 300,
+                  "default": 120,
+                  "units": "BPM",
+                  "description": "Modulation input for tempo control.",
+                  "modulatable": true,
+                  "kind": "input",
+                  "name": "tempo",
+                  "ui": "knob"
+                },
+                "pulseWidth": {
+                  "min": 0.05,
+                  "max": 1,
+                  "default": 0.5,
+                  "units": "%",
+                  "description": "Width of the gate relative to the tempo",
+                  "modulatable": true,
+                  "kind": "input",
+                  "name": "pulseWidth",
+                  "ui": "knob"
+                }
+              },
+              "inputs": [],
+              "outputs": [
+                "OUT"
+              ]
+            },
+            "structure": "webAudioNodes",
+            "bgcolour": "#E6CCFF"
+          },
+          "position": {
+            "x": 126.5,
+            "y": 772.5
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ":parent"
+        },
+        {
+          "data": {
+            "id": "Pulses_Goose_0d0dceafafbc_stepCount",
+            "parent": "Pulses_Goose_0d0dceafafbc",
+            "label": "stepCount",
+            "nameSpace": "Pulses_Goose_0d0dceafafbc_stepCount.stepCount",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "Pulses_Goose_0d0dceafafbc_stepCount",
+            "ui": "knob",
+            "min": 1,
+            "max": 16,
+            "value": 8,
+            "menuOptions": "none",
+            "description": "Number of steps in the sequence.",
+            "units": "steps"
+          },
+          "position": {
+            "x": 190,
+            "y": 590
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "Pulses_Goose_0d0dceafafbc_tempo",
+            "parent": "Pulses_Goose_0d0dceafafbc",
+            "label": "tempo",
+            "nameSpace": "Pulses_Goose_0d0dceafafbc_tempo.tempo",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "Pulses_Goose_0d0dceafafbc_tempo",
+            "ui": "knob",
+            "min": 20,
+            "max": 300,
+            "value": 120,
+            "menuOptions": "none",
+            "description": "Controls the speed of the sequence.",
+            "units": "BPM"
+          },
+          "position": {
+            "x": 190,
+            "y": 650
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "Pulses_Goose_0d0dceafafbc_tempo cv +/-",
+            "parent": "Pulses_Goose_0d0dceafafbc",
+            "label": "tempo cv +/-",
+            "nameSpace": "Pulses_Goose_0d0dceafafbc_tempo cv +/-.tempo cv +/-",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "Pulses_Goose_0d0dceafafbc_tempo cv +/-",
+            "ui": "knob",
+            "min": -100,
+            "max": 100,
+            "value": 10,
+            "menuOptions": "none",
+            "description": "The attenuverter of the tempo CV input",
+            "units": "BPM"
+          },
+          "position": {
+            "x": 190,
+            "y": 710
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "Pulses_Goose_0d0dceafafbc_pulseWidth",
+            "parent": "Pulses_Goose_0d0dceafafbc",
+            "label": "pulseWidth",
+            "nameSpace": "Pulses_Goose_0d0dceafafbc_pulseWidth.pulseWidth",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "Pulses_Goose_0d0dceafafbc_pulseWidth",
+            "ui": "knob",
+            "min": 0.05,
+            "max": 1,
+            "value": 0.5,
+            "menuOptions": "none",
+            "description": "Width of the gate relative to the tempo",
+            "units": "%"
+          },
+          "position": {
+            "x": 190,
+            "y": 770
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "Pulses_Goose_0d0dceafafbc.tempo",
+            "parent": "Pulses_Goose_0d0dceafafbc",
+            "label": "tempo",
+            "kind": "input",
+            "bgcolour": "#FC9A4F",
+            "ghostCableShape": "rectangle",
+            "ghostCableColour": "#5C9AE3",
+            "description": null
+          },
+          "position": {
+            "x": 170,
+            "y": 830
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "Pulses_Goose_0d0dceafafbc.pulseWidth",
+            "parent": "Pulses_Goose_0d0dceafafbc",
+            "label": "pulseWidth",
+            "kind": "input",
+            "bgcolour": "#FC9A4F",
+            "ghostCableShape": "rectangle",
+            "ghostCableColour": "#5C9AE3",
+            "description": null
+          },
+          "position": {
+            "x": 170,
+            "y": 890
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "Pulses_Goose_0d0dceafafbc.OUT",
+            "parent": "Pulses_Goose_0d0dceafafbc",
+            "label": "OUT",
+            "kind": "output",
+            "bgcolour": "#6FB1FC",
+            "ghostCableShape": "triangle",
+            "ghostCableColour": "#E68942",
+            "description": null
+          },
+          "position": {
+            "x": 170,
+            "y": 950
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "HighPassFilter_Penguin_a56910e7dd8e",
+            "label": "HighPassFilter Penguin",
+            "kind": "module",
+            "rnboName": "HighPassFilter",
+            "moduleSpec": {
+              "parameters": {
+                "freq": {
+                  "min": 80,
+                  "max": 10000,
+                  "default": 1000,
+                  "units": "Hz",
+                  "description": "The cutoff frequency of the high-pass filter.",
+                  "modulatable": true,
+                  "modulationDescription": "Modulating the cutoff frequency allows for dynamic filtering effects.",
+                  "kind": "paramAnchorNode",
+                  "name": "freq",
+                  "ui": "knob"
+                },
+                "Q": {
+                  "min": 0.1,
+                  "max": 20,
+                  "default": 10,
+                  "units": "resonance",
+                  "description": "The resonance or quality factor of the filter.",
+                  "modulatable": true,
+                  "modulationDescription": "Higher Q values emphasize frequencies around the cutoff point.",
+                  "kind": "paramAnchorNode",
+                  "name": "Q",
+                  "ui": "knob"
+                },
+                "freq cv +/-": {
+                  "min": 80,
+                  "max": 10000,
+                  "default": 1000,
+                  "units": "Hz",
+                  "description": "Control Voltage input for dynamically modulating the cutoff frequency.",
+                  "modulatable": true,
+                  "modulationDescription": "Allows for sweeps or envelope-controlled filtering.",
+                  "kind": "paramAnchorNode",
+                  "name": "freq cv +/-",
+                  "ui": "knob"
+                },
+                "Q cv +/-": {
+                  "min": 0.1,
+                  "max": 20,
+                  "default": 1,
+                  "units": "resonance",
+                  "description": "Control Voltage input for dynamically modulating the resonance.",
+                  "modulatable": true,
+                  "modulationDescription": "Modulating the Q value changes how sharply the filter emphasizes the cutoff frequency.",
+                  "kind": "paramAnchorNode",
+                  "name": "Q cv +/-",
+                  "ui": "knob"
+                }
+              },
+              "paramNames": [
+                "freq",
+                "Q",
+                "freq cv +/-",
+                "Q cv +/-"
+              ],
+              "cvNames": [
+                "freq",
+                "Q"
+              ],
+              "cv": {
+                "freq": {
+                  "min": 80,
+                  "max": 10000,
+                  "default": 1000,
+                  "units": "Hz",
+                  "description": "Control Voltage input for dynamically modulating the cutoff frequency.",
+                  "modulatable": true,
+                  "modulationDescription": "Allows for sweeps or envelope-controlled filtering.",
+                  "kind": "input",
+                  "name": "freq",
+                  "ui": "knob"
+                },
+                "Q": {
+                  "min": 0.1,
+                  "max": 20,
+                  "default": 10,
+                  "units": "resonance",
+                  "description": "Control Voltage input for dynamically modulating the resonance.",
+                  "modulatable": true,
+                  "modulationDescription": "Modulating the Q value changes how sharply the filter emphasizes the cutoff frequency.",
+                  "kind": "input",
+                  "name": "Q",
+                  "ui": "knob"
+                }
+              },
+              "inputs": [
+                "IN"
+              ],
+              "outputs": [
+                "OUT"
+              ]
+            },
+            "structure": "webAudioNodes",
+            "bgcolour": "#E6CCFF"
+          },
+          "position": {
+            "x": 353,
+            "y": 802.5
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ":parent"
+        },
+        {
+          "data": {
+            "id": "HighPassFilter_Penguin_a56910e7dd8e_freq",
+            "parent": "HighPassFilter_Penguin_a56910e7dd8e",
+            "label": "freq",
+            "nameSpace": "HighPassFilter_Penguin_a56910e7dd8e_freq.freq",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "HighPassFilter_Penguin_a56910e7dd8e_freq",
+            "ui": "knob",
+            "min": 80,
+            "max": 10000,
+            "value": 1000,
+            "menuOptions": "none",
+            "description": "The cutoff frequency of the high-pass filter.",
+            "units": "Hz"
+          },
+          "position": {
+            "x": 390,
+            "y": 590
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "HighPassFilter_Penguin_a56910e7dd8e_Q",
+            "parent": "HighPassFilter_Penguin_a56910e7dd8e",
+            "label": "Q",
+            "nameSpace": "HighPassFilter_Penguin_a56910e7dd8e_Q.Q",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "HighPassFilter_Penguin_a56910e7dd8e_Q",
+            "ui": "knob",
+            "min": 0.1,
+            "max": 20,
+            "value": 10,
+            "menuOptions": "none",
+            "description": "The resonance or quality factor of the filter.",
+            "units": "resonance"
+          },
+          "position": {
+            "x": 390,
+            "y": 650
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "HighPassFilter_Penguin_a56910e7dd8e_freq cv +/-",
+            "parent": "HighPassFilter_Penguin_a56910e7dd8e",
+            "label": "freq cv +/-",
+            "nameSpace": "HighPassFilter_Penguin_a56910e7dd8e_freq cv +/-.freq cv +/-",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "HighPassFilter_Penguin_a56910e7dd8e_freq cv +/-",
+            "ui": "knob",
+            "min": 80,
+            "max": 10000,
+            "value": 1000,
+            "menuOptions": "none",
+            "description": "Control Voltage input for dynamically modulating the cutoff frequency.",
+            "units": "Hz"
+          },
+          "position": {
+            "x": 390,
+            "y": 710
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "HighPassFilter_Penguin_a56910e7dd8e_Q cv +/-",
+            "parent": "HighPassFilter_Penguin_a56910e7dd8e",
+            "label": "Q cv +/-",
+            "nameSpace": "HighPassFilter_Penguin_a56910e7dd8e_Q cv +/-.Q cv +/-",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "HighPassFilter_Penguin_a56910e7dd8e_Q cv +/-",
+            "ui": "knob",
+            "min": 0.1,
+            "max": 20,
+            "value": 1,
+            "menuOptions": "none",
+            "description": "Control Voltage input for dynamically modulating the resonance.",
+            "units": "resonance"
+          },
+          "position": {
+            "x": 390,
+            "y": 770
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "HighPassFilter_Penguin_a56910e7dd8e.freq",
+            "parent": "HighPassFilter_Penguin_a56910e7dd8e",
+            "label": "freq",
+            "kind": "input",
+            "bgcolour": "#FC9A4F",
+            "ghostCableShape": "rectangle",
+            "ghostCableColour": "#5C9AE3",
+            "description": "Allows for sweeps or envelope-controlled filtering."
+          },
+          "position": {
+            "x": 370,
+            "y": 830
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "HighPassFilter_Penguin_a56910e7dd8e.Q",
+            "parent": "HighPassFilter_Penguin_a56910e7dd8e",
+            "label": "Q",
+            "kind": "input",
+            "bgcolour": "#FC9A4F",
+            "ghostCableShape": "rectangle",
+            "ghostCableColour": "#5C9AE3",
+            "description": "Modulating the Q value changes how sharply the filter emphasizes the cutoff frequency."
+          },
+          "position": {
+            "x": 370,
+            "y": 890
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "HighPassFilter_Penguin_a56910e7dd8e.IN",
+            "parent": "HighPassFilter_Penguin_a56910e7dd8e",
+            "label": "IN",
+            "kind": "input",
+            "bgcolour": "#FC9A4F",
+            "ghostCableShape": "rectangle",
+            "ghostCableColour": "#5C9AE3",
+            "description": null
+          },
+          "position": {
+            "x": 370,
+            "y": 950
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "HighPassFilter_Penguin_a56910e7dd8e.OUT",
+            "parent": "HighPassFilter_Penguin_a56910e7dd8e",
+            "label": "OUT",
+            "kind": "output",
+            "bgcolour": "#6FB1FC",
+            "ghostCableShape": "triangle",
+            "ghostCableColour": "#E68942",
+            "description": null
+          },
+          "position": {
+            "x": 370,
+            "y": 1010
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "LFO_Starling_11a33fbfc19b",
+            "label": "LFO Starling",
+            "kind": "module",
+            "rnboName": "LFO",
+            "moduleSpec": {
+              "parameters": {
+                "frequency": {
+                  "min": 0.01,
+                  "max": 10,
+                  "default": 1,
+                  "units": "Hz",
+                  "description": "The frequency of the low frequency oscillator.",
+                  "modulatable": true,
+                  "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects.",
+                  "kind": "paramAnchorNode",
+                  "name": "frequency",
+                  "ui": "knob"
+                },
+                "type": {
+                  "values": [
+                    "sine",
+                    "square",
+                    "sawtooth",
+                    "triangle",
+                    "custom"
+                  ],
+                  "default": "sine",
+                  "description": "The waveform shape of the oscillator.",
+                  "kind": "paramAnchorNode",
+                  "name": "type",
+                  "ui": "menu"
+                },
+                "freq cv +/-": {
+                  "min": -20,
+                  "max": 20,
+                  "default": 10,
+                  "units": "Hz",
+                  "description": "The attenuverter of the frequency CV input",
+                  "modulatable": false,
+                  "modulationDescription": "The attenuverter of the frequency CV input",
+                  "kind": "paramAnchorNode",
+                  "name": "freq cv +/-",
+                  "ui": "knob"
+                }
+              },
+              "paramNames": [
+                "frequency",
+                "freq cv +/-",
+                "type"
+              ],
+              "cvNames": [
+                "frequency"
+              ],
+              "cv": {
+                "frequency": {
+                  "min": 0.01,
+                  "max": 10,
+                  "default": 5,
+                  "units": "Hz",
+                  "description": "The frequency of the oscillator.",
+                  "modulatable": true,
+                  "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects.",
+                  "kind": "input",
+                  "name": "frequency",
+                  "ui": "knob"
+                }
+              },
+              "inputs": [],
+              "outputs": [
+                "OUT"
+              ]
+            },
+            "structure": "webAudioNodes",
+            "bgcolour": "#CCCCCC"
+          },
+          "position": {
+            "x": 732,
+            "y": 562.5
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ":parent"
+        },
+        {
+          "data": {
+            "id": "LFO_Starling_11a33fbfc19b_frequency",
+            "parent": "LFO_Starling_11a33fbfc19b",
+            "label": "frequency",
+            "nameSpace": "LFO_Starling_11a33fbfc19b_frequency.frequency",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "LFO_Starling_11a33fbfc19b_frequency",
+            "ui": "knob",
+            "min": 0.01,
+            "max": 10,
+            "value": 1,
+            "menuOptions": "none",
+            "description": "The frequency of the low frequency oscillator.",
+            "units": "Hz"
+          },
+          "position": {
+            "x": 790,
+            "y": 450
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "LFO_Starling_11a33fbfc19b_freq cv +/-",
+            "parent": "LFO_Starling_11a33fbfc19b",
+            "label": "freq cv +/-",
+            "nameSpace": "LFO_Starling_11a33fbfc19b_freq cv +/-.freq cv +/-",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "LFO_Starling_11a33fbfc19b_freq cv +/-",
+            "ui": "knob",
+            "min": -20,
+            "max": 20,
+            "value": 10,
+            "menuOptions": "none",
+            "description": "The attenuverter of the frequency CV input",
+            "units": "Hz"
+          },
+          "position": {
+            "x": 790,
+            "y": 510
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "LFO_Starling_11a33fbfc19b_type",
+            "parent": "LFO_Starling_11a33fbfc19b",
+            "label": "type",
+            "nameSpace": "LFO_Starling_11a33fbfc19b_type.type",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "LFO_Starling_11a33fbfc19b_type",
+            "ui": "menu",
+            "min": 0,
+            "max": 1,
+            "value": "sine",
+            "menuOptions": [
+              "sine",
+              "square",
+              "sawtooth",
+              "triangle",
+              "custom"
+            ],
+            "description": "The waveform shape of the oscillator.",
+            "units": "unspecified"
+          },
+          "position": {
+            "x": 790,
+            "y": 570
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "LFO_Starling_11a33fbfc19b.frequency",
+            "parent": "LFO_Starling_11a33fbfc19b",
+            "label": "frequency",
+            "kind": "input",
+            "bgcolour": "#FC9A4F",
+            "ghostCableShape": "rectangle",
+            "ghostCableColour": "#5C9AE3",
+            "description": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects."
+          },
+          "position": {
+            "x": 770,
+            "y": 610
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "LFO_Starling_11a33fbfc19b.OUT",
+            "parent": "LFO_Starling_11a33fbfc19b",
+            "label": "OUT",
+            "kind": "output",
+            "bgcolour": "#6FB1FC",
+            "ghostCableShape": "triangle",
+            "ghostCableColour": "#E68942",
+            "description": null
+          },
+          "position": {
+            "x": 770,
+            "y": 670
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        }
+      ]
+    },
+    "style": [
+      {
+        "selector": "node",
+        "style": {
+          "background-color": "data(bgcolour)",
+          "label": "data(label)",
+          "font-size": "18px",
+          "width": "30px",
+          "height": "30px",
+          "color": "rgb(0,0,0)",
+          "text-valign": "center",
+          "text-halign": "left",
+          "text-margin-x": "-10px"
+        }
+      },
+      {
+        "selector": "node[bgcolour]",
+        "style": {
+          "background-color": "data(bgcolour)"
+        }
+      },
+      {
+        "selector": "node[kind = \"input\"]",
+        "style": {
+          "shape": "triangle"
+        }
+      },
+      {
+        "selector": "node[kind = \"output\"]",
+        "style": {
+          "shape": "rectangle"
+        }
+      },
+      {
+        "selector": ":parent",
+        "style": {
+          "background-opacity": "0.5",
+          "background-color": "data(bgcolour)",
+          "border-color": "rgb(245,122,65)",
+          "border-width": "1px",
+          "label": "data(label)",
+          "text-valign": "top",
+          "text-halign": "center",
+          "color": "rgb(255,0,0)",
+          "font-size": "20px",
+          "text-margin-y": "-10px"
+        }
+      },
+      {
+        "selector": "node.highlighted",
+        "style": {
+          "border-color": "rgb(34,139,34)",
+          "border-width": "10px"
+        }
+      },
+      {
+        "selector": "node.ghostNode",
+        "style": {
+          "background-color": "rgb(255,255,255)",
+          "opacity": "0.8",
+          "width": "27px",
+          "height": "27px",
+          "border-width": "0px",
+          "label": ""
+        }
+      },
+      {
+        "selector": "edge",
+        "style": {
+          "width": "6px",
+          "line-color": "rgb(204,204,204)",
+          "target-arrow-shape": "triangle",
+          "source-arrow-shape": "triangle",
+          "source-arrow-color": "rgb(0,0,0)",
+          "target-arrow-color": "rgb(0,0,0)",
+          "target-arrow-width": "20px",
+          "source-arrow-width": "50px",
+          "curve-style": "unbundled-bezier",
+          "control-point-weights": "0.25 0.75",
+          "control-point-distances": "20px -20px"
+        }
+      },
+      {
+        "selector": "edge.highlighted",
+        "style": {
+          "line-color": "rgb(255,0,0)",
+          "target-arrow-color": "rgb(255,0,0)",
+          "source-arrow-color": "rgb(255,0,0)",
+          "width": "10px"
+        }
+      },
+      {
+        "selector": "edge.connectedEdges",
+        "style": {
+          "line-color": "rgb(34,139,34)",
+          "target-arrow-color": "rgb(34,139,34)",
+          "source-arrow-color": "rgb(34,139,34)",
+          "width": "6px"
+        }
+      },
+      {
+        "selector": ".peerPointer",
+        "style": {
+          "background-color": "data(colour)",
+          "width": "15px",
+          "height": "15px",
+          "shape": "star",
+          "text-valign": "center",
+          "text-halign": "right",
+          "text-margin-x": "10px"
+        }
+      },
+      {
+        "selector": ".paramAnchorNode",
+        "style": {
+          "background-color": "rgb(245,164,93)",
+          "background-opacity": "0",
+          "shape": "ellipse",
+          "width": "20px",
+          "height": "20px",
+          "label": "",
+          "text-opacity": "0",
+          "outline-width": "0px",
+          "events": "no"
+        }
+      },
+      {
+        "selector": "._gridParentPadding",
+        "style": {
+          "compound-sizing-wrt-labels": "exclude",
+          "padding": "20px"
+        }
+      },
+      {
+        "selector": "._gridParentPadding",
+        "style": {
+          "compound-sizing-wrt-labels": "exclude",
+          "padding": "20px"
+        }
+      }
+    ],
+    "data": {},
+    "zoomingEnabled": true,
+    "userZoomingEnabled": false,
+    "zoom": 1,
+    "minZoom": 1e-50,
+    "maxZoom": 1e+50,
+    "panningEnabled": true,
+    "userPanningEnabled": false,
+    "pan": {
+      "x": 0,
+      "y": 0
+    },
+    "boxSelectionEnabled": true,
+    "renderer": {
+      "name": "canvas"
+    }
+  },
+  "paramUIOverlays": {
+    "AudioDestination_Buffalo_e28e710ba8e9": [],
+    "Mixer_Owl_1f45772de2f2": [
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      }
+    ],
+    "Gain_Cucumber_f2928d7472ce": [
+      {
+        "containerDiv": {}
+      }
+    ],
+    "Euclid_Gelada_66e35216b7dc": [
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      }
+    ],
+    "HighPassFilter_Kultarr_d90cb1f1bd29": [
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      }
+    ],
+    "LFO_Bear_61624c379b67": [
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      }
+    ],
+    "Oscillator_Turtles_bff520c86684": [
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      }
+    ],
+    "Pulses_Goose_0d0dceafafbc": [
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      }
+    ],
+    "HighPassFilter_Penguin_a56910e7dd8e": [
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      }
+    ],
+    "LFO_Starling_11a33fbfc19b": [
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      }
+    ]
+  },
+  "audioGraph": {
+    "modules": {
+      "AudioDestination_Buffalo_e28e710ba8e9": {
+        "type": "AudioDestination",
+        "params": {},
+        "moduleSpec": {
+          "parameters": {},
+          "paramNames": [],
+          "cv": {},
+          "inputs": [
+            "IN"
+          ],
+          "outputs": []
+        },
+        "nodeIDs": [
+          "AudioDestination_Buffalo_e28e710ba8e9",
+          "AudioDestination_Buffalo_e28e710ba8e9.IN"
+        ],
+        "structure": "webAudioNodes"
+      },
+      "Mixer_Owl_1f45772de2f2": {
+        "type": "Mixer",
+        "params": {
+          "gainA": 0.5,
+          "gainB": 0.5
+        },
+        "moduleSpec": {
+          "parameters": {
+            "gainA": {
+              "min": 0,
+              "max": 1,
+              "default": 0.5,
+              "units": "linear",
+              "description": "Gain level for input A.",
+              "modulatable": true,
+              "modulationDescription": "Allows modulation of input A's amplitude.",
+              "kind": "paramAnchorNode",
+              "name": "gainA",
+              "ui": "knob"
+            },
+            "gainB": {
+              "min": 0,
+              "max": 1,
+              "default": 0.5,
+              "units": "linear",
+              "description": "Gain level for input B.",
+              "modulatable": true,
+              "modulationDescription": "Allows modulation of input B's amplitude.",
+              "kind": "paramAnchorNode",
+              "name": "gainB",
+              "ui": "knob"
+            }
+          },
+          "paramNames": [
+            "gainA",
+            "gainB"
+          ],
+          "cvNames": [],
+          "cv": {},
+          "inputs": [
+            "IN_A",
+            "IN_B"
+          ],
+          "outputs": [
+            "OUT"
+          ]
+        },
+        "nodeIDs": [
+          "Mixer_Owl_1f45772de2f2",
+          "Mixer_Owl_1f45772de2f2_gainA-anchorNode",
+          "Mixer_Owl_1f45772de2f2_gainB-anchorNode",
+          "Mixer_Owl_1f45772de2f2.IN_A",
+          "Mixer_Owl_1f45772de2f2.IN_B",
+          "Mixer_Owl_1f45772de2f2.OUT"
+        ],
+        "structure": "webAudioNodes"
+      },
+      "Gain_Cucumber_f2928d7472ce": {
+        "type": "Gain",
+        "params": {
+          "gain": 1
+        },
+        "moduleSpec": {
+          "parameters": {
+            "gain": {
+              "min": 0,
+              "max": 1,
+              "default": 1,
+              "units": "linear gain",
+              "description": "Controls the amount of amplification applied to the input signal.",
+              "modulatable": true,
+              "modulationDescription": "Audio-rate modulation of gain to create effects like tremolo or dynamic volume changes.",
+              "kind": "paramAnchorNode",
+              "name": "gain",
+              "ui": "knob"
+            }
+          },
+          "paramNames": [
+            "gain"
+          ],
+          "cvNames": [
+            "gain"
+          ],
+          "cv": {
+            "gain": {
+              "min": 0,
+              "max": 1,
+              "default": 1,
+              "units": "linear gain",
+              "description": "Controls the amount of amplification applied to the input signal.",
+              "modulatable": true,
+              "modulationDescription": "Audio-rate modulation of gain to create effects like tremolo or dynamic volume changes.",
+              "kind": "input",
+              "name": "gain",
+              "ui": "knob"
+            }
+          },
+          "inputs": [
+            "IN"
+          ],
+          "outputs": [
+            "OUT"
+          ]
+        },
+        "nodeIDs": [
+          "Gain_Cucumber_f2928d7472ce",
+          "Gain_Cucumber_f2928d7472ce_gain-anchorNode",
+          "Gain_Cucumber_f2928d7472ce.gain",
+          "Gain_Cucumber_f2928d7472ce.IN",
+          "Gain_Cucumber_f2928d7472ce.OUT"
+        ],
+        "structure": "webAudioNodes"
+      },
+      "Euclid_Gelada_66e35216b7dc": {
+        "type": "Euclid",
+        "params": {
+          "stepCount": 8,
+          "activeSteps": 1,
+          "tempo": 120,
+          "tempo cv +/-": 10,
+          "ratchet": 0
+        },
+        "moduleSpec": {
+          "parameters": {
+            "stepCount": {
+              "min": 1,
+              "max": 16,
+              "default": 8,
+              "units": "steps",
+              "description": "Number of available steps in the sequence.",
+              "modulatable": false,
+              "kind": "paramAnchorNode",
+              "name": "stepCount",
+              "ui": "knob"
+            },
+            "activeSteps": {
+              "min": 1,
+              "max": 16,
+              "default": 1,
+              "units": "steps",
+              "description": "Number of active steps in the sequence.",
+              "modulatable": false,
+              "kind": "paramAnchorNode",
+              "name": "activeSteps",
+              "ui": "knob"
+            },
+            "tempo": {
+              "min": 20,
+              "max": 300,
+              "default": 120,
+              "units": "BPM",
+              "description": "Controls the speed of the sequence.",
+              "modulatable": true,
+              "modulationDescription": "Can be modulated for tempo variations.",
+              "kind": "paramAnchorNode",
+              "name": "tempo",
+              "ui": "knob"
+            },
+            "tempo cv +/-": {
+              "min": -100,
+              "max": 100,
+              "default": 10,
+              "units": "BPM",
+              "description": "The attenuverter of the tempo CV input",
+              "modulatable": false,
+              "modulationDescription": "The attenuverter of the tempo CV input",
+              "kind": "paramAnchorNode",
+              "name": "tempo cv +/-",
+              "ui": "knob"
+            },
+            "ratchet": {
+              "min": 0,
+              "max": 16,
+              "default": 0,
+              "units": "steps",
+              "description": "Number of ratchets per active step.",
+              "modulatable": false,
+              "kind": "paramAnchorNode",
+              "name": "ratchet",
+              "ui": "knob"
+            }
+          },
+          "paramNames": [
+            "stepCount",
+            "activeSteps",
+            "tempo",
+            "tempo cv +/-",
+            "ratchet"
+          ],
+          "cvNames": [
+            "tempo",
+            "pulseWidth"
+          ],
+          "cv": {
+            "tempo": {
+              "min": 20,
+              "max": 300,
+              "default": 120,
+              "units": "BPM",
+              "description": "Modulation input for tempo control.",
+              "modulatable": true,
+              "kind": "input",
+              "name": "tempo",
+              "ui": "knob"
+            },
+            "pulseWidth": {
+              "min": 0.05,
+              "max": 1,
+              "default": 0.5,
+              "units": "%",
+              "description": "Width of the gate relative to the tempo",
+              "modulatable": true,
+              "kind": "input",
+              "name": "pulseWidth",
+              "ui": "knob"
+            }
+          },
+          "inputs": [],
+          "outputs": [
+            "OUT"
+          ]
+        },
+        "nodeIDs": [
+          "Euclid_Gelada_66e35216b7dc",
+          "Euclid_Gelada_66e35216b7dc_stepCount-anchorNode",
+          "Euclid_Gelada_66e35216b7dc_activeSteps-anchorNode",
+          "Euclid_Gelada_66e35216b7dc_tempo-anchorNode",
+          "Euclid_Gelada_66e35216b7dc_tempo cv +/--anchorNode",
+          "Euclid_Gelada_66e35216b7dc_ratchet-anchorNode",
+          "Euclid_Gelada_66e35216b7dc.tempo",
+          "Euclid_Gelada_66e35216b7dc.pulseWidth",
+          "Euclid_Gelada_66e35216b7dc.OUT"
+        ],
+        "structure": "webAudioNodes"
+      },
+      "HighPassFilter_Kultarr_d90cb1f1bd29": {
+        "type": "HighPassFilter",
+        "params": {
+          "freq": 1000,
+          "Q": 10,
+          "freq cv +/-": 1000,
+          "Q cv +/-": 1
+        },
+        "moduleSpec": {
+          "parameters": {
+            "freq": {
+              "min": 80,
+              "max": 10000,
+              "default": 1000,
+              "units": "Hz",
+              "description": "The cutoff frequency of the high-pass filter.",
+              "modulatable": true,
+              "modulationDescription": "Modulating the cutoff frequency allows for dynamic filtering effects.",
+              "kind": "paramAnchorNode",
+              "name": "freq",
+              "ui": "knob"
+            },
+            "Q": {
+              "min": 0.1,
+              "max": 20,
+              "default": 10,
+              "units": "resonance",
+              "description": "The resonance or quality factor of the filter.",
+              "modulatable": true,
+              "modulationDescription": "Higher Q values emphasize frequencies around the cutoff point.",
+              "kind": "paramAnchorNode",
+              "name": "Q",
+              "ui": "knob"
+            },
+            "freq cv +/-": {
+              "min": 80,
+              "max": 10000,
+              "default": 1000,
+              "units": "Hz",
+              "description": "Control Voltage input for dynamically modulating the cutoff frequency.",
+              "modulatable": true,
+              "modulationDescription": "Allows for sweeps or envelope-controlled filtering.",
+              "kind": "paramAnchorNode",
+              "name": "freq cv +/-",
+              "ui": "knob"
+            },
+            "Q cv +/-": {
+              "min": 0.1,
+              "max": 20,
+              "default": 1,
+              "units": "resonance",
+              "description": "Control Voltage input for dynamically modulating the resonance.",
+              "modulatable": true,
+              "modulationDescription": "Modulating the Q value changes how sharply the filter emphasizes the cutoff frequency.",
+              "kind": "paramAnchorNode",
+              "name": "Q cv +/-",
+              "ui": "knob"
+            }
+          },
+          "paramNames": [
+            "freq",
+            "Q",
+            "freq cv +/-",
+            "Q cv +/-"
+          ],
+          "cvNames": [
+            "freq",
+            "Q"
+          ],
+          "cv": {
+            "freq": {
+              "min": 80,
+              "max": 10000,
+              "default": 1000,
+              "units": "Hz",
+              "description": "Control Voltage input for dynamically modulating the cutoff frequency.",
+              "modulatable": true,
+              "modulationDescription": "Allows for sweeps or envelope-controlled filtering.",
+              "kind": "input",
+              "name": "freq",
+              "ui": "knob"
+            },
+            "Q": {
+              "min": 0.1,
+              "max": 20,
+              "default": 10,
+              "units": "resonance",
+              "description": "Control Voltage input for dynamically modulating the resonance.",
+              "modulatable": true,
+              "modulationDescription": "Modulating the Q value changes how sharply the filter emphasizes the cutoff frequency.",
+              "kind": "input",
+              "name": "Q",
+              "ui": "knob"
+            }
+          },
+          "inputs": [
+            "IN"
+          ],
+          "outputs": [
+            "OUT"
+          ]
+        },
+        "nodeIDs": [
+          "HighPassFilter_Kultarr_d90cb1f1bd29",
+          "HighPassFilter_Kultarr_d90cb1f1bd29_freq-anchorNode",
+          "HighPassFilter_Kultarr_d90cb1f1bd29_Q-anchorNode",
+          "HighPassFilter_Kultarr_d90cb1f1bd29_freq cv +/--anchorNode",
+          "HighPassFilter_Kultarr_d90cb1f1bd29_Q cv +/--anchorNode",
+          "HighPassFilter_Kultarr_d90cb1f1bd29.freq",
+          "HighPassFilter_Kultarr_d90cb1f1bd29.Q",
+          "HighPassFilter_Kultarr_d90cb1f1bd29.IN",
+          "HighPassFilter_Kultarr_d90cb1f1bd29.OUT"
+        ],
+        "structure": "webAudioNodes"
+      },
+      "LFO_Bear_61624c379b67": {
+        "type": "LFO",
+        "params": {
+          "frequency": 1,
+          "freq cv +/-": 10,
+          "type": "sine"
+        },
+        "moduleSpec": {
+          "parameters": {
+            "frequency": {
+              "min": 0.01,
+              "max": 10,
+              "default": 1,
+              "units": "Hz",
+              "description": "The frequency of the low frequency oscillator.",
+              "modulatable": true,
+              "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects.",
+              "kind": "paramAnchorNode",
+              "name": "frequency",
+              "ui": "knob"
+            },
+            "type": {
+              "values": [
+                "sine",
+                "square",
+                "sawtooth",
+                "triangle",
+                "custom"
+              ],
+              "default": "sine",
+              "description": "The waveform shape of the oscillator.",
+              "kind": "paramAnchorNode",
+              "name": "type",
+              "ui": "menu"
+            },
+            "freq cv +/-": {
+              "min": -20,
+              "max": 20,
+              "default": 10,
+              "units": "Hz",
+              "description": "The attenuverter of the frequency CV input",
+              "modulatable": false,
+              "modulationDescription": "The attenuverter of the frequency CV input",
+              "kind": "paramAnchorNode",
+              "name": "freq cv +/-",
+              "ui": "knob"
+            }
+          },
+          "paramNames": [
+            "frequency",
+            "freq cv +/-",
+            "type"
+          ],
+          "cvNames": [
+            "frequency"
+          ],
+          "cv": {
+            "frequency": {
+              "min": 0.01,
+              "max": 10,
+              "default": 5,
+              "units": "Hz",
+              "description": "The frequency of the oscillator.",
+              "modulatable": true,
+              "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects.",
+              "kind": "input",
+              "name": "frequency",
+              "ui": "knob"
+            }
+          },
+          "inputs": [],
+          "outputs": [
+            "OUT"
+          ]
+        },
+        "nodeIDs": [
+          "LFO_Bear_61624c379b67",
+          "LFO_Bear_61624c379b67_frequency-anchorNode",
+          "LFO_Bear_61624c379b67_freq cv +/--anchorNode",
+          "LFO_Bear_61624c379b67_type-anchorNode",
+          "LFO_Bear_61624c379b67.frequency",
+          "LFO_Bear_61624c379b67.OUT"
+        ],
+        "structure": "webAudioNodes"
+      },
+      "Oscillator_Turtles_bff520c86684": {
+        "type": "Oscillator",
+        "params": {
+          "frequency": 440,
+          "freq cv +/-": 100,
+          "type": "sine"
+        },
+        "moduleSpec": {
+          "parameters": {
+            "frequency": {
+              "min": 110,
+              "max": 3000,
+              "default": 440,
+              "units": "Hz",
+              "description": "The frequency of the oscillator.",
+              "modulatable": true,
+              "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects.",
+              "kind": "paramAnchorNode",
+              "name": "frequency",
+              "ui": "knob"
+            },
+            "type": {
+              "values": [
+                "sine",
+                "square",
+                "sawtooth",
+                "triangle",
+                "custom"
+              ],
+              "default": "sine",
+              "description": "The waveform shape of the oscillator.",
+              "kind": "paramAnchorNode",
+              "name": "type",
+              "ui": "menu"
+            },
+            "freq cv +/-": {
+              "min": -1000,
+              "max": 1000,
+              "default": 100,
+              "units": "Hz",
+              "description": "The attenuverter of the frequency CV input",
+              "modulatable": false,
+              "modulationDescription": "The attenuverter of the frequency CV input",
+              "kind": "paramAnchorNode",
+              "name": "freq cv +/-",
+              "ui": "knob"
+            }
+          },
+          "paramNames": [
+            "frequency",
+            "freq cv +/-",
+            "type"
+          ],
+          "cvNames": [
+            "frequency"
+          ],
+          "cv": {
+            "frequency": {
+              "min": 110,
+              "max": 9000,
+              "default": 440,
+              "units": "Hz",
+              "description": "The frequency of the oscillator.",
+              "modulatable": true,
+              "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects.",
+              "kind": "input",
+              "name": "frequency",
+              "ui": "knob"
+            }
+          },
+          "inputs": [],
+          "outputs": [
+            "OUT"
+          ]
+        },
+        "nodeIDs": [
+          "Oscillator_Turtles_bff520c86684",
+          "Oscillator_Turtles_bff520c86684_frequency-anchorNode",
+          "Oscillator_Turtles_bff520c86684_freq cv +/--anchorNode",
+          "Oscillator_Turtles_bff520c86684_type-anchorNode",
+          "Oscillator_Turtles_bff520c86684.frequency",
+          "Oscillator_Turtles_bff520c86684.OUT"
+        ],
+        "structure": "webAudioNodes"
+      },
+      "Pulses_Goose_0d0dceafafbc": {
+        "type": "Pulses",
+        "params": {
+          "stepCount": 8,
+          "tempo": 120,
+          "tempo cv +/-": 10,
+          "pulseWidth": 0.5
+        },
+        "moduleSpec": {
+          "parameters": {
+            "stepCount": {
+              "min": 1,
+              "max": 16,
+              "default": 8,
+              "units": "steps",
+              "description": "Number of steps in the sequence.",
+              "modulatable": false,
+              "kind": "paramAnchorNode",
+              "name": "stepCount",
+              "ui": "knob"
+            },
+            "tempo": {
+              "min": 20,
+              "max": 300,
+              "default": 120,
+              "units": "BPM",
+              "description": "Controls the speed of the sequence.",
+              "modulatable": true,
+              "modulationDescription": "Can be modulated for tempo variations.",
+              "kind": "paramAnchorNode",
+              "name": "tempo",
+              "ui": "knob"
+            },
+            "tempo cv +/-": {
+              "min": -100,
+              "max": 100,
+              "default": 10,
+              "units": "BPM",
+              "description": "The attenuverter of the tempo CV input",
+              "modulatable": false,
+              "modulationDescription": "The attenuverter of the tempo CV input",
+              "kind": "paramAnchorNode",
+              "name": "tempo cv +/-",
+              "ui": "knob"
+            },
+            "pulseWidth": {
+              "min": 0.05,
+              "max": 1,
+              "default": 0.5,
+              "units": "%",
+              "description": "Width of the gate relative to the tempo",
+              "modulatable": true,
+              "modulationDescription": "Can be modulated for dynamic gate timing.",
+              "kind": "paramAnchorNode",
+              "name": "pulseWidth",
+              "ui": "knob"
+            }
+          },
+          "paramNames": [
+            "stepCount",
+            "tempo",
+            "tempo cv +/-",
+            "pulseWidth"
+          ],
+          "cvNames": [
+            "tempo",
+            "pulseWidth"
+          ],
+          "cv": {
+            "tempo": {
+              "min": 20,
+              "max": 300,
+              "default": 120,
+              "units": "BPM",
+              "description": "Modulation input for tempo control.",
+              "modulatable": true,
+              "kind": "input",
+              "name": "tempo",
+              "ui": "knob"
+            },
+            "pulseWidth": {
+              "min": 0.05,
+              "max": 1,
+              "default": 0.5,
+              "units": "%",
+              "description": "Width of the gate relative to the tempo",
+              "modulatable": true,
+              "kind": "input",
+              "name": "pulseWidth",
+              "ui": "knob"
+            }
+          },
+          "inputs": [],
+          "outputs": [
+            "OUT"
+          ]
+        },
+        "nodeIDs": [
+          "Pulses_Goose_0d0dceafafbc",
+          "Pulses_Goose_0d0dceafafbc_stepCount-anchorNode",
+          "Pulses_Goose_0d0dceafafbc_tempo-anchorNode",
+          "Pulses_Goose_0d0dceafafbc_tempo cv +/--anchorNode",
+          "Pulses_Goose_0d0dceafafbc_pulseWidth-anchorNode",
+          "Pulses_Goose_0d0dceafafbc.tempo",
+          "Pulses_Goose_0d0dceafafbc.pulseWidth",
+          "Pulses_Goose_0d0dceafafbc.OUT"
+        ],
+        "structure": "webAudioNodes"
+      },
+      "HighPassFilter_Penguin_a56910e7dd8e": {
+        "type": "HighPassFilter",
+        "params": {
+          "freq": 1000,
+          "Q": 10,
+          "freq cv +/-": 1000,
+          "Q cv +/-": 1
+        },
+        "moduleSpec": {
+          "parameters": {
+            "freq": {
+              "min": 80,
+              "max": 10000,
+              "default": 1000,
+              "units": "Hz",
+              "description": "The cutoff frequency of the high-pass filter.",
+              "modulatable": true,
+              "modulationDescription": "Modulating the cutoff frequency allows for dynamic filtering effects.",
+              "kind": "paramAnchorNode",
+              "name": "freq",
+              "ui": "knob"
+            },
+            "Q": {
+              "min": 0.1,
+              "max": 20,
+              "default": 10,
+              "units": "resonance",
+              "description": "The resonance or quality factor of the filter.",
+              "modulatable": true,
+              "modulationDescription": "Higher Q values emphasize frequencies around the cutoff point.",
+              "kind": "paramAnchorNode",
+              "name": "Q",
+              "ui": "knob"
+            },
+            "freq cv +/-": {
+              "min": 80,
+              "max": 10000,
+              "default": 1000,
+              "units": "Hz",
+              "description": "Control Voltage input for dynamically modulating the cutoff frequency.",
+              "modulatable": true,
+              "modulationDescription": "Allows for sweeps or envelope-controlled filtering.",
+              "kind": "paramAnchorNode",
+              "name": "freq cv +/-",
+              "ui": "knob"
+            },
+            "Q cv +/-": {
+              "min": 0.1,
+              "max": 20,
+              "default": 1,
+              "units": "resonance",
+              "description": "Control Voltage input for dynamically modulating the resonance.",
+              "modulatable": true,
+              "modulationDescription": "Modulating the Q value changes how sharply the filter emphasizes the cutoff frequency.",
+              "kind": "paramAnchorNode",
+              "name": "Q cv +/-",
+              "ui": "knob"
+            }
+          },
+          "paramNames": [
+            "freq",
+            "Q",
+            "freq cv +/-",
+            "Q cv +/-"
+          ],
+          "cvNames": [
+            "freq",
+            "Q"
+          ],
+          "cv": {
+            "freq": {
+              "min": 80,
+              "max": 10000,
+              "default": 1000,
+              "units": "Hz",
+              "description": "Control Voltage input for dynamically modulating the cutoff frequency.",
+              "modulatable": true,
+              "modulationDescription": "Allows for sweeps or envelope-controlled filtering.",
+              "kind": "input",
+              "name": "freq",
+              "ui": "knob"
+            },
+            "Q": {
+              "min": 0.1,
+              "max": 20,
+              "default": 10,
+              "units": "resonance",
+              "description": "Control Voltage input for dynamically modulating the resonance.",
+              "modulatable": true,
+              "modulationDescription": "Modulating the Q value changes how sharply the filter emphasizes the cutoff frequency.",
+              "kind": "input",
+              "name": "Q",
+              "ui": "knob"
+            }
+          },
+          "inputs": [
+            "IN"
+          ],
+          "outputs": [
+            "OUT"
+          ]
+        },
+        "nodeIDs": [
+          "HighPassFilter_Penguin_a56910e7dd8e",
+          "HighPassFilter_Penguin_a56910e7dd8e_freq-anchorNode",
+          "HighPassFilter_Penguin_a56910e7dd8e_Q-anchorNode",
+          "HighPassFilter_Penguin_a56910e7dd8e_freq cv +/--anchorNode",
+          "HighPassFilter_Penguin_a56910e7dd8e_Q cv +/--anchorNode",
+          "HighPassFilter_Penguin_a56910e7dd8e.freq",
+          "HighPassFilter_Penguin_a56910e7dd8e.Q",
+          "HighPassFilter_Penguin_a56910e7dd8e.IN",
+          "HighPassFilter_Penguin_a56910e7dd8e.OUT"
+        ],
+        "structure": "webAudioNodes"
+      },
+      "LFO_Starling_11a33fbfc19b": {
+        "type": "LFO",
+        "params": {
+          "frequency": 1,
+          "freq cv +/-": 10,
+          "type": "sine"
+        },
+        "moduleSpec": {
+          "parameters": {
+            "frequency": {
+              "min": 0.01,
+              "max": 10,
+              "default": 1,
+              "units": "Hz",
+              "description": "The frequency of the low frequency oscillator.",
+              "modulatable": true,
+              "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects.",
+              "kind": "paramAnchorNode",
+              "name": "frequency",
+              "ui": "knob"
+            },
+            "type": {
+              "values": [
+                "sine",
+                "square",
+                "sawtooth",
+                "triangle",
+                "custom"
+              ],
+              "default": "sine",
+              "description": "The waveform shape of the oscillator.",
+              "kind": "paramAnchorNode",
+              "name": "type",
+              "ui": "menu"
+            },
+            "freq cv +/-": {
+              "min": -20,
+              "max": 20,
+              "default": 10,
+              "units": "Hz",
+              "description": "The attenuverter of the frequency CV input",
+              "modulatable": false,
+              "modulationDescription": "The attenuverter of the frequency CV input",
+              "kind": "paramAnchorNode",
+              "name": "freq cv +/-",
+              "ui": "knob"
+            }
+          },
+          "paramNames": [
+            "frequency",
+            "freq cv +/-",
+            "type"
+          ],
+          "cvNames": [
+            "frequency"
+          ],
+          "cv": {
+            "frequency": {
+              "min": 0.01,
+              "max": 10,
+              "default": 5,
+              "units": "Hz",
+              "description": "The frequency of the oscillator.",
+              "modulatable": true,
+              "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects.",
+              "kind": "input",
+              "name": "frequency",
+              "ui": "knob"
+            }
+          },
+          "inputs": [],
+          "outputs": [
+            "OUT"
+          ]
+        },
+        "nodeIDs": [
+          "LFO_Starling_11a33fbfc19b",
+          "LFO_Starling_11a33fbfc19b_frequency-anchorNode",
+          "LFO_Starling_11a33fbfc19b_freq cv +/--anchorNode",
+          "LFO_Starling_11a33fbfc19b_type-anchorNode",
+          "LFO_Starling_11a33fbfc19b.frequency",
+          "LFO_Starling_11a33fbfc19b.OUT"
+        ],
+        "structure": "webAudioNodes"
+      }
+    },
+    "connections": []
+  }
+}

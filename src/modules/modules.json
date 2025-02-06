@@ -618,15 +618,6 @@
           "units": "steps",
           "description": "Number of ratchets per active step.",
           "modulatable": false
-        },
-        "pulseWidth": {
-          "min": 0.05,
-          "max": 1,
-          "default": 0.5,
-          "units": "%",
-          "description": "Width of the gate relative to the tempo",
-          "modulatable": true,
-          "modulationDescription": "Can be modulated for dynamic gate timing."
         }
       },
       "paramNames": [
@@ -634,8 +625,7 @@
         "activeSteps",
         "tempo",
         "tempo cv +/-",
-        "ratchet",
-        "pulseWidth"
+        "ratchet"
       ],
       "cvNames": [
         "tempo",
@@ -660,6 +650,41 @@
         }
       },
       "inputs": [],
+      "outputs": [
+        "OUT"
+      ]
+    },
+    "Mixer": {
+      "parameters": {
+        "gainA": {
+          "min": 0,
+          "max": 1,
+          "default": 1,
+          "units": "linear",
+          "description": "Gain level for input A.",
+          "modulatable": true,
+          "modulationDescription": "Allows modulation of input A's amplitude."
+        },
+        "gainB": {
+          "min": 0,
+          "max": 1,
+          "default": 1,
+          "units": "linear",
+          "description": "Gain level for input B.",
+          "modulatable": true,
+          "modulationDescription": "Allows modulation of input B's amplitude."
+        }
+      },
+      "paramNames": [
+        "gainA",
+        "gainB"
+      ],
+      "cvNames": [],
+      "cv": {},
+      "inputs": [
+        "IN_A",
+        "IN_B"
+      ],
       "outputs": [
         "OUT"
       ]

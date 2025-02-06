@@ -177,6 +177,26 @@ class DSP extends AudioWorkletProcessor {
 
             break
 
+            case 'Mixer':
+                console.warn('Mixer DSP code is not yet working. the inputs are not being processed correctly (returning undefined)')
+                let mixer = {
+                    node: 'Mixer',
+                    structure: 'webAudioNode',
+                    baseParams: {
+                        gainA: parseFloat(params.gainA) || 1,
+                        gainB: parseFloat(params.gainB) || 1,
+                    },
+                    modulatedParams: { },
+                    output: new Float32Array(128),
+                }
+                if(loadState){
+                    this.nextState.nodes[moduleName] = mixer
+                } else {
+                    this.currentState.nodes[moduleName] = mixer
+                }
+
+            break
+
             case 'Delay':
                 let delay = {
                     node: 'Delay',
@@ -411,20 +431,17 @@ class DSP extends AudioWorkletProcessor {
 
                 synthGraph.connections.forEach((cable)=>{
                     if(cable.target.includes('AudioDestination')){
-                        
                         this.nextState.outputConnections.push(cable.source);
-                    } else if (cable.target.split('.')[1] === 'IN'){
+                    } else if (cable.target.split('.')[1].startsWith("IN")){
                         this.nextState.signalConnections.push(cable);
                         // handle direct node inputs
                     } else {
                         // handle CV modulation inputs
                         // Add a modulation connection (source modulates target parameter)
                         cable.param = cable.target.split('.')[1] // The parameter to modulate
-
                         this.nextState.cvConnections.push(cable);
                     }
                 })
-
 
                 // Begin crossfade
                 this.crossfadeInProgress = true;
@@ -434,7 +451,7 @@ class DSP extends AudioWorkletProcessor {
 
             case 'setSignalAnalysis':
                 this.analyze = msg.data
-                console.log(this.analyze)
+                
             break
 
             case 'addNode':
@@ -444,17 +461,7 @@ class DSP extends AudioWorkletProcessor {
                 } else if (msg.structure === 'feedbackDelayNode'){
                     this.audioNodeBuilder('feedbackDelayNode', msg.data)
                     
-                } else if (msg.structure === 'rnboDevices'){
-                    // deviceName, moduleName, rnboDefinition, loadState
-                    this.rnboDeviceBuilder(msg.data.module, msg.data.rnboDefinition)
-                    console.log('code for loading rnbo devices has not been written')
-                    // todo: run this in this.rnboDeviceBuilder()
-                    // todo reason: similar to audioNodeBuilder(), we need to be able to both build devices through addNode, and also through case 'loadVersion'
                 } 
-                
-                else {
-                    
-                }
                 
             break
 
@@ -479,10 +486,10 @@ class DSP extends AudioWorkletProcessor {
             break
 
             case 'addCable':
-                console.log(msg.data)
+                
                 if(msg.data.target.includes('AudioDestination')){
                     this.currentState.outputConnections.push(msg.data.source);
-                } else if (msg.data.target.split('.')[1] === 'IN'){
+                } else if (msg.data.target.split('.')[1].startsWith("IN")){
                     this.currentState.signalConnections.push(msg.data);
                 } else {
                     msg.data.param = msg.data.target.split('.')[1] // The parameter to modulate
@@ -1101,131 +1108,40 @@ class DSP extends AudioWorkletProcessor {
                     }
                 }
 
+                else if (node.node === 'Mixer') {
+                    // Retrieve  gain parameters for the two input signals.
+                    const gainA = node.baseParams['gainA']
+                    // getEffectiveParam(node, 'gainA', node.baseParams['gainA']);
+                    const gainB = node.baseParams['gainB']
                 
-                // else if (node.node === 'Euclid') {
-                //     // Retrieve the effective tempo and compute the duration (in samples) of each step.
-                //     const effectiveTempo = getEffectiveParam(node, 'tempo', node.baseParams["tempo cv +/-"]);
-                //     const stepDuration = (60 / effectiveTempo) * sampleRate;
-                    
-                //     // Retrieve the effective pulseWidth (a fraction between 0 and 1) and clamp it.
-                //     const effectivePulseWidth = Math.min(Math.max(getEffectiveParam(node, 'pulseWidth'), 0), 1);
-                //     // Calculate the pulse duration (in samples) as a fraction of the step duration.
-                //     let pulseSamples = effectivePulseWidth > 0
-                //         ? Math.max(1, Math.round(effectivePulseWidth * stepDuration))
-                //         : 0;
-                //     //  pulseSamples = 0.05
-                //     pulseSamples = Math.max(1, Math.round(sampleRate * 0.0005)); // 0.5ms pulse
-                //     // Retrieve the stepCount and activeSteps parameters.
-                //     // (Ensure stepCount is at least 1 and activeSteps is between 0 and stepCount.)
-                //     const stepCountParam = Math.max(1, Math.floor(getEffectiveParam(node, 'stepCount')));
-                //     const activeStepsParam = Math.max(0, Math.min(stepCountParam, Math.floor(getEffectiveParam(node, 'activeSteps'))));
-                    
-                //     // Generate the Euclidean pattern for the current step configuration.
-                //     // The pattern is an array of length stepCountParam containing 1's (active) and 0's (inactive).
-                //     const pattern = generateEuclideanPattern(activeStepsParam, stepCountParam);
-                    
-                //     // Retrieve the ratchet parameter. If less than 1, default to 1 (i.e. no ratcheting).
-                //     const effectiveRatchet = Math.max(1, Math.floor(getEffectiveParam(node, 'ratchet')));
-                //     let ratchetInterval = 0, ratchetPulseSamples = 0;
-                //     if (effectiveRatchet > 1) {
-                //         // Subdivide the step duration into effectiveRatchet subintervals.
-                //         ratchetInterval = stepDuration / effectiveRatchet;
-                //         // Determine the duration (in samples) of each ratchet pulse.
-                //         ratchetPulseSamples = effectivePulseWidth > 0 
-                //             ? Math.max(1, Math.round(effectivePulseWidth * ratchetInterval))
-                //             : 0;
-                //     }
-                    
-                //     // Ensure that state variables are initialized.
-                //     node.clockPhase = node.clockPhase || 0;
-                //     node.stepIndex = node.stepIndex || 0;
-                //     node.pulseCounter = node.pulseCounter || 0;
-
-                //     // Store whether the current step is active.
-                //     node.currentStepActive = pattern[node.stepIndex] === 1;
-
-                    
-                //     // Process each sample in the block.
-                //     for (let i = 0; i < 128; i++) {
-                //         // Advance the clock by one sample.
-                //         node.clockPhase += 1;
-                        
-                //         // When we reach the end of the current step...
-                //         if (node.clockPhase >= stepDuration) {
-                //             node.clockPhase = 0;
-                //             // Check whether the current step is active according to the Euclidean pattern.
-                //             if (pattern[node.stepIndex] === 1) {
-                //                 node.pulseCounter = pulseSamples; // Trigger a pulse.
-                //             } else {
-                //                 node.pulseCounter = 0; // No pulse for this step.
-                //             }
-                //             // Advance to the next step (wrapping around).
-                //             node.stepIndex = (node.stepIndex + 1) % stepCountParam;
-                //         }
-                        
-                //         // Output a pulse (1.0) if the pulse counter is active, otherwise output 0.
-                //         signalBuffers[id][i] = node.pulseCounter > 0 ? 1.0 : 0.0;
-                        
-                //         // Decrement the pulse counter if it's active.
-                //         if (node.pulseCounter > 0) {
-                //             node.pulseCounter -= 1;
-                //         }
-                //     }
-                    
-                //     // Helper function: Generate a Euclidean rhythm pattern.
-                //     // This simple algorithm distributes 'pulses' evenly across 'steps'.
-                //     function generateEuclideanPattern(pulses, steps) {
-                //         let pattern = [];
-                //         let bucket = 0;
-                //         for (let i = 0; i < steps; i++) {
-                //             bucket += pulses;
-                //             if (bucket >= steps) {
-                //                 bucket -= steps;
-                //                 pattern.push(1);
-                //             } else {
-                //                 pattern.push(0);
-                //             }
-                //         }
-                //         return pattern;
-                //     }
-                // }
+                    // Assume that the two input signals come from nodes specified by identifiers.
+                    // For example, node.inputA and node.inputB might be strings like "osc1" and "osc2".
+                    const sourceA = node.inputA;
+                    const sourceB = node.inputB;
                 
-                
-                
-                // else if (node.node === 'Pulses') {
-                //     const effectiveTempo = getEffectiveParam(node, 'tempo');
-                //     const stepDuration = (60 / effectiveTempo) * sampleRate;
                     
-
-                //     // Pulse duration should be **very short** (e.g., 1–5ms)
-                //     const pulseSamples = Math.max(1, Math.round(sampleRate * 0.05)); // 5ms pulse
+                    // Retrieve the source identifiers for the two inputs.
+                    // These properties (node.inputA and node.inputB) must be set by the patching logic
+                    // when cables are connected to the mixer.
+                    // if nothing is connected to either input, create a new array to make it silent
+                    const bufferA = signalBuffers[node.inputA] || new Float32Array(128);
+                    const bufferB = signalBuffers[node.inputB] || new Float32Array(128);
+                
+                    // Ensure that this mixer node has an allocated output buffer.
+                    if (!signalBuffers[id]) {
+                        signalBuffers[id] = new Float32Array(128);
+                    }
+                
+                    // Mix the two signals sample-by-sample.
+                    // Each output sample is the sum of the corresponding samples in bufferA and bufferB,
+                    // scaled by their respective gain parameters.
+                    for (let i = 0; i < 128; i++) {
+                        signalBuffers[id][i] = (bufferA[i] * gainA) + (bufferB[i] * gainB);
+                    }
                     
-                //     for (let i = 0; i < 128; i++) {
-                //         // Move clock forward
-                //         node.clockPhase += 1;
-                        
-                //         // If we reach a new step, reset and output a short pulse
-                //         if (node.clockPhase >= stepDuration) {
-                //             node.clockPhase = 0;
-                //             node.stepIndex = (node.stepIndex + 1) % node.baseParams.stepCount;
-                            
-                //             // Generate **short pulse** at transition
-                //             node.pulseCounter = pulseSamples;
-
-
-                //             console.log(`Step ${node.stepIndex} | pulseCounter=${node.pulseCounter} | output[${i}]=${node.output[i]}`);
-
-                //         }
+                }
                 
-                //         // Output pulse only for a few samples
-                //         node.output[i] = node.pulseCounter > 0 ? 1.0 : 0.0;
-                //         if (node.pulseCounter > 0) node.pulseCounter -= 1; // Count down pulse
 
-
-                //     }
-                // }
-                
-                
                 
                 
                 
