@@ -258,8 +258,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     'width': config.cytoscape.synthGraph.style.nodeWidth,
                     'height': config.cytoscape.synthGraph.style.nodeHeight,
                     'color': '#000',            // Label text color
-                    'text-valign': 'center',    // Vertically center the label
-                    'text-halign': 'left',      // Horizontally align label to the left of the node
+                    'text-valign': 'top',    // Vertically center the label
+                    'text-halign': 'center',      // Horizontally align label to the center of the node
                     'text-margin-x': -10, // Optional: Move the label slightly up if desired
                     // 'shape': 'data(shape)' // set this for accessibility (colour blindness)
                 }
@@ -293,8 +293,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     'label': 'data(label)', // Use the node id or any data field as the label
                     'text-valign': 'top', // Position label at the top
                     'text-halign': 'center', // Center label horizontally
-                    'color': '#FF0000', // Set the label text color
-                    'font-size': 20, // Adjust font size if needed
+                    'color': config.cytoscape.synthGraph.style.parentNode.textColour, // Set the label text color
+                    'font-size': config.cytoscape.synthGraph.style.parentNode.fontSize, // Adjust font size if needed
                     'text-margin-y': -10, // Optional: Move the label slightly up if desired
                 
                 }
@@ -320,15 +320,15 @@ document.addEventListener("DOMContentLoaded", function () {
             {
                 selector: 'edge',
                 style: {
-                    'width': 6,
+                    'width': 9,
                     'line-color': '#ccc',
                     'target-arrow-shape': 'triangle',
 
-                    'source-arrow-shape': 'none', // Adds a circle at the start
-                    'source-arrow-color': '#000',
+                    'source-arrow-shape': 'none', 
+                    // 'source-arrow-color': '#000',
                     'target-arrow-color': '#000',
-                    'target-arrow-width': 20, // Size of the target endpoint shape
-                    'source-arrow-width': 50, // Size of the source endpoint shape
+                    'target-arrow-width': config.cytoscape.synthGraph.style.edge.arrowSize, // Size of the target endpoint shape
+                    // 'source-arrow-width': 50, // Size of the source endpoint shape
 
                     'curve-style': 'unbundled-bezier',
                     'control-point-weights': [0.25, 0.75], // Control the curve points
@@ -340,7 +340,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 style: {
                     'line-color': '#FF0000',           // Highlight color
                     'target-arrow-color': '#FF0000',    // Highlight arrow color
-                    'source-arrow-color': '#FF0000',
+                    // 'source-arrow-color': '#FF0000',
+                    'source-arrow-shape': 'none',
                     'width': 10  
                 }
             },
@@ -349,7 +350,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 style: {
                     'line-color': '#228B22',           // Highlight color
                     'target-arrow-color': '#228B22',    // Highlight arrow color
-                    'source-arrow-color': '#228B22',
+                    // 'source-arrow-color': '#228B22',
+                    'source-arrow-shape': 'none',
                     'width': 6 
                 }
             },
@@ -3365,7 +3367,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
         // Set target endpoint to mouse position initially
-        temporaryCables.local.tempEdge.style({ 'line-color': '#FFA500', 'line-style': 'dashed' }); // Set temporary edge color        
+        temporaryCables.local.tempEdge.style({ 'line-color': '#FFA500', 'line-style': 'dashed',  'source-arrow-shape': 'none'  }); // Set temporary edge color        
     }
 
     function handleRemoteCables(cmd,  peerID, sourceID, position){
@@ -3403,7 +3405,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     'background-color': ghostColour
                 });
 
-                temporaryCables.peers[peerID].tempEdge.style({ 'line-color': '#228B22', 'line-style': 'dashed' }); // Set peer temporary edge color
+                temporaryCables.peers[peerID].tempEdge.style({ 'line-color': '#228B22', 'line-style': 'dashed', 'source-arrow-shape': 'none' }); // Set peer temporary edge color
             break;
 
             case 'updateRemoteGhostCable':

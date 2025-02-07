@@ -157,8 +157,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     'label': 'data(label)', // Use the node id or any data field as the label
                     'text-valign': 'top', // Position label at the top
                     'text-halign': 'center', // Center label horizontally
-                    'color': '#FF0000', // Set the label text color
-                    'font-size': 20, // Adjust font size if needed
+                    'color': config.cytoscape.synthGraph.style.parentNode.textColour, // Set the label text color
+                    'font-size': config.cytoscape.synthGraph.style.parentNode.fontSize, // Adjust font size if needed
                     'text-margin-y': -10, // Optional: Move the label slightly up if desired
                 
                 }

@@ -32,7 +32,14 @@ export const config = {
         synthGraph:{
             style: {
                 nodeWidth: 40,
-                nodeHeight: 40
+                nodeHeight: 40,
+                parentNode: {
+                    textColour: 'black',
+                    fontSize: 25
+                },
+                edge:{
+                    arrowSize: 30
+                }
             }
         },
         historyGraph:{
