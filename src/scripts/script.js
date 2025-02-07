@@ -1994,8 +1994,8 @@ document.addEventListener("DOMContentLoaded", function () {
         const labelDiv = document.createElement('div');
         labelDiv.innerText = param.data.label || `Knob`; // Use parameter label or default
         labelDiv.style.textAlign = 'left';
-        labelDiv.style.marginBottom = '2px';
-        labelDiv.style.fontSize = '12px';
+        labelDiv.style.marginBottom = config.knob.labelMarginBottom;
+        labelDiv.style.fontSize = config.knob.labelFontSize;
         labelDiv.style.color = '#333';
         
         // add menu or knob
@@ -2083,6 +2083,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 // change: function (value) {
                 //     $(this.$).trigger('knobChange', [parentNodeID, param.data.label, value]);
                 // },
+                draw: function() {
+                    $(paramDiv).css('font-size', '11pt');
+                },
                 change: (value) => {
                     
                     let newValue = Math.round(value * 100) / 100
@@ -3347,13 +3350,7 @@ document.addEventListener("DOMContentLoaded", function () {
         updateCableControlPointDistances(x, y)
 
         localStorage.setItem('sliderValue', CPDslider.value);
-
-
-
     });
-
-
-
 
     // Retrieve the saved slider value from localStorage and set it
     const savedValue = localStorage.getItem('sliderValue');

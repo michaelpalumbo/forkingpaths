@@ -8,7 +8,9 @@ export const config = {
     },
     knob:{
         baseKnobSize: 60,
-        thickness: 0.3
+        thickness: 0.3,
+        labelFontSize: '19px',
+        labelMarginBottom: '3px'
     }
     
     
