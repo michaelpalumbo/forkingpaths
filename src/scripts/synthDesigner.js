@@ -579,18 +579,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 angleOffset: -135,
                 width: config.knob.baseKnobSize,          // Set width of the knob
                 height: config.knob.baseKnobSize,  
-                // change: function (value) {
-                //     $(this.$).trigger('knobChange', [parentNodeID, param.data.label, value]);
-                // // },
-                // change: (value) => {
-                //     value = Math.round(value * 100) / 100
-                //     // set params in audio graph:
-                //     paramChange(parentNodeID, param.data.label, value)
-                // },
-                // release: (value) => {
-                //     console.log(`gesture ended. see \/\/! comment in .knob().release() in createFloatingOverlay for how to use this`);
-                //     //! could use this to get the start and end of a knob gesture and store it as an array in the history sequence
-                // },
             });
         } else if (param.data.ui === 'menu'){
             // ignore

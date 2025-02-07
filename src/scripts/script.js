@@ -856,7 +856,7 @@ document.addEventListener("DOMContentLoaded", function () {
         cy.edges().remove();
         */
     }
-    function createNewSession(synthFile){
+    function createNewPatchHistory(synthFile){
         
         // deletes the document in the indexedDB instance
         deleteDocument(docID)
@@ -867,7 +867,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // clear the sequences
         sendMsgToHistoryApp({
             appID: 'forkingPathsMain',
-            cmd: 'newSession'
+            cmd: 'newPatchHistory'
                 
         })
         ws.send(JSON.stringify({
@@ -917,6 +917,7 @@ document.addEventListener("DOMContentLoaded", function () {
         amDoc = Automerge.init();
 
         if(synthFile){
+            console.log('synthFile')
             let amMsg = makeChangeMessage(firstBranchName, `loaded${synthFile.filename}`)
             // Apply initial changes to the new document
             amDoc = Automerge.change(amDoc, amMsg, (amDoc) => {
@@ -958,6 +959,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 
             }, 10); // Wait for the current rendering cycle to complete
         } else { 
+            console.log('non synthFile')
+
             let amMsg = makeChangeMessage(firstBranchName, 'blank_patch')
             // Apply initial changes to the new document
             amDoc = Automerge.change(amDoc, amMsg, (amDoc) => {
@@ -1156,6 +1159,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // only rebuild the UI if needed
         if(cmd === 'buildUI'){
+            console.log('rebuild triggered')
             parentNodePositions = []; // Array to store positions of all parent nodes
 
             // Step 1: Extract all parent nodes from the given document
@@ -1181,39 +1185,75 @@ document.addEventListener("DOMContentLoaded", function () {
             
             // ensure their container divs are removed too
             clearparamContainerDivs()
-
+            
             // cy.reset()
-            // 3. Add new elements to Cytoscape
-            cy.add(syncedElements)
+            // pull modules from synthfile and populate cytoscape with parentNodes:
+            let synthFile = JSON.parse(localStorage.getItem('synthFile'))
 
-            parentNodePositions.forEach(parentNode => {
-                const node = cy.getElementById(parentNode.id);
+            cy.json(synthFile.visualGraph)
+
+            syncedElements.forEach((el, index)=>{
+                
+                if(el.type === 'edge'){
+                    cy.add(el)
+                }
+            })
+            // setTimeout(() => {
+            //     updateKnobPositionAndScale('all');
+            //     // Make all nodes non-draggable
+                
+            // }, 10); // Wait for the current rendering cycle to complete
+
+            // go through synedElements, filter out parent nodes, and update params and add cables?
+
+            // 3. Add new elements to Cytoscape
+            // cy.add(syncedElements)
+
+            // parentNodePositions.forEach(parentNode => {
+            //     const node = cy.getElementById(parentNode.id);
     
-                if (node) {
-                    // test
-                    let pos = {x: parseFloat(parentNode.position.x), y: parseFloat(parentNode.position.y)}
+            //     if (node) {
+            //         // test
+            //         let pos = {x: parseFloat(parentNode.position.x), y: parseFloat(parentNode.position.y)}
                   
-                    // pos = {x: Math.random() * 100 + 200, y: Math.random() * 100 + 200};
-                    // pos = {x: 273.3788826175895, y: 434.9628649535062};
-                    // let clonedPos = {...pos}
-                    node.position(pos); // Set the position manually
+            //         // pos = {x: Math.random() * 100 + 200, y: Math.random() * 100 + 200};
+            //         // pos = {x: 273.3788826175895, y: 434.9628649535062};
+            //         // let clonedPos = {...pos}
+            //         node.position(pos); // Set the position manually
           
     
                     
                     
-                }
-            });
+            //     }
+            // });
             // make sure viewport is set back to user's position and zoom
-            cy.zoom(currentZoom)
-            cy.pan(currentPan)
+            // cy.zoom(currentZoom)
+            // cy.pan(currentPan)
     
             
-            // add overlay UI elements
+            // // add overlay UI elements
+            // synthFile.visualGraph.elements.nodes.forEach((node, index)=>{
+            //     // set module grabbable to false -- prevents module movements in main view
+            //     if(node.classes === ':parent'){
+            //         synthFile.visualGraph.elements.nodes[index].grabbable = false
+            //     }
+            //     // create overlays
+            //     if(node.classes === 'paramAnchorNode'){
+            //         let value = synthFile.audioGraph.modules[node.data.parent].params[node.data.label]
+            //         createFloatingOverlay(node.data.parent, node, index, value)
+            
+            //         // index++
+            //     }
+            // })
             let index = 0
             elements.forEach((node)=>{
-                
+                // set module grabbable to false -- prevents module movements in main view
+                if(node.classes === ':parent'){
+                    synthFile.visualGraph.elements.nodes[index].grabbable = false
+                }
                 if(node.classes === 'paramAnchorNode'){
                     let value = forkedDoc.synth.graph.modules[node.data.parent].params[node.data.label]
+                    console.log(value)
                     createFloatingOverlay(node.data.parent, node, index, value)
             
                     index++
@@ -1225,7 +1265,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }, 10); // Wait for the current rendering cycle to complete
             
         } else {
-
+            console.log('rebuild not triggered')
             // Sync the positions in `elements`
             const syncedElements = syncPositions(forkedDoc);
             // clear 
@@ -2456,7 +2496,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
     
     // get .forkingpaths files from user's filesystem
-    document.getElementById('loadSessionButton').addEventListener('change', async (event) => {
+    document.getElementById('loadPatchHistoryButton').addEventListener('change', async (event) => {
         const file = event.target.files[0];
     
         if (!file) {
@@ -2529,7 +2569,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 // Parse the JSON data
                 const jsonData = JSON.parse(reader.result);
-                createNewSession(jsonData)
+                createNewPatchHistory(jsonData)
 
             } catch (error) {
                 console.error("Failed to parse JSON:", error);
@@ -3290,13 +3330,13 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     // Select the button element by its ID
-    const newSession = document.getElementById('newSession');
+    const newPatchHistory = document.getElementById('newPatchHistory');
 
     // open a new session (with empty document)
-    newSession.addEventListener('click', function() {
+    newPatchHistory.addEventListener('click', function() {
 
         
-        createNewSession()
+        createNewPatchHistory()
 
         // Reload the page with the new URL
         // window.location.href = window.location.origin
