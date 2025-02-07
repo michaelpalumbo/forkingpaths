@@ -280,6 +280,7 @@ document.addEventListener("DOMContentLoaded", function () {
         resize: true,
         userZoomingEnabled: false, // Disable zooming
         userPanningEnabled: false,
+        boxSelectionEnabled: false,
         
         style: [
             {
@@ -488,179 +489,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 
-    /*
-        DOCUMENT HISTORY CYTOSCAPE INSTANCE
-    */
-    /*
-        cytoscape.use( dagre );
-    const historyDAG_cy = cytoscape({
-        container: document.getElementById('docHistory-cy'),
-        elements: [],
-        zoom: parseFloat(localStorage.getItem('docHistoryCy_Zoom')) || 1., 
-        // viewport: {
-        //     zoom: parseFloat(localStorage.getItem('docHistoryCy_Zoom')) || 1.
-        // },
-        boxSelectionEnabled: true,
-        selectionType: "additive",
-        zoomingEnabled: false,
-       
-        layout: graphLayouts[graphStyle],  
-        style: [
-            {
-                selector: 'node',
-                style: {
-                    'background-color': 'data(color)', // based on edit type
-                    'label': 'data(label)', // Use the custom label attribute
-                    'width': 30,
-                    'height': 30,
-                    'color': '#000',            // Label text color
-                    'text-valign': 'center',    // Vertically center the label
-                    'text-halign': 'right',      // Horizontally align label to the left of the node
-                    'text-margin-x': 15, // 
-                    // 'text-margin-y': 15, // move the label down a little to make space for branch edges
-                    // 'shape': 'data(shape)' // set this for accessibility (colour blindness)
-                }
-            
-            },
-            {
-                selector: 'edge',
-                style: {
-                    'width': 6,
-                    'line-color': '#ccc',
-                    'target-arrow-shape': 'triangle',
-                    'target-arrow-color': '#ccc',
-                    'target-arrow-width': 20, // Size of the target endpoint shape
-                    'curve-style': 'bezier' // Use a Bezier curve to help arrows render more clearly
-
-                }
-            },
-            {
-                selector: 'node.highlighted',
-                style: {
-                    'border-color': '#228B22', // Highlight color
-                    'border-width': 15,
-                    'shape': 'rectangle'
-                }
-            },
-            {
-                selector: '.sequencerSelectionBox',
-                style: {
-                    'border-color': 'blue', // Highlight color
-                    'border-width': 4,
-                    'shape': 'rectangle',
-                    'background-color': 'white',
-                    "background-opacity": 0,
-                    "width": 50,
-                    "height": 'data(height)',
-                    "label": '',
-                    "z-index": -1
-
-                }
-            },
-            {
-                selector: '.sequencerSelectionBox-handle',
-                style: {
-                    // 'border-color': 'blue', // Highlight color
-                    'border-width': 0,
-                    'shape': 'ellipse',
-                    'background-color': 'blue',
-                    // "background-opacity": 0,
-                    "width": '10',
-                    "height": '10',
-                    "label": '',
-                    "z-index": 10
-
-                }
-            },
-            {
-                selector: '.sequencerNode',
-                style: {
-                    'border-color': '#000000',  // Change to your desired color
-                    'border-width': '8px',
-                    'border-style': 'solid'
-
-
-                }
-            },
-            {
-                selector: '.sequencerEdge',
-                style: {
-                    // 'border-color': 'blue', // Highlight color
-                    'line-color': 'blue',
-                    "width": '10',
-                    'target-arrow-color': 'blue'
-
-
-                }
-            },
-        ]
-    });
-
-    */
-    /*
-        SELECTED HISTORY CYTOSCAPE INSTANCE
-    */
-
-        /*
-        const historySequencerCy = cytoscape({
-        container: document.getElementById('historySequencerCy'), // Your container element
-        style: [
-            {
-                selector: 'node',
-                style: {
-                    'background-color': 'data(color)',
-                    'label': 'data(label)',
-                    'text-margin-y': 0, // Offset label vertically
-                    'text-margin-x': 5, // Offset label horizontally
-                    'text-halign': 'right', // Center-align text
-                    'text-valign': 'center', // Vertically align text
-                    'width': 20, // Reduce node width to exclude label
-                    'height': 20, // Reduce node height to exclude label
-                    'color': '#fff'
-                }
-            },
-            {
-                selector: 'edge',
-                style: {
-                    'width': 6,
-                    'line-color': '#ffffff',
-                    'target-arrow-color': '#ffffff',
-                    'target-arrow-shape': 'triangle',
-                    'curve-style': 'bezier' // Optional: Makes edges curved for better visualization
-
-                }
-            },
-            {
-                selector: 'node.highlighted',
-                style: {
-                    'border-color': '#228B22', // Highlight color
-                    'border-width': 15,
-                    'shape': 'rectangle'
-                }
-            },
-            {
-                selector: 'edge.highlighted',
-                style: {
-                    'line-color': '#FF0000',           // Highlight color
-                    'target-arrow-color': '#FF0000',    // Highlight arrow color
-                    'source-arrow-color': '#FF0000',
-                    'width': 10,
-                    
-                }
-            },
-        ],
-        layout: {
-            name: 'circle'
-        }
-    });
-
-    */
-
-    //*
-    //*
-    //* DOCUMENT & HISTORY MANAGEMENT 
-    //* Implement functions for creating, updating, patching, and reverting document states.
-    //*
 
  
     //* NEW AUTOMERGE IMPLEMENTATION
@@ -1671,207 +1499,6 @@ document.addEventListener("DOMContentLoaded", function () {
   
     }
 
-
- 
-    /*
-
-        HISTORY SEQUENCER 
-
-    */
-    // !
-    /*
-    // history sequencer
-    function historySequencerController(cmd, data){
-        switch(cmd){
-            case 'clear':
-                selectedHistoryNodes.length = 0
-                historyDAG_cy.edges().removeClass("sequencerEdge");
-            break
-
-            case 'removeSteps':
-                //
-                let nodeIndex = historySequencerCy.nodes().indexOf(data);
-                let historyDAG_cyHash = data.data().id.split(' ')[0]
-                // selectedHistoryNodes = removeLastInstanceById(selectedHistoryNodes, historyDAG_cyHash)
-                selectedHistoryNodes.splice(nodeIndex, 1);
-                let connectedNodes = data.connectedEdges().connectedNodes().difference(data);
-                // remove node from historySequencerCy
-                if (connectedNodes.length === 2) {
-                    const [nodeB, nodeA] = connectedNodes;
-            
-                    // Check if an edge already exists between these two nodes
-                    const existingEdge = historySequencerCy.edges().filter(edge =>
-                        edge.visible() && // Only consider visible edges
-                        (edge.source().id() === nodeA.id() && edge.target().id() === nodeB.id()) ||
-                        (edge.source().id() === nodeB.id() && edge.target().id() === nodeA.id())
-                    );
-            
-                    if (existingEdge.empty()) {
-                        // Add a new edge connecting the two nodes
-                        historySequencerCy.add({
-                            group: 'edges',
-                            data: {
-                                id: `edge-${nodeA.id()}-${nodeB.id()}`,
-                                source: nodeA.id(),
-                                target: nodeB.id()
-                            }
-                        });
-                    } else {
-                    }
-                } else {
-                    console.log('The clicked node does not have exactly 2 connected nodes.');
-                }
-
-                historySequencerCy.remove(data)
-                // now close the circle
-                historySequencerCy.edges().forEach(edge => {
-                    if (!edge.source().visible() || !edge.target().visible()) {
-                        edge.remove(); // Remove edges connected to hidden nodes
-                    }
-                });
-  
-
-                // if node no longer is in sequence, remove its border
-                if (!selectedHistoryNodes.some(item => item.id === historyDAG_cyHash)){
-                    let historyDAG_cyNode = historyDAG_cy.getElementById(historyDAG_cyHash)
-                    historyDAG_cyNode.removeClass("sequencerNode");
-                }
-                
-            break
-    
-
-        }
-    }
-
-     // Function to add a new node
-     function modifyHistorySequencerCy(cmd, data) {
-
-        switch(cmd){
-            case 'add':
-                //
-                selectedHistoryNodes.push({
-                    data: data.data(),
-                    cyNode: data,
-                    id: data.data().id
-                })
-                data.addClass("sequencerNode");
-
-
-                let node = data
-                const nodeId = `${node.data().id} ${uuidv7()}`// first string is the history hash, 2nd, is just for our sequencer
-                const nodes = historySequencerCy.nodes();
-
-                // Add the new node
-                historySequencerCy.add({
-                    group: 'nodes',
-                    data: { id: nodeId , label: node.data().label.split('_')[0], color: docHistoryGraphStyling.nodeColours[node.data().label.split(' ')[0]], historyNode: node}
-                });
-
-                // If there's a previous node, connect it to the new node
-                if (nodes.length > 0) {
-                    const lastNode = nodes[nodes.length - 1];
-                    historySequencerCy.add({
-                        group: 'edges',
-                        data: {
-                            id: `${lastNode.id()}-to-${nodeId}`,
-                            source: lastNode.id(),
-                            target: nodeId
-                        }
-                    });
-                }
-
-                // Remove any existing connection to the first node
-                if (nodes.length >= 2) {
-                    const firstNode = nodes[0];
-                    historySequencerCy.edges().forEach(edge => {
-                        if (edge.data('target') === firstNode.id()) {
-                            edge.remove();
-                        }
-                    });
-
-                    // Add a new connection from the last node to the first node
-                    historySequencerCy.add({
-                        group: 'edges',
-                        data: {
-                            id: `${nodeId}-to-${firstNode.id()}`,
-                            source: nodeId,
-                            target: firstNode.id()
-                        }
-                    });
-                }
-            break
-
-            case 'intersectingEdge':
-
-            
-                // Check for existing edges to prevent duplicates
-                const existingEdgesBetweenSourceAndDragged = historySequencerCy.edges().filter(e =>
-                    (e.source().id() === data.sourceNode.id() && e.target().id() === data.draggedNode.id()) ||
-                    (e.source().id() === data.draggedNode.id() && e.target().id() === data.sourceNode.id())
-                );
-
-                const existingEdgesBetweenDraggedAndTarget = historySequencerCy.edges().filter(e =>
-                    (e.source().id() === data.targetNode.id() && e.target().id() === data.draggedNode.id()) ||
-                    (e.source().id() === data.draggedNode.id() && e.target().id() === data.targetNode.id())
-                );
-
-                // connect 
-                if (existingEdgesBetweenSourceAndDragged.empty()) {
-                    historySequencerCy.add({
-                        group: 'edges',
-                        data: { source: data.draggedNode.id(), target: data.sourceNode.id() }
-                    });
-                    
-                }
-
-                if (existingEdgesBetweenDraggedAndTarget.empty()) {
-                    historySequencerCy.add({
-                        group: 'edges',
-                        data: { source: data.draggedNode.id(), target: data.targetNode.id() }
-                    });
-                } 
-
-            break
-
-        }
-        
-        // Reapply the circle layout
-        historySequencerCy.layout({ name: 'circle' }).run();
-    }
-
-    // Set the initial BPM
-    transport.bpm.value = 120;
-    let currentNode = null
-    // Schedule the sequencer loop
-    transport.scheduleRepeat((time) => {
-        let sequencerNodes = historySequencerCy.nodes()
-        if (meta && !hid.key.shift && sequencerNodes.length > 0) {
-            let node
-
-
-            // let connectedNodes = node.connectedEdges().connectedNodes().difference(node);
-
-            // console.log(connectedNodes[Math.floor(Math.random() * connectedNodes.length)].data())
-
-            if (meta.sequencer.traversalMode === 'Sequential') {
-                node = sequencerNodes.eq(currentIndex)
-            } else {
-                node = sequencerNodes[Math.floor(Math.random() * sequencerNodes.length)]
-            }
-
-            if (node && node.data().historyNode) {
-                // synth.triggerAttackRelease("C4", "8n", time); // Example note
-                loadVersion(node.data().historyNode.data().id, node.data().historyNode.data().branch); // Your custom logic
-                highlightNode(node.data().historyNode); // Your custom logic
-                highlightSequencerNode(node)
-            }
-            currentNode = node
-            // Move to the next step
-            currentIndex = (currentIndex + 1) % sequencerNodes.length;
-        }
-    }, "8n"); // Repeat every eighth note
-
-    */ //!
     //TODO OLD AUTOMERGE-REPO IMPLEMENTATION, PHASE IT OUT EVENTUALLY
     // Import dependencies dynamically
     // (async () => {
@@ -2596,86 +2223,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // .addClass('highlighted');
         // .removeClass('highlighted');
     }
-    // generate list of audio nodes for adding to patch
-    // function updateModuleLibrary(){
-        
-    //     const webAudioNodeNames = Object.keys(modules.webAudioNodes).sort()
-    //     const RNBODeviceNames = Object.keys(modules.rnboDevices).sort()
-
-    //     // Reference the list element
-    //     const listElement = document.getElementById('moduleList');
-    //     // RNBO device category
-    //     const heading1 = document.createElement('li');
-    //     heading1.textContent = 'RNBO Devices';
-    //     heading1.style.fontWeight = 'bold'; // Make the heading stand out
-    //     heading1.style.pointerEvents = 'none'; // Disable interaction
-
-    //     listElement.appendChild(heading1);
-    //      // Loop through the array and create list items
-    //      RNBODeviceNames.forEach(item => {
-    //         // Create a new <li> element
-    //         const listItem = document.createElement('li');
-    //         // Set the text of the <li> to the current item
-    //         listItem.textContent = item;
-    //         listItem.dataset.structure = 'rnboDevices'
-    //         // Append the <li> to the list
-    //         listElement.appendChild(listItem);
-            
-
-    //     });       
-
-
-    //     // Web Audio Node category
-    //     const heading2 = document.createElement('li');
-    //     heading2.textContent = 'Web Audio Nodes';
-    //     heading2.style.fontWeight = 'bold'; // Make the heading stand out
-    //     heading2.style.pointerEvents = 'none'; // Disable interaction
-
-    //     listElement.appendChild(heading2);
-    //     // Loop through the array and create list items
-    //     webAudioNodeNames.forEach(item => {
-    //         if(item != 'AudioDestination' && item != 'AudioWorklet' && item != "OutputLimiter"){
-    //             // all that are available at the moment
-    //             if(item === 'BiquadFilter' || item === 'Delay' || item === 'LFO' || item === 'Oscillator' || item === 'Gain' || item === 'ModGain'){
-    //                 // Create a new <li> element
-    //                 const listItem = document.createElement('li');
-    //                 // Set the text of the <li> to the current item
-    //                 listItem.textContent = item;
-
-    //                 listItem.dataset.structure = 'webAudioNodes'
-    //                 // Append the <li> to the list
-    //                 listElement.appendChild(listItem);
-    //             }
-      
-    //         }
-
-    //     });
-    // }
-
-    // updateModuleLibrary()
-
-    function addSpeaker(){
-        // check if graph contains a speaker. if not:
-        const nodeIds = cy.nodes().map(node => node.id());
-        const AudioDestinationExists = nodeIds.some(id => id.includes('AudioDestination'));
-        if(!AudioDestinationExists){
-            addModule('AudioDestination', { x: 50, y: 50}, [   ], 'webAudioNodes')
-            // OutputLimiter.connect(audioContext.destination);
-
-        }
-
-        // // Get the current viewport's extent
-        // const extent = cy.extent();
-
-        // // Bottom-right corner coordinates
-        // const x = extent.x2; // Rightmost x-coordinate
-        // const y = extent.y2; // Bottom-most y-coordinate
-        // // todo: this doesn't seem to have an effect
-        // speakerModule[0].position.x = x
-        // speakerModule[0].position.y = y
-
-        // cy.add(speakerModule)
-    }
+   
     // do this once:
 
     function updateCableControlPointDistances(x, y){
@@ -2882,17 +2430,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     });
 
-    // // Reference the module library list element
-    // const moduleList = document.getElementById('moduleList');
-    // // Add click event listener
-    // moduleList.addEventListener('click', (event) => {
-    //     let loadedModule = event.target.textContent
 
-    //     if(!loadedModule.includes('RNBO Devices') || !loadedModule.includes('Web Audio Nodes') ){
-    //         addModule(loadedModule, { x: 200, y: 200 }, [    ], event.target.dataset.structure )
-
-    //     }
-    // });
 
     cy.on('mouseover', 'node', (event) => {
         const node = event.target;
@@ -2992,16 +2530,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 // Parse the JSON data
                 const jsonData = JSON.parse(reader.result);
                 createNewSession(jsonData)
-                
-                // loop through elements, get parents, pass to addModule
-                // visualGraph.elements.nodes.forEach((node) => {
-                //     if(node.classes === ':parent'){
-                //         // pass name, position, children, an
-                //         // console.log(node.position)d structure into addModule()
-                //         addModule(node.data.rnboName, node.position, [ ], node.data.structure)
-                //     }
-                // })
-
 
             } catch (error) {
                 console.error("Failed to parse JSON:", error);
@@ -3802,195 +3330,6 @@ document.addEventListener("DOMContentLoaded", function () {
         updateCableControlPointDistances(x, y)
     }
 
-    //!
-    /* 
-    // right-click tap
-    historyDAG_cy.on('cxttap', 'node', (event) => {
-        const node = event.target; // The node that was right-clicked
-        if(hid.key.shift){
-            historySequencerController('removeSteps', event.target)
-        }
-        
-    });
-
-    // right-click tap
-    historySequencerCy.on('cxttap', 'node', (event) => {
-        const node = event.target; // The node that was right-clicked
-        historySequencerController('removeSteps', event.target)
-        
-    });
-
-
-    // BPM Slider Control
-    const bpmSlider = document.getElementById("bpmSlider");
-    // Listen for slider changes
-    bpmSlider.addEventListener('input', (event) => {
-        let bpm = parseInt(event.target.value, 10)
-        meta = Automerge.change(meta, (meta) => {
-            meta.sequencer.bpm = bpm
-        });
-
-        bpmValue.textContent = bpm; // Display the current BPM
-        transport.bpm.value = bpm; // Dynamically update the BPM
-
-    });
-
-    // Start/Stop Control
-    const startStopButton = document.getElementById("startStopButton");
-    let isPlaying = false;
-
-    startStopButton.addEventListener("click", async () => {
-        if (isPlaying) {
-            transport.stop();
-            startStopButton.textContent = "Start Sequencer";
-        } else {
-            await Tone.start(); // Required to start audio in modern browsers
-            transport.start();
-            startStopButton.textContent = "Stop Sequencer";
-        }
-        isPlaying = !isPlaying;
-    });
-
-
-    historySequencerCy.on('position', 'node', (event) => {
-        const draggedNode = event.target; // The node being dragged
-        const draggedPosition = draggedNode.position(); // Current position of the dragged node
-    
-        // Reset edge highlights
-        historySequencerCy.edges().removeClass('edge.highlighted');
-    
-        // Find the edge the node is intersecting with
-        const intersectingEdge = historySequencerCy.edges().filter((edge) => {
-            const sourceNode = edge.source();
-            const targetNode = edge.target();
-    
-            // Skip edges connected to the dragged node itself
-            if (sourceNode.id() === draggedNode.id() || targetNode.id() === draggedNode.id()) {
-                return false;
-            }   
-            const sourcePos = sourceNode.position();
-            const targetPos = targetNode.position();
-    
-            // Check if the node intersects with the edge
-            return isNodeIntersectingEdge(draggedPosition, sourcePos, targetPos);
-        });
-    
-        // Highlight the intersecting edge
-        if (intersectingEdge.length > 0) {
-            intersectingEdge.addClass('edge.highlighted');
-        }
-    });
-    
-    historySequencerCy.on('dragfree', 'node', (event) => {
-        const draggedNode = event.target; // The node being dragged
-        const draggedPosition = draggedNode.position();
-    
-        // Find the intersecting edge (same logic as before)
-        const intersectingEdge = historySequencerCy.edges().filter((edge) => {
-            const sourceNode = edge.source();
-            const targetNode = edge.target();
-    
-            // Skip edges connected to the dragged node itself
-            if (sourceNode.id() === draggedNode.id() || targetNode.id() === draggedNode.id()) {
-                return false;
-            }
-            const sourcePos = sourceNode.position();
-            const targetPos = targetNode.position();
-    
-            return isNodeIntersectingEdge(draggedPosition, sourcePos, targetPos);
-        });
-    
-        if (intersectingEdge.length > 0) {
-
-          
-
-            
-
-            const edge = intersectingEdge[0];
-            const sourceNode = edge.source();
-            const targetNode = edge.target();
-
-            modifyHistorySequencerCy({
-                cmd:'intersectEdge',
-                edge: intersectingEdge[0],
-                sourceNode: sourceNode,
-                targetNode: targetNode,
-                draggedNode: draggedNode
-            })
-    
-            // Remove the original edge
-            // edge.remove();
-            // Check for existing edges to prevent duplicates
-            const existingEdgesBetweenSourceAndDragged = historySequencerCy.edges().filter(e =>
-                (e.source().id() === sourceNode.id() && e.target().id() === draggedNode.id()) ||
-                (e.source().id() === draggedNode.id() && e.target().id() === sourceNode.id())
-            );
-
-            const existingEdgesBetweenDraggedAndTarget = historySequencerCy.edges().filter(e =>
-                (e.source().id() === targetNode.id() && e.target().id() === draggedNode.id()) ||
-                (e.source().id() === draggedNode.id() && e.target().id() === targetNode.id())
-            );
-
-            // connect 
-            if (existingEdgesBetweenSourceAndDragged.empty()) {
-                historySequencerCy.add({
-                    group: 'edges',
-                    data: { source: draggedNode.id(), target: sourceNode.id() }
-                });
-                
-            }
-    
-            if (existingEdgesBetweenDraggedAndTarget.empty()) {
-                historySequencerCy.add({
-                    group: 'edges',
-                    data: { source: draggedNode.id(), target: targetNode.id() }
-                });
-            } 
-        }
-    });
-    
-    
-
-    // Listen for the select event on nodes
-    let historyBoxSelect = true // this is necessary because this event listener fires many times otherwise
-    historyDAG_cy.on("boxselect", "node", () => {
-        if(historyBoxSelect){
-            historyBoxSelect = false
-
-            let selected = historyDAG_cy.$("node:selected"); // Get all selected nodes
-            
-            
-            historyDAG_cy.edges().removeClass("sequencerEdge");
-
-            if (selected.length > 1) {
-                // Find edges connecting selected nodes
-                
-                selected.addClass("sequencerNode");
-                // Update selectedHistoryNodes to match the current selection   
-                selectedHistoryNodes.length = 0
-
-                selected.forEach((node) => {
-                    let n = {
-                        data: node.data(),
-                        cyNode: node,
-                        id: node.data().id
-                    }
-                    selectedHistoryNodes.push(n)
-                    modifyHistorySequencerCy('add', node)
-                });
-
-            }
-
-            // Reset the historyBoxSelect flag after a short delay
-            setTimeout(() => {
-                historyDAG_cy.$('node:selected').unselect();
-                historyBoxSelect = true;
-            }, 50); // Adjust the delay as needed to debounce the event
-        }
-    });
-
-    */ 
-
     //*
     //* PATCHING
     //*
@@ -4091,84 +3430,82 @@ document.addEventListener("DOMContentLoaded", function () {
 
     } 
 
-    function addModule(module, position, children, structure) {
+    // function addModule(module, position, children, structure) {
         
-        // const parentNode = new ParentNode(module, position, children); // old version. 
+    //     // const parentNode = new ParentNode(module, position, children); // old version. 
 
-        const parentNode = new ParentNode_WebAudioNode(module, position, children, structure, config.moduleLayout);
+    //     const parentNode = new ParentNode_WebAudioNode(module, position, children, structure, config.moduleLayout);
+  
 
-        const dims = parentNode().getDimensions()
-        console.log(dims)
-
-        // parentNode.getModule('oscillator')
-        const { parentNode: parentNodeData, childrenNodes, audioGraph, paramOverlays } = parentNode.getNodeStructure();
-        // Add nodes to Cytoscape
-        cy.add(parentNodeData);
-        cy.add(childrenNodes);
+    //     // parentNode.getModule('oscillator')
+    //     const { parentNode: parentNodeData, childrenNodes, audioGraph, paramOverlays } = parentNode.getNodeStructure();
+    //     // Add nodes to Cytoscape
+    //     cy.add(parentNodeData);
+    //     cy.add(childrenNodes);
         
         
-        debugVar = parentNodeData.data.id
-        // index determines the left or right positioning of each knob
-        let index = 0
-        paramUIOverlays[parentNodeData.data.id] = []
+    //     debugVar = parentNodeData.data.id
+    //     // index determines the left or right positioning of each knob
+    //     let index = 0
+    //     paramUIOverlays[parentNodeData.data.id] = []
 
-        // let tempOverlayArray = [ ]
-        childrenNodes.forEach((param)=>{
+    //     // let tempOverlayArray = [ ]
+    //     childrenNodes.forEach((param)=>{
             
-            if (param.classes == 'paramAnchorNode' && paramOverlays){
-                let uiOverlay = createFloatingOverlay(parentNodeData.data.id, param, index);
-                paramUIOverlays[parentNodeData.data.id].push(uiOverlay)
-                // tempOverlayArray.push(serializeDivToBase64(uiOverlay))
-                index++
-            }
-        })
-        // Initial position and scale update. delay it to wait for cytoscape rendering to complete. 
-        setTimeout(() => {
-            updateKnobPositionAndScale('all');
-        }, 10); // Wait for the current rendering cycle to complete
-        // * automerge version:        
-        amDoc = applyChange(amDoc, (amDoc) => {
-            amDoc.elements.push(parentNodeData);
-            amDoc.elements.push(...childrenNodes);
-            amDoc.synth.graph.modules[parentNodeData.data.id] = audioGraph
-            audioGraphDirty = true
+    //         if (param.classes == 'paramAnchorNode' && paramOverlays){
+    //             let uiOverlay = createFloatingOverlay(parentNodeData.data.id, param, index);
+    //             paramUIOverlays[parentNodeData.data.id].push(uiOverlay)
+    //             // tempOverlayArray.push(serializeDivToBase64(uiOverlay))
+    //             index++
+    //         }
+    //     })
+    //     // Initial position and scale update. delay it to wait for cytoscape rendering to complete. 
+    //     setTimeout(() => {
+    //         updateKnobPositionAndScale('all');
+    //     }, 10); // Wait for the current rendering cycle to complete
+    //     // * automerge version:        
+    //     amDoc = applyChange(amDoc, (amDoc) => {
+    //         amDoc.elements.push(parentNodeData);
+    //         amDoc.elements.push(...childrenNodes);
+    //         amDoc.synth.graph.modules[parentNodeData.data.id] = audioGraph
+    //         audioGraphDirty = true
 
-            // amDoc.paramUIOverlays[parentNodeData.data.id] = tempOverlayArray
-        }, onChange, `add ${parentNodeData.data.id}`);
+    //         // amDoc.paramUIOverlays[parentNodeData.data.id] = tempOverlayArray
+    //     }, onChange, `add ${parentNodeData.data.id}`);
         
-        // update the synthWorklet
-        updateSynthWorklet('addNode', parentNode, structure )
+    //     // update the synthWorklet
+    //     updateSynthWorklet('addNode', parentNode, structure )
 
 
-        // addNode(parentNode.data())
-        // todo: remove the -repo version once AM is working
-        // Update Automerge-repo document
-    //     handle.change((doc) => {
-    //         doc.elements.push(parentNodeData);
-    //         doc.elements.push(...childrenNodes);
+    //     // addNode(parentNode.data())
+    //     // todo: remove the -repo version once AM is working
+    //     // Update Automerge-repo document
+    // //     handle.change((doc) => {
+    // //         doc.elements.push(parentNodeData);
+    // //         doc.elements.push(...childrenNodes);
 
-    //     },{
-    //         message: `add ${parentNodeData.data.id}` // Set a custom change message here
-    //     });
-    }
+    // //     },{
+    // //         message: `add ${parentNodeData.data.id}` // Set a custom change message here
+    // //     });
+    // }
     
 
-    // function updateSliderBoundaries(parentNode){
-    //     // Update the position constraints for all slider handles that are children of this parent node
-    //     cy.nodes(`node[parent="${parentNode.data().id}"]`).forEach((childNode) => {
-    //         if (childNode.hasClass('sliderHandle')) {
-    //             const trackLength = childNode.data('length') || 100; // Assuming track length is stored in data
-    //             const newTrackStartX = parentNode.position().x - trackLength / 2;
-    //             const newTrackEndX = parentNode.position().x + trackLength / 2;
-    //             const fixedY = parentNode.position().y; // Update if necessary based on your layout logic
+    // // function updateSliderBoundaries(parentNode){
+    // //     // Update the position constraints for all slider handles that are children of this parent node
+    // //     cy.nodes(`node[parent="${parentNode.data().id}"]`).forEach((childNode) => {
+    // //         if (childNode.hasClass('sliderHandle')) {
+    // //             const trackLength = childNode.data('length') || 100; // Assuming track length is stored in data
+    // //             const newTrackStartX = parentNode.position().x - trackLength / 2;
+    // //             const newTrackEndX = parentNode.position().x + trackLength / 2;
+    // //             const fixedY = parentNode.position().y; // Update if necessary based on your layout logic
 
-    //             // Update data attributes for the handle to use when dragging
-    //             childNode.data('trackStartX', newTrackStartX);
-    //             childNode.data('trackEndX', newTrackEndX);
-    //             childNode.data('fixedY', fixedY);
-    //         }
-    //     });
-    // }
+    // //             // Update data attributes for the handle to use when dragging
+    // //             childNode.data('trackStartX', newTrackStartX);
+    // //             childNode.data('trackEndX', newTrackEndX);
+    // //             childNode.data('fixedY', fixedY);
+    // //         }
+    // //     });
+    // // }
 
     function displayPeerPointers(peer, position){
         if(!peers.remote[peer]){
