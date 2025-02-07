@@ -1159,7 +1159,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // only rebuild the UI if needed
         if(cmd === 'buildUI'){
-            console.log('rebuild triggered')
             parentNodePositions = []; // Array to store positions of all parent nodes
 
             // Step 1: Extract all parent nodes from the given document
@@ -1171,11 +1170,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         position: parentNode.position
                     });
                 }
-            });
-
-
-            // Sync the positions in `elements`
-            const syncedElements = syncPositions(forkedDoc);
+            })
             
             // Clear existing elements from Cytoscape instance
             cy.elements().remove();
@@ -1189,11 +1184,12 @@ document.addEventListener("DOMContentLoaded", function () {
             // cy.reset()
             // pull modules from synthfile and populate cytoscape with parentNodes:
             let synthFile = JSON.parse(localStorage.getItem('synthFile'))
-
+            // I do this from the synthFile because the parentNodes' dimensions respond to their childs' positioning
             cy.json(synthFile.visualGraph)
-
-            syncedElements.forEach((el, index)=>{
-                
+            // Sync the positions in `elements`
+            const syncedElements = syncPositions(forkedDoc);
+            // add all cables back in
+            syncedElements.forEach((el)=>{
                 if(el.type === 'edge'){
                     cy.add(el)
                 }
@@ -1253,7 +1249,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
                 if(node.classes === 'paramAnchorNode'){
                     let value = forkedDoc.synth.graph.modules[node.data.parent].params[node.data.label]
-                    console.log(value)
                     createFloatingOverlay(node.data.parent, node, index, value)
             
                     index++
@@ -1265,7 +1260,6 @@ document.addEventListener("DOMContentLoaded", function () {
             }, 10); // Wait for the current rendering cycle to complete
             
         } else {
-            console.log('rebuild not triggered')
             // Sync the positions in `elements`
             const syncedElements = syncPositions(forkedDoc);
             // clear 
