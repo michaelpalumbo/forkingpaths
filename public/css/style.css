@@ -337,3 +337,6 @@ input[type="text"] {
   background: #555;
 }
 
+.knob-input {
+  font-size: 24px !important; /* Set desired font size */
+}

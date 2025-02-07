@@ -9,9 +9,11 @@ import modules from '../modules/modules.json' assert { type: 'json'}
 import { marked } from 'marked'
 import 'jquery-knob';   // Import jQuery Knob plugin
 import { computePosition, flip, shift } from '@floating-ui/dom';
+import { config } from '../../config/forkingPathsConfig.js';
+
 
 // * UI
-const baseKnobSize = 45; // Default size in pixels
+const baseKnobSize = config.knob.baseKnobSize; // Default size in pixels
 const knobOffsetAmount = 30; // Horizontal offset for staggering knobs
 const knobVerticalSpacing = baseKnobSize * 0.2; // 20% of base knob size for vertical spacing
 const baseDropdownWidth = 100; // Base width of the dropdown
@@ -122,8 +124,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     'width': 30,
                     'height': 30,
                     'color': '#000',            // Label text color
-                    'text-valign': 'center',    // Vertically center the label
-                    'text-halign': 'left',      // Horizontally align label to the left of the node
+                    'text-valign': 'top',    // Vertically center the label
+                    'text-halign': 'center',      // Horizontally align label to the left of the node
                     'text-margin-x': -10, // Optional: Move the label slightly up if desired
                     // 'shape': 'data(shape)' // set this for accessibility (colour blindness)
                 }
@@ -151,6 +153,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 selector: ':parent',
                 style: {
                     'background-opacity': 0.5,
+                    'padding': '40px', // Increase padding around child nodes
                     'background-color': 'data(bgcolour)',
                     'border-color': '#F57A41',
                     'border-width': 1,
@@ -343,7 +346,6 @@ document.addEventListener("DOMContentLoaded", function () {
     */
 
     function loadSynthGraphFromFile(graphJSON) {
-        console.log(graphJSON)
         parentNodePositions = []; // Array to store positions of all parent nodes
 
         // Step 1: Extract all parent nodes from the given document
@@ -572,11 +574,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 fgColor: "#00aaff",
                 bgColor: "#e6e6e6",
                 inputColor: "#333",
-                thickness: 0.3,
+                thickness: config.knob.thickness,
                 angleArc: 270,
                 angleOffset: -135,
-                width: baseKnobSize,          // Set width of the knob
-                height: baseKnobSize,  
+                width: config.knob.baseKnobSize,          // Set width of the knob
+                height: config.knob.baseKnobSize,  
                 // change: function (value) {
                 //     $(this.$).trigger('knobChange', [parentNodeID, param.data.label, value]);
                 // // },
@@ -607,54 +609,19 @@ document.addEventListener("DOMContentLoaded", function () {
                 const parentParams = parentData?.moduleSpec?.paramNames || [];
                 if (childNode && parentParams.length > 0) {
                     const containerRect = cy.container().getBoundingClientRect();
-                    const zoom = cy.zoom();
-                    const pan = cy.pan();
-                    const parentNodeHeight = parentNode.renderedBoundingBox().h; // Get height from style
-                    
-                    // Get parent node's position (base for calculations)
-                    const parentPos = parentNode.position();
-
-                    // Calculate knob dimensions
-                    const knobWidth = baseKnobSize; // Example knob width (update as needed)
-                    const knobHeight = baseKnobSize; // Example knob height (update as needed)
-                    const rowSpacing = knobHeight * 1.5; // Adjust row spacing
-                    const colSpacing = knobWidth * 1.5; // Adjust column spacing
-
-                    // Calculate layout based on index
-                    const totalParams = parentParams.length; // Number of parameters
-                    const index = parentParams.findIndex((item)=> item === param.data.label)
-                    const row = Math.floor(index / 2); // Current row (2 items per row)
-                    const col = index % 2; // Left (0) or right (1)
-
-                    // Center the knobs for odd/even layouts
-                    const totalWidth = colSpacing * 2; // Total width for two knobs per row
-                    const offsetX =
-                        col === 0
-                            ? -colSpacing / 2 -20 // Left knob
-                            : colSpacing / 2 - 20; // Right knob
-                    const offsetY = row * rowSpacing - (parentNodeHeight / 4 - 20); // Row offset
-
-                    // Adjust for odd-numbered parameters (center last knob in the last row)
-                    if (totalParams % 2 !== 0 && index === totalParams - 1) {
-                        // Center single knob in last row
-                        return {
-                            width: knobWidth,
-                            height: knobHeight,
-                            top: containerRect.top + (parentPos.y * zoom) + pan.y + offsetY,
-                            left: containerRect.left + (parentPos.x * zoom) + pan.x + offsetX,
-                            right: containerRect.left + (parentPos.x * zoom) + pan.x + knobWidth,
-                            bottom: containerRect.top + (parentPos.y * zoom) + pan.y + knobHeight,
-                        };
-                    }
-
-                    // Default (even layout or regular position)
+       
+                    // set virtual element position based on childNode.position()
                     return {
-                        width: knobWidth,
-                        height: knobHeight,
-                        top: containerRect.top + (parentPos.y * zoom) + pan.y + offsetY,
-                        left: containerRect.left + (parentPos.x * zoom) + pan.x + offsetX,
-                        right: containerRect.left + (parentPos.x * zoom) + pan.x + offsetX + knobWidth,
-                        bottom: containerRect.top + (parentPos.y * zoom) + pan.y + offsetY + knobHeight,
+                        width: config.knob.baseKnobSize,
+                        height: config.knob.baseKnobSize,
+                        top: containerRect.top + childNode.position().y,
+                        left: containerRect.left + childNode.position().x,
+                        right: containerRect.left + childNode.position().x + config.knob.baseKnobSize,
+                        bottom: containerRect.top + childNode.position().y + config.knob.baseKnobSize,
+                        // top: containerRect.top + (parentPos.y * zoom) + pan.y + offsetY,
+                        // left: containerRect.left + (parentPos.x * zoom) + pan.x + offsetX,
+                        // right: containerRect.left + (parentPos.x * zoom) + pan.x + offsetX + knobWidth,
+                        // bottom: containerRect.top + (parentPos.y * zoom) + pan.y + offsetY + knobHeight,
                     };
                 }
 
@@ -673,14 +640,12 @@ document.addEventListener("DOMContentLoaded", function () {
             // Remove the container div
             if (containerDiv.parentNode) {
                 containerDiv.parentNode.removeChild(containerDiv);
-                console.log('Knob container removed');
             }
 
             // Nullify the virtual element
             // virtualElement.getBoundingClientRect = null;
             
             virtualElement = null
-            console.log('Knob and virtual element removed');
 
         }
 
@@ -1111,7 +1076,7 @@ document.addEventListener("DOMContentLoaded", function () {
         
         // const parentNode = new ParentNode(module, position, children); // old version. 
 
-        const parentNode = new ParentNode_WebAudioNode(module, position, children, structure);
+        const parentNode = new ParentNode_WebAudioNode(module, position, children, structure, config.moduleLayout);
 
         // parentNode.getModule('oscillator')
         const { parentNode: parentNodeData, childrenNodes, audioGraph, paramOverlays } = parentNode.getNodeStructure();
@@ -1124,7 +1089,6 @@ document.addEventListener("DOMContentLoaded", function () {
         // index determines the left or right positioning of each knob
         let index = 0
         paramUIOverlays[parentNodeData.data.id] = []
-        console.log(parentNode)
         // let tempOverlayArray = [ ]
         childrenNodes.forEach((param)=>{
             

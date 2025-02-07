@@ -1,6 +1,9 @@
 import audioNodes from '../modules/modules.json' assert { type: 'json'}
 import {uuidv7} from 'uuidv7'
 import Chance from 'chance';
+
+import { config } from '../../config/forkingPathsConfig.js';
+
 const chance = new Chance();
 
 const moduleBackgrounds = {
@@ -12,12 +15,7 @@ const moduleBackgrounds = {
     orange: "#CCCCCC"
 }
 
-// Configuration for grid layout
-const maxRows = 4;       // Maximum number of items per column
-const cellWidth = 120;   // Width allocated for each cell (adjust as needed)
-const cellHeight = 60;   // Height allocated for each cell (adjust as needed)
-const horizontalPadding = 10;
-const verticalPadding = 10;
+
 
 
 // const modules = audioNodes.webAudioNodes
@@ -31,6 +29,7 @@ export class ParentNode_WebAudioNode {
         // this.id = id
         this.position = position;
         this.children = children;
+       
         this.isDraggingEnabled = false; // Flag to track if dragging is enabled
         this.module = module;
         this.audioGraph = {
@@ -53,10 +52,18 @@ export class ParentNode_WebAudioNode {
 
         this.paramOverlays = []
         this.cv = this.moduleSpec.cvNames        
-        this. moduleColour = null
+        this.moduleColour = null
         this.knobs = []
 
-    
+
+        // module layouts
+        // Layout configuration parameters:
+        this.maxRows = config.moduleLayout.maxRows; // Maximum number of rows per module
+        this.cellWidth = config.moduleLayout.cellWidth;      // Width of each cell (adjust as needed)
+        this.cellHeight = config.moduleLayout.cellHeight;      // Height of each cell (adjust as needed)
+        this.horizontalPadding = config.moduleLayout.horizontalPadding; // Horizontal spacing between cells
+        this.verticalPadding = config.moduleLayout.verticalPadding;   // Vertical spacing between cells
+       
         // module background colour:
         switch(this.module){
             case 'Oscillator':
@@ -85,7 +92,6 @@ export class ParentNode_WebAudioNode {
             }
         }
         if(this.cv){
-   
             for (let i = 0; i<this.cv.length; i++){
                 let cv = this.moduleSpec.cv[this.cv[i]]
 
@@ -116,15 +122,9 @@ export class ParentNode_WebAudioNode {
             }
         }
 
-            
 
-
-
-        
-       
     }
-    
-
+  
     
     findMatchingObject(obj, searchKey) {
         for (const [key, value] of Object.entries(obj)) {
@@ -140,10 +140,11 @@ export class ParentNode_WebAudioNode {
         return null; // Return null if no match is found
     }
     getNodeStructure() {
-        
+
+
         // Reset or initialize an offset index counter for this instance
         const numChildren = this.children.length;
-
+        
         // Returns the structure of the parent node and its children
         const parentNode = {
             data: { id: this.moduleName, label: `${this.module} ${this.animal}`, kind: 'module', rnboName: this.module, moduleSpec: this.moduleSpec, structure: this.structure, bgcolour: this.moduleColour },
@@ -154,88 +155,82 @@ export class ParentNode_WebAudioNode {
         this.nodeIDs.push(this.moduleName)
         const childrenNodes = this.children.flatMap((child, index) => {
 
-        // Arrange the child nodes in a vertical line below the parent node
-        const offsetY = index * 70; // Each child node is 60px below the previous one
-        const offsetX = 0; // Keep the X position the same for a vertical arrangement
+            // Calculate the row and column based on the index
+            const row = index % this.maxRows;           // Row: cycles 0,1,2,0,1,2,…
+            const col = Math.floor(index / this.maxRows); // Column: increases after every 3 elements
 
-        // New grid-based approach
-        // const row = index % maxRows;
-        // const col = Math.floor(index / maxRows);
+            if(typeof child.default === 'string'){
+                // make it a dropdown menu
+                child.ui = 'menu'
+            } else {
+                child.ui = 'knob'
+            }
 
-        // const offsetX = col * (cellWidth + horizontalPadding);
-        // const offsetY = row * (cellHeight + verticalPadding);
+            // If the element is a parameter (knob) anchor, create a paramAnchorNode:
+            if(child.kind === 'paramAnchorNode'){
+                const paramAnchorNodeID = `${this.moduleName}_${child.name}`
 
-        if(typeof child.default === 'string'){
-            // make it a dropdown menu
-            child.ui = 'menu'
-        } else {
-            child.ui = 'knob'
-        }
-
-        if(child.kind === 'paramAnchorNode'){
-            const paramAnchorNodeID = `${this.moduleName}_${child.name}`
-
-            this.nodeIDs.push(`${paramAnchorNodeID}-anchorNode`)
-            let thisValue
-            return [{                  
-                data: {
-                    id: paramAnchorNodeID,
-                    parent: this.moduleName,
-                    label: child.name || `${this.moduleName}-${paramAnchorNodeID}-${child.name}`,
-                    nameSpace: `${paramAnchorNodeID}.${child.name}`,
-                    kind: child.kind,
-                    // sliderComponent: 'handle',
-                    shape: 'ellipse',
-                    bgcolour: '#CCCCCC',
-                    // set the track dimensions in the handle data for later access
-                    // trackStartX: trackStartX, 
-                    // trackEndX: trackEndX,
-                    // fixedY: config.position.y +10,
-                    hash: `${this.moduleName}_${child.name}`,
-                    ui: child.ui,
-                    min: child.min || child.minimum || 0,
-                    max: child.max || child.maximum || 1,
-                    value: child.default || child.value || 0,
-                    menuOptions: child.values || 'none',
-                    description: child.description,
-                    units: child.units || 'unspecified'
-                    
-                },
-                position: {
-                    x: this.position.x + 20,
-                    y: this.position.y + offsetY + 10// Match Y-position with the track
-                },
-                classes: 'paramAnchorNode'
-            }]
-
-        } 
-            else {
-                
-                const portID = `${this.moduleName}.${child.name}`
-
-                this.nodeIDs.push(portID)
-                return {
-                    
+                this.nodeIDs.push(`${paramAnchorNodeID}-anchorNode`)
+             
+                return [{                  
                     data: {
-                        id: portID,
+                        id: paramAnchorNodeID,
                         parent: this.moduleName,
-                        label: child.name || child.tag || `${this.moduleName}-${child.name}${index + 1}`,
+                        label: child.name || `${this.moduleName}-${paramAnchorNodeID}-${child.name}`,
+                        nameSpace: `${paramAnchorNodeID}.${child.name}`,
                         kind: child.kind,
-                        bgcolour: child.kind === 'input' ? '#FC9A4F' : child.kind === 'output' ? '#6FB1FC' : '#CCCCCC',
-                        ghostCableShape: child.kind === 'input' ? 'rectangle' : 'triangle',
-                        ghostCableColour: child.kind === 'input' ? '#5C9AE3' : '#E68942',
-                        description: child.modulationDescription || null
+                        // sliderComponent: 'handle',
+                        shape: 'ellipse',
+                        bgcolour: '#CCCCCC',
+                        // set the track dimensions in the handle data for later access
+                        // trackStartX: trackStartX, 
+                        // trackEndX: trackEndX,
+                        // fixedY: config.position.y +10,
+                        hash: `${this.moduleName}_${child.name}`,
+                        ui: child.ui,
+                        min: child.min || child.minimum || 0,
+                        max: child.max || child.maximum || 1,
+                        value: child.default || child.value || 0,
+                        menuOptions: child.values || 'none',
+                        description: child.description,
+                        units: child.units || 'unspecified'
                         
                     },
                     position: {
-                        x: this.position.x + offsetX,
-                        y: this.position.y + offsetY
-                    }
-                };
-            }
-           
+                        x: this.position.x + col * (this.cellWidth + this.horizontalPadding),
+                        y: this.position.y + row * (this.cellHeight + this.verticalPadding)
+                    },
+                    classes: 'paramAnchorNode'
+                }]
+
+            } 
+                else {
+                    
+                    const portID = `${this.moduleName}.${child.name}`
+
+                    this.nodeIDs.push(portID)
+                    return {
+                        
+                        data: {
+                            id: portID,
+                            parent: this.moduleName,
+                            label: child.name || child.tag || `${this.moduleName}-${child.name}${index + 1}`,
+                            kind: child.kind,
+                            bgcolour: child.kind === 'input' ? '#FC9A4F' : child.kind === 'output' ? '#6FB1FC' : '#CCCCCC',
+                            ghostCableShape: child.kind === 'input' ? 'rectangle' : 'triangle',
+                            ghostCableColour: child.kind === 'input' ? '#5C9AE3' : '#E68942',
+                            description: child.modulationDescription || null
+                            
+                        },
+                        position: {
+                            x: this.position.x + col * (this.cellWidth + this.horizontalPadding),
+                            y: this.position.y + row * (this.cellHeight + this.verticalPadding)
+                        }
+                    };
+                }
             
-        });
+                
+            });
         this.audioGraph.nodeIDs = this.nodeIDs
         let audioGraph = this.audioGraph
         let paramOverlays = this.paramOverlays

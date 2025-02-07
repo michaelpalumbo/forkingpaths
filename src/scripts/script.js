@@ -6,6 +6,7 @@
 const ws = new WebSocket('ws://localhost:3000');
 
 import { ParentNode_WebAudioNode } from '../utilities/parentNode_WebAudioNode.js';
+
 import { uuidv7 } from "uuidv7";
 import randomColor from 'randomcolor';
 import { saveDocument, loadDocument, deleteDocument } from '../utilities/indexedDB.js';
@@ -13,7 +14,7 @@ import { marked } from 'marked'
 // import * as Tone from "tone";
 import 'jquery-knob';   // Import jQuery Knob plugin
 import { computePosition, flip, shift } from '@floating-ui/dom';
-
+import { config } from '../../config/forkingPathsConfig.js';
 
 // TODO: look for comments with this: //* old -repo version 
 // TODO: when new automerge implementation is working, remove their related code sections
@@ -31,6 +32,7 @@ const knobVerticalSpacing = baseKnobSize * 0.2; // 20% of base knob size for ver
 const baseDropdownWidth = 100; // Base width of the dropdown
 // this is session storage of the ui overlays. 
 let paramUIOverlays = {}
+
 
 // store the paramOverlay IDs
 let paramUI_IDs = {}
@@ -159,7 +161,6 @@ let temporaryCables = {
 // *
 
 document.addEventListener("DOMContentLoaded", function () {
-
     // Get the saved volume level from localStorage, default to 0.5 (50%)
     const savedVolume = parseFloat(localStorage.getItem('volume')) || 0.5;
 
@@ -2455,6 +2456,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 const parentNode = cy.getElementById(parentNodeID)
                 const parentData = parentNode.data();
 
+                console.log('childPos_anchorNode', childNode.position())
                 const parentParams = parentData?.moduleSpec?.paramNames || [];
                 if (childNode && parentParams.length > 0) {
                     const containerRect = cy.container().getBoundingClientRect();
@@ -2484,6 +2486,14 @@ document.addEventListener("DOMContentLoaded", function () {
                             ? -colSpacing / 2 -20 // Left knob
                             : colSpacing / 2 - 20; // Right knob
                     const offsetY = row * rowSpacing - (parentNodeHeight / 4 - 20); // Row offset
+                    console.log('childPos_computed', {
+                        width: knobWidth,
+                        height: knobHeight,
+                        top: containerRect.top + (parentPos.y * zoom) + pan.y + offsetY,
+                        left: containerRect.left + (parentPos.x * zoom) + pan.x + offsetX,
+                        right: containerRect.left + (parentPos.x * zoom) + pan.x + knobWidth,
+                        bottom: containerRect.top + (parentPos.y * zoom) + pan.y + knobHeight,
+                    })
 
                     // Adjust for odd-numbered parameters (center last knob in the last row)
                     if (totalParams % 2 !== 0 && index === totalParams - 1) {
@@ -4123,7 +4133,10 @@ document.addEventListener("DOMContentLoaded", function () {
         
         // const parentNode = new ParentNode(module, position, children); // old version. 
 
-        const parentNode = new ParentNode_WebAudioNode(module, position, children, structure);
+        const parentNode = new ParentNode_WebAudioNode(module, position, children, structure, config.moduleLayout);
+
+        const dims = parentNode().getDimensions()
+        console.log(dims)
 
         // parentNode.getModule('oscillator')
         const { parentNode: parentNodeData, childrenNodes, audioGraph, paramOverlays } = parentNode.getNodeStructure();
