@@ -28,7 +28,7 @@ let signalAnalysisSetting = false
 // * UI
 const baseKnobSize = 45; // Default size in pixels
 const knobOffsetAmount = 30; // Horizontal offset for staggering knobs
-const knobVerticalSpacing = baseKnobSize * 0.2; // 20% of base knob size for vertical spacing
+const knobVerticalSpacing = config.knob.baseKnobSize * 0.2; // 20% of base knob size for vertical spacing
 const baseDropdownWidth = 100; // Base width of the dropdown
 // this is session storage of the ui overlays. 
 let paramUIOverlays = {}
@@ -2324,8 +2324,8 @@ document.addEventListener("DOMContentLoaded", function () {
         containerDiv.className = '.paramUIOverlayContainer'
         containerDiv.style.position = 'absolute';
         containerDiv.style.zIndex = '1000';
-        containerDiv.style.width = `${baseKnobSize}px`;
-        containerDiv.style.height = `${baseKnobSize}px`;
+        containerDiv.style.width = `${config.knob.baseKnobSize}px`;
+        containerDiv.style.height = `${config.knob.baseKnobSize}px`;
         containerDiv.id = `paramDivContainer_${param.data.id}`
 
 
@@ -2414,11 +2414,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 fgColor: "#00aaff",
                 bgColor: "#e6e6e6",
                 inputColor: "#333",
-                thickness: 0.3,
+                thickness: config.knob.thickness,
                 angleArc: 270,
                 angleOffset: -135,
-                width: baseKnobSize,          // Set width of the knob
-                height: baseKnobSize,  
+                width: config.knob.baseKnobSize,          // Set width of the knob
+                height: config.knob.baseKnobSize,  
                 // change: function (value) {
                 //     $(this.$).trigger('knobChange', [parentNodeID, param.data.label, value]);
                 // },
@@ -2456,7 +2456,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 const parentNode = cy.getElementById(parentNodeID)
                 const parentData = parentNode.data();
 
-                console.log('childPos_anchorNode', childNode.position())
                 const parentParams = parentData?.moduleSpec?.paramNames || [];
                 if (childNode && parentParams.length > 0) {
                     const containerRect = cy.container().getBoundingClientRect();
@@ -2468,54 +2467,17 @@ document.addEventListener("DOMContentLoaded", function () {
                     const parentPos = parentNode.position();
 
                     // Calculate knob dimensions
-                    const knobWidth = baseKnobSize; // Example knob width (update as needed)
-                    const knobHeight = baseKnobSize; // Example knob height (update as needed)
-                    const rowSpacing = knobHeight * 1.5; // Adjust row spacing
-                    const colSpacing = knobWidth * 1.5; // Adjust column spacing
-
-                    // Calculate layout based on index
-                    const totalParams = parentParams.length; // Number of parameters
-                    const index = parentParams.findIndex((item)=> item === param.data.label)
-                    const row = Math.floor(index / 2); // Current row (2 items per row)
-                    const col = index % 2; // Left (0) or right (1)
-
-                    // Center the knobs for odd/even layouts
-                    const totalWidth = colSpacing * 2; // Total width for two knobs per row
-                    const offsetX =
-                        col === 0
-                            ? -colSpacing / 2 -20 // Left knob
-                            : colSpacing / 2 - 20; // Right knob
-                    const offsetY = row * rowSpacing - (parentNodeHeight / 4 - 20); // Row offset
-                    console.log('childPos_computed', {
-                        width: knobWidth,
-                        height: knobHeight,
-                        top: containerRect.top + (parentPos.y * zoom) + pan.y + offsetY,
-                        left: containerRect.left + (parentPos.x * zoom) + pan.x + offsetX,
-                        right: containerRect.left + (parentPos.x * zoom) + pan.x + knobWidth,
-                        bottom: containerRect.top + (parentPos.y * zoom) + pan.y + knobHeight,
-                    })
-
-                    // Adjust for odd-numbered parameters (center last knob in the last row)
-                    if (totalParams % 2 !== 0 && index === totalParams - 1) {
-                        // Center single knob in last row
-                        return {
-                            width: knobWidth,
-                            height: knobHeight,
-                            top: containerRect.top + (parentPos.y * zoom) + pan.y + offsetY,
-                            left: containerRect.left + (parentPos.x * zoom) + pan.x + offsetX,
-                            right: containerRect.left + (parentPos.x * zoom) + pan.x + knobWidth,
-                            bottom: containerRect.top + (parentPos.y * zoom) + pan.y + knobHeight,
-                        };
-                    }
+                    const knobWidth = config.knob.baseKnobSize; // Example knob width (update as needed)
+                    const knobHeight = config.knob.baseKnobSize; // Example knob height (update as needed)
 
                     // Default (even layout or regular position)
                     return {
-                        width: knobWidth,
-                        height: knobHeight,
-                        top: containerRect.top + (parentPos.y * zoom) + pan.y + offsetY,
-                        left: containerRect.left + (parentPos.x * zoom) + pan.x + offsetX,
-                        right: containerRect.left + (parentPos.x * zoom) + pan.x + offsetX + knobWidth,
-                        bottom: containerRect.top + (parentPos.y * zoom) + pan.y + offsetY + knobHeight,
+                        width: config.knob.baseKnobSize,
+                        height: config.knob.baseKnobSize,
+                        top: containerRect.top + childNode.position().y,
+                        left: containerRect.left + childNode.position().x,
+                        right: containerRect.left + childNode.position().x + config.knob.baseKnobSize,
+                        bottom: containerRect.top + childNode.position().y + config.knob.baseKnobSize,
                     };
                 }
 
@@ -2570,7 +2532,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             containerDiv.style.left = `${x}px`;
                             containerDiv.style.top = `${y}px`;
                             // Dynamically scale the knob size
-                            const scaledSize = baseKnobSize / zoom;
+                            const scaledSize = config.knob.baseKnobSize / zoom;
                             containerDiv.style.width = `${scaledSize}px`;
                             containerDiv.style.height = `${scaledSize}px`;
                         });
@@ -2590,7 +2552,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         containerDiv.style.left = `${x}px`;
                         containerDiv.style.top = `${y}px`;
                         // Dynamically scale the knob size
-                        const scaledSize = baseKnobSize / zoom;
+                        const scaledSize = config.knob.baseKnobSize / zoom;
                         containerDiv.style.width = `${scaledSize}px`;
                         containerDiv.style.height = `${scaledSize}px`;
                     });
