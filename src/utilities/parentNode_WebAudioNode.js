@@ -58,11 +58,11 @@ export class ParentNode_WebAudioNode {
 
         // module layouts
         // Layout configuration parameters:
-        this.maxRows = config.moduleLayout.maxRows; // Maximum number of rows per module
-        this.cellWidth = config.moduleLayout.cellWidth;      // Width of each cell (adjust as needed)
-        this.cellHeight = config.moduleLayout.cellHeight;      // Height of each cell (adjust as needed)
-        this.horizontalPadding = config.moduleLayout.horizontalPadding; // Horizontal spacing between cells
-        this.verticalPadding = config.moduleLayout.verticalPadding;   // Vertical spacing between cells
+        this.maxRows = config.UI.moduleLayout.maxRows; // Maximum number of rows per module
+        this.cellWidth = config.UI.moduleLayout.cellWidth;      // Width of each cell (adjust as needed)
+        this.cellHeight = config.UI.moduleLayout.cellHeight;      // Height of each cell (adjust as needed)
+        this.horizontalPadding = config.UI.moduleLayout.horizontalPadding; // Horizontal spacing between cells
+        this.verticalPadding = config.UI.moduleLayout.verticalPadding;   // Vertical spacing between cells
        
         // module background colour:
         switch(this.module){

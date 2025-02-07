@@ -5,13 +5,10 @@
 //*
 const ws = new WebSocket('ws://localhost:3000');
 
-import { ParentNode_WebAudioNode } from '../utilities/parentNode_WebAudioNode.js';
-
 import { uuidv7 } from "uuidv7";
 import randomColor from 'randomcolor';
 import { saveDocument, loadDocument, deleteDocument } from '../utilities/indexedDB.js';
 import { marked } from 'marked'
-// import * as Tone from "tone";
 import 'jquery-knob';   // Import jQuery Knob plugin
 import { computePosition, flip, shift } from '@floating-ui/dom';
 import { config } from '../../config/forkingPathsConfig.js';
@@ -26,17 +23,7 @@ let synthWorklet; // the audioWorklet for managing and running the audio graph
 let signalAnalysisSetting = false
 
 // * UI
-const baseKnobSize = 45; // Default size in pixels
-const knobOffsetAmount = 30; // Horizontal offset for staggering knobs
-const knobVerticalSpacing = config.knob.baseKnobSize * 0.2; // 20% of base knob size for vertical spacing
-const baseDropdownWidth = 100; // Base width of the dropdown
-// this is session storage of the ui overlays. 
-let paramUIOverlays = {}
 
-
-// store the paramOverlay IDs
-let paramUI_IDs = {}
-const eventListeners = []; // Array to track event listeners
 let virtualElements = {}
 
 // * History Sequencer
@@ -47,10 +34,7 @@ let historySequencerWindow;
 let Automerge;
 let amDoc = null
 let docID = null
-let saveInterval = 1000; // how frequently to store the automerge document in indexedDB
 let onChange; // my custom automerge callback for changes made to the doc
-let docUpdated = false // set this to true whenever doc has changed so that indexedDB will store it. after set it back to false
-
 
 let automergeDocuments = {
     newClone: false,
@@ -62,45 +46,28 @@ let automergeDocuments = {
 
     }
 }
+let docUpdated = false
 
-let firstBranchName = 'main'
 let previousHash;
 let meta;
-let branches = {
-    // branchName: {
-        // head: hash
-        // root: hash (the node that it started from)
-    //}
-}
 
-// Throttle interval (e.g., 500ms)
-const THROTTLE_INTERVAL = 250;
+
+
 let throttleSend = true
 let metaIsDirty = false
 
-let historyBoundingBox;
-let selectedHistoryNodes = []
-let historySelectionBoxStatus = false
-let existingHistoryNodeIDs
-let historyHighlightedNode = null
-let historySequencerHighlightedNode = null
 let isDraggingEnabled = false;
-let moduleDragState = false;
-
 let highlightedNode = null
 let heldModule = null
-let heldModulePos = { x: null, y: null }
 
 let allowMultiSelect = false;
 let allowPan = false;
 
 let isSliderDragging = false;
-let currentHandleNode;
+
 
 // * CYTOSCAPE
 
-let currentPan = { x: 0, y: 0 }
-let currentZoom = 0.8
 let parentNodePositions = []
 
 
@@ -162,7 +129,7 @@ let temporaryCables = {
 
 document.addEventListener("DOMContentLoaded", function () {
     // Get the saved volume level from localStorage, default to 0.5 (50%)
-    const savedVolume = parseFloat(localStorage.getItem('volume')) || 0.5;
+    const savedVolume = parseFloat(localStorage.getItem('volume')) || config.audio.initialVolume;
 
     // Audio context
     const audioContext = new window.AudioContext();
@@ -274,7 +241,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         layout: {
             name: 'preset', // Preset layout allows manual positioning
-            
         },
         fit: false,
         resize: true,
@@ -289,8 +255,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     'background-color': 'data(bgcolour)',
                     'label': 'data(label)', // Use the custom label attribute
                     'font-size': '18px',
-                    'width': 30,
-                    'height': 30,
+                    'width': config.cytoscape.synthGraph.style.nodeWidth,
+                    'height': config.cytoscape.synthGraph.style.nodeHeight,
                     'color': '#000',            // Label text color
                     'text-valign': 'center',    // Vertically center the label
                     'text-halign': 'left',      // Horizontally align label to the left of the node
@@ -569,10 +535,10 @@ document.addEventListener("DOMContentLoaded", function () {
         // if meta doesn't contain a document, create a new one
         if (!meta.docs[meta.head.branch]) {
             amDoc = Automerge.init();
-            let amMsg = makeChangeMessage(firstBranchName, 'blank_patch')
+            let amMsg = makeChangeMessage(config.patchHistory.firstBranchName, 'blank_patch')
             // Apply initial changes to the new document
             amDoc = Automerge.change(amDoc, amMsg, (amDoc) => {
-                amDoc.title = firstBranchName;
+                amDoc.title = config.patchHistory.firstBranchName;
                 amDoc.changeType = {
                     msg: 'blank_patch'
                 },
@@ -595,7 +561,7 @@ document.addEventListener("DOMContentLoaded", function () {
             previousHash = hash
             
             meta = Automerge.change(meta, (meta) => {
-                meta.branches[firstBranchName] = {
+                meta.branches[config.patchHistory.firstBranchName] = {
                     head: hash,
                     root: null,
                     parent: null,
@@ -604,10 +570,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
                 
                 // encode the doc as a binary object for efficiency
-                meta.docs[firstBranchName] = Automerge.save(amDoc)
-                meta.head.branch = firstBranchName
+                meta.docs[config.patchHistory.firstBranchName] = Automerge.save(amDoc)
+                meta.head.branch = config.patchHistory.firstBranchName
                 meta.head.hash = hash 
-                meta.branchOrder.push(firstBranchName)
+                meta.branchOrder.push(config.patchHistory.firstBranchName)
                 
             });
             // set the document branch (aka title) in the editor pane
@@ -620,7 +586,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // addSpeaker()
         
-            currentZoom = cy.zoom()
+            // currentZoom = cy.zoom()
         } else {
             // meta does contain at least one document, so grab whichever is the one that was last looked at
             amDoc = Automerge.load(meta.docs[meta.head.branch]);
@@ -643,7 +609,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 // document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
                 // addSpeaker()
         
-                currentZoom = cy.zoom()
+                // currentZoom = cy.zoom()
 
             }, 1000);
 
@@ -660,7 +626,7 @@ document.addEventListener("DOMContentLoaded", function () {
             docUpdated = false
         }
 
-    }, saveInterval);
+    }, config.indexedDB.saveInterval);
 
     // handle document changes and call a callback
     function applyChange(doc, changeCallback, onChangeCallback, changeMessage) {
@@ -889,7 +855,7 @@ document.addEventListener("DOMContentLoaded", function () {
             docs: {},
             head: {
                 hash: null,
-                branch: firstBranchName
+                branch: config.patchHistory.firstBranchName
             },
             
             userSettings: {
@@ -918,10 +884,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if(synthFile){
             console.log('synthFile')
-            let amMsg = makeChangeMessage(firstBranchName, `loaded${synthFile.filename}`)
+            let amMsg = makeChangeMessage(config.patchHistory.firstBranchName, `loaded${synthFile.filename}`)
             // Apply initial changes to the new document
             amDoc = Automerge.change(amDoc, amMsg, (amDoc) => {
-                amDoc.title = firstBranchName;
+                amDoc.title = config.patchHistory.firstBranchName;
                 amDoc.elements = [ ] 
                 synthFile.visualGraph.elements.nodes.forEach((node)=>{
                     amDoc.elements.push(node)
@@ -961,10 +927,10 @@ document.addEventListener("DOMContentLoaded", function () {
         } else { 
             console.log('non synthFile')
 
-            let amMsg = makeChangeMessage(firstBranchName, 'blank_patch')
+            let amMsg = makeChangeMessage(config.patchHistory.firstBranchName, 'blank_patch')
             // Apply initial changes to the new document
             amDoc = Automerge.change(amDoc, amMsg, (amDoc) => {
-                amDoc.title = firstBranchName;
+                amDoc.title = config.patchHistory.firstBranchName;
                 amDoc.elements = []
                 amDoc.synth = {
                     graph:{
@@ -987,7 +953,7 @@ document.addEventListener("DOMContentLoaded", function () {
             msg = synthFile.filename
         }
         meta = Automerge.change(meta, (meta) => {
-            meta.branches[firstBranchName] = {
+            meta.branches[config.patchHistory.firstBranchName] = {
                 head: hash,
                 root: null,
                 parent: null,
@@ -996,8 +962,8 @@ document.addEventListener("DOMContentLoaded", function () {
             }
             
             // encode the doc as a binary object for efficiency
-            meta.docs[firstBranchName] = Automerge.save(amDoc)
-            meta.head.branch = firstBranchName
+            meta.docs[config.patchHistory.firstBranchName] = Automerge.save(amDoc)
+            meta.head.branch = config.patchHistory.firstBranchName
             meta.head.hash = hash 
             meta.branchOrder.push(meta.head.branch)
             
@@ -1985,18 +1951,18 @@ document.addEventListener("DOMContentLoaded", function () {
         containerDiv.className = '.paramUIOverlayContainer'
         containerDiv.style.position = 'absolute';
         containerDiv.style.zIndex = '1000';
-        containerDiv.style.width = `${config.knob.baseKnobSize}px`;
-        containerDiv.style.height = `${config.knob.baseKnobSize}px`;
+        containerDiv.style.width = `${config.UI.knob.baseKnobSize}px`;
+        containerDiv.style.height = `${config.UI.knob.baseKnobSize}px`;
         containerDiv.id = `paramDivContainer_${param.data.id}`
 
 
         // Create the label element
         const labelDiv = document.createElement('div');
         labelDiv.innerText = param.data.label || `Knob`; // Use parameter label or default
-        labelDiv.style.textAlign = 'left';
-        labelDiv.style.marginBottom = config.knob.labelMarginBottom;
-        labelDiv.style.fontSize = config.knob.labelFontSize;
-        labelDiv.style.color = '#333';
+        labelDiv.style.textAlign = config.UI.knob.labelAlign;
+        labelDiv.style.marginBottom = config.UI.knob.labelMarginBottom;
+        labelDiv.style.fontSize = config.UI.knob.labelFontSize;
+        labelDiv.style.color = config.UI.knob.labelColour;
         
         // add menu or knob
         let paramDiv
@@ -2075,11 +2041,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 fgColor: "#00aaff",
                 bgColor: "#e6e6e6",
                 inputColor: "#333",
-                thickness: config.knob.thickness,
+                thickness: config.UI.knob.thickness,
                 angleArc: 270,
                 angleOffset: -135,
-                width: config.knob.baseKnobSize,          // Set width of the knob
-                height: config.knob.baseKnobSize,  
+                width: config.UI.knob.baseKnobSize,          // Set width of the knob
+                height: config.UI.knob.baseKnobSize,  
                 // change: function (value) {
                 //     $(this.$).trigger('knobChange', [parentNodeID, param.data.label, value]);
                 // },
@@ -2131,17 +2097,17 @@ document.addEventListener("DOMContentLoaded", function () {
                     const parentPos = parentNode.position();
 
                     // Calculate knob dimensions
-                    const knobWidth = config.knob.baseKnobSize; // Example knob width (update as needed)
-                    const knobHeight = config.knob.baseKnobSize; // Example knob height (update as needed)
+                    const knobWidth = config.UI.knob.baseKnobSize; // Example knob width (update as needed)
+                    const knobHeight = config.UI.knob.baseKnobSize; // Example knob height (update as needed)
 
                     // Default (even layout or regular position)
                     return {
-                        width: config.knob.baseKnobSize,
-                        height: config.knob.baseKnobSize,
+                        width: config.UI.knob.baseKnobSize,
+                        height: config.UI.knob.baseKnobSize,
                         top: containerRect.top + childNode.position().y,
                         left: containerRect.left + childNode.position().x,
-                        right: containerRect.left + childNode.position().x + config.knob.baseKnobSize,
-                        bottom: containerRect.top + childNode.position().y + config.knob.baseKnobSize,
+                        right: containerRect.left + childNode.position().x + config.UI.knob.baseKnobSize,
+                        bottom: containerRect.top + childNode.position().y + config.UI.knob.baseKnobSize,
                     };
                 }
 
@@ -2196,7 +2162,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             containerDiv.style.left = `${x}px`;
                             containerDiv.style.top = `${y}px`;
                             // Dynamically scale the knob size
-                            const scaledSize = config.knob.baseKnobSize / zoom;
+                            const scaledSize = config.UI.knob.baseKnobSize / zoom;
                             containerDiv.style.width = `${scaledSize}px`;
                             containerDiv.style.height = `${scaledSize}px`;
                         });
@@ -2216,7 +2182,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         containerDiv.style.left = `${x}px`;
                         containerDiv.style.top = `${y}px`;
                         // Dynamically scale the knob size
-                        const scaledSize = config.knob.baseKnobSize / zoom;
+                        const scaledSize = config.UI.knob.baseKnobSize / zoom;
                         containerDiv.style.width = `${scaledSize}px`;
                         containerDiv.style.height = `${scaledSize}px`;
                     });
@@ -2867,7 +2833,7 @@ document.addEventListener("DOMContentLoaded", function () {
             //     module: heldModule.data().id,
             //     position: event.position
             // });
-            heldModulePos = event.position
+            // heldModulePos = event.position
 
   
             
@@ -3052,11 +3018,11 @@ document.addEventListener("DOMContentLoaded", function () {
             // toDO: also pass this to automerge handle, and then write a handle.on('change'...) for grabbing this value and passing it to this same function below:
             // updateSliderBoundaries(heldModule)
             
-            heldModulePos = { }
-            heldModule = null
+            // heldModulePos = { }
+            // heldModule = null
         }
         // update pan after dragging viewport
-        currentPan = cy.pan()
+        // currentPan = cy.pan()
 
 
     });
@@ -3465,7 +3431,7 @@ document.addEventListener("DOMContentLoaded", function () {
         
     //     // const parentNode = new ParentNode(module, position, children); // old version. 
 
-    //     const parentNode = new ParentNode_WebAudioNode(module, position, children, structure, config.moduleLayout);
+    //     const parentNode = new ParentNode_WebAudioNode(module, position, children, structure, config.UI.moduleLayout);
   
 
     //     // parentNode.getModule('oscillator')
@@ -3737,7 +3703,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         metaIsDirty = false
-    }, THROTTLE_INTERVAL); // Attempt to send updates every interval
+    }, config.appCommunication.throttleInterval); // Attempt to send updates every interval
 
 
     function syncPositions(forkedDoc) {

@@ -13,16 +13,13 @@ import { config } from '../../config/forkingPathsConfig.js';
 
 
 // * UI
-const baseKnobSize = config.knob.baseKnobSize; // Default size in pixels
-const knobOffsetAmount = 30; // Horizontal offset for staggering knobs
-const knobVerticalSpacing = baseKnobSize * 0.2; // 20% of base knob size for vertical spacing
-const baseDropdownWidth = 100; // Base width of the dropdown
+const baseKnobSize = config.UI.knob.baseKnobSize; // Default size in pixels
+
 // this is session storage of the ui overlays. 
 let paramUIOverlays = {}
 
 let virtualElements = {}
 
-let debugVar;
 
 let isDraggingEnabled = false;
 
@@ -121,8 +118,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     'background-color': 'data(bgcolour)',
                     'label': 'data(label)', // Use the custom label attribute
                     'font-size': '18px',
-                    'width': 30,
-                    'height': 30,
+                    'width': config.cytoscape.synthGraph.style.nodeWidth,
+                    'height': config.cytoscape.synthGraph.style.nodeHeight,
                     'color': '#000',            // Label text color
                     'text-valign': 'top',    // Vertically center the label
                     'text-halign': 'center',      // Horizontally align label to the left of the node
@@ -507,10 +504,10 @@ document.addEventListener("DOMContentLoaded", function () {
         // Create the label element
         const labelDiv = document.createElement('div');
         labelDiv.innerText = param.data.label || `Knob`; // Use parameter label or default
-        labelDiv.style.textAlign = 'left';
-        labelDiv.style.marginBottom = '2px';
-        labelDiv.style.fontSize = '12px';
-        labelDiv.style.color = '#333';
+        labelDiv.style.textAlign = config.UI.knob.labelAlign;
+        labelDiv.style.marginBottom = config.UI.knob.labelMarginBottom;
+        labelDiv.style.fontSize = config.UI.knob.labelFontSize;
+        labelDiv.style.color = config.UI.knob.labelColour;
         
         // add menu or knob
         let paramDiv
@@ -574,11 +571,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 fgColor: "#00aaff",
                 bgColor: "#e6e6e6",
                 inputColor: "#333",
-                thickness: config.knob.thickness,
+                thickness: config.UI.knob.thickness,
                 angleArc: 270,
                 angleOffset: -135,
-                width: config.knob.baseKnobSize,          // Set width of the knob
-                height: config.knob.baseKnobSize,  
+                width: config.UI.knob.baseKnobSize,          // Set width of the knob
+                height: config.UI.knob.baseKnobSize,  
             });
         } else if (param.data.ui === 'menu'){
             // ignore
@@ -600,12 +597,12 @@ document.addEventListener("DOMContentLoaded", function () {
        
                     // set virtual element position based on childNode.position()
                     return {
-                        width: config.knob.baseKnobSize,
-                        height: config.knob.baseKnobSize,
+                        width: config.UI.knob.baseKnobSize,
+                        height: config.UI.knob.baseKnobSize,
                         top: containerRect.top + childNode.position().y,
                         left: containerRect.left + childNode.position().x,
-                        right: containerRect.left + childNode.position().x + config.knob.baseKnobSize,
-                        bottom: containerRect.top + childNode.position().y + config.knob.baseKnobSize,
+                        right: containerRect.left + childNode.position().x + config.UI.knob.baseKnobSize,
+                        bottom: containerRect.top + childNode.position().y + config.UI.knob.baseKnobSize,
                         // top: containerRect.top + (parentPos.y * zoom) + pan.y + offsetY,
                         // left: containerRect.left + (parentPos.x * zoom) + pan.x + offsetX,
                         // right: containerRect.left + (parentPos.x * zoom) + pan.x + offsetX + knobWidth,
@@ -1064,7 +1061,7 @@ document.addEventListener("DOMContentLoaded", function () {
         
         // const parentNode = new ParentNode(module, position, children); // old version. 
 
-        const parentNode = new ParentNode_WebAudioNode(module, position, children, structure, config.moduleLayout);
+        const parentNode = new ParentNode_WebAudioNode(module, position, children, structure, config.UI.moduleLayout);
 
         // parentNode.getModule('oscillator')
         const { parentNode: parentNodeData, childrenNodes, audioGraph, paramOverlays } = parentNode.getNodeStructure();
@@ -1073,7 +1070,6 @@ document.addEventListener("DOMContentLoaded", function () {
         cy.add(parentNodeData);
         cy.add(childrenNodes);
         
-        debugVar = parentNodeData.data.id
         // index determines the left or right positioning of each knob
         let index = 0
         paramUIOverlays[parentNodeData.data.id] = []
