@@ -300,11 +300,11 @@ class DSP extends AudioWorkletProcessor {
                         activeSteps: parseInt(params.activeSteps) || 8,
                         tempo: parseFloat(params.tempo) || 120,
                         "tempo cv +/-": parseFloat(params["tempo cv +/-"]) || 10,
-                        ratchet: parseInt(params.ratchet) || 0,
+                        pulseWidth: parseInt(params.ratchet) || 0,
                     },
                     modulatedParams: {
                         tempo: 0,
-                        pulseWidth: 0
+                        ratchet: 0
                     },
                     output: new Float32Array(128), // Single output buffer
                     stepIndex: 0,
@@ -834,7 +834,7 @@ class DSP extends AudioWorkletProcessor {
                         node.delayIndex = 0;
                         node.lpfCutoff = node.baseParams.lpfCutoff || 3000;
                         node.lpfPreviousSample = 0;
-                        node.previousDelayTime = getEffectiveParam(node, 'delayTime', node.baseParams['time cv +/-']);
+                        node.previousDelayTime = Math.min(Math.max(getEffectiveParam(node, 'delayTime', node.baseParams['time cv +/-']), 0), 999);
                 
                         // 🎛️ Allpass filter memory for smoothing
                         node.allpassMem1 = 0;
@@ -842,8 +842,8 @@ class DSP extends AudioWorkletProcessor {
                     }
                 
                     // 🚀 Smooth delay time modulation
-                    const newDelayTime = getEffectiveParam(node, 'delayTime', node.baseParams['time cv +/-']);
-                    const delayTime = node.previousDelayTime + 0.1 * (newDelayTime - node.previousDelayTime);
+                    const newDelayTime = Math.min(Math.max(getEffectiveParam(node, 'delayTime', node.baseParams['time cv +/-']), 0), 999);
+                    const delayTime = node.previousDelayTime + 0.05 * (newDelayTime - node.previousDelayTime);
                     node.previousDelayTime = delayTime;
                 
                     // 🕒 Convert to samples
@@ -855,8 +855,8 @@ class DSP extends AudioWorkletProcessor {
                 
                     // 🎛️ Feedback and mix parameters
                     const feedbackParam = typeof node.baseParams.feedback === 'number' ? node.baseParams.feedback : 0.5;
-                    const wetMix = node.baseParams.wetMix || 0.2;
-                    const dryMix = 0.3;
+                    const wetMix = node.baseParams.wetMix || 0.3;
+                    const dryMix = 0.4;
                 
                     // 🎚️ Lowpass filter coefficient
                     const RC = 1.0 / (2 * Math.PI * node.lpfCutoff);
