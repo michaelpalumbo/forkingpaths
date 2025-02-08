@@ -843,7 +843,19 @@ class DSP extends AudioWorkletProcessor {
                 
                     // 🚀 Smooth delay time modulation
                     const newDelayTime = Math.min(Math.max(getEffectiveParam(node, 'delayTime', node.baseParams['time cv +/-']), 0), 999);
-                    const delayTime = node.previousDelayTime + 0.05 * (newDelayTime - node.previousDelayTime);
+                    
+                    // --- Slew Limiter Implementation ---
+                    // Define the maximum allowed change (delta) in delayTime per processing block (in ms)
+                    const maxDelta = 5; // Adjust this value as needed
+                    // Compute the raw difference from the previous delay time
+                    const rawDelta = newDelayTime - node.previousDelayTime;
+                    // Clamp the difference so that it does not exceed the maximum delta in either direction
+                    const limitedDelta = Math.max(-maxDelta, Math.min(maxDelta, rawDelta));
+                    // Now apply your smoothing factor (0.1) to the limited delta
+                    const delayTime = node.previousDelayTime + 0.1 * limitedDelta;
+                    
+                    // const delayTime = node.previousDelayTime + 0.05 * (newDelayTime - node.previousDelayTime);
+                    // Update previousDelayTime for the next block
                     node.previousDelayTime = delayTime;
                 
                     // 🕒 Convert to samples
