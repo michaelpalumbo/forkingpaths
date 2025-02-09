@@ -829,82 +829,207 @@ class DSP extends AudioWorkletProcessor {
                     }
                 }
                 else if (node.node === 'Delay') {
+                    // ─── Initialization ─────────────────────────────────────────────
                     if (!node.delayBuffer) {
                         node.delayBuffer = new Float32Array(sampleRate); // 1-second delay buffer
                         node.delayIndex = 0;
                         node.lpfCutoff = node.baseParams.lpfCutoff || 3000;
                         node.lpfPreviousSample = 0;
-                        node.previousDelayTime = Math.min(Math.max(getEffectiveParam(node, 'delayTime', node.baseParams['time cv +/-']), 0), 999);
-                
-                        // 🎛️ Allpass filter memory for smoothing
+                        // Instead of using previousDelayTime (with a slew limiter),
+                        // we now use two delay time states for crossfading:
+                        node.currentDelayTime = Math.min(
+                            Math.max(getEffectiveParam(node, 'delayTime', node.baseParams['time cv +/-']), 0),
+                            999
+                        );
+                        node.targetDelayTime = node.currentDelayTime;
+                        // Crossfade state (crossfade over 128 samples by default)
+                        node.crossfadeActive = false;
+                        node.crossfade = 0;
+                        node.crossfadeSamples = 128;
+                        node.crossfadeIncrement = 1.0 / node.crossfadeSamples;
+                        // (The allpass memories remain from your original code but won’t be used now.)
                         node.allpassMem1 = 0;
                         node.allpassMem2 = 0;
                     }
-                
-                    // 🚀 Smooth delay time modulation
-                    const newDelayTime = Math.min(Math.max(getEffectiveParam(node, 'delayTime', node.baseParams['time cv +/-']), 0), 999);
                     
-                    // --- Slew Limiter Implementation ---
-                    // Define the maximum allowed change (delta) in delayTime per processing block (in ms)
-                    const maxDelta = 5; // Adjust this value as needed
-                    // Compute the raw difference from the previous delay time
-                    const rawDelta = newDelayTime - node.previousDelayTime;
-                    // Clamp the difference so that it does not exceed the maximum delta in either direction
-                    const limitedDelta = Math.max(-maxDelta, Math.min(maxDelta, rawDelta));
-                    // Now apply your smoothing factor (0.1) to the limited delta
-                    const delayTime = node.previousDelayTime + 0.1 * limitedDelta;
+                    // ─── Determine the New Delay Time Parameter ──────────────────────
+                    const newDelayTimeParam = Math.min(
+                        Math.max(getEffectiveParam(node, 'delayTime', node.baseParams['time cv +/-']), 0),
+                        999
+                    );
+                    // If a new delay time is requested and we aren’t already crossfading,
+                    // then start a crossfade from the current to the new delay time.
+                    if (newDelayTimeParam !== node.targetDelayTime && !node.crossfadeActive) {
+                        node.targetDelayTime = newDelayTimeParam;
+                        node.crossfadeActive = true;
+                        node.crossfade = 0;
+                    }
                     
-                    // const delayTime = node.previousDelayTime + 0.05 * (newDelayTime - node.previousDelayTime);
-                    // Update previousDelayTime for the next block
-                    node.previousDelayTime = delayTime;
-                
-                    // 🕒 Convert to samples
-                    const delaySamples = (delayTime / 1000) * sampleRate;
-                
-                    // 🔀 Split integer and fractional parts
-                    const intDelaySamples = Math.floor(delaySamples);
-                    const frac = delaySamples - intDelaySamples; // Fractional part for allpass interpolation
-                
-                    // 🎛️ Feedback and mix parameters
-                    const feedbackParam = typeof node.baseParams.feedback === 'number' ? node.baseParams.feedback : 0.5;
-                    const wetMix = node.baseParams.wetMix || 0.3;
-                    const dryMix = 0.4;
-                
-                    // 🎚️ Lowpass filter coefficient
+                    // ─── Lowpass Filter Coefficient (for smoothing the feedback) ──────
                     const RC = 1.0 / (2 * Math.PI * node.lpfCutoff);
                     const alpha = sampleRate / (sampleRate + RC);
-                
+                    
+                    // ─── Cubic Interpolation Function ─────────────────────────────────
+                    // (Catmull–Rom interpolation over four consecutive samples)
+                    function cubicInterpolate(buffer, index) {
+                        const len = buffer.length;
+                        let intIndex = Math.floor(index);
+                        let frac = index - intIndex;
+                        const i0 = ((intIndex - 1) + len) % len;
+                        const i1 = intIndex % len;
+                        const i2 = (intIndex + 1) % len;
+                        const i3 = (intIndex + 2) % len;
+                        const sample0 = buffer[i0];
+                        const sample1 = buffer[i1];
+                        const sample2 = buffer[i2];
+                        const sample3 = buffer[i3];
+                        const a0 = -0.5 * sample0 + 1.5 * sample1 - 1.5 * sample2 + 0.5 * sample3;
+                        const a1 = sample0 - 2.5 * sample1 + 2.0 * sample2 - 0.5 * sample3;
+                        const a2 = -0.5 * sample0 + 0.5 * sample2;
+                        const a3 = sample1;
+                        return ((a0 * frac + a1) * frac + a2) * frac + a3;
+                    }
+                    
+                    // ─── Process Each Sample in the Block ─────────────────────────────
                     for (let i = 0; i < 128; i++) {
-                        // 🕘 Get delayed samples
-                        const indexA = (node.delayIndex - intDelaySamples + node.delayBuffer.length) % node.delayBuffer.length;
-                        const indexB = (indexA - 1 + node.delayBuffer.length) % node.delayBuffer.length;
-                
-                        const sampleA = node.delayBuffer[indexA];
-                        const sampleB = node.delayBuffer[indexB];
-                
-                        // 🎛️ Allpass interpolation
-                        const delayedSample = sampleB + frac * (sampleA - node.allpassMem1);
-                        node.allpassMem1 = delayedSample; // Store last sample
-                
-                        // 🎚️ Apply Lowpass Filter to Feedback
+                        let delayedSample;
+                        if (node.crossfadeActive) {
+                            // When crossfading, compute two delay read positions:
+                            // • one using the “old” delay time (node.currentDelayTime)
+                            // • one using the “new” target delay time (node.targetDelayTime)
+                            const delaySamplesOld = (node.currentDelayTime / 1000) * sampleRate;
+                            const delaySamplesNew = (node.targetDelayTime / 1000) * sampleRate;
+                            
+                            // Calculate the (wrapped) read indices for both delay times
+                            let readIndexOld = node.delayIndex - delaySamplesOld;
+                            if (readIndexOld < 0) readIndexOld += node.delayBuffer.length;
+                            let readIndexNew = node.delayIndex - delaySamplesNew;
+                            if (readIndexNew < 0) readIndexNew += node.delayBuffer.length;
+                            
+                            // Use cubic interpolation for each
+                            const delayedOld = cubicInterpolate(node.delayBuffer, readIndexOld);
+                            const delayedNew = cubicInterpolate(node.delayBuffer, readIndexNew);
+                            
+                            // Crossfade between the two based on the current crossfade factor
+                            delayedSample = (1 - node.crossfade) * delayedOld + node.crossfade * delayedNew;
+                            
+                            // Increment crossfade factor and check if the transition is complete
+                            node.crossfade += node.crossfadeIncrement;
+                            if (node.crossfade >= 1.0) {
+                                node.currentDelayTime = node.targetDelayTime;
+                                node.crossfadeActive = false;
+                                node.crossfade = 0;
+                            }
+                        } else {
+                            // No crossfade: use the current delay time
+                            const delaySamples = (node.currentDelayTime / 1000) * sampleRate;
+                            let readIndex = node.delayIndex - delaySamples;
+                            if (readIndex < 0) readIndex += node.delayBuffer.length;
+                            delayedSample = cubicInterpolate(node.delayBuffer, readIndex);
+                        }
+                        
+                        // ─── Feedback Processing ─────────────────────────────────────────
+                        // Apply a one-pole lowpass filter to smooth the delayed sample for feedback.
                         let filteredFeedback = alpha * delayedSample + (1 - alpha) * node.lpfPreviousSample;
-                        node.lpfPreviousSample = filteredFeedback; // Store for next iteration
-                
-                        // 🎤 Retrieve feedback input
+                        node.lpfPreviousSample = filteredFeedback;
+                        
+                        // Retrieve any additional feedback input if available
                         const feedbackInput = feedbackBuffers[id]?.[i] || 0;
+                        const feedbackParam = typeof node.baseParams.feedback === 'number' ? node.baseParams.feedback : 0.5;
                         const feedbackSample = filteredFeedback * feedbackParam + feedbackInput;
-                
-                        // 🎵 Dry/Wet Mix
+                        
+                        // ─── Dry/Wet Mixing and Buffer Writing ────────────────────────────
+                        const wetMix = node.baseParams.wetMix || 0.3;
+                        const dryMix = 0.4;
                         const inputSample = inputBuffer[i] || 0;
+                        // Combine the (wet) delayed signal plus feedback with the dry input
                         const wetSignal = delayedSample + feedbackSample;
                         const drySignal = inputSample;
                         signalBuffers[id][i] = this.clamp((drySignal * dryMix) + (wetSignal * wetMix), -1.0, 1.0);
-                
-                        // 🔁 Store in delay buffer
+                        
+                        // Write the output back into the delay buffer and advance the write pointer.
                         node.delayBuffer[node.delayIndex] = signalBuffers[id][i];
                         node.delayIndex = (node.delayIndex + 1) % node.delayBuffer.length;
                     }
                 }
+                
+                // else if (node.node === 'Delay') {
+                //     if (!node.delayBuffer) {
+                //         node.delayBuffer = new Float32Array(sampleRate); // 1-second delay buffer
+                //         node.delayIndex = 0;
+                //         node.lpfCutoff = node.baseParams.lpfCutoff || 3000;
+                //         node.lpfPreviousSample = 0;
+                //         node.previousDelayTime = Math.min(Math.max(getEffectiveParam(node, 'delayTime', node.baseParams['time cv +/-']), 0), 999);
+                
+                //         // 🎛️ Allpass filter memory for smoothing
+                //         node.allpassMem1 = 0;
+                //         node.allpassMem2 = 0;
+                //     }
+                
+                //     // 🚀 Smooth delay time modulation
+                //     const newDelayTime = Math.min(Math.max(getEffectiveParam(node, 'delayTime', node.baseParams['time cv +/-']), 0), 999);
+                    
+                //     // --- Slew Limiter Implementation ---
+                //     // Define the maximum allowed change (delta) in delayTime per processing block (in ms)
+                //     const maxDelta = 5; // Adjust this value as needed
+                //     // Compute the raw difference from the previous delay time
+                //     const rawDelta = newDelayTime - node.previousDelayTime;
+                //     // Clamp the difference so that it does not exceed the maximum delta in either direction
+                //     const limitedDelta = Math.max(-maxDelta, Math.min(maxDelta, rawDelta));
+                //     // Now apply your smoothing factor (0.1) to the limited delta
+                //     const delayTime = node.previousDelayTime + 0.1 * limitedDelta;
+                    
+                //     // const delayTime = node.previousDelayTime + 0.05 * (newDelayTime - node.previousDelayTime);
+                //     // Update previousDelayTime for the next block
+                //     node.previousDelayTime = delayTime;
+                
+                //     // 🕒 Convert to samples
+                //     const delaySamples = (delayTime / 1000) * sampleRate;
+                
+                //     // 🔀 Split integer and fractional parts
+                //     const intDelaySamples = Math.floor(delaySamples);
+                //     const frac = delaySamples - intDelaySamples; // Fractional part for allpass interpolation
+                
+                //     // 🎛️ Feedback and mix parameters
+                //     const feedbackParam = typeof node.baseParams.feedback === 'number' ? node.baseParams.feedback : 0.5;
+                //     const wetMix = node.baseParams.wetMix || 0.3;
+                //     const dryMix = 0.4;
+                
+                //     // 🎚️ Lowpass filter coefficient
+                //     const RC = 1.0 / (2 * Math.PI * node.lpfCutoff);
+                //     const alpha = sampleRate / (sampleRate + RC);
+                
+                //     for (let i = 0; i < 128; i++) {
+                //         // 🕘 Get delayed samples
+                //         const indexA = (node.delayIndex - intDelaySamples + node.delayBuffer.length) % node.delayBuffer.length;
+                //         const indexB = (indexA - 1 + node.delayBuffer.length) % node.delayBuffer.length;
+                
+                //         const sampleA = node.delayBuffer[indexA];
+                //         const sampleB = node.delayBuffer[indexB];
+                
+                //         // 🎛️ Allpass interpolation
+                //         const delayedSample = sampleB + frac * (sampleA - node.allpassMem1);
+                //         node.allpassMem1 = delayedSample; // Store last sample
+                
+                //         // 🎚️ Apply Lowpass Filter to Feedback
+                //         let filteredFeedback = alpha * delayedSample + (1 - alpha) * node.lpfPreviousSample;
+                //         node.lpfPreviousSample = filteredFeedback; // Store for next iteration
+                
+                //         // 🎤 Retrieve feedback input
+                //         const feedbackInput = feedbackBuffers[id]?.[i] || 0;
+                //         const feedbackSample = filteredFeedback * feedbackParam + feedbackInput;
+                
+                //         // 🎵 Dry/Wet Mix
+                //         const inputSample = inputBuffer[i] || 0;
+                //         const wetSignal = delayedSample + feedbackSample;
+                //         const drySignal = inputSample;
+                //         signalBuffers[id][i] = this.clamp((drySignal * dryMix) + (wetSignal * wetMix), -1.0, 1.0);
+                
+                //         // 🔁 Store in delay buffer
+                //         node.delayBuffer[node.delayIndex] = signalBuffers[id][i];
+                //         node.delayIndex = (node.delayIndex + 1) % node.delayBuffer.length;
+                //     }
+                // }
                 
                 else if (node.node === 'HighPassFilter') {
                     if (!node.coefficients) {

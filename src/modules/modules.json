@@ -359,7 +359,7 @@
       "parameters": {
         "delayTime": {
           "min": 0,
-          "max": 3000,
+          "max": 999,
           "default": 500,
           "units": "milliseconds",
           "description": "The delay time applied to the input signal.",
@@ -386,7 +386,7 @@
       "cv": {
         "delayTime": {
           "min": 0,
-          "max": 3000,
+          "max": 999,
           "default": 100,
           "units": "seconds",
           "description": "The delay time applied to the input signal.",
