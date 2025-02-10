@@ -88,6 +88,7 @@ class DSP extends AudioWorkletProcessor {
                 
             break
             case 'LFO':
+            case 'SLOWFO':
             case 'Oscillator':
                 let osc = {
                     node: 'Oscillator',
@@ -226,34 +227,6 @@ class DSP extends AudioWorkletProcessor {
                     this.currentState.nodes[moduleName] = delay
                 }
             break;
-
-            case 'BiquadFilter':
-                let biquad = {
-                    node: 'BiquadFilter',
-                    structure: 'webAudioNode',
-                    baseParams: {
-                        frequency: parseFloat(params.frequency) || 350,
-                        "freq cv +/-": parseFloat(params["freq cv +/-"]),
-                        detune: parseFloat(params.detune) || 0,
-                        Q: parseFloat(params.Q) || 1,
-                        "Q cv +/-": parseFloat(params["Q cv +/-"]),
-                        gain: parseFloat(params.gain) || 0,
-                        type: params.type
-                    },
-                    modulatedParams: {
-                        frequency: 0,
-                        detune: 0,
-                        Q: 0,
-                        gain: 0
-                    },
-                    output: new Float32Array(128),
-                }
-                if(loadState){
-                    this.nextState.nodes[moduleName] = biquad
-                } else {
-                    this.currentState.nodes[moduleName] = biquad
-                }
-            break
 
             case 'feedbackDelayNode':
                 let feedbackDelayNode = {
