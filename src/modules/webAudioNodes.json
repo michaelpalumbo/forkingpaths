@@ -189,7 +189,7 @@
   "Delay": {
     "parameters": {
       "delayTime": {
-        "min": 0,
+        "min": 0.01,
         "max": 999,
         "default": 500,
         "units": "milliseconds",
@@ -278,6 +278,98 @@
     "outputs": ["OUT"]
   },
   
+  "Flutter": {
+    "parameters": {
+      "delayTime": {
+        "min": 0.01,
+        "max": 50,
+        "default": 5,
+        "units": "milliseconds",
+        "description": "The delay time applied to the input signal.",
+        "modulatable": true,
+        "modulationDescription": "Audio-rate modulation of the delay time. Connect an AudioNode to modulate this parameter."
+      },
+      "time cv +/-": {
+        "min": -50,
+        "max": 50,
+        "default": 2,
+        "units": "Hz",
+        "description": "The attenuverter of the delayTime CV input",
+        "modulatable": false,
+        "modulationDescription": "The attenuverter of the delayTime CV input"
+      },
+      "feedback": {
+        "min": 0,
+        "max": 1,
+        "default": 0.5,
+        "units": "float",
+        "description": "feedback into the delay buffer",
+        "modulatable": true,
+        "modulationDescription": "feedback into the delay buffer"
+      },
+      "feedback cv +/-": {
+        "min": -1,
+        "max": 1,
+        "default": 0,
+        "units": "float",
+        "description": "attenuverter for the feedback into the delay buffer",
+        "modulatable": true,
+        "modulationDescription": "attenuverter for the dfeedback into the delay buffer"
+      },
+      "dryWet": {
+        "min": 0,
+        "max": 1,
+        "default": 0.5,
+        "units": "float",
+        "description": "dry/wet ratio of the output signal",
+        "modulatable": true,
+        "modulationDescription": "dry/wet ratio of the output signal"
+      },
+      "dryWet cv +/-": {
+        "min": -1,
+        "max": 1,
+        "default": 0,
+        "units": "float",
+        "description": "attenuverter for the dry/wet ratio of the output signal",
+        "modulatable": true,
+        "modulationDescription": "attenuverter for the dry/wet ratio of the output signal"
+      }
+    },
+    "paramNames": ["delayTime", "time cv +/-", "feedback", "feedback cv +/-", "dryWet", "dryWet cv +/-"],
+    "cvNames": ["delayTime", "feedback", "dryWet"],
+    "cv": {
+      "delayTime": {
+        "min": 0.01,
+        "max": 50,
+        "default": 5,
+        "units": "milliseconds",
+        "description": "The delay time applied to the input signal.",
+        "modulatable": true,
+        "modulationDescription": "Audio-rate modulation of the delay time. Connect an AudioNode to modulate this parameter."
+      },
+      "feedback": {
+        "min": 0,
+        "max": 1,
+        "default": 0.5,
+        "units": "float",
+        "description": "feedback into the delay buffer",
+        "modulatable": true,
+        "modulationDescription": "feedback into the delay buffer"
+      },
+      "dryWet": {
+        "min": 0,
+        "max": 1,
+        "default": 0.5,
+        "units": "float",
+        "description": "dry/wet ratio of the output signal",
+        "modulatable": true,
+        "modulationDescription": "Audio-rate modulation of the dry/wet ratio of the output signal"
+      }
+    },
+    "inputs": ["IN"],
+    "outputs": ["OUT"]
+  },
+
     
   "LFO": {
     "parameters": {
@@ -321,43 +413,7 @@
     "inputs": [],
     "outputs": ["OUT"]
   },
-  "LFO2": {
-    "parameters": {
-      "frequency": {
-        "min": 0.01,
-        "max": 10,
-        "default": 1,
-        "units": "Hz",
-        "description": "The frequency of the low frequency oscillator.",
-        "modulatable": true,
-        "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects."
-      },
-      "freq cv +/-": {
-        "min": -20,
-        "max": 20,
-        "default": 10,
-        "units": "Hz",
-        "description": "The attenuverter of the frequency CV input",
-        "modulatable": false,
-        "modulationDescription": "The attenuverter of the frequency CV input"
-      }
-    },
-    "paramNames": ["frequency", "freq cv +/-"],
-    "cvNames": ["frequency"],
-    "cv": {
-      "frequency": {
-        "min": 0.01,
-        "max": 10,
-        "default": 5,
-        "units": "Hz",
-        "description": "The frequency of the oscillator.",
-        "modulatable": true,
-        "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects."
-      }
-    },
-    "inputs": [],
-    "outputs": ["sine", "tri", "saw", "square"]
-  },
+  
   "Pulses": {
     "parameters": {
       "stepCount": {

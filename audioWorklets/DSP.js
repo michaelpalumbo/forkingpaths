@@ -121,42 +121,42 @@ class DSP extends AudioWorkletProcessor {
                 
             break
 
-            case 'LFO2':
-                let lfo2 = {
-                    node: 'Oscillator',
-                    structure: 'webAudioNode',
-                    baseParams: {
-                        frequency: parseFloat(params.frequency),
-                        gain: parseFloat(1),
-                        "freq cv +/-": parseFloat(params["freq cv +/-"]),
-                    },
-                    modulatedParams: {
-                        // offsets for modulation
-                        frequency: 0, 
-                        gain: 0, 
-                    },
-                    // Separate output buffers for each waveform
-                    output: {
-                        sine: new Float32Array(128),
-                        square: new Float32Array(128),
-                        saw: new Float32Array(128),
-                        tri: new Float32Array(128),
-                    },
-                    phase: 0,
-                    customWaveform: null,
-                    type: params.type,
-                    modulationTarget: null, // Target node or parameter for modulation
-                    startTime: null, // Optional: Scheduled start time
-                    stopTime: null,  // Optional: Scheduled stop time           
+            // case 'LFO2':
+            //     let lfo2 = {
+            //         node: 'Oscillator',
+            //         structure: 'webAudioNode',
+            //         baseParams: {
+            //             frequency: parseFloat(params.frequency),
+            //             gain: parseFloat(1),
+            //             "freq cv +/-": parseFloat(params["freq cv +/-"]),
+            //         },
+            //         modulatedParams: {
+            //             // offsets for modulation
+            //             frequency: 0, 
+            //             gain: 0, 
+            //         },
+            //         // Separate output buffers for each waveform
+            //         output: {
+            //             sine: new Float32Array(128),
+            //             square: new Float32Array(128),
+            //             saw: new Float32Array(128),
+            //             tri: new Float32Array(128),
+            //         },
+            //         phase: 0,
+            //         customWaveform: null,
+            //         type: params.type,
+            //         modulationTarget: null, // Target node or parameter for modulation
+            //         startTime: null, // Optional: Scheduled start time
+            //         stopTime: null,  // Optional: Scheduled stop time           
     
-                };
-                if(loadState){
-                    this.nextState.nodes[moduleName] = lfo2
-                } else {
-                    this.currentState.nodes[moduleName] = lfo2
-                }
+            //     };
+            //     if(loadState){
+            //         this.nextState.nodes[moduleName] = lfo2
+            //     } else {
+            //         this.currentState.nodes[moduleName] = lfo2
+            //     }
                 
-            break
+            // break
             case 'Gain':
             case 'ModGain':
                 let gain = {
@@ -199,6 +199,7 @@ class DSP extends AudioWorkletProcessor {
             break
 
             case 'Delay':
+            case 'Flutter':
                 let delay = {
                     node: 'Delay',
                     structure: 'webAudioNode',
