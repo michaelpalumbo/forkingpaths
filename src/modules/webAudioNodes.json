@@ -310,10 +310,46 @@
         "description": "The attenuverter of the delayTime CV input",
         "modulatable": false,
         "modulationDescription": "The attenuverter of the delayTime CV input"
+      },
+      "feedback": {
+        "min": 0,
+        "max": 1,
+        "default": 0.5,
+        "units": "float",
+        "description": "feedback into the delay buffer",
+        "modulatable": true,
+        "modulationDescription": "feedback into the delay buffer"
+      },
+      "feedback cv +/-": {
+        "min": -1,
+        "max": 1,
+        "default": 0,
+        "units": "float",
+        "description": "attenuverter for the feedback into the delay buffer",
+        "modulatable": true,
+        "modulationDescription": "attenuverter for the dfeedback into the delay buffer"
+      },
+      "dryWet": {
+        "min": 0,
+        "max": 1,
+        "default": 0.5,
+        "units": "float",
+        "description": "dry/wet ratio of the output signal",
+        "modulatable": true,
+        "modulationDescription": "dry/wet ratio of the output signal"
+      },
+      "dryWet cv +/-": {
+        "min": -1,
+        "max": 1,
+        "default": 0,
+        "units": "float",
+        "description": "attenuverter for the dry/wet ratio of the output signal",
+        "modulatable": true,
+        "modulationDescription": "attenuverter for the dry/wet ratio of the output signal"
       }
     },
-    "paramNames": ["delayTime", "time cv +/-"],
-    "cvNames": ["delayTime"],
+    "paramNames": ["delayTime", "time cv +/-", "feedback", "feedback cv +/-", "dryWet", "dryWet cv +/-"],
+    "cvNames": ["delayTime", "feedback", "dryWet"],
     "cv": {
       "delayTime": {
         "min": 0,
@@ -323,6 +359,24 @@
         "description": "The delay time applied to the input signal.",
         "modulatable": true,
         "modulationDescription": "Audio-rate modulation of the delay time. Connect an AudioNode to modulate this parameter."
+      },
+      "feedback": {
+        "min": 0,
+        "max": 1,
+        "default": 0.5,
+        "units": "float",
+        "description": "feedback into the delay buffer",
+        "modulatable": true,
+        "modulationDescription": "feedback into the delay buffer"
+      },
+      "dryWet": {
+        "min": 0,
+        "max": 1,
+        "default": 0.5,
+        "units": "float",
+        "description": "dry/wet ratio of the output signal",
+        "modulatable": true,
+        "modulationDescription": "Audio-rate modulation of the dry/wet ratio of the output signal"
       }
     },
     "inputs": ["IN"],
@@ -473,7 +527,7 @@
 
   "Euclid": {
     "parameters": {
-      "stepCount": {
+      "numSteps": {
         "min": 1,
         "max": 16,
         "default": 8,
@@ -484,7 +538,7 @@
       "activeSteps": {
         "min": 1,
         "max": 16,
-        "default": 1,
+        "default": 5,
         "units": "steps",
         "description": "Number of active steps in the sequence.",
         "modulatable": false
@@ -514,10 +568,18 @@
         "units": "steps",
         "description": "Number of ratchets per active step.",
         "modulatable": false
+      },
+      "ratchet cv +/-": {
+        "min": -16,
+        "max": 16,
+        "default": 0,
+        "units": "steps",
+        "description": "Attenuverter of number of ratchets per active step.",
+        "modulatable": false
       }
     },
-    "paramNames": ["stepCount", "activeSteps", "tempo", "tempo cv +/-", "ratchet"],
-    "cvNames": ["tempo", "pulseWidth"],
+    "paramNames": ["numSteps", "activeSteps", "tempo", "tempo cv +/-", "ratchet", "ratchet cv +/-"],
+    "cvNames": ["tempo", "ratchet"],
     "cv": {
       "tempo": {
         "min": 20,
@@ -527,12 +589,12 @@
         "description": "Modulation input for tempo control.",
         "modulatable": true
       },
-      "pulseWidth": {
-        "min": 0.05,
-        "max": 1,
-        "default": 0.5,
-        "units": "%",
-        "description": "Width of the gate relative to the tempo",
+      "ratchet": {
+        "min": 0,
+        "max": 16,
+        "default": 0,
+        "units": "steps",
+        "description": "modulation of the ratchets",
         "modulatable": true
       }
     },

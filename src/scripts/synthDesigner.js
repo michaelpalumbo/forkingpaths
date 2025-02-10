@@ -884,6 +884,7 @@ document.addEventListener("DOMContentLoaded", function () {
     
     // get .fpsynth files from user's filesystem
     document.getElementById('fileInput').addEventListener('change', async (event) => {
+        console.log(event.target)
         const file = event.target.files[0];
     
         if (!file) {

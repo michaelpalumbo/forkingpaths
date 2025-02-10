@@ -205,13 +205,17 @@ class DSP extends AudioWorkletProcessor {
                         delayTime: parseFloat(params.delayTime) || 500,
                         'time cv +/-': parseFloat(params['time cv +/-']) || 100,
                         feedback: 0.5,
-                        wetMix: 0.4
+                        'feedback cv +/-': parseFloat(params['feedback cv +/-']) || 0.3,
+                        dryWet: 0.4,
+                        'dryWet cv +/-': parseFloat(params['time cv +/-']) || 0,
                     },
                     connections: {
                         feedback: null, // Will store a Web Audio GainNode for feedback
                     },
                     modulatedParams: {
                         delayTime: 0, // Offset for modulation
+                        feedback: 0,
+                        dryWet: 0
                     },
                     output: new Float32Array(128),
                 }
@@ -296,11 +300,12 @@ class DSP extends AudioWorkletProcessor {
                     node: 'Euclid',
                     structure: 'webAudioNode',
                     baseParams: {
-                        stepCount: parseInt(params.stepCount) || 8,
+                        numSteps: parseInt(params.numSteps) || 8,
                         activeSteps: parseInt(params.activeSteps) || 8,
                         tempo: parseFloat(params.tempo) || 120,
                         "tempo cv +/-": parseFloat(params["tempo cv +/-"]) || 10,
-                        pulseWidth: parseInt(params.ratchet) || 0,
+                        ratchet: parseInt(params.ratchet) || 0,
+                        "ratchet cv +/-": parseFloat(params["ratchet cv +/-"]) || 10,
                     },
                     modulatedParams: {
                         tempo: 0,
@@ -342,21 +347,6 @@ class DSP extends AudioWorkletProcessor {
                 rnboDevice.baseParams[param.paramId] = param.initialValue;
                 rnboDevice.modulatedParams[param.paramId] = 0;
             });
-    
-            // try {
-            //     console.log(rnboSrc)
-            //     // Ensure rnboBinary is an ArrayBuffer before instantiating
-            //     if (!(rnboSrc instanceof ArrayBuffer)) {
-            //         throw new Error("RNBO WebAssembly binary is not an ArrayBuffer");
-            //     }
-            //     // ✅ Load WebAssembly module
-            //     const wasmModule = await WebAssembly.instantiate(rnboSrc);
-            //     rnboDevice.dspInstance = wasmModule.instance.exports;
-        
-            //     console.log(`✅ RNBO WebAssembly DSP initialized for ${deviceName}`);
-            // } catch (error) {
-            //     console.error(`❌ Failed to initialize RNBO WebAssembly: ${error}`);
-            // }
 
             // Store in current or next state
             if (loadState) {
@@ -562,7 +552,6 @@ class DSP extends AudioWorkletProcessor {
                 // this.currentState.nodes[msg.data.parent][msg.data.param] = msg.data.value
                 // update the baseParam (the value associated with the knob/control)
                 const targetNode = this.currentState.nodes[msg.data.parent];
-                console.log(this.currentState, targetNode)
                 if (targetNode && targetNode.baseParams[msg.data.param] !== undefined) {
                     const newValue = parseFloat(msg.data.value); // Ensure the value is a number
                     if (!isNaN(newValue)) {
@@ -939,98 +928,29 @@ class DSP extends AudioWorkletProcessor {
                         const feedbackSample = filteredFeedback * feedbackParam + feedbackInput;
                         
                         // ─── Dry/Wet Mixing and Buffer Writing ────────────────────────────
-                        const wetMix = node.baseParams.wetMix || 0.3;
-                        const dryMix = 0.4;
                         const inputSample = inputBuffer[i] || 0;
+
+                        // set wet mix level based on dryWet knob value
+                        const wetMix = Math.min(Math.max(getEffectiveParam(node, 'dryWet', node.baseParams['dryWet cv +/-']), 0), 1)
+                        // set dry mix level based on inversion of dryWet knob
+                        const dryMix = 1 - Math.min(Math.max(getEffectiveParam(node, 'dryWet', node.baseParams['dryWet cv +/-']), 0), 1)
                         // Combine the (wet) delayed signal plus feedback with the dry input
                         const wetSignal = delayedSample + feedbackSample;
                         const drySignal = inputSample;
+                        // output:
                         signalBuffers[id][i] = this.clamp((drySignal * dryMix) + (wetSignal * wetMix), -1.0, 1.0);
                         
+                        const feedbackAmount = Math.min(Math.max(getEffectiveParam(node, 'feedback', node.baseParams['feedback cv +/-']), 0),
+                        1) || 0.3
+                        const feedbackSignal = this.clamp((drySignal) + (wetSignal * feedbackAmount), -1.0, 1.0);
+
                         // Write the output back into the delay buffer and advance the write pointer.
-                        node.delayBuffer[node.delayIndex] = signalBuffers[id][i];
+                        node.delayBuffer[node.delayIndex] = feedbackSignal
                         node.delayIndex = (node.delayIndex + 1) % node.delayBuffer.length;
                     }
                 }
                 
-                // else if (node.node === 'Delay') {
-                //     if (!node.delayBuffer) {
-                //         node.delayBuffer = new Float32Array(sampleRate); // 1-second delay buffer
-                //         node.delayIndex = 0;
-                //         node.lpfCutoff = node.baseParams.lpfCutoff || 3000;
-                //         node.lpfPreviousSample = 0;
-                //         node.previousDelayTime = Math.min(Math.max(getEffectiveParam(node, 'delayTime', node.baseParams['time cv +/-']), 0), 999);
-                
-                //         // 🎛️ Allpass filter memory for smoothing
-                //         node.allpassMem1 = 0;
-                //         node.allpassMem2 = 0;
-                //     }
-                
-                //     // 🚀 Smooth delay time modulation
-                //     const newDelayTime = Math.min(Math.max(getEffectiveParam(node, 'delayTime', node.baseParams['time cv +/-']), 0), 999);
-                    
-                //     // --- Slew Limiter Implementation ---
-                //     // Define the maximum allowed change (delta) in delayTime per processing block (in ms)
-                //     const maxDelta = 5; // Adjust this value as needed
-                //     // Compute the raw difference from the previous delay time
-                //     const rawDelta = newDelayTime - node.previousDelayTime;
-                //     // Clamp the difference so that it does not exceed the maximum delta in either direction
-                //     const limitedDelta = Math.max(-maxDelta, Math.min(maxDelta, rawDelta));
-                //     // Now apply your smoothing factor (0.1) to the limited delta
-                //     const delayTime = node.previousDelayTime + 0.1 * limitedDelta;
-                    
-                //     // const delayTime = node.previousDelayTime + 0.05 * (newDelayTime - node.previousDelayTime);
-                //     // Update previousDelayTime for the next block
-                //     node.previousDelayTime = delayTime;
-                
-                //     // 🕒 Convert to samples
-                //     const delaySamples = (delayTime / 1000) * sampleRate;
-                
-                //     // 🔀 Split integer and fractional parts
-                //     const intDelaySamples = Math.floor(delaySamples);
-                //     const frac = delaySamples - intDelaySamples; // Fractional part for allpass interpolation
-                
-                //     // 🎛️ Feedback and mix parameters
-                //     const feedbackParam = typeof node.baseParams.feedback === 'number' ? node.baseParams.feedback : 0.5;
-                //     const wetMix = node.baseParams.wetMix || 0.3;
-                //     const dryMix = 0.4;
-                
-                //     // 🎚️ Lowpass filter coefficient
-                //     const RC = 1.0 / (2 * Math.PI * node.lpfCutoff);
-                //     const alpha = sampleRate / (sampleRate + RC);
-                
-                //     for (let i = 0; i < 128; i++) {
-                //         // 🕘 Get delayed samples
-                //         const indexA = (node.delayIndex - intDelaySamples + node.delayBuffer.length) % node.delayBuffer.length;
-                //         const indexB = (indexA - 1 + node.delayBuffer.length) % node.delayBuffer.length;
-                
-                //         const sampleA = node.delayBuffer[indexA];
-                //         const sampleB = node.delayBuffer[indexB];
-                
-                //         // 🎛️ Allpass interpolation
-                //         const delayedSample = sampleB + frac * (sampleA - node.allpassMem1);
-                //         node.allpassMem1 = delayedSample; // Store last sample
-                
-                //         // 🎚️ Apply Lowpass Filter to Feedback
-                //         let filteredFeedback = alpha * delayedSample + (1 - alpha) * node.lpfPreviousSample;
-                //         node.lpfPreviousSample = filteredFeedback; // Store for next iteration
-                
-                //         // 🎤 Retrieve feedback input
-                //         const feedbackInput = feedbackBuffers[id]?.[i] || 0;
-                //         const feedbackSample = filteredFeedback * feedbackParam + feedbackInput;
-                
-                //         // 🎵 Dry/Wet Mix
-                //         const inputSample = inputBuffer[i] || 0;
-                //         const wetSignal = delayedSample + feedbackSample;
-                //         const drySignal = inputSample;
-                //         signalBuffers[id][i] = this.clamp((drySignal * dryMix) + (wetSignal * wetMix), -1.0, 1.0);
-                
-                //         // 🔁 Store in delay buffer
-                //         node.delayBuffer[node.delayIndex] = signalBuffers[id][i];
-                //         node.delayIndex = (node.delayIndex + 1) % node.delayBuffer.length;
-                //     }
-                // }
-                
+               
                 else if (node.node === 'HighPassFilter') {
                     if (!node.coefficients) {
                         node.coefficients = { a0: 0, a1: 0, a2: 0, b0: 0, b1: 0, b2: 0 };
@@ -1158,24 +1078,24 @@ class DSP extends AudioWorkletProcessor {
                     const effectiveTempo = getEffectiveParam(node, 'tempo', node.baseParams["tempo cv +/-"]);
                     const stepDuration = (60 / effectiveTempo) * sampleRate;
                     
-                    // Retrieve the effective pulseWidth (a fraction between 0 and 1) and clamp it.
+                    // Retrieve the effective ratchet (a fraction between 0 and 1) and clamp it.
                     // (Though for the ratchet pulse we later use a fixed short duration.)
-                    const effectivePulseWidth = Math.min(Math.max(getEffectiveParam(node, 'pulseWidth'), 0), 1);
+                    const effectivePulseWidth = Math.min(Math.max(getEffectiveParam(node, 'ratchet'), 0), 1);
                     // Instead of calculating pulseSamples as a fraction of the step,
                     // we use a fixed very short pulse duration of 0.5ms.
                     const pulseSamples = Math.max(1, Math.round(sampleRate * 0.0005)); // 0.5ms pulse
                 
-                    // Retrieve the stepCount and activeSteps parameters.
-                    // (Ensure stepCount is at least 1 and activeSteps is between 0 and stepCount.)
-                    const stepCountParam = Math.max(1, Math.floor(getEffectiveParam(node, 'stepCount')));
-                    const activeStepsParam = Math.max(0, Math.min(stepCountParam, Math.floor(getEffectiveParam(node, 'activeSteps'))));
+                    // Retrieve the numSteps and activeSteps parameters.
+                    // (Ensure numSteps is at least 1 and activeSteps is between 0 and numSteps.)
+                    const numStepsParam = Math.max(1, Math.floor(getEffectiveParam(node, 'numSteps')));
+                    const activeStepsParam = Math.max(0, Math.min(numStepsParam, Math.floor(getEffectiveParam(node, 'activeSteps'))));
                     
                     // Generate the Euclidean pattern for the current step configuration.
-                    // The pattern is an array of length stepCountParam containing 1's (active) and 0's (inactive).
-                    const pattern = generateEuclideanPattern(activeStepsParam, stepCountParam);
+                    // The pattern is an array of length numStepsParam containing 1's (active) and 0's (inactive).
+                    const pattern = generateEuclideanPattern(activeStepsParam, numStepsParam);
                     
                     // Retrieve the ratchet parameter. If less than 1, default to 1 (i.e. no ratcheting).
-                    const effectiveRatchet = Math.max(1, Math.floor(getEffectiveParam(node, 'ratchet')));
+                    const effectiveRatchet = Math.max(1, Math.floor(getEffectiveParam(node, 'ratchet', node.baseParams["ratchet cv +/-"])));
                     // For non-ratchet mode, the whole step is used.
                     // For ratchet mode, subdivide the step duration into effectiveRatchet subintervals.
                     let ratchetInterval = stepDuration;
@@ -1204,7 +1124,7 @@ class DSP extends AudioWorkletProcessor {
                         // When we reach the end of the current step, wrap the clock and move to the next step.
                         if (node.clockPhase >= stepDuration) {
                             node.clockPhase -= stepDuration;
-                            node.stepIndex = (node.stepIndex + 1) % stepCountParam;
+                            node.stepIndex = (node.stepIndex + 1) % numStepsParam;
                             node.currentStepActive = (pattern[node.stepIndex] === 1);
                         }
                         

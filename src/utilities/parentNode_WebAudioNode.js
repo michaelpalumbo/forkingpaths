@@ -81,6 +81,9 @@ export class ParentNode_WebAudioNode {
         if(this.params){
             for (let i = 0; i<this.params.length; i++){
                 let param = this.moduleSpec.parameters[this.params[i]]
+                if(!param){
+                    console.error('parameter not listed in paramNames array for this module in webAudioNodes.json, did you forgot to update it?')
+                }
                 param.kind = 'paramAnchorNode'
                 param.name = this.params[i]
                 
