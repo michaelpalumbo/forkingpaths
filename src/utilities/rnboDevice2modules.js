@@ -2,8 +2,10 @@ import { readdir, readFile, writeFile } from 'fs/promises';
 import { extname, resolve, join } from 'path';
 // import audioNodes from '../modules/webAudioNodes.json' assert { type: 'json'}
 // import audioNodes from '../modules/webAudioNodes.json'
-const audioNodes = await import('../modules/webAudioNodes.json', { assert: { type: 'json' } });
+// const audioNodes = await import('../modules/webAudioNodes.json', { assert: { type: 'json' } });
 
+const audioNodesPath = new URL('../modules/webAudioNodes.json', import.meta.url);
+const audioNodes = JSON.parse(await readFile(audioNodesPath, 'utf-8'));
 import pako from 'pako'
 
 //! note that we pivoted from using RNBO in this project due to many reasons
