@@ -3,9 +3,14 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "engines": {
+  "node": ">=17.0.0"
+  },  
+
   "scripts": {
     "rnboDevice2modules": "node ./src/utilities/rnboDevice2modules.js",
     "server": "node server.js",
+    "start": "npm run rnboDevice2modules && concurrently \"npm run server\" \"vite\"",
     "dev": "npm run rnboDevice2modules && concurrently \"npm run server\" \"vite\"",
     "build": "npm run rnboDevice2modules && concurrently \"npm run server\" \"vite build\"",
     "preview": "vite preview"
