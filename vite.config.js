@@ -13,5 +13,9 @@ export default defineConfig({
   },
   build: {
     target: 'esnext',
+    outDir: '../dist',
+    rollupOptions: {
+      input: './public/index.html',
+    },
   },
 });
