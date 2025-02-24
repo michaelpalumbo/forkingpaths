@@ -11,4 +11,7 @@ export default defineConfig({
   define: {
     'window.TONE_SILENCE_LOGGING': true,
   },
+  build: {
+    target: 'esnext',
+  },
 });
