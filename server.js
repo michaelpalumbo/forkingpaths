@@ -3,7 +3,14 @@ import cytoscape from 'cytoscape';
 import bodyParser from 'body-parser';
 import dagre from 'cytoscape-dagre';
 import buildHistoryGraph from './src/utilities/buildHistoryGraph.js';
+
+import express from 'express';
+import { createServer } from 'http';
+
 import { WebSocketServer } from 'ws';
+
+
+
 
 
 // const historyGraphWorker = new Worker("./workers/historyGraphWorker.js");
@@ -174,13 +181,25 @@ const historyDAG_cy = cytoscape({
 });
 
 
-// Define the WebSocket server port
-const PORT = 3000;
 
-// Create a WebSocket server
-const wss = new WebSocketServer({ port: PORT });
+const PORT = process.env.PORT || 3000;
 
-console.log(`WebSocket server is running on ws://localhost:${PORT}`);
+// Create an Express app (Only for handling basic HTTP requests)
+const app = express();
+
+// Serve a simple response for HTTP requests
+app.get('/', (req, res) => {
+  res.send('Forking Paths WebSocket Server is running.');
+});
+
+// Handle the favicon request to prevent errors
+app.get('/favicon.ico', (req, res) => res.status(204));
+
+// Create an HTTP server and attach WebSocket
+const server = createServer(app);
+const wss = new WebSocketServer({ server });
+
+// console.log(`WebSocket server is running on ws://localhost:${PORT}`);
 
 // Handle client connections
 wss.on('connection', (ws, req) => {
@@ -234,6 +253,12 @@ wss.on('connection', (ws, req) => {
     // Send a welcome message to the client
     // ws.send('Welcome to the WebSocket server!');
 });
+
+// Start the server
+server.listen(PORT, () => {
+    console.log(`✅ WebSocket server running on ws://localhost:${PORT}`);
+});
+
 
 function updateHistoryGraph(ws, meta, docHistoryGraphStyling){
 
