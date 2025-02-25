@@ -1,5 +1,7 @@
 import { defineConfig } from 'vite';
 import wasm from 'vite-plugin-wasm';
+import path from 'path';
+
 
 export default defineConfig({
   root: ".", // Set the root directory
@@ -13,7 +15,7 @@ export default defineConfig({
   },
   build: {
     target: 'esnext',
-    outDir: '/dist', // Output to dist directory
+    outDir: path.resolve(__dirname, 'dist'), // Ensures dist is created inside the project folder
     emptyOutDir: true, // Ensures the folder is cleared before each build
     rollupOptions: {
       input: './public/index.html',
