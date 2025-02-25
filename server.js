@@ -187,20 +187,31 @@ const PORT = process.env.PORT || 3000;
 // Create an Express app (Only for handling basic HTTP requests)
 const app = express();
 
-// Serve a simple response for HTTP requests
-app.get('/', (req, res) => {
-  res.send('Forking Paths WebSocket Server is running.');
-});
+// Serve static frontend files from Vite's `dist` folder
+app.use(express.static('dist'));
 
-// Handle the favicon request to prevent errors
-app.get('/favicon.ico', (req, res) => res.status(204));
+// Serve a simple response for HTTP requests
+// app.get('/', (req, res) => {
+//   res.send('Forking Paths WebSocket Server is running.');
+// });
+
+// // Handle the favicon request to prevent errors
+// app.get('/favicon.ico', (req, res) => res.status(204));
 
 // Create an HTTP server and attach WebSocket
 const server = createServer(app);
-const wss = new WebSocketServer({ server });
+// Create a WebSocket server that only upgrades `/ws` requests
+const wss = new WebSocketServer({ noServer: true });
 
-// console.log(`WebSocket server is running on ws://localhost:${PORT}`);
-
+server.on('upgrade', (request, socket, head) => {
+    if (request.url === '/ws') {
+      wss.handleUpgrade(request, socket, head, (ws) => {
+        wss.emit('connection', ws, request);
+      });
+    } else {
+      socket.destroy();
+    }
+  });
 // Handle client connections
 wss.on('connection', (ws, req) => {
 
