@@ -13,7 +13,7 @@ export default defineConfig({
   },
   build: {
     target: 'esnext',
-    outDir: '../dist', // Output to dist directory
+    outDir: '/dist', // Output to dist directory
     emptyOutDir: true, // Ensures the folder is cleared before each build
     rollupOptions: {
       input: './public/index.html',
