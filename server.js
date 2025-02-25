@@ -203,15 +203,26 @@ const server = createServer(app);
 // Create a WebSocket server that only upgrades `/ws` requests
 const wss = new WebSocketServer({ noServer: true });
 
+// server.on('upgrade', (request, socket, head) => {
+//     console.log('upgrade')
+//     if (request.url === '/ws') {
+//       wss.handleUpgrade(request, socket, head, (ws) => {
+//         wss.emit('connection', ws, request);
+//       });
+//     } else {
+//       socket.destroy();
+//     }
+//   });
+
+
 server.on('upgrade', (request, socket, head) => {
-    if (request.url === '/ws') {
-      wss.handleUpgrade(request, socket, head, (ws) => {
-        wss.emit('connection', ws, request);
-      });
-    } else {
-      socket.destroy();
-    }
+    console.log('🚀 WebSocket upgrade request received');
+    wss.handleUpgrade(request, socket, head, (ws) => {
+      wss.emit('connection', ws, request);
+    });
   });
+
+  
 // Handle client connections
 wss.on('connection', (ws, req) => {
 

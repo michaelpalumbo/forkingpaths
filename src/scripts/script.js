@@ -3,7 +3,11 @@
 //* INITIALIZATION AND SETUP
 //* Set up dependencies, initialize core variables
 //*
-const ws = new WebSocket('ws://localhost:3000');
+// const ws = new WebSocket('ws://localhost:3000');
+
+const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+const ws = new WebSocket(`${wsProtocol}://${window.location.host}/ws`);
+
 
 import { uuidv7 } from "uuidv7";
 import randomColor from 'randomcolor';
