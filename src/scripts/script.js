@@ -1239,27 +1239,31 @@ document.addEventListener("DOMContentLoaded", function () {
             // loop through UI, update each param
             const synthModules = forkedDoc.synth.graph.modules
             Object.keys(synthModules).forEach((moduleID)=>{
-                Object.keys(synthModules[moduleID].params).forEach((param)=>{                  
-                    let id = `paramControl_parent:${moduleID}_param:${param}`
-                    
-                    let paramControl = document.getElementById(id) 
-                    if (paramControl) {
-                        switch(paramControl.tagName){
-                            case 'INPUT':
-                                paramControl.value = synthModules[moduleID].params[param]
-                                $(paramControl).knobSet(paramControl.value);
-                            break
+                // some nodes don't have params (like the feedbackDelayNode), so ignore them (otherwise this throws an error whenever there's a feedback cable)
+                if(synthModules[moduleID].params){
+                    Object.keys(synthModules[moduleID].params).forEach((param)=>{                  
+                        let id = `paramControl_parent:${moduleID}_param:${param}`
+                        
+                        let paramControl = document.getElementById(id) 
+                        if (paramControl) {
+                            switch(paramControl.tagName){
+                                case 'INPUT':
+                                    paramControl.value = synthModules[moduleID].params[param]
+                                    $(paramControl).knobSet(paramControl.value);
+                                break
+        
+                                case 'SELECT':
+                                    paramControl.value = synthModules[moduleID].params[param]
+                                break
     
-                            case 'SELECT':
-                                paramControl.value = synthModules[moduleID].params[param]
-                            break
-
-                            default: console.warn('NEW UI DETECTED, CREATE A SWITCH CASE FOR IT ABOVE THIS LINE')
-                        }
-                      } else {
-                        console.warn(`param with id "${id}" not found.`);
-                      }               
-                })
+                                default: console.warn('NEW UI DETECTED, CREATE A SWITCH CASE FOR IT ABOVE THIS LINE')
+                            }
+                          } else {
+                            console.warn(`param with id "${id}" not found.`);
+                          }               
+                    })
+                }
+                
             })
         }
 
