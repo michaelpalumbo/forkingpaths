@@ -206,10 +206,10 @@ class DSP extends AudioWorkletProcessor {
                     baseParams: {
                         delayTime: parseFloat(params.delayTime) || 500,
                         'time cv +/-': parseFloat(params['time cv +/-']) || 100,
-                        feedback: 0.5,
+                        feedback: parseFloat(params.feedback) || 0.5,
                         'feedback cv +/-': parseFloat(params['feedback cv +/-']) || 0.3,
-                        dryWet: 0.4,
-                        'dryWet cv +/-': parseFloat(params['time cv +/-']) || 0,
+                        dryWet: parseFloat(params.dryWet) || 0.4,
+                        'dryWet cv +/-': parseFloat(params['dryWet cv +/-']) || 0,
                     },
                     connections: {
                         feedback: null, // Will store a Web Audio GainNode for feedback
@@ -375,6 +375,7 @@ class DSP extends AudioWorkletProcessor {
                     if(module.params){
                         moduleParams = module.params // node is a webAudioNode and we want its params
                     }
+                    console.log(moduleID, 'moduleParams', moduleParams)
                     // console.log(moduleID)
                     if(moduleID.startsWith('feedbackDelayNode')){
                         this.audioNodeBuilder('feedbackDelayNode', moduleID, null, 'loadstate')
@@ -388,6 +389,8 @@ class DSP extends AudioWorkletProcessor {
                         this.port.postMessage({ cmd: 'fetchRNBOsrc', data: module });
                         // this.rnboDeviceBuilder(module.type, module.moduleSpec.desc, module.moduleSpec.src, 'loadstate')
                         // console.warn('if any module is ade with rnboDevices, need to run it through this.rnboDeviceBuilder')
+                    } else {
+                        console.warn('node module structure defined for module ', moduleID)
                     }
 
 
