@@ -2672,23 +2672,10 @@ document.addEventListener("DOMContentLoaded", function () {
                             // remove connection from audio graph
                             // Find the index of the object that matches the condition
                             let audioConnectionIndex = audioGraphConnections.findIndex(el => el.source === cableSource && el.target === cableTarget);
-                            console.log('removing cable: ', audioGraphConnections[audioConnectionIndex])
                             // If a match is found, remove the object from the array
                             if (audioConnectionIndex !== -1) {
                                 amDoc.synth.graph.connections.splice(audioConnectionIndex, 1);
-                            }
-                            
-                            // // within the audio graph, Find the index of the object that matches the condition
-                            // const audioCableIndex = amDoc.synth.graph.findIndex(el => el.id === edge.data().id);
-                            // // set the change type
-                            // amDoc.changeType = {
-                            //     msg: 'disconnect'
-                            // }
-                            // // If a match is found, remove the object from the array
-                            // if (index !== -1) {
-                            //     amDoc.elements.splice(index, 1);
-                            // }
-                            
+                            }                
                         }, onChange, `disconnect ${edge.data().source} from ${edge.data().target}$PARENTS ${parentSourceID} ${parentTargetID}`);
 
 
@@ -2752,7 +2739,6 @@ document.addEventListener("DOMContentLoaded", function () {
                             // remove connection from audio graph
                             // Find the index of the object that matches the condition
                             let audioConnectionIndex = audioGraphConnections.findIndex(el => el.source === cableSource && el.target === cableTarget);
-                            console.log('removing cable: ', audioGraphConnections[audioConnectionIndex])
                             // If a match is found, remove the object from the array
                             if (audioConnectionIndex !== -1) {
                                 amDoc.synth.graph.connections.splice(audioConnectionIndex, 1);
@@ -3219,7 +3205,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 // remove connection from audio graph
                 // Find the index of the object that matches the condition
                 let audioConnectionIndex = audioGraphConnections.findIndex(el => el.source === cableSource && el.target === cableTarget);
-                console.log('removing cable: ', audioGraphConnections[audioConnectionIndex])
                 // If a match is found, remove the object from the array
                 if (audioConnectionIndex !== -1) {
                     amDoc.synth.graph.connections.splice(audioConnectionIndex, 1);
@@ -3595,7 +3580,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
             break
             case 'loadVersion':
-                console.log('synth graph:\n', data)
                 // if a loaded version is for a paramChange, no need to recreate the graph
                 // if(changeType && changeType.msg === 'paramUpdate'){
                 //     synthWorklet.port.postMessage({ cmd: 'paramChange', data: changeType });

@@ -375,8 +375,6 @@ class DSP extends AudioWorkletProcessor {
                     if(module.params){
                         moduleParams = module.params // node is a webAudioNode and we want its params
                     }
-                    console.log(moduleID, 'moduleParams', moduleParams)
-                    // console.log(moduleID)
                     if(moduleID.startsWith('feedbackDelayNode')){
                         this.audioNodeBuilder('feedbackDelayNode', moduleID, null, 'loadstate')
                     } 
@@ -604,8 +602,6 @@ class DSP extends AudioWorkletProcessor {
                 const node = state.nodes[id];
                 if (!node) return;
                 
-               
-                // console.log(node.node)
                 if (!signalBuffers[id]) signalBuffers[id] = new Float32Array(128);
                 const inputBuffer = new Float32Array(128);
                 
@@ -619,7 +615,6 @@ class DSP extends AudioWorkletProcessor {
                     
                     // Check if source node has more than one outlet (or any multi-output module)
                     if (state.nodes[sourceId] && state.nodes[sourceId].output && typeof state.nodes[sourceId].output === 'object') {
-                        // console.log('snared')
                         const sourceBuffer = state.nodes[sourceId].output[sourceOutput] || new Float32Array(128);
                         for (let i = 0; i < 128; i++) {
                             inputBuffer[i] += sourceBuffer[i]; // Mix into input buffer
@@ -677,7 +672,6 @@ class DSP extends AudioWorkletProcessor {
                     node.modulatedParams[param] = modValue;
                 });
 
-                
                 // Dynamically combine baseParams and modulatedParams for each parameter during processing
                 const getEffectiveParam = (node, param, attenuverter) => {
                     const base = node.baseParams[param] || 0;
@@ -697,7 +691,6 @@ class DSP extends AudioWorkletProcessor {
                     return result;
                 };
                 
-
                 if (node.node === 'Oscillator') {
                     const effectiveFrequency = getEffectiveParam(node, 'frequency', node.baseParams['freq cv +/-']);
                     // const formattedFrequency = parseFloat(effectiveFrequency.toFixed(2));
