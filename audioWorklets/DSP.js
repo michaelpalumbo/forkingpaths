@@ -509,6 +509,8 @@ class DSP extends AudioWorkletProcessor {
                         this.currentState.signalConnections.splice(index, 1);
                     }
                 } else{
+                    // remove cv connection
+
                     const index = this.currentState.cvConnections.findIndex(
                         (item) => 
  
@@ -518,6 +520,10 @@ class DSP extends AudioWorkletProcessor {
                     );
                     // Remove the object if it exists
                     if (index !== -1) {
+                        let thisCvConnection = this.currentState.cvConnections[index]
+                        // reset the modulatedParam value to 0 so that the cv attenuverter doesn't influence the param until a cable is attached again
+                        this.currentState.nodes[thisCvConnection.target.split('.')[0]].modulatedParams[thisCvConnection.target.split('.')[1]] = 0
+                        // remove the cv connection
                         this.currentState.cvConnections.splice(index, 1);
                     }
 
@@ -645,6 +651,7 @@ class DSP extends AudioWorkletProcessor {
 
                 state.cvConnections.filter(conn => conn.target.split('.')[0] === id).forEach(conn => {
                     const modSourceId = conn.source.split('.')[0];
+                    
                     if (!visited.has(modSourceId)) {
                         processNode(modSourceId); // Ensure modulation sources are processed
                     }
