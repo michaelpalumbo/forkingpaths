@@ -283,7 +283,7 @@
       "delayTime": {
         "min": 0.01,
         "max": 50,
-        "default": 5,
+        "default": 30,
         "units": "milliseconds",
         "description": "The delay time applied to the input signal.",
         "modulatable": true,
@@ -341,7 +341,7 @@
       "delayTime": {
         "min": 0.01,
         "max": 50,
-        "default": 5,
+        "default": 30,
         "units": "milliseconds",
         "description": "The delay time applied to the input signal.",
         "modulatable": true,

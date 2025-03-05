@@ -1243,27 +1243,31 @@ document.addEventListener("DOMContentLoaded", function () {
             // loop through UI, update each param
             const synthModules = forkedDoc.synth.graph.modules
             Object.keys(synthModules).forEach((moduleID)=>{
-                Object.keys(synthModules[moduleID].params).forEach((param)=>{                  
-                    let id = `paramControl_parent:${moduleID}_param:${param}`
-                    
-                    let paramControl = document.getElementById(id) 
-                    if (paramControl) {
-                        switch(paramControl.tagName){
-                            case 'INPUT':
-                                paramControl.value = synthModules[moduleID].params[param]
-                                $(paramControl).knobSet(paramControl.value);
-                            break
+                // some nodes don't have params (like the feedbackDelayNode), so ignore them (otherwise this throws an error whenever there's a feedback cable)
+                if(synthModules[moduleID].params){
+                    Object.keys(synthModules[moduleID].params).forEach((param)=>{                  
+                        let id = `paramControl_parent:${moduleID}_param:${param}`
+                        
+                        let paramControl = document.getElementById(id) 
+                        if (paramControl) {
+                            switch(paramControl.tagName){
+                                case 'INPUT':
+                                    paramControl.value = synthModules[moduleID].params[param]
+                                    $(paramControl).knobSet(paramControl.value);
+                                break
+        
+                                case 'SELECT':
+                                    paramControl.value = synthModules[moduleID].params[param]
+                                break
     
-                            case 'SELECT':
-                                paramControl.value = synthModules[moduleID].params[param]
-                            break
-
-                            default: console.warn('NEW UI DETECTED, CREATE A SWITCH CASE FOR IT ABOVE THIS LINE')
-                        }
-                      } else {
-                        console.warn(`param with id "${id}" not found.`);
-                      }               
-                })
+                                default: console.warn('NEW UI DETECTED, CREATE A SWITCH CASE FOR IT ABOVE THIS LINE')
+                            }
+                          } else {
+                            console.warn(`param with id "${id}" not found.`);
+                          }               
+                    })
+                }
+                
             })
         }
 
@@ -2645,16 +2649,20 @@ document.addEventListener("DOMContentLoaded", function () {
                     
                     // Check if the click is near the source or target endpoint
                     if (isNearEndpoint(mousePos, sourcePos)) {
+                        let cableSource =  edge.data().source
+                        let cableTarget =  edge.data().target
+                        let audioGraphConnections = amDoc.synth.graph.connections
+
                         // delete the cable
                         cy.remove(edge);
                         // also remove the cable from automerge!
                         updateSynthWorklet('removeCable', { source: edge.data().source, target: edge.data().target})
                         
-                        console.warn('todo: check if this cable was part of a cycle, if it is, ensure that whichever edge in the cycle that has the feedback:true prop set in the audio graph is now set to false')
+                        console.warn('todo: check if this cable was part of a cycle, if it is, ensure that whichever edge in the cycle that has the feedback:true prop set in the audio graph is now set to false')                        
 
                         // * automerge version: 
                         amDoc = applyChange(amDoc, (amDoc) => {
-                            // Find the index of the object that matches the condition
+                            // Within the visual graph, Find the index of the object that matches the condition
                             const index = amDoc.elements.findIndex(el => el.id === edge.data().id);
                             // set the change type
                             amDoc.changeType = {
@@ -2664,6 +2672,14 @@ document.addEventListener("DOMContentLoaded", function () {
                             if (index !== -1) {
                                 amDoc.elements.splice(index, 1);
                             }
+                            
+                            // remove connection from audio graph
+                            // Find the index of the object that matches the condition
+                            let audioConnectionIndex = audioGraphConnections.findIndex(el => el.source === cableSource && el.target === cableTarget);
+                            // If a match is found, remove the object from the array
+                            if (audioConnectionIndex !== -1) {
+                                amDoc.synth.graph.connections.splice(audioConnectionIndex, 1);
+                            }                
                         }, onChange, `disconnect ${edge.data().source} from ${edge.data().target}$PARENTS ${parentSourceID} ${parentTargetID}`);
 
 
@@ -2701,6 +2717,10 @@ document.addEventListener("DOMContentLoaded", function () {
                         // })
 
                     } else if (isNearEndpoint(mousePos, targetPos)) {
+                        let cableSource =  edge.data().source
+                        let cableTarget =  edge.data().target
+                        let audioGraphConnections = amDoc.synth.graph.connections
+
                         // delete the cable
                         cy.remove(edge);
                         updateSynthWorklet('removeCable', { source: edge.data().source, target: edge.data().target})
@@ -2719,6 +2739,15 @@ document.addEventListener("DOMContentLoaded", function () {
                             if (index !== -1) {
                                 amDoc.elements.splice(index, 1);
                             }
+
+                            // remove connection from audio graph
+                            // Find the index of the object that matches the condition
+                            let audioConnectionIndex = audioGraphConnections.findIndex(el => el.source === cableSource && el.target === cableTarget);
+                            // If a match is found, remove the object from the array
+                            if (audioConnectionIndex !== -1) {
+                                amDoc.synth.graph.connections.splice(audioConnectionIndex, 1);
+                            }
+
                         }, onChange, `disconnect ${edge.data().target} from ${edge.data().source}$PARENTS ${parentSourceID} ${parentTargetID}`);
 
 
@@ -3151,12 +3180,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
         if (highlightedEdge && (event.key === 'Backspace' || event.key === 'Delete')) {
-            
-            updateSynthWorklet('removeCable', { source: highlightedEdge.data().source, target: highlightedEdge.data().target})
+            let cableSource =  highlightedEdge.data().source
+            let cableTarget =  highlightedEdge.data().target
+            let audioGraphConnections = amDoc.synth.graph.connections
+            updateSynthWorklet('removeCable', { source: cableSource, target: cableTarget})
             
             // let cycle = isEdgeInCycle(cy.$(`#${edgeId}`))
 
-            console.warn('todo: check if this cable was part of a cycle, if it is, ensure that its associated feedbackDelayNode is also removed from the synth.graph along with its 2 edges')
+            // console.warn('todo: check if this cable was part of a cycle, if it is, ensure that its associated feedbackDelayNode is also removed from the synth.graph along with its 2 edges')
+
+            // console.log('connections:', amDoc.synth.graph.connections)
+            // console.log('cable data', highlightedEdge.data())
 
             amDoc = applyChange(amDoc, (amDoc) => {
                 
@@ -3171,16 +3205,15 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (index !== -1) {
                     amDoc.elements.splice(index, 1);
                 }
-
+                
                 // remove connection from audio graph
                 // Find the index of the object that matches the condition
-                const graphIndex = amDoc.synth.graph.connections.findIndex(el => el.id === highlightedEdge.data().id);
-
+                let audioConnectionIndex = audioGraphConnections.findIndex(el => el.source === cableSource && el.target === cableTarget);
                 // If a match is found, remove the object from the array
-                if (graphIndex !== -1) {
-                    amDoc.synth.graph.connections.splice(graphIndex, 1);
+                if (audioConnectionIndex !== -1) {
+                    amDoc.synth.graph.connections.splice(audioConnectionIndex, 1);
                 }
-            }, onChange, `disconnect ${highlightedEdge.data().target.split('.')[1]} from ${highlightedEdge.data().source.split('.')[1]}$PARENTS ${highlightedEdge.data().source.split('.')[0]} ${highlightedEdge.data().target.split('.')[0]}`);
+            }, onChange, `disconnect ${cableTarget.split('.')[1]} from ${cableSource.split('.')[1]}$PARENTS ${cableSource.split('.')[0]} ${cableTarget.split('.')[0]}`);
 
             cy.remove(highlightedEdge)
             highlightedEdge = null; // Clear the reference after deletion

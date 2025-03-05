@@ -206,10 +206,10 @@ class DSP extends AudioWorkletProcessor {
                     baseParams: {
                         delayTime: parseFloat(params.delayTime) || 500,
                         'time cv +/-': parseFloat(params['time cv +/-']) || 100,
-                        feedback: 0.5,
+                        feedback: parseFloat(params.feedback) || 0.5,
                         'feedback cv +/-': parseFloat(params['feedback cv +/-']) || 0.3,
-                        dryWet: 0.4,
-                        'dryWet cv +/-': parseFloat(params['time cv +/-']) || 0,
+                        dryWet: parseFloat(params.dryWet) || 0.4,
+                        'dryWet cv +/-': parseFloat(params['dryWet cv +/-']) || 0,
                     },
                     connections: {
                         feedback: null, // Will store a Web Audio GainNode for feedback
@@ -375,7 +375,6 @@ class DSP extends AudioWorkletProcessor {
                     if(module.params){
                         moduleParams = module.params // node is a webAudioNode and we want its params
                     }
-                    // console.log(moduleID)
                     if(moduleID.startsWith('feedbackDelayNode')){
                         this.audioNodeBuilder('feedbackDelayNode', moduleID, null, 'loadstate')
                     } 
@@ -388,6 +387,8 @@ class DSP extends AudioWorkletProcessor {
                         this.port.postMessage({ cmd: 'fetchRNBOsrc', data: module });
                         // this.rnboDeviceBuilder(module.type, module.moduleSpec.desc, module.moduleSpec.src, 'loadstate')
                         // console.warn('if any module is ade with rnboDevices, need to run it through this.rnboDeviceBuilder')
+                    } else {
+                        console.warn('node module structure defined for module ', moduleID)
                     }
 
 
@@ -506,6 +507,8 @@ class DSP extends AudioWorkletProcessor {
                         this.currentState.signalConnections.splice(index, 1);
                     }
                 } else{
+                    // remove cv connection
+
                     const index = this.currentState.cvConnections.findIndex(
                         (item) => 
  
@@ -515,6 +518,10 @@ class DSP extends AudioWorkletProcessor {
                     );
                     // Remove the object if it exists
                     if (index !== -1) {
+                        let thisCvConnection = this.currentState.cvConnections[index]
+                        // reset the modulatedParam value to 0 so that the cv attenuverter doesn't influence the param until a cable is attached again
+                        this.currentState.nodes[thisCvConnection.target.split('.')[0]].modulatedParams[thisCvConnection.target.split('.')[1]] = 0
+                        // remove the cv connection
                         this.currentState.cvConnections.splice(index, 1);
                     }
 
@@ -595,8 +602,6 @@ class DSP extends AudioWorkletProcessor {
                 const node = state.nodes[id];
                 if (!node) return;
                 
-               
-                // console.log(node.node)
                 if (!signalBuffers[id]) signalBuffers[id] = new Float32Array(128);
                 const inputBuffer = new Float32Array(128);
                 
@@ -610,7 +615,6 @@ class DSP extends AudioWorkletProcessor {
                     
                     // Check if source node has more than one outlet (or any multi-output module)
                     if (state.nodes[sourceId] && state.nodes[sourceId].output && typeof state.nodes[sourceId].output === 'object') {
-                        // console.log('snared')
                         const sourceBuffer = state.nodes[sourceId].output[sourceOutput] || new Float32Array(128);
                         for (let i = 0; i < 128; i++) {
                             inputBuffer[i] += sourceBuffer[i]; // Mix into input buffer
@@ -642,6 +646,7 @@ class DSP extends AudioWorkletProcessor {
 
                 state.cvConnections.filter(conn => conn.target.split('.')[0] === id).forEach(conn => {
                     const modSourceId = conn.source.split('.')[0];
+                    
                     if (!visited.has(modSourceId)) {
                         processNode(modSourceId); // Ensure modulation sources are processed
                     }
@@ -667,7 +672,6 @@ class DSP extends AudioWorkletProcessor {
                     node.modulatedParams[param] = modValue;
                 });
 
-                
                 // Dynamically combine baseParams and modulatedParams for each parameter during processing
                 const getEffectiveParam = (node, param, attenuverter) => {
                     const base = node.baseParams[param] || 0;
@@ -687,7 +691,6 @@ class DSP extends AudioWorkletProcessor {
                     return result;
                 };
                 
-
                 if (node.node === 'Oscillator') {
                     const effectiveFrequency = getEffectiveParam(node, 'frequency', node.baseParams['freq cv +/-']);
                     // const formattedFrequency = parseFloat(effectiveFrequency.toFixed(2));
