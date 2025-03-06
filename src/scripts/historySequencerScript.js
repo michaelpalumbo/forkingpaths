@@ -1,12 +1,21 @@
 import dagre from 'cytoscape-dagre';
 import * as Tone from "tone";
 import { uuidv7 } from "uuidv7";
-const ws = new WebSocket('ws://localhost:3000');
+
+// Use the correct protocol based on your site's URL
+const wsUrl =
+  import.meta.env.MODE === 'production'
+    ? import.meta.env.VITE_PRODUCTION_WS_URL
+    : import.meta.env.VITE_DEVELOPMENT_WS_URL;
+const ws = new WebSocket(`${wsUrl}`);
+
+console.log(`attempting to connect to historyGraphRenderer at ${wsUrl}`)
+// const ws = new WebSocket('ws://localhost:3001');
 
 // import NanoTimer from 'nanotimer';
 
 
-const historyGraphWorker = new Worker("./workers/historyGraphWorker.js");
+// const historyGraphWorker = new Worker("./workers/historyGraphWorker.js");
 
 // App settings
 let appSettings = {}
@@ -446,7 +455,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     ws.onopen = () => {
-        console.log('Connected to WebSocket server');
+        console.log('Connected to WebSocket server at ', wsUrl);
         // ws.send('Hello, server!');
         sendToMainApp({
             cmd: 'historySequencerReady'

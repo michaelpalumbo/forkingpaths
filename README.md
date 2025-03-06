@@ -58,3 +58,11 @@ Cmd/Ctrl + click + drag to select multiple elements, then drag any module to mov
 
 **Save Synth**
 Click File > Save Synth... to save it to anywhere in your computer. 
+
+
+# Local Use:
+
+## install
+
+clone this repo from github.com/michaelpalumbo/forkingpaths as well as github.com/historyGraphRender. ensure they are both cloned to the same parent directory. 
+

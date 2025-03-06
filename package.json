@@ -9,7 +9,7 @@
 
   "scripts": {
     "rnboDevice2modules": "node ./src/utilities/rnboDevice2modules.js",
-    "server": "node server.js",
+    "server": "node ../historyGraphRenderer/server.js",
     "start": "concurrently \"npm run server\" \"vite\"",
     "dev": "npm run rnboDevice2modules && concurrently \"npm run server\" \"vite\"",
     "build": "npm run rnboDevice2modules && vite build",
