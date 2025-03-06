@@ -5,6 +5,10 @@
 //*
 // const ws = new WebSocket('ws://localhost:3000');
 
+console.log("Script.js is loaded");
+export const forceBundle = true;
+
+
 const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
 const ws = new WebSocket(`${wsProtocol}://${window.location.host}/ws`);
 
@@ -141,7 +145,7 @@ document.addEventListener("DOMContentLoaded", function () {
     async function setupAudioWorklet() {
         try {
             // Load the worklet module **first**
-            await audioContext.audioWorklet.addModule('./audioWorklets/DSP.js');
+            await audioContext.audioWorklet.addModule('./src/scripts/DSP.js');
           
             // Now we safely create the worklet **after** it has loaded
             synthWorklet = new AudioWorkletNode(audioContext, 'DSP');

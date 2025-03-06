@@ -6,6 +6,7 @@ import path from 'path';
 export default defineConfig({
   root: ".", // Set the root directory
   publicDir: "public", // Ensure 'public' is used as the directory for static assets
+  base: './', // Ensures relative paths work in Render & local build
 
   
   // Any custom configurations here
@@ -18,7 +19,10 @@ export default defineConfig({
     outDir: path.resolve(__dirname, 'dist'), // Ensures dist is created inside the project folder
     emptyOutDir: true, // Ensures the folder is cleared before each build
     rollupOptions: {
-      input: './public/index.html',
+      input: './index.html',
     },
+    // manualChunks: {
+    //   "script": ["./src/scripts/script.js"]
+    // }
   },
 });
