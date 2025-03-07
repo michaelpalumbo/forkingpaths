@@ -5,7 +5,6 @@
 //*
 // const ws = new WebSocket('ws://localhost:3000');
 
-console.log("Script.js is loaded");
 export const forceBundle = true;
 
 
@@ -15,7 +14,6 @@ export const forceBundle = true;
 // Use the correct protocol based on your site's URL
 const VITE_WS_URL = import.meta.env.VITE_WS_URL
 // const VITE_WS_URL = "wss://historygraphrenderer.onrender.com/10000"
-console.log("ws url:", VITE_WS_URL)
 const ws = new WebSocket(VITE_WS_URL);
 
 import { uuidv7 } from "uuidv7";
@@ -1889,15 +1887,34 @@ document.addEventListener("DOMContentLoaded", function () {
             updateButtonText();
         } else if (audioContext && audioContext.state === 'suspended'){
             audioContext.resume();
+            audioToggleButton.style.backgroundColor = '#444'
             updateButtonText();
 
         }
     });
 
-    // Update timer every second
+
+    // check for audio status every second
+    let currentAudioStatusCheckIndex = 0;
+    let audioToggleButtonUpdate = 0
     const checkAudioStatus = setInterval(() => {
         // Initialize the button text on load
         updateButtonText();
+        const colors = ['red', '#444'];
+       
+
+        if(audioContext.state != 'running'){
+            currentAudioStatusCheckIndex = (currentAudioStatusCheckIndex + 1) % colors.length;
+            audioToggleButton.style.backgroundColor = colors[currentAudioStatusCheckIndex];
+            audioToggleButtonUpdate = 1
+        } else {
+            if(audioToggleButtonUpdate === 1){
+                audioToggleButton.style.backgroundColor = '#444'
+                audioToggleButtonUpdate = 0
+            }
+            
+            
+        }
         // const sr = synthWorklet.getSampleRate()
   
     }, 1000);
