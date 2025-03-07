@@ -606,10 +606,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
             await saveDocument('meta', Automerge.save(meta));
 
+            let synthFile = await checkForUserStoredFile();
+            console.log(synthFile)
+
             // addSpeaker()
         
             // currentZoom = cy.zoom()
         } else {
+            console.log('or it happens heya')
             // meta does contain at least one document, so grab whichever is the one that was last looked at
             amDoc = Automerge.load(meta.docs[meta.head.branch]);
 
@@ -1171,81 +1175,44 @@ document.addEventListener("DOMContentLoaded", function () {
             
             // cy.reset()
             // pull modules from synthfile and populate cytoscape with parentNodes:
-            let synthFile = JSON.parse(localStorage.getItem('synthFile'))
-            // I do this from the synthFile because the parentNodes' dimensions respond to their childs' positioning
-            cy.json(synthFile.visualGraph)
-            // Sync the positions in `elements`
-            const syncedElements = syncPositions(forkedDoc);
-            // add all cables back in
-            syncedElements.forEach((el)=>{
-                if(el.type === 'edge'){
-                    cy.add(el)
-                }
-            })
-            // setTimeout(() => {
-            //     updateKnobPositionAndScale('all');
-            //     // Make all nodes non-draggable
+            
+            // if this is the user's first time accessing the site (or from a private browser, etc), load the basic synth
+
+
+            async function loadSynthFile() {
+                let synthFile = await checkForUserStoredFile();
                 
-            // }, 10); // Wait for the current rendering cycle to complete
+                // I do this from the synthFile because the parentNodes' dimensions respond to their childs' positioning
+                cy.json(synthFile.visualGraph)
+                // Sync the positions in `elements`
+                const syncedElements = syncPositions(forkedDoc);
+                // add all cables back in
+                syncedElements.forEach((el)=>{
+                    if(el.type === 'edge'){
+                        cy.add(el)
+                    }
+                })
+                
+                let index = 0
+                elements.forEach((node)=>{
+                    // set module grabbable to false -- prevents module movements in main view
+                    if(node.classes === ':parent'){
+                        synthFile.visualGraph.elements.nodes[index].grabbable = false
+                    }
+                    if(node.classes === 'paramAnchorNode'){
+                        let value = forkedDoc.synth.graph.modules[node.data.parent].params[node.data.label]
+                        createFloatingOverlay(node.data.parent, node, index, value)
+                        console.log(node)
+                        index++
+                    }
+                })
+                // Initial position and scale update. delay it to wait for cytoscape rendering to complete. 
+                setTimeout(() => {
+                    updateKnobPositionAndScale('all');
+                }, 10); // Wait for the current rendering cycle to complete
+            }
 
-            // go through synedElements, filter out parent nodes, and update params and add cables?
-
-            // 3. Add new elements to Cytoscape
-            // cy.add(syncedElements)
-
-            // parentNodePositions.forEach(parentNode => {
-            //     const node = cy.getElementById(parentNode.id);
-    
-            //     if (node) {
-            //         // test
-            //         let pos = {x: parseFloat(parentNode.position.x), y: parseFloat(parentNode.position.y)}
-                  
-            //         // pos = {x: Math.random() * 100 + 200, y: Math.random() * 100 + 200};
-            //         // pos = {x: 273.3788826175895, y: 434.9628649535062};
-            //         // let clonedPos = {...pos}
-            //         node.position(pos); // Set the position manually
-          
-    
-                    
-                    
-            //     }
-            // });
-            // make sure viewport is set back to user's position and zoom
-            // cy.zoom(currentZoom)
-            // cy.pan(currentPan)
-    
-            
-            // // add overlay UI elements
-            // synthFile.visualGraph.elements.nodes.forEach((node, index)=>{
-            //     // set module grabbable to false -- prevents module movements in main view
-            //     if(node.classes === ':parent'){
-            //         synthFile.visualGraph.elements.nodes[index].grabbable = false
-            //     }
-            //     // create overlays
-            //     if(node.classes === 'paramAnchorNode'){
-            //         let value = synthFile.audioGraph.modules[node.data.parent].params[node.data.label]
-            //         createFloatingOverlay(node.data.parent, node, index, value)
-            
-            //         // index++
-            //     }
-            // })
-            let index = 0
-            elements.forEach((node)=>{
-                // set module grabbable to false -- prevents module movements in main view
-                if(node.classes === ':parent'){
-                    synthFile.visualGraph.elements.nodes[index].grabbable = false
-                }
-                if(node.classes === 'paramAnchorNode'){
-                    let value = forkedDoc.synth.graph.modules[node.data.parent].params[node.data.label]
-                    createFloatingOverlay(node.data.parent, node, index, value)
-            
-                    index++
-                }
-            })
-            // Initial position and scale update. delay it to wait for cytoscape rendering to complete. 
-            setTimeout(() => {
-                updateKnobPositionAndScale('all');
-            }, 10); // Wait for the current rendering cycle to complete
+            loadSynthFile()
             
         } else {
             // Sync the positions in `elements`
@@ -4151,7 +4118,30 @@ document.addEventListener("DOMContentLoaded", function () {
     
 
     
+    async function checkForUserStoredFile(){
+
+            
+        if(!localStorage.getItem('synthFile')){
+            try {
+                const response = await fetch(`/assets/synths/${import.meta.env.VITE_FIRST_SYNTH}.fpsynth`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                return await response.json();
+                
+                // Continue with the rest of your code here...
+                } catch (error) {
+                console.error('Error fetching basic synth:', error);
+                }
+            }
+        else {
+            return JSON.parse(localStorage.getItem('synthFile'))
+            
+        }
     
+    
+    }
 
   
 
