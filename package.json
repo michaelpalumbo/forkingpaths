@@ -10,11 +10,11 @@
   "scripts": {
     "rnboDevice2modules": "node ./src/utilities/rnboDevice2modules.js",
     "server": "node ../historyGraphRenderer/server.js",
-    "start": "concurrently \"npm run server\" \"vite\"",
+    "start": "vite",
     "dev": "npm run rnboDevice2modules && concurrently \"npm run server\" \"vite\"",
     "build": "npm run rnboDevice2modules && vite build",
     "preview": "vite preview",
-    "runBuild": "concurrently \"npm run server\" \"npx serv dist\""
+    "runBuild": "npx serv dist"
   },
   "devDependencies": {
     "concurrently": "^9.1.0",
