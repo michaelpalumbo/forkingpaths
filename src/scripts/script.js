@@ -149,8 +149,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
     async function setupAudioWorklet() {
         try {
-            // Load the worklet module **first**
-            await audioContext.audioWorklet.addModule('./src/scripts/DSP.js');
+            console.log(import.meta.env.MODE)
+            // assuming we're in development Load the worklet module from /src/
+            let dspPath = '../audioWorklets/DSP.js'
+            // check if we're in production mode
+            if(import.meta.env.MODE === 'production'){
+                // this path is the result of the build:worklet script in package.json
+                dspPath = '/audioWorklets/DSP.js';
+            }
+
+            await audioContext.audioWorklet.addModule(dspPath);
           
             // Now we safely create the worklet **after** it has loaded
             synthWorklet = new AudioWorkletNode(audioContext, 'DSP');
