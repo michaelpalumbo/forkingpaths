@@ -149,7 +149,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     async function setupAudioWorklet() {
         try {
-            console.log(import.meta.env.MODE)
             // assuming we're in development Load the worklet module from /src/
             let dspPath = '../audioWorklets/DSP.js'
             // check if we're in production mode
@@ -572,10 +571,10 @@ document.addEventListener("DOMContentLoaded", function () {
                         },
                         connections: []
                     }
-                },
-                paramUIOverlays = {
-
                 }
+                // paramUIOverlays = {
+
+                // }
 
             });
             
