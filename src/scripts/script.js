@@ -603,17 +603,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // send doc to history app
             reDrawHistoryGraph()
-
-            await saveDocument('meta', Automerge.save(meta));
-
-            let synthFile = await checkForUserStoredFile();
-            console.log(synthFile)
-
-            // addSpeaker()
-        
-            // currentZoom = cy.zoom()
         } else {
-            console.log('or it happens heya')
+
             // meta does contain at least one document, so grab whichever is the one that was last looked at
             amDoc = Automerge.load(meta.docs[meta.head.branch]);
 
@@ -1178,41 +1169,38 @@ document.addEventListener("DOMContentLoaded", function () {
             
             // if this is the user's first time accessing the site (or from a private browser, etc), load the basic synth
 
-
-            async function loadSynthFile() {
-                let synthFile = await checkForUserStoredFile();
+            let synthFile = JSON.parse(localStorage.getItem('synthFile'))
                 
-                // I do this from the synthFile because the parentNodes' dimensions respond to their childs' positioning
-                cy.json(synthFile.visualGraph)
-                // Sync the positions in `elements`
-                const syncedElements = syncPositions(forkedDoc);
-                // add all cables back in
-                syncedElements.forEach((el)=>{
-                    if(el.type === 'edge'){
-                        cy.add(el)
-                    }
-                })
                 
-                let index = 0
-                elements.forEach((node)=>{
-                    // set module grabbable to false -- prevents module movements in main view
-                    if(node.classes === ':parent'){
-                        synthFile.visualGraph.elements.nodes[index].grabbable = false
-                    }
-                    if(node.classes === 'paramAnchorNode'){
-                        let value = forkedDoc.synth.graph.modules[node.data.parent].params[node.data.label]
-                        createFloatingOverlay(node.data.parent, node, index, value)
-                        console.log(node)
-                        index++
-                    }
-                })
-                // Initial position and scale update. delay it to wait for cytoscape rendering to complete. 
-                setTimeout(() => {
-                    updateKnobPositionAndScale('all');
-                }, 10); // Wait for the current rendering cycle to complete
-            }
+            // I do this from the synthFile because the parentNodes' dimensions respond to their childs' positioning
+            cy.json(synthFile.visualGraph)
+            // Sync the positions in `elements`
+            const syncedElements = syncPositions(forkedDoc);
+            // add all cables back in
+            syncedElements.forEach((el)=>{
+                if(el.type === 'edge'){
+                    cy.add(el)
+                }
+            })
+            
+            let index = 0
+            elements.forEach((node)=>{
+                // set module grabbable to false -- prevents module movements in main view
+                if(node.classes === ':parent'){
+                    synthFile.visualGraph.elements.nodes[index].grabbable = false
+                }
+                if(node.classes === 'paramAnchorNode'){
+                    let value = forkedDoc.synth.graph.modules[node.data.parent].params[node.data.label]
+                    createFloatingOverlay(node.data.parent, node, index, value)
+                    index++
+                }
+            })
+            // Initial position and scale update. delay it to wait for cytoscape rendering to complete. 
+            setTimeout(() => {
+                updateKnobPositionAndScale('all');
+            }, 10); // Wait for the current rendering cycle to complete
+            
 
-            loadSynthFile()
             
         } else {
             // Sync the positions in `elements`
@@ -2501,6 +2489,95 @@ document.addEventListener("DOMContentLoaded", function () {
         reader.readAsArrayBuffer(file); // Start reading the file
     });
 
+    // load the demo synth from /public/assets
+
+    document.getElementById('loadDemoSynthButton').addEventListener('click', async (event) => {
+        try {
+          // Fetch the JSON file (with a custom extension)
+          const response = await fetch(`/assets/synths/${import.meta.env.VITE_FIRST_SYNTH}.fpsynth`);
+          
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          
+          // Parse the response as JSON
+          const fileContent = await response.json();
+          
+          // Store the JSON string in localStorage if needed
+          localStorage.setItem('synthFile', JSON.stringify(fileContent));
+          
+          // Process the JSON content
+          createNewPatchHistory(fileContent);
+          
+        } catch (error) {
+          console.error("Error loading template file:", error);
+        }
+    });
+    // // get .fpsynth files from user's filesystem
+    // document.getElementById('loadDemoSynthButton').addEventListener('click', async (event) => {
+    //     let file = await fetch(`/assets/synths/${import.meta.env.VITE_FIRST_SYNTH}.fpsynth`).json()
+    
+    //     console.log(file)
+    //     if (!file) {
+    //         alert('No file selected');
+    //         return;
+    //     }
+    
+    //     // Ensure the file is a valid Automerge binary (based on extension or type)
+    //     if (!file.name.endsWith('.fpsynth')) {
+    //         alert('Invalid file type. Please select a .fpsynth file.');
+    //         return;
+    //     }
+    
+    //     const reader = new FileReader();
+    
+    //     reader.onload = () => {
+    //         try {
+
+    //             localStorage.setItem('synthFile', reader.result);
+
+    //             // Parse the JSON data
+    //             const jsonData = JSON.parse(reader.result);
+    //             createNewPatchHistory(jsonData)
+
+    //         } catch (error) {
+    //             console.error("Failed to parse JSON:", error);
+    //         }
+    //     };
+    //     reader.onerror = () => {
+    //         console.error("Error reading the file:", reader.error);
+    //     };
+
+    //     // Start reading the file
+    //     reader.readAsText(file);
+        
+    // });
+    
+
+    async function checkForUserStoredFile(){
+
+                    
+        if(!localStorage.getItem('synthFile')){
+            try {
+                const response = await fetch(`/assets/synths/${import.meta.env.VITE_FIRST_SYNTH}.fpsynth`).json;
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                return await response.json();
+                
+                // Continue with the rest of your code here...
+                } catch (error) {
+                console.error('Error fetching basic synth:', error);
+                }
+            }
+        else {
+            return 
+            
+        }
+    
+    
+    }
     // get .fpsynth files from user's filesystem
     document.getElementById('loadSynthButton').addEventListener('change', async (event) => {
         const file = event.target.files[0];
@@ -4117,31 +4194,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     
 
-    
-    async function checkForUserStoredFile(){
 
-            
-        if(!localStorage.getItem('synthFile')){
-            try {
-                const response = await fetch(`/assets/synths/${import.meta.env.VITE_FIRST_SYNTH}.fpsynth`);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                return await response.json();
-                
-                // Continue with the rest of your code here...
-                } catch (error) {
-                console.error('Error fetching basic synth:', error);
-                }
-            }
-        else {
-            return JSON.parse(localStorage.getItem('synthFile'))
-            
-        }
-    
-    
-    }
 
   
 
