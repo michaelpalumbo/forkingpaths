@@ -9,9 +9,14 @@ console.log("Script.js is loaded");
 export const forceBundle = true;
 
 
-const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-const ws = new WebSocket(`${wsProtocol}://${window.location.host}/ws`);
+// const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+// const ws = new WebSocket(`${wsProtocol}://${window.location.host}/ws`);
 
+// Use the correct protocol based on your site's URL
+const VITE_WS_URL = import.meta.env.VITE_WS_URL
+// const VITE_WS_URL = "wss://historygraphrenderer.onrender.com/10000"
+console.log("ws url:", VITE_WS_URL)
+const ws = new WebSocket(VITE_WS_URL);
 
 import { uuidv7 } from "uuidv7";
 import randomColor from 'randomcolor';

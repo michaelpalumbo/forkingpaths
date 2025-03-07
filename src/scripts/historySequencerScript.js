@@ -3,11 +3,11 @@ import * as Tone from "tone";
 import { uuidv7 } from "uuidv7";
 
 // Use the correct protocol based on your site's URL
-const wsUrl =
-  import.meta.env.MODE === 'production'
-    ? import.meta.env.VITE_PRODUCTION_WS_URL
-    : import.meta.env.VITE_DEVELOPMENT_WS_URL;
-const ws = new WebSocket(`${wsUrl}`);
+const VITE_WS_URL = import.meta.env.VITE_WS_URL
+// const VITE_WS_URL = "wss://historygraphrenderer.onrender.com/10000"
+console.log("ws url:", VITE_WS_URL)
+const ws = new WebSocket(VITE_WS_URL);
+
 
 console.log(`attempting to connect to historyGraphRenderer at ${wsUrl}`)
 // const ws = new WebSocket('ws://localhost:3001');
