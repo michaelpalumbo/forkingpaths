@@ -10,7 +10,7 @@
   "scripts": {
     "rnboDevice2modules": "node ./src/utilities/rnboDevice2modules.js",
     "server": "node ../historyGraphRenderer/server.js",
-    "start": "vite preview --host",
+    "start": "npx serve dist -l ${PORT:-3000}",
     "dev": "npm run rnboDevice2modules && concurrently \"npm run server\" \"vite\"",
     "build": "npm run rnboDevice2modules && npm run build:worklet && vite build",
     "preview": "vite preview",
