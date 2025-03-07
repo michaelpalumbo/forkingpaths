@@ -249,16 +249,16 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 
-    // Enable Grid-Guide Extension
-    cy.gridGuide({
-        drawGrid: true,
-        snapToGrid: true,
-        gridSpacing: 20,
-        gridColor: '#dedede',
-        lineWidth: 1
-    });
+    // // Enable Grid-Guide Extension
+    // cy.gridGuide({
+    //     drawGrid: true,
+    //     snapToGrid: true,
+    //     gridSpacing: 20,
+    //     gridColor: '#dedede',
+    //     lineWidth: 1
+    // });
 
-    console.warn('gridGuide is being used but not appearing. see code just above this message')
+    // console.warn('gridGuide is being used but not appearing. see code just above this message')
 
     function createNewSynth(){
 

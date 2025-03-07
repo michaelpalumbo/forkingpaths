@@ -8,8 +8,6 @@ const VITE_WS_URL = import.meta.env.VITE_WS_URL
 console.log("ws url:", VITE_WS_URL)
 const ws = new WebSocket(VITE_WS_URL);
 
-
-console.log(`attempting to connect to historyGraphRenderer at ${wsUrl}`)
 // const ws = new WebSocket('ws://localhost:3001');
 
 // import NanoTimer from 'nanotimer';
@@ -455,7 +453,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     ws.onopen = () => {
-        console.log('Connected to WebSocket server at ', wsUrl);
+        console.log('Connected to WebSocket server at ', VITE_WS_URL);
         // ws.send('Hello, server!');
         sendToMainApp({
             cmd: 'historySequencerReady'
