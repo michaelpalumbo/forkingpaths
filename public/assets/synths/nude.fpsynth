@@ -1,0 +1,1870 @@
+{
+  "filename": "filename.fpsynth",
+  "visualGraph": {
+    "elements": {
+      "nodes": [
+        {
+          "data": {
+            "id": "AudioDestination_Bird_817cb6e5f1cb",
+            "label": "AudioDestination Bird",
+            "kind": "module",
+            "rnboName": "AudioDestination",
+            "moduleSpec": {
+              "parameters": {},
+              "paramNames": [],
+              "cv": {},
+              "inputs": [
+                "IN"
+              ],
+              "outputs": []
+            },
+            "structure": "webAudioNodes",
+            "bgcolour": "#E6CCFF"
+          },
+          "position": {
+            "x": 784,
+            "y": 778.5
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ":parent"
+        },
+        {
+          "data": {
+            "id": "AudioDestination_Bird_817cb6e5f1cb.IN",
+            "parent": "AudioDestination_Bird_817cb6e5f1cb",
+            "label": "IN",
+            "kind": "input",
+            "bgcolour": "#FC9A4F",
+            "ghostCableShape": "rectangle",
+            "ghostCableColour": "#5C9AE3",
+            "description": null
+          },
+          "position": {
+            "x": 784,
+            "y": 788
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "SLOWFO_Trumpeter_062912c85634",
+            "label": "SLOWFO Trumpeter",
+            "kind": "module",
+            "rnboName": "SLOWFO",
+            "moduleSpec": {
+              "parameters": {
+                "frequency": {
+                  "min": 0.001,
+                  "max": 1,
+                  "default": 0.001,
+                  "units": "Hz",
+                  "description": "The frequency of the low frequency oscillator.",
+                  "modulatable": true,
+                  "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects.",
+                  "kind": "paramAnchorNode",
+                  "name": "frequency",
+                  "ui": "knob"
+                },
+                "type": {
+                  "values": [
+                    "sine",
+                    "square",
+                    "sawtooth",
+                    "triangle"
+                  ],
+                  "default": "sine",
+                  "description": "The waveform shape of the oscillator.",
+                  "kind": "paramAnchorNode",
+                  "name": "type",
+                  "ui": "menu"
+                },
+                "freq cv +/-": {
+                  "min": -1,
+                  "max": 1,
+                  "default": 0.002,
+                  "units": "Hz",
+                  "description": "The attenuverter of the frequency CV input",
+                  "modulatable": false,
+                  "modulationDescription": "The attenuverter of the frequency CV input",
+                  "kind": "paramAnchorNode",
+                  "name": "freq cv +/-",
+                  "ui": "knob"
+                }
+              },
+              "paramNames": [
+                "frequency",
+                "freq cv +/-",
+                "type"
+              ],
+              "cvNames": [
+                "frequency"
+              ],
+              "cv": {
+                "frequency": {
+                  "min": 0.001,
+                  "max": 1,
+                  "default": 0.02,
+                  "units": "Hz",
+                  "description": "The frequency of the oscillator.",
+                  "modulatable": true,
+                  "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects.",
+                  "kind": "input",
+                  "name": "frequency",
+                  "ui": "knob"
+                }
+              },
+              "inputs": [],
+              "outputs": [
+                "OUT"
+              ]
+            },
+            "structure": "webAudioNodes",
+            "bgcolour": "#E6CCFF"
+          },
+          "position": {
+            "x": 221.5,
+            "y": 256.5
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ":parent"
+        },
+        {
+          "data": {
+            "id": "SLOWFO_Trumpeter_062912c85634_frequency",
+            "parent": "SLOWFO_Trumpeter_062912c85634",
+            "label": "frequency",
+            "nameSpace": "SLOWFO_Trumpeter_062912c85634_frequency.frequency",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "SLOWFO_Trumpeter_062912c85634_frequency",
+            "ui": "knob",
+            "min": 0.001,
+            "max": 1,
+            "value": 0.001,
+            "menuOptions": "none",
+            "description": "The frequency of the low frequency oscillator.",
+            "units": "Hz"
+          },
+          "position": {
+            "x": 141,
+            "y": 166
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "SLOWFO_Trumpeter_062912c85634_freq cv +/-",
+            "parent": "SLOWFO_Trumpeter_062912c85634",
+            "label": "freq cv +/-",
+            "nameSpace": "SLOWFO_Trumpeter_062912c85634_freq cv +/-.freq cv +/-",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "SLOWFO_Trumpeter_062912c85634_freq cv +/-",
+            "ui": "knob",
+            "min": -1,
+            "max": 1,
+            "value": 0.002,
+            "menuOptions": "none",
+            "description": "The attenuverter of the frequency CV input",
+            "units": "Hz"
+          },
+          "position": {
+            "x": 141,
+            "y": 271
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "SLOWFO_Trumpeter_062912c85634_type",
+            "parent": "SLOWFO_Trumpeter_062912c85634",
+            "label": "type",
+            "nameSpace": "SLOWFO_Trumpeter_062912c85634_type.type",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "SLOWFO_Trumpeter_062912c85634_type",
+            "ui": "menu",
+            "min": 0,
+            "max": 1,
+            "value": "sine",
+            "menuOptions": [
+              "sine",
+              "square",
+              "sawtooth",
+              "triangle"
+            ],
+            "description": "The waveform shape of the oscillator.",
+            "units": "unspecified"
+          },
+          "position": {
+            "x": 141,
+            "y": 376
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "SLOWFO_Trumpeter_062912c85634.frequency",
+            "parent": "SLOWFO_Trumpeter_062912c85634",
+            "label": "frequency",
+            "kind": "input",
+            "bgcolour": "#FC9A4F",
+            "ghostCableShape": "rectangle",
+            "ghostCableColour": "#5C9AE3",
+            "description": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects."
+          },
+          "position": {
+            "x": 281,
+            "y": 166
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "SLOWFO_Trumpeter_062912c85634.OUT",
+            "parent": "SLOWFO_Trumpeter_062912c85634",
+            "label": "OUT",
+            "kind": "output",
+            "bgcolour": "#6FB1FC",
+            "ghostCableShape": "triangle",
+            "ghostCableColour": "#E68942",
+            "description": null
+          },
+          "position": {
+            "x": 281,
+            "y": 271
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "LFO_Lookdown_5032e295167f",
+            "label": "LFO Lookdown",
+            "kind": "module",
+            "rnboName": "LFO",
+            "moduleSpec": {
+              "parameters": {
+                "frequency": {
+                  "min": 0.01,
+                  "max": 10,
+                  "default": 1,
+                  "units": "Hz",
+                  "description": "The frequency of the low frequency oscillator.",
+                  "modulatable": true,
+                  "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects.",
+                  "kind": "paramAnchorNode",
+                  "name": "frequency",
+                  "ui": "knob"
+                },
+                "type": {
+                  "values": [
+                    "sine",
+                    "square",
+                    "sawtooth",
+                    "triangle",
+                    "custom"
+                  ],
+                  "default": "sine",
+                  "description": "The waveform shape of the oscillator.",
+                  "kind": "paramAnchorNode",
+                  "name": "type",
+                  "ui": "menu"
+                },
+                "freq cv +/-": {
+                  "min": -20,
+                  "max": 20,
+                  "default": 10,
+                  "units": "Hz",
+                  "description": "The attenuverter of the frequency CV input",
+                  "modulatable": false,
+                  "modulationDescription": "The attenuverter of the frequency CV input",
+                  "kind": "paramAnchorNode",
+                  "name": "freq cv +/-",
+                  "ui": "knob"
+                }
+              },
+              "paramNames": [
+                "frequency",
+                "freq cv +/-",
+                "type"
+              ],
+              "cvNames": [
+                "frequency"
+              ],
+              "cv": {
+                "frequency": {
+                  "min": 0.01,
+                  "max": 10,
+                  "default": 5,
+                  "units": "Hz",
+                  "description": "The frequency of the oscillator.",
+                  "modulatable": true,
+                  "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects.",
+                  "kind": "input",
+                  "name": "frequency",
+                  "ui": "knob"
+                }
+              },
+              "inputs": [],
+              "outputs": [
+                "OUT"
+              ]
+            },
+            "structure": "webAudioNodes",
+            "bgcolour": "#CCCCCC"
+          },
+          "position": {
+            "x": 205.5,
+            "y": 692.5
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ":parent"
+        },
+        {
+          "data": {
+            "id": "LFO_Lookdown_5032e295167f_frequency",
+            "parent": "LFO_Lookdown_5032e295167f",
+            "label": "frequency",
+            "nameSpace": "LFO_Lookdown_5032e295167f_frequency.frequency",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "LFO_Lookdown_5032e295167f_frequency",
+            "ui": "knob",
+            "min": 0.01,
+            "max": 10,
+            "value": 1,
+            "menuOptions": "none",
+            "description": "The frequency of the low frequency oscillator.",
+            "units": "Hz"
+          },
+          "position": {
+            "x": 125,
+            "y": 602
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "LFO_Lookdown_5032e295167f_freq cv +/-",
+            "parent": "LFO_Lookdown_5032e295167f",
+            "label": "freq cv +/-",
+            "nameSpace": "LFO_Lookdown_5032e295167f_freq cv +/-.freq cv +/-",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "LFO_Lookdown_5032e295167f_freq cv +/-",
+            "ui": "knob",
+            "min": -20,
+            "max": 20,
+            "value": 10,
+            "menuOptions": "none",
+            "description": "The attenuverter of the frequency CV input",
+            "units": "Hz"
+          },
+          "position": {
+            "x": 125,
+            "y": 707
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "LFO_Lookdown_5032e295167f_type",
+            "parent": "LFO_Lookdown_5032e295167f",
+            "label": "type",
+            "nameSpace": "LFO_Lookdown_5032e295167f_type.type",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "LFO_Lookdown_5032e295167f_type",
+            "ui": "menu",
+            "min": 0,
+            "max": 1,
+            "value": "sine",
+            "menuOptions": [
+              "sine",
+              "square",
+              "sawtooth",
+              "triangle",
+              "custom"
+            ],
+            "description": "The waveform shape of the oscillator.",
+            "units": "unspecified"
+          },
+          "position": {
+            "x": 125,
+            "y": 812
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "LFO_Lookdown_5032e295167f.frequency",
+            "parent": "LFO_Lookdown_5032e295167f",
+            "label": "frequency",
+            "kind": "input",
+            "bgcolour": "#FC9A4F",
+            "ghostCableShape": "rectangle",
+            "ghostCableColour": "#5C9AE3",
+            "description": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects."
+          },
+          "position": {
+            "x": 265,
+            "y": 602
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "LFO_Lookdown_5032e295167f.OUT",
+            "parent": "LFO_Lookdown_5032e295167f",
+            "label": "OUT",
+            "kind": "output",
+            "bgcolour": "#6FB1FC",
+            "ghostCableShape": "triangle",
+            "ghostCableColour": "#E68942",
+            "description": null
+          },
+          "position": {
+            "x": 265,
+            "y": 707
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "Oscillator_Basilisk_16dbbcd4a632",
+            "label": "Oscillator Basilisk",
+            "kind": "module",
+            "rnboName": "Oscillator",
+            "moduleSpec": {
+              "parameters": {
+                "frequency": {
+                  "min": 110,
+                  "max": 3000,
+                  "default": 440,
+                  "units": "Hz",
+                  "description": "The frequency of the oscillator.",
+                  "modulatable": true,
+                  "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects.",
+                  "kind": "paramAnchorNode",
+                  "name": "frequency",
+                  "ui": "knob"
+                },
+                "type": {
+                  "values": [
+                    "sine",
+                    "square",
+                    "sawtooth",
+                    "triangle",
+                    "custom"
+                  ],
+                  "default": "sine",
+                  "description": "The waveform shape of the oscillator.",
+                  "kind": "paramAnchorNode",
+                  "name": "type",
+                  "ui": "menu"
+                },
+                "freq cv +/-": {
+                  "min": -1000,
+                  "max": 1000,
+                  "default": 100,
+                  "units": "Hz",
+                  "description": "The attenuverter of the frequency CV input",
+                  "modulatable": false,
+                  "modulationDescription": "The attenuverter of the frequency CV input",
+                  "kind": "paramAnchorNode",
+                  "name": "freq cv +/-",
+                  "ui": "knob"
+                }
+              },
+              "paramNames": [
+                "frequency",
+                "freq cv +/-",
+                "type"
+              ],
+              "cvNames": [
+                "frequency"
+              ],
+              "cv": {
+                "frequency": {
+                  "min": 110,
+                  "max": 9000,
+                  "default": 440,
+                  "units": "Hz",
+                  "description": "The frequency of the oscillator.",
+                  "modulatable": true,
+                  "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects.",
+                  "kind": "input",
+                  "name": "frequency",
+                  "ui": "knob"
+                }
+              },
+              "inputs": [],
+              "outputs": [
+                "OUT"
+              ]
+            },
+            "structure": "webAudioNodes",
+            "bgcolour": "#CCCCCC"
+          },
+          "position": {
+            "x": 527.5,
+            "y": 407.5
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ":parent"
+        },
+        {
+          "data": {
+            "id": "Oscillator_Basilisk_16dbbcd4a632_frequency",
+            "parent": "Oscillator_Basilisk_16dbbcd4a632",
+            "label": "frequency",
+            "nameSpace": "Oscillator_Basilisk_16dbbcd4a632_frequency.frequency",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "Oscillator_Basilisk_16dbbcd4a632_frequency",
+            "ui": "knob",
+            "min": 110,
+            "max": 3000,
+            "value": 440,
+            "menuOptions": "none",
+            "description": "The frequency of the oscillator.",
+            "units": "Hz"
+          },
+          "position": {
+            "x": 447,
+            "y": 317
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "Oscillator_Basilisk_16dbbcd4a632_freq cv +/-",
+            "parent": "Oscillator_Basilisk_16dbbcd4a632",
+            "label": "freq cv +/-",
+            "nameSpace": "Oscillator_Basilisk_16dbbcd4a632_freq cv +/-.freq cv +/-",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "Oscillator_Basilisk_16dbbcd4a632_freq cv +/-",
+            "ui": "knob",
+            "min": -1000,
+            "max": 1000,
+            "value": 100,
+            "menuOptions": "none",
+            "description": "The attenuverter of the frequency CV input",
+            "units": "Hz"
+          },
+          "position": {
+            "x": 447,
+            "y": 422
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "Oscillator_Basilisk_16dbbcd4a632_type",
+            "parent": "Oscillator_Basilisk_16dbbcd4a632",
+            "label": "type",
+            "nameSpace": "Oscillator_Basilisk_16dbbcd4a632_type.type",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "Oscillator_Basilisk_16dbbcd4a632_type",
+            "ui": "menu",
+            "min": 0,
+            "max": 1,
+            "value": "sine",
+            "menuOptions": [
+              "sine",
+              "square",
+              "sawtooth",
+              "triangle",
+              "custom"
+            ],
+            "description": "The waveform shape of the oscillator.",
+            "units": "unspecified"
+          },
+          "position": {
+            "x": 447,
+            "y": 527
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "Oscillator_Basilisk_16dbbcd4a632.frequency",
+            "parent": "Oscillator_Basilisk_16dbbcd4a632",
+            "label": "frequency",
+            "kind": "input",
+            "bgcolour": "#FC9A4F",
+            "ghostCableShape": "rectangle",
+            "ghostCableColour": "#5C9AE3",
+            "description": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects."
+          },
+          "position": {
+            "x": 587,
+            "y": 317
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "Oscillator_Basilisk_16dbbcd4a632.OUT",
+            "parent": "Oscillator_Basilisk_16dbbcd4a632",
+            "label": "OUT",
+            "kind": "output",
+            "bgcolour": "#6FB1FC",
+            "ghostCableShape": "triangle",
+            "ghostCableColour": "#E68942",
+            "description": null
+          },
+          "position": {
+            "x": 587,
+            "y": 422
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "Flutter_Nudibranch_7021a7a422b6",
+            "label": "Flutter Nudibranch",
+            "kind": "module",
+            "rnboName": "Flutter",
+            "moduleSpec": {
+              "parameters": {
+                "delayTime": {
+                  "min": 0.01,
+                  "max": 50,
+                  "default": 30,
+                  "units": "milliseconds",
+                  "description": "The delay time applied to the input signal.",
+                  "modulatable": true,
+                  "modulationDescription": "Audio-rate modulation of the delay time. Connect an AudioNode to modulate this parameter.",
+                  "kind": "paramAnchorNode",
+                  "name": "delayTime",
+                  "ui": "knob"
+                },
+                "time cv +/-": {
+                  "min": -50,
+                  "max": 50,
+                  "default": 2,
+                  "units": "Hz",
+                  "description": "The attenuverter of the delayTime CV input",
+                  "modulatable": false,
+                  "modulationDescription": "The attenuverter of the delayTime CV input",
+                  "kind": "paramAnchorNode",
+                  "name": "time cv +/-",
+                  "ui": "knob"
+                },
+                "feedback": {
+                  "min": 0,
+                  "max": 1,
+                  "default": 0.5,
+                  "units": "float",
+                  "description": "feedback into the delay buffer",
+                  "modulatable": true,
+                  "modulationDescription": "feedback into the delay buffer",
+                  "kind": "paramAnchorNode",
+                  "name": "feedback",
+                  "ui": "knob"
+                },
+                "feedback cv +/-": {
+                  "min": -1,
+                  "max": 1,
+                  "default": 0,
+                  "units": "float",
+                  "description": "attenuverter for the feedback into the delay buffer",
+                  "modulatable": true,
+                  "modulationDescription": "attenuverter for the dfeedback into the delay buffer",
+                  "kind": "paramAnchorNode",
+                  "name": "feedback cv +/-",
+                  "ui": "knob"
+                },
+                "dryWet": {
+                  "min": 0,
+                  "max": 1,
+                  "default": 0.5,
+                  "units": "float",
+                  "description": "dry/wet ratio of the output signal",
+                  "modulatable": true,
+                  "modulationDescription": "dry/wet ratio of the output signal",
+                  "kind": "paramAnchorNode",
+                  "name": "dryWet",
+                  "ui": "knob"
+                },
+                "dryWet cv +/-": {
+                  "min": -1,
+                  "max": 1,
+                  "default": 0,
+                  "units": "float",
+                  "description": "attenuverter for the dry/wet ratio of the output signal",
+                  "modulatable": true,
+                  "modulationDescription": "attenuverter for the dry/wet ratio of the output signal",
+                  "kind": "paramAnchorNode",
+                  "name": "dryWet cv +/-",
+                  "ui": "knob"
+                }
+              },
+              "paramNames": [
+                "delayTime",
+                "time cv +/-",
+                "feedback",
+                "feedback cv +/-",
+                "dryWet",
+                "dryWet cv +/-"
+              ],
+              "cvNames": [
+                "delayTime",
+                "feedback",
+                "dryWet"
+              ],
+              "cv": {
+                "delayTime": {
+                  "min": 0.01,
+                  "max": 50,
+                  "default": 30,
+                  "units": "milliseconds",
+                  "description": "The delay time applied to the input signal.",
+                  "modulatable": true,
+                  "modulationDescription": "Audio-rate modulation of the delay time. Connect an AudioNode to modulate this parameter.",
+                  "kind": "input",
+                  "name": "delayTime",
+                  "ui": "knob"
+                },
+                "feedback": {
+                  "min": 0,
+                  "max": 1,
+                  "default": 0.5,
+                  "units": "float",
+                  "description": "feedback into the delay buffer",
+                  "modulatable": true,
+                  "modulationDescription": "feedback into the delay buffer",
+                  "kind": "input",
+                  "name": "feedback",
+                  "ui": "knob"
+                },
+                "dryWet": {
+                  "min": 0,
+                  "max": 1,
+                  "default": 0.5,
+                  "units": "float",
+                  "description": "dry/wet ratio of the output signal",
+                  "modulatable": true,
+                  "modulationDescription": "Audio-rate modulation of the dry/wet ratio of the output signal",
+                  "kind": "input",
+                  "name": "dryWet",
+                  "ui": "knob"
+                }
+              },
+              "inputs": [
+                "IN"
+              ],
+              "outputs": [
+                "OUT"
+              ]
+            },
+            "structure": "webAudioNodes",
+            "bgcolour": "#E6CCFF"
+          },
+          "position": {
+            "x": 984,
+            "y": 374.5
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ":parent"
+        },
+        {
+          "data": {
+            "id": "Flutter_Nudibranch_7021a7a422b6_delayTime",
+            "parent": "Flutter_Nudibranch_7021a7a422b6",
+            "label": "delayTime",
+            "nameSpace": "Flutter_Nudibranch_7021a7a422b6_delayTime.delayTime",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "Flutter_Nudibranch_7021a7a422b6_delayTime",
+            "ui": "knob",
+            "min": 0.01,
+            "max": 50,
+            "value": 30,
+            "menuOptions": "none",
+            "description": "The delay time applied to the input signal.",
+            "units": "milliseconds"
+          },
+          "position": {
+            "x": 769,
+            "y": 279
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "Flutter_Nudibranch_7021a7a422b6_time cv +/-",
+            "parent": "Flutter_Nudibranch_7021a7a422b6",
+            "label": "time cv +/-",
+            "nameSpace": "Flutter_Nudibranch_7021a7a422b6_time cv +/-.time cv +/-",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "Flutter_Nudibranch_7021a7a422b6_time cv +/-",
+            "ui": "knob",
+            "min": -50,
+            "max": 50,
+            "value": 2,
+            "menuOptions": "none",
+            "description": "The attenuverter of the delayTime CV input",
+            "units": "Hz"
+          },
+          "position": {
+            "x": 769,
+            "y": 384
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "Flutter_Nudibranch_7021a7a422b6_feedback",
+            "parent": "Flutter_Nudibranch_7021a7a422b6",
+            "label": "feedback",
+            "nameSpace": "Flutter_Nudibranch_7021a7a422b6_feedback.feedback",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "Flutter_Nudibranch_7021a7a422b6_feedback",
+            "ui": "knob",
+            "min": 0,
+            "max": 1,
+            "value": 0.5,
+            "menuOptions": "none",
+            "description": "feedback into the delay buffer",
+            "units": "float"
+          },
+          "position": {
+            "x": 769,
+            "y": 489
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "Flutter_Nudibranch_7021a7a422b6_feedback cv +/-",
+            "parent": "Flutter_Nudibranch_7021a7a422b6",
+            "label": "feedback cv +/-",
+            "nameSpace": "Flutter_Nudibranch_7021a7a422b6_feedback cv +/-.feedback cv +/-",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "Flutter_Nudibranch_7021a7a422b6_feedback cv +/-",
+            "ui": "knob",
+            "min": -1,
+            "max": 1,
+            "value": 0,
+            "menuOptions": "none",
+            "description": "attenuverter for the feedback into the delay buffer",
+            "units": "float"
+          },
+          "position": {
+            "x": 909,
+            "y": 279
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "Flutter_Nudibranch_7021a7a422b6_dryWet",
+            "parent": "Flutter_Nudibranch_7021a7a422b6",
+            "label": "dryWet",
+            "nameSpace": "Flutter_Nudibranch_7021a7a422b6_dryWet.dryWet",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "Flutter_Nudibranch_7021a7a422b6_dryWet",
+            "ui": "knob",
+            "min": 0,
+            "max": 1,
+            "value": 0.5,
+            "menuOptions": "none",
+            "description": "dry/wet ratio of the output signal",
+            "units": "float"
+          },
+          "position": {
+            "x": 909,
+            "y": 384
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "Flutter_Nudibranch_7021a7a422b6_dryWet cv +/-",
+            "parent": "Flutter_Nudibranch_7021a7a422b6",
+            "label": "dryWet cv +/-",
+            "nameSpace": "Flutter_Nudibranch_7021a7a422b6_dryWet cv +/-.dryWet cv +/-",
+            "kind": "paramAnchorNode",
+            "shape": "ellipse",
+            "bgcolour": "#CCCCCC",
+            "hash": "Flutter_Nudibranch_7021a7a422b6_dryWet cv +/-",
+            "ui": "knob",
+            "min": -1,
+            "max": 1,
+            "value": 0,
+            "menuOptions": "none",
+            "description": "attenuverter for the dry/wet ratio of the output signal",
+            "units": "float"
+          },
+          "position": {
+            "x": 909,
+            "y": 489
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": "paramAnchorNode"
+        },
+        {
+          "data": {
+            "id": "Flutter_Nudibranch_7021a7a422b6.delayTime",
+            "parent": "Flutter_Nudibranch_7021a7a422b6",
+            "label": "delayTime",
+            "kind": "input",
+            "bgcolour": "#FC9A4F",
+            "ghostCableShape": "rectangle",
+            "ghostCableColour": "#5C9AE3",
+            "description": "Audio-rate modulation of the delay time. Connect an AudioNode to modulate this parameter."
+          },
+          "position": {
+            "x": 1049,
+            "y": 279
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "Flutter_Nudibranch_7021a7a422b6.feedback",
+            "parent": "Flutter_Nudibranch_7021a7a422b6",
+            "label": "feedback",
+            "kind": "input",
+            "bgcolour": "#FC9A4F",
+            "ghostCableShape": "rectangle",
+            "ghostCableColour": "#5C9AE3",
+            "description": "feedback into the delay buffer"
+          },
+          "position": {
+            "x": 1049,
+            "y": 384
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "Flutter_Nudibranch_7021a7a422b6.dryWet",
+            "parent": "Flutter_Nudibranch_7021a7a422b6",
+            "label": "dryWet",
+            "kind": "input",
+            "bgcolour": "#FC9A4F",
+            "ghostCableShape": "rectangle",
+            "ghostCableColour": "#5C9AE3",
+            "description": "Audio-rate modulation of the dry/wet ratio of the output signal"
+          },
+          "position": {
+            "x": 1049,
+            "y": 489
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "Flutter_Nudibranch_7021a7a422b6.IN",
+            "parent": "Flutter_Nudibranch_7021a7a422b6",
+            "label": "IN",
+            "kind": "input",
+            "bgcolour": "#FC9A4F",
+            "ghostCableShape": "rectangle",
+            "ghostCableColour": "#5C9AE3",
+            "description": null
+          },
+          "position": {
+            "x": 1189,
+            "y": 279
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        },
+        {
+          "data": {
+            "id": "Flutter_Nudibranch_7021a7a422b6.OUT",
+            "parent": "Flutter_Nudibranch_7021a7a422b6",
+            "label": "OUT",
+            "kind": "output",
+            "bgcolour": "#6FB1FC",
+            "ghostCableShape": "triangle",
+            "ghostCableColour": "#E68942",
+            "description": null
+          },
+          "position": {
+            "x": 1189,
+            "y": 384
+          },
+          "group": "nodes",
+          "removed": false,
+          "selected": false,
+          "selectable": true,
+          "locked": false,
+          "grabbable": true,
+          "pannable": false,
+          "classes": ""
+        }
+      ]
+    },
+    "style": [
+      {
+        "selector": "node",
+        "style": {
+          "background-color": "data(bgcolour)",
+          "label": "data(label)",
+          "font-size": "18px",
+          "width": "40px",
+          "height": "40px",
+          "color": "rgb(0,0,0)",
+          "text-valign": "top",
+          "text-halign": "center",
+          "text-margin-x": "-10px"
+        }
+      },
+      {
+        "selector": "node[bgcolour]",
+        "style": {
+          "background-color": "data(bgcolour)"
+        }
+      },
+      {
+        "selector": "node[kind = \"input\"]",
+        "style": {
+          "shape": "triangle"
+        }
+      },
+      {
+        "selector": "node[kind = \"output\"]",
+        "style": {
+          "shape": "rectangle"
+        }
+      },
+      {
+        "selector": ":parent",
+        "style": {
+          "background-opacity": "0.5",
+          "padding": "40px",
+          "background-color": "data(bgcolour)",
+          "border-color": "rgb(245,122,65)",
+          "border-width": "1px",
+          "label": "data(label)",
+          "text-valign": "top",
+          "text-halign": "center",
+          "color": "rgb(0,0,0)",
+          "font-size": "25px",
+          "text-margin-y": "-10px"
+        }
+      },
+      {
+        "selector": "node.highlighted",
+        "style": {
+          "border-color": "rgb(34,139,34)",
+          "border-width": "10px"
+        }
+      },
+      {
+        "selector": "node.ghostNode",
+        "style": {
+          "background-color": "rgb(255,255,255)",
+          "opacity": "0.8",
+          "width": "27px",
+          "height": "27px",
+          "border-width": "0px",
+          "label": ""
+        }
+      },
+      {
+        "selector": "edge",
+        "style": {
+          "width": "6px",
+          "line-color": "rgb(204,204,204)",
+          "target-arrow-shape": "triangle",
+          "source-arrow-shape": "triangle",
+          "source-arrow-color": "rgb(0,0,0)",
+          "target-arrow-color": "rgb(0,0,0)",
+          "target-arrow-width": "20px",
+          "source-arrow-width": "50px",
+          "curve-style": "unbundled-bezier",
+          "control-point-weights": "0.25 0.75",
+          "control-point-distances": "20px -20px"
+        }
+      },
+      {
+        "selector": "edge.highlighted",
+        "style": {
+          "line-color": "rgb(255,0,0)",
+          "target-arrow-color": "rgb(255,0,0)",
+          "source-arrow-color": "rgb(255,0,0)",
+          "width": "10px"
+        }
+      },
+      {
+        "selector": "edge.connectedEdges",
+        "style": {
+          "line-color": "rgb(34,139,34)",
+          "target-arrow-color": "rgb(34,139,34)",
+          "source-arrow-color": "rgb(34,139,34)",
+          "width": "6px"
+        }
+      },
+      {
+        "selector": ".peerPointer",
+        "style": {
+          "background-color": "data(colour)",
+          "width": "15px",
+          "height": "15px",
+          "shape": "star",
+          "text-valign": "center",
+          "text-halign": "right",
+          "text-margin-x": "10px"
+        }
+      },
+      {
+        "selector": ".paramAnchorNode",
+        "style": {
+          "background-color": "rgb(245,164,93)",
+          "background-opacity": "0",
+          "shape": "ellipse",
+          "width": "20px",
+          "height": "20px",
+          "label": "",
+          "text-opacity": "0",
+          "outline-width": "0px",
+          "events": "no"
+        }
+      }
+    ],
+    "data": {},
+    "zoomingEnabled": true,
+    "userZoomingEnabled": false,
+    "zoom": 1,
+    "minZoom": 1e-50,
+    "maxZoom": 1e+50,
+    "panningEnabled": true,
+    "userPanningEnabled": false,
+    "pan": {
+      "x": 0,
+      "y": 0
+    },
+    "boxSelectionEnabled": true,
+    "renderer": {
+      "name": "canvas"
+    }
+  },
+  "paramUIOverlays": {
+    "AudioDestination_Bird_817cb6e5f1cb": [],
+    "SLOWFO_Trumpeter_062912c85634": [
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      }
+    ],
+    "LFO_Lookdown_5032e295167f": [
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      }
+    ],
+    "Oscillator_Basilisk_16dbbcd4a632": [
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      }
+    ],
+    "Flutter_Nudibranch_7021a7a422b6": [
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      },
+      {
+        "containerDiv": {}
+      }
+    ]
+  },
+  "audioGraph": {
+    "modules": {
+      "AudioDestination_Bird_817cb6e5f1cb": {
+        "type": "AudioDestination",
+        "params": {},
+        "moduleSpec": {
+          "parameters": {},
+          "paramNames": [],
+          "cv": {},
+          "inputs": [
+            "IN"
+          ],
+          "outputs": []
+        },
+        "nodeIDs": [
+          "AudioDestination_Bird_817cb6e5f1cb",
+          "AudioDestination_Bird_817cb6e5f1cb.IN"
+        ],
+        "structure": "webAudioNodes"
+      },
+      "SLOWFO_Trumpeter_062912c85634": {
+        "type": "SLOWFO",
+        "params": {
+          "frequency": 0.001,
+          "freq cv +/-": 0.002,
+          "type": "sine"
+        },
+        "moduleSpec": {
+          "parameters": {
+            "frequency": {
+              "min": 0.001,
+              "max": 1,
+              "default": 0.001,
+              "units": "Hz",
+              "description": "The frequency of the low frequency oscillator.",
+              "modulatable": true,
+              "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects.",
+              "kind": "paramAnchorNode",
+              "name": "frequency",
+              "ui": "knob"
+            },
+            "type": {
+              "values": [
+                "sine",
+                "square",
+                "sawtooth",
+                "triangle"
+              ],
+              "default": "sine",
+              "description": "The waveform shape of the oscillator.",
+              "kind": "paramAnchorNode",
+              "name": "type",
+              "ui": "menu"
+            },
+            "freq cv +/-": {
+              "min": -1,
+              "max": 1,
+              "default": 0.002,
+              "units": "Hz",
+              "description": "The attenuverter of the frequency CV input",
+              "modulatable": false,
+              "modulationDescription": "The attenuverter of the frequency CV input",
+              "kind": "paramAnchorNode",
+              "name": "freq cv +/-",
+              "ui": "knob"
+            }
+          },
+          "paramNames": [
+            "frequency",
+            "freq cv +/-",
+            "type"
+          ],
+          "cvNames": [
+            "frequency"
+          ],
+          "cv": {
+            "frequency": {
+              "min": 0.001,
+              "max": 1,
+              "default": 0.02,
+              "units": "Hz",
+              "description": "The frequency of the oscillator.",
+              "modulatable": true,
+              "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects.",
+              "kind": "input",
+              "name": "frequency",
+              "ui": "knob"
+            }
+          },
+          "inputs": [],
+          "outputs": [
+            "OUT"
+          ]
+        },
+        "nodeIDs": [
+          "SLOWFO_Trumpeter_062912c85634",
+          "SLOWFO_Trumpeter_062912c85634_frequency-anchorNode",
+          "SLOWFO_Trumpeter_062912c85634_freq cv +/--anchorNode",
+          "SLOWFO_Trumpeter_062912c85634_type-anchorNode",
+          "SLOWFO_Trumpeter_062912c85634.frequency",
+          "SLOWFO_Trumpeter_062912c85634.OUT"
+        ],
+        "structure": "webAudioNodes"
+      },
+      "LFO_Lookdown_5032e295167f": {
+        "type": "LFO",
+        "params": {
+          "frequency": 1,
+          "freq cv +/-": 10,
+          "type": "sine"
+        },
+        "moduleSpec": {
+          "parameters": {
+            "frequency": {
+              "min": 0.01,
+              "max": 10,
+              "default": 1,
+              "units": "Hz",
+              "description": "The frequency of the low frequency oscillator.",
+              "modulatable": true,
+              "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects.",
+              "kind": "paramAnchorNode",
+              "name": "frequency",
+              "ui": "knob"
+            },
+            "type": {
+              "values": [
+                "sine",
+                "square",
+                "sawtooth",
+                "triangle",
+                "custom"
+              ],
+              "default": "sine",
+              "description": "The waveform shape of the oscillator.",
+              "kind": "paramAnchorNode",
+              "name": "type",
+              "ui": "menu"
+            },
+            "freq cv +/-": {
+              "min": -20,
+              "max": 20,
+              "default": 10,
+              "units": "Hz",
+              "description": "The attenuverter of the frequency CV input",
+              "modulatable": false,
+              "modulationDescription": "The attenuverter of the frequency CV input",
+              "kind": "paramAnchorNode",
+              "name": "freq cv +/-",
+              "ui": "knob"
+            }
+          },
+          "paramNames": [
+            "frequency",
+            "freq cv +/-",
+            "type"
+          ],
+          "cvNames": [
+            "frequency"
+          ],
+          "cv": {
+            "frequency": {
+              "min": 0.01,
+              "max": 10,
+              "default": 5,
+              "units": "Hz",
+              "description": "The frequency of the oscillator.",
+              "modulatable": true,
+              "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects.",
+              "kind": "input",
+              "name": "frequency",
+              "ui": "knob"
+            }
+          },
+          "inputs": [],
+          "outputs": [
+            "OUT"
+          ]
+        },
+        "nodeIDs": [
+          "LFO_Lookdown_5032e295167f",
+          "LFO_Lookdown_5032e295167f_frequency-anchorNode",
+          "LFO_Lookdown_5032e295167f_freq cv +/--anchorNode",
+          "LFO_Lookdown_5032e295167f_type-anchorNode",
+          "LFO_Lookdown_5032e295167f.frequency",
+          "LFO_Lookdown_5032e295167f.OUT"
+        ],
+        "structure": "webAudioNodes"
+      },
+      "Oscillator_Basilisk_16dbbcd4a632": {
+        "type": "Oscillator",
+        "params": {
+          "frequency": 440,
+          "freq cv +/-": 100,
+          "type": "sine"
+        },
+        "moduleSpec": {
+          "parameters": {
+            "frequency": {
+              "min": 110,
+              "max": 3000,
+              "default": 440,
+              "units": "Hz",
+              "description": "The frequency of the oscillator.",
+              "modulatable": true,
+              "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects.",
+              "kind": "paramAnchorNode",
+              "name": "frequency",
+              "ui": "knob"
+            },
+            "type": {
+              "values": [
+                "sine",
+                "square",
+                "sawtooth",
+                "triangle",
+                "custom"
+              ],
+              "default": "sine",
+              "description": "The waveform shape of the oscillator.",
+              "kind": "paramAnchorNode",
+              "name": "type",
+              "ui": "menu"
+            },
+            "freq cv +/-": {
+              "min": -1000,
+              "max": 1000,
+              "default": 100,
+              "units": "Hz",
+              "description": "The attenuverter of the frequency CV input",
+              "modulatable": false,
+              "modulationDescription": "The attenuverter of the frequency CV input",
+              "kind": "paramAnchorNode",
+              "name": "freq cv +/-",
+              "ui": "knob"
+            }
+          },
+          "paramNames": [
+            "frequency",
+            "freq cv +/-",
+            "type"
+          ],
+          "cvNames": [
+            "frequency"
+          ],
+          "cv": {
+            "frequency": {
+              "min": 110,
+              "max": 9000,
+              "default": 440,
+              "units": "Hz",
+              "description": "The frequency of the oscillator.",
+              "modulatable": true,
+              "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects.",
+              "kind": "input",
+              "name": "frequency",
+              "ui": "knob"
+            }
+          },
+          "inputs": [],
+          "outputs": [
+            "OUT"
+          ]
+        },
+        "nodeIDs": [
+          "Oscillator_Basilisk_16dbbcd4a632",
+          "Oscillator_Basilisk_16dbbcd4a632_frequency-anchorNode",
+          "Oscillator_Basilisk_16dbbcd4a632_freq cv +/--anchorNode",
+          "Oscillator_Basilisk_16dbbcd4a632_type-anchorNode",
+          "Oscillator_Basilisk_16dbbcd4a632.frequency",
+          "Oscillator_Basilisk_16dbbcd4a632.OUT"
+        ],
+        "structure": "webAudioNodes"
+      },
+      "Flutter_Nudibranch_7021a7a422b6": {
+        "type": "Flutter",
+        "params": {
+          "delayTime": 30,
+          "time cv +/-": 2,
+          "feedback": 0.5,
+          "feedback cv +/-": 0,
+          "dryWet": 0.5,
+          "dryWet cv +/-": 0
+        },
+        "moduleSpec": {
+          "parameters": {
+            "delayTime": {
+              "min": 0.01,
+              "max": 50,
+              "default": 30,
+              "units": "milliseconds",
+              "description": "The delay time applied to the input signal.",
+              "modulatable": true,
+              "modulationDescription": "Audio-rate modulation of the delay time. Connect an AudioNode to modulate this parameter.",
+              "kind": "paramAnchorNode",
+              "name": "delayTime",
+              "ui": "knob"
+            },
+            "time cv +/-": {
+              "min": -50,
+              "max": 50,
+              "default": 2,
+              "units": "Hz",
+              "description": "The attenuverter of the delayTime CV input",
+              "modulatable": false,
+              "modulationDescription": "The attenuverter of the delayTime CV input",
+              "kind": "paramAnchorNode",
+              "name": "time cv +/-",
+              "ui": "knob"
+            },
+            "feedback": {
+              "min": 0,
+              "max": 1,
+              "default": 0.5,
+              "units": "float",
+              "description": "feedback into the delay buffer",
+              "modulatable": true,
+              "modulationDescription": "feedback into the delay buffer",
+              "kind": "paramAnchorNode",
+              "name": "feedback",
+              "ui": "knob"
+            },
+            "feedback cv +/-": {
+              "min": -1,
+              "max": 1,
+              "default": 0,
+              "units": "float",
+              "description": "attenuverter for the feedback into the delay buffer",
+              "modulatable": true,
+              "modulationDescription": "attenuverter for the dfeedback into the delay buffer",
+              "kind": "paramAnchorNode",
+              "name": "feedback cv +/-",
+              "ui": "knob"
+            },
+            "dryWet": {
+              "min": 0,
+              "max": 1,
+              "default": 0.5,
+              "units": "float",
+              "description": "dry/wet ratio of the output signal",
+              "modulatable": true,
+              "modulationDescription": "dry/wet ratio of the output signal",
+              "kind": "paramAnchorNode",
+              "name": "dryWet",
+              "ui": "knob"
+            },
+            "dryWet cv +/-": {
+              "min": -1,
+              "max": 1,
+              "default": 0,
+              "units": "float",
+              "description": "attenuverter for the dry/wet ratio of the output signal",
+              "modulatable": true,
+              "modulationDescription": "attenuverter for the dry/wet ratio of the output signal",
+              "kind": "paramAnchorNode",
+              "name": "dryWet cv +/-",
+              "ui": "knob"
+            }
+          },
+          "paramNames": [
+            "delayTime",
+            "time cv +/-",
+            "feedback",
+            "feedback cv +/-",
+            "dryWet",
+            "dryWet cv +/-"
+          ],
+          "cvNames": [
+            "delayTime",
+            "feedback",
+            "dryWet"
+          ],
+          "cv": {
+            "delayTime": {
+              "min": 0.01,
+              "max": 50,
+              "default": 30,
+              "units": "milliseconds",
+              "description": "The delay time applied to the input signal.",
+              "modulatable": true,
+              "modulationDescription": "Audio-rate modulation of the delay time. Connect an AudioNode to modulate this parameter.",
+              "kind": "input",
+              "name": "delayTime",
+              "ui": "knob"
+            },
+            "feedback": {
+              "min": 0,
+              "max": 1,
+              "default": 0.5,
+              "units": "float",
+              "description": "feedback into the delay buffer",
+              "modulatable": true,
+              "modulationDescription": "feedback into the delay buffer",
+              "kind": "input",
+              "name": "feedback",
+              "ui": "knob"
+            },
+            "dryWet": {
+              "min": 0,
+              "max": 1,
+              "default": 0.5,
+              "units": "float",
+              "description": "dry/wet ratio of the output signal",
+              "modulatable": true,
+              "modulationDescription": "Audio-rate modulation of the dry/wet ratio of the output signal",
+              "kind": "input",
+              "name": "dryWet",
+              "ui": "knob"
+            }
+          },
+          "inputs": [
+            "IN"
+          ],
+          "outputs": [
+            "OUT"
+          ]
+        },
+        "nodeIDs": [
+          "Flutter_Nudibranch_7021a7a422b6",
+          "Flutter_Nudibranch_7021a7a422b6_delayTime-anchorNode",
+          "Flutter_Nudibranch_7021a7a422b6_time cv +/--anchorNode",
+          "Flutter_Nudibranch_7021a7a422b6_feedback-anchorNode",
+          "Flutter_Nudibranch_7021a7a422b6_feedback cv +/--anchorNode",
+          "Flutter_Nudibranch_7021a7a422b6_dryWet-anchorNode",
+          "Flutter_Nudibranch_7021a7a422b6_dryWet cv +/--anchorNode",
+          "Flutter_Nudibranch_7021a7a422b6.delayTime",
+          "Flutter_Nudibranch_7021a7a422b6.feedback",
+          "Flutter_Nudibranch_7021a7a422b6.dryWet",
+          "Flutter_Nudibranch_7021a7a422b6.IN",
+          "Flutter_Nudibranch_7021a7a422b6.OUT"
+        ],
+        "structure": "webAudioNodes"
+      }
+    },
+    "connections": []
+  }
+}
