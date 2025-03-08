@@ -1884,6 +1884,7 @@ document.addEventListener("DOMContentLoaded", function () {
     audioToggleButton.addEventListener('click', function () {
         if (audioContext && audioContext.state === 'running') {
             audioContext.suspend();
+            audioToggleButton.style.backgroundColor = 'red'
             updateButtonText();
         } else if (audioContext && audioContext.state === 'suspended'){
             audioContext.resume();
@@ -2345,7 +2346,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 paramElement.value = data.value;
                 // for all non-type selection UIs
 
-                if(event.data.data.kind && event.data.data.kind === 'menu'){
+                if(event.data.data.kind != 'menu'){
                     console.log('non-type change')
                     $(paramElement).val(data.value).trigger('change');
                 }
