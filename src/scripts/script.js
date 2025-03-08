@@ -810,6 +810,43 @@ document.addEventListener("DOMContentLoaded", function () {
     function removeAllCables(){
         console.warn(`nope, this isn't ready yet. see function removeAllCables. \nits almost ready, but the way that automerge handles array manipulation is super annoying...`)
         alert('feature not yet ready')
+        // let cableSource =  highlightedEdge.data().source
+        // let cableTarget =  highlightedEdge.data().target
+        // let audioGraphConnections = amDoc.synth.graph.connections
+        // updateSynthWorklet('removeCable', { source: cableSource, target: cableTarget})
+        
+        // // let cycle = isEdgeInCycle(cy.$(`#${edgeId}`))
+
+        // // console.warn('todo: check if this cable was part of a cycle, if it is, ensure that its associated feedbackDelayNode is also removed from the synth.graph along with its 2 edges')
+
+        // // console.log('connections:', amDoc.synth.graph.connections)
+        // // console.log('cable data', highlightedEdge.data())
+
+        // amDoc = applyChange(amDoc, (amDoc) => {
+            
+        //     // set the change type
+        //     amDoc.changeType = {
+        //         msg: 'disconnect'
+        //     }
+        //     // Find the index of the object that matches the condition
+        //     const index = amDoc.elements.findIndex(el => el.id === highlightedEdge.data().id);
+
+        //     // If a match is found, remove the object from the array
+        //     if (index !== -1) {
+        //         amDoc.elements.splice(index, 1);
+        //     }
+            
+        //     // remove connection from audio graph
+        //     // Find the index of the object that matches the condition
+        //     let audioConnectionIndex = audioGraphConnections.findIndex(el => el.source === cableSource && el.target === cableTarget);
+        //     // If a match is found, remove the object from the array
+        //     if (audioConnectionIndex !== -1) {
+        //         amDoc.synth.graph.connections.splice(audioConnectionIndex, 1);
+        //     }
+        // }, onChange, `disconnect ${cableTarget.split('.')[1]} from ${cableSource.split('.')[1]}$PARENTS ${cableSource.split('.')[0]} ${cableTarget.split('.')[0]}`);
+
+        // cy.remove(highlightedEdge)
+        // highlightedEdge = null; // Clear the reference after deletion
         /*
         let indexes = []
         const newElements = [];
@@ -2336,7 +2373,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 const data = {
                     parent: node.parent,
                     param: node.param, 
-                    value: node.value
+                    value: node.value,
+                    kind: node.kind
                 }
                 updateSynthWorklet('paramChange', data)
 
@@ -2344,10 +2382,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 let paramID = `paramControl_parent:${data.parent}_param:${data.param}`
                 const paramElement = document.getElementById(paramID);
                 paramElement.value = data.value;
-                // for all non-type selection UIs
-
-                if(event.data.data.kind != 'menu'){
-                    console.log('non-type change')
+                // for all non-menu UIs
+                if(event.data.kind != 'menu'){
                     $(paramElement).val(data.value).trigger('change');
                 }
 
