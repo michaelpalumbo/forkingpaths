@@ -699,7 +699,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     
                     let storedParam = meta.synthFile.audioGraph.modules[node.data.parents].moduleSpec.parameters[node.data.param]
                     let targetParam = gestureData.assign
-                    console.log(targetParam)
+                    
                     sendToMainApp({
                         cmd: 'playGesture',
                         data: convertParams(storedParam, targetParam, value),
