@@ -2333,6 +2333,14 @@ document.addEventListener("DOMContentLoaded", function () {
                     value: node.value
                 }
                 updateSynthWorklet('paramChange', data)
+
+                // set param value visually
+                let paramID = `paramControl_parent:${data.parent}_param:${data.param}`
+                const paramElement = document.getElementById(paramID);
+                paramElement.value = data.value;
+                $(paramElement).val(data.value).trigger('change');
+
+
             break
 
             case 'cloneGesture':
