@@ -1959,6 +1959,7 @@ document.addEventListener("DOMContentLoaded", function () {
         labelDiv.innerText = param.data.label || `Knob`; // Use parameter label or default
         labelDiv.style.textAlign = config.UI.knob.labelAlign;
         labelDiv.style.marginBottom = config.UI.knob.labelMarginBottom;
+        labelDiv.style.marginTop = config.UI.knob.labelMarginTop || '10px';
         labelDiv.style.fontSize = config.UI.knob.labelFontSize;
         labelDiv.style.color = config.UI.knob.labelColour;
         
@@ -1971,11 +1972,16 @@ document.addEventListener("DOMContentLoaded", function () {
             paramDiv.dataset.parentNodeID = parentNodeID
             paramDiv.dataset.param = param.data.label
 
-            paramDiv.style.width = '100%';
-            // paramDiv.style.padding = '5px';
+            paramDiv.style.width = '180%';
+            paramDiv.style.padding = '5px';
             paramDiv.style.borderRadius = '4px';
-            // paramDiv.style.border = '1px solid #ccc';
-            paramDiv.style.fontSize = '12px';
+            paramDiv.style.border = '3px solid black';
+            paramDiv.style.fontSize = '20px';
+
+            // New custom styling:
+            paramDiv.style.backgroundColor = '#f0f0f0'; // Set the background color
+            paramDiv.style.marginTop = '10px';          // Move it down by 10px (adjust as needed)
+            paramDiv.style.color = '#333';              // Set the font color
 
             // Add options to the select menu
             param.data.menuOptions.forEach((option) => {
@@ -2326,7 +2332,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
             case 'playGesture':
                 const node = event.data.data
-                console.log(node)
                 const data = {
                     parent: node.parent,
                     param: node.param, 
@@ -2338,7 +2343,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 let paramID = `paramControl_parent:${data.parent}_param:${data.param}`
                 const paramElement = document.getElementById(paramID);
                 paramElement.value = data.value;
-                $(paramElement).val(data.value).trigger('change');
+                // for all non-type selection UIs
+
+                if(event.data.data.kind && event.data.data.kind === 'menu'){
+                    console.log('non-type change')
+                    $(paramElement).val(data.value).trigger('change');
+                }
 
 
             break

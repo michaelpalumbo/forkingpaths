@@ -674,7 +674,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // Use setTimeout to schedule the callback
             const timeoutID = setTimeout(() => {
-
+                
                 if(gestureData.assign.param === 'default'){
                     
                     let data = {
@@ -684,7 +684,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     }
                     sendToMainApp({
                         cmd: 'playGesture',
-                        data: data
+                        data: data,
+                        kind: 'n/a'
                     })
                 } else {
                     // process it using the gesturedata assign range data for scaling
@@ -698,10 +699,11 @@ document.addEventListener("DOMContentLoaded", function () {
                     
                     let storedParam = meta.synthFile.audioGraph.modules[node.data.parents].moduleSpec.parameters[node.data.param]
                     let targetParam = gestureData.assign
-
+                    console.log(targetParam)
                     sendToMainApp({
                         cmd: 'playGesture',
-                        data: convertParams(storedParam, targetParam, value)
+                        data: convertParams(storedParam, targetParam, value),
+                        kind: targetParam.kind
 
                     })
                     // if(srcMetadata.ui === 'knob' && gestureData.assign.kind === 'knob'){
