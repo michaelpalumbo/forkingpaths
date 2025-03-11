@@ -651,10 +651,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
         }
     })();
-
+    
     // Set an interval to periodically save meta to IndexedDB
     setInterval(async () => {
-        if(meta){
+        if(meta && syncMessageDataChannel && syncMessageDataChannel.readyState === 'closed'){
+            
             // await saveDocument(docID, Automerge.save(amDoc));
             await saveDocument('meta', Automerge.save(meta));
             docUpdated = false
@@ -2388,7 +2389,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 // console.log(syncMessage)
                 // Process the incoming message to update doc and syncState.
                 // receiveSyncMessage returns a tuple [updatedDoc, updatedSyncState]
-                [syncState, meta] = Automerge.receiveSyncMessage(meta, syncState, incomingData);
+                [meta, syncState] = Automerge.receiveSyncMessage(meta, syncState, incomingData);
                 
                 // Optionally, update your UI or application state with the new doc.
                 // updateUIFromDoc(doc);
