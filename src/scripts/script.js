@@ -27,6 +27,17 @@ import { config } from '../../config/forkingPathsConfig.js';
 // TODO: look for comments with this: //* old -repo version 
 // TODO: when new automerge implementation is working, remove their related code sections
 
+// ICE server configuration (using a public STUN server)
+const configuration = {
+    iceServers: [
+      { urls: 'stun:stun.l.google.com:19302' }
+      // Optionally add TURN servers here
+    ]
+  };
+  
+// Create the RTCPeerConnection.
+const peerConnection = new RTCPeerConnection(configuration);
+let dataChannel;
 
 // * Audio 
 let audioGraphDirty = false
@@ -2280,6 +2291,79 @@ document.addEventListener("DOMContentLoaded", function () {
         .update();
     }
 
+    //*
+//*
+//* webRTC COMMUNICATION
+//* Functions that communicate between main app and server
+//*   
+
+    // ICE server configuration (using a public STUN server)
+    const configuration = {
+        iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' }
+        // Optionally add TURN servers here
+        ]
+    };
+    
+    // Create the RTCPeerConnection.
+    const peerConnection = new RTCPeerConnection(configuration);
+    let dataChannel;
+
+    // Helper function to send signaling messages using the "newPeer" command.
+    function sendSignalingMessage(message) {
+        // Wrap message in an object with cmd 'newPeer'
+        const payload = JSON.stringify({ cmd: 'newPeer', msg: message });
+        ws.send(payload);
+    }
+    
+    // --- ICE Candidate Handling ---
+    peerConnection.onicecandidate = event => {
+        if (event.candidate) {
+            // console.log("Sending ICE candidate:", event.candidate);
+            sendSignalingMessage({ candidate: event.candidate });
+        }
+    };
+
+    // --- Data Channel Handling ---
+    // If you're the initiating peer, you'll create the data channel.
+    // Otherwise, listen for the remote data channel.
+    peerConnection.ondatachannel = event => {
+        console.log("Data channel received from remote peer");
+        dataChannel = event.channel;
+        setupDataChannel();
+    };
+    
+    // Function to set up the data channel events.
+    function setupDataChannel() {
+        dataChannel.onopen = () => {
+            console.log("Data channel is open");
+            dataChannel.send("Hello, peer!");
+
+        };
+        dataChannel.onmessage = event => {
+            console.log("Data channel message:", event.data);
+        };
+    }
+    
+    // --- Initiating Connection ---
+    // This function is called when you want this client to start the connection.
+    async function initiateConnection() {
+        // Create a data channel (only on initiating peer)
+        dataChannel = peerConnection.createDataChannel("myDataChannel");
+        setupDataChannel();
+        
+        // Create an SDP offer.
+        const offer = await peerConnection.createOffer();
+        await peerConnection.setLocalDescription(offer);
+        // Send the offer through the signaling channel.
+        sendSignalingMessage(offer);
+    }
+    
+    // // Attach the initiation to a button click (ensure the button exists in your HTML)
+    // document.getElementById("startConnectionButton").addEventListener("click", () => {
+    //     initiateConnection().catch(err => console.error("Error initiating connection:", err));
+    // });
+
 //*
 //*
 //* SERVER COMMUNICATION
@@ -2289,10 +2373,36 @@ document.addEventListener("DOMContentLoaded", function () {
     ws.onopen = () => {
         // console.log('Connected to WebSocket server');
         // ws.send('Hello, server!');
+        initiateConnection().catch(err => console.error("Error initiating connection:", err))
     };
     
-    ws.onmessage = (event) => {
-        console.log('Message from server:', event.data);
+    ws.onmessage = async (event) => {
+        let msg = JSON.parse(event.data)
+        switch(msg.cmd){
+            case 'newPeer':
+                const peerMessage = JSON.parse(msg.msg).msg
+                // Process the signaling message based on its type.
+                if (peerMessage.type === 'offer') {
+                    // Received an offer: set it as the remote description.
+                    await peerConnection.setRemoteDescription(new RTCSessionDescription(peerMessage));
+                    // Create an answer and set as local description.
+                    const answer = await peerConnection.createAnswer();
+                    await peerConnection.setLocalDescription(answer);
+                    // Send the answer via the signaling channel.
+                    sendSignalingMessage(answer);
+                } else if (peerMessage.type === 'answer') {
+                    // Received an answer for our offer.
+                    await peerConnection.setRemoteDescription(new RTCSessionDescription(peerMessage));
+                } else if (peerMessage.candidate) {
+                    // Received an ICE candidate.
+                    try {
+                    await peerConnection.addIceCandidate(peerMessage.candidate);
+                    } catch (err) {
+                    console.error("Error adding ICE candidate:", err);
+                    }
+                }
+            break
+        }
     };
     
     ws.onclose = () => {
@@ -2300,9 +2410,11 @@ document.addEventListener("DOMContentLoaded", function () {
     };
 
 
+
+    
 //*
 //*
-//* AUFDIO WORKLET COMMUNICATION
+//* AUDIO WORKLET COMMUNICATION
 //* Functions that communicate between main app and audio worklet
 //*
 
