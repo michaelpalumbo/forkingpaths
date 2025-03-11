@@ -2393,7 +2393,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 
                 // Optionally, update your UI or application state with the new doc.
                 // updateUIFromDoc(doc);
-            
+                updateFromSyncMessage()
                 // After processing, check if there is an outgoing sync message to send.
                 sendSyncMessage();
             } catch (error) {
@@ -2402,6 +2402,17 @@ document.addEventListener("DOMContentLoaded", function () {
         };
     }
     
+    function updateFromSyncMessage(){
+        // set docUpdated so that indexedDB will save it
+        docUpdated = true
+
+        // update the historyGraph
+        reDrawHistoryGraph()
+
+        if(audioGraphDirty){
+            audioGraphDirty = false
+        }
+    }
     // --- Initiating Connection ---
     // This function is called when you want this client to start the connection.
     async function initiateConnection() {
