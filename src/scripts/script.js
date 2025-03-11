@@ -36,8 +36,9 @@ const configuration = {
   };
   
 // Create the RTCPeerConnection.
-const peerConnection = new RTCPeerConnection(configuration);
 let dataChannel;
+let thisPeerID = uuidv7()
+console.log(thisPeerID)
 
 // * Audio 
 let audioGraphDirty = false
@@ -2307,7 +2308,6 @@ document.addEventListener("DOMContentLoaded", function () {
     
     // Create the RTCPeerConnection.
     const peerConnection = new RTCPeerConnection(configuration);
-    let dataChannel;
 
     // Helper function to send signaling messages using the "newPeer" command.
     function sendSignalingMessage(message) {
@@ -2337,7 +2337,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function setupDataChannel() {
         dataChannel.onopen = () => {
             console.log("Data channel is open");
-            dataChannel.send("Hello, peer!");
+            dataChannel.send("Hello, peer! from: " + thisPeerID);
 
         };
         dataChannel.onmessage = event => {
