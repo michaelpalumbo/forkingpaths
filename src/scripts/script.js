@@ -1753,8 +1753,9 @@ document.addEventListener("DOMContentLoaded", function () {
             // Generate a sync message from the current doc and sync state.
             ;[syncState, msg] = Automerge.generateSyncMessage(meta, syncState);
             // syncState = newSyncState; // update sync state with any changes from generating a message
-            console.log('ougoing sync msg', msg)
+            
             if(msg != null){
+                console.log('ougoing sync msg', msg)
                 syncMessageDataChannel.send(msg)
     
             }
@@ -2371,12 +2372,23 @@ document.addEventListener("DOMContentLoaded", function () {
             sendSyncMessage()
         };
         syncMessageDataChannel.onmessage = event => {
+            let incomingData;
+            if (event.data instanceof ArrayBuffer) {
+                incomingData = new Uint8Array(event.data);
+                console.log("Received binary data length:", incomingData.length);
+                console.log("Sync message as Uint8Array:", incomingData);
+
+            } else {
+                console.error("Expected ArrayBuffer but got:", event.data);
+                return;
+            }
+
             try {
-                let syncMessage = event.data;
-                console.log(syncMessage)
+                // let syncMessage = event.data;
+                // console.log(syncMessage)
                 // Process the incoming message to update doc and syncState.
                 // receiveSyncMessage returns a tuple [updatedDoc, updatedSyncState]
-                [syncState, meta] = Automerge.receiveSyncMessage(meta, syncState, syncMessage);
+                [syncState, meta] = Automerge.receiveSyncMessage(meta, syncState, incomingData);
                 
                 // Optionally, update your UI or application state with the new doc.
                 // updateUIFromDoc(doc);
