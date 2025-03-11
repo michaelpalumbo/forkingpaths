@@ -36,7 +36,7 @@ const configuration = {
   };
   
 // Create the RTCPeerConnection.
-let dataChannel;
+let syncMessageDataChannel;
 let thisPeerID = uuidv7()
 console.log(thisPeerID)
 
@@ -73,6 +73,7 @@ let docUpdated = false
 
 let previousHash;
 let meta;
+let syncState;
 
 
 
@@ -527,6 +528,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
             })
             
+            syncState = Automerge.initSyncState()
+
             // meta = Automerge.change(meta, (meta) => {
             //     meta.title = "Forking Paths System";
             //     meta.branches = {};
@@ -546,6 +549,8 @@ document.addEventListener("DOMContentLoaded", function () {
             // If loaded, convert saved document state back to Automerge document
             meta = Automerge.load(meta);
 
+            syncState = Automerge.initSyncState()
+
             if(!meta.sequencer){
 
                 meta = Automerge.change(meta, (meta) => {
@@ -557,6 +562,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
   
         }
+
+        
 
         // * synth changes document
         docID = 'forkingPathsDoc'; // Unique identifier for the document
@@ -780,6 +787,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // define the onChange Callback
     onChange = () => {
+        // send to peer(s)
+        sendSyncMessage()
         // update synth audio graph
         // loadSynthGraph()
         // You can add any additional logic here, such as saving to IndexedDB
@@ -1736,6 +1745,22 @@ document.addEventListener("DOMContentLoaded", function () {
     //* Functions related to custom network and sync handling.
     //*
 
+    function sendSyncMessage() {
+        if (syncMessageDataChannel && syncMessageDataChannel.readyState === "open") {
+            console.log(Automerge.getHeads(meta));
+            // syncState = Automerge.initSyncState();
+            let msg = Uint8Array | null
+            // Generate a sync message from the current doc and sync state.
+            ;[syncState, msg] = Automerge.generateSyncMessage(meta, syncState);
+            // syncState = newSyncState; // update sync state with any changes from generating a message
+            console.log('ougoing sync msg', msg)
+            if(msg != null){
+                syncMessageDataChannel.send(msg)
+    
+            }
+        }
+
+    }
 
         // !
         // todo: update this with automerge version when either p2p or websocket server is working
@@ -2329,19 +2354,38 @@ document.addEventListener("DOMContentLoaded", function () {
     // Otherwise, listen for the remote data channel.
     peerConnection.ondatachannel = event => {
         console.log("Data channel received from remote peer");
-        dataChannel = event.channel;
+        syncMessageDataChannel = event.channel;
+        syncMessageDataChannel.binaryType = 'arraybuffer';
         setupDataChannel();
     };
     
     // Function to set up the data channel events.
     function setupDataChannel() {
-        dataChannel.onopen = () => {
+        syncMessageDataChannel.onopen = () => {
             console.log("Data channel is open");
-            dataChannel.send("Hello, peer! from: " + thisPeerID);
-
+            // let msg = JSON.stringify({
+            //     cmd: 'handShake',
+            //     data: `${thisPeerID} says hello`
+            // })
+            // syncMessageDataChannel.send(msg);
+            sendSyncMessage()
         };
-        dataChannel.onmessage = event => {
-            console.log("Data channel message:", event.data);
+        syncMessageDataChannel.onmessage = event => {
+            try {
+                let syncMessage = event.data;
+                console.log(syncMessage)
+                // Process the incoming message to update doc and syncState.
+                // receiveSyncMessage returns a tuple [updatedDoc, updatedSyncState]
+                [syncState, meta] = Automerge.receiveSyncMessage(meta, syncState, syncMessage);
+                
+                // Optionally, update your UI or application state with the new doc.
+                // updateUIFromDoc(doc);
+            
+                // After processing, check if there is an outgoing sync message to send.
+                sendSyncMessage();
+            } catch (error) {
+                console.error("Error processing sync message:", error);
+            }
         };
     }
     
@@ -2349,7 +2393,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // This function is called when you want this client to start the connection.
     async function initiateConnection() {
         // Create a data channel (only on initiating peer)
-        dataChannel = peerConnection.createDataChannel("myDataChannel");
+        syncMessageDataChannel = peerConnection.createDataChannel("myDataChannel");
         setupDataChannel();
         
         // Create an SDP offer.
@@ -2363,6 +2407,9 @@ document.addEventListener("DOMContentLoaded", function () {
     // document.getElementById("startConnectionButton").addEventListener("click", () => {
     //     initiateConnection().catch(err => console.error("Error initiating connection:", err));
     // });
+
+
+
 
 //*
 //*
@@ -2383,6 +2430,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 const peerMessage = JSON.parse(msg.msg).msg
                 // Process the signaling message based on its type.
                 if (peerMessage.type === 'offer') {
+                    console.log(peerMessage)
                     // Received an offer: set it as the remote description.
                     await peerConnection.setRemoteDescription(new RTCSessionDescription(peerMessage));
                     // Create an answer and set as local description.
@@ -2391,6 +2439,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     // Send the answer via the signaling channel.
                     sendSignalingMessage(answer);
                 } else if (peerMessage.type === 'answer') {
+                    console.log(peerMessage)
+
                     // Received an answer for our offer.
                     await peerConnection.setRemoteDescription(new RTCSessionDescription(peerMessage));
                 } else if (peerMessage.candidate) {
