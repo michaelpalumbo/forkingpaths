@@ -962,6 +962,7 @@ document.addEventListener("DOMContentLoaded", function () {
             metaJSON.synthFile = meta.synthFile
             synthFile = meta.synthFile
         }
+
         meta = Automerge.from(metaJSON)
 
         amDoc = Automerge.init();
@@ -2538,6 +2539,10 @@ document.addEventListener("DOMContentLoaded", function () {
                     console.error("Error adding ICE candidate:", err);
                     }
                 }
+            break
+
+            case 'roomFull':
+                alert('cannot connect to room, too many peers are active. please choose another room in the lobby')
             break
         }
     };

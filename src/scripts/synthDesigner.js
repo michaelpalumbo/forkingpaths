@@ -324,6 +324,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 },
             ],
         });
+
+        
         let cytoscapeSynthGraph = JSON.stringify(synthDef, null, 2)
 
         // Create a writable stream for the file
