@@ -1797,7 +1797,6 @@ document.addEventListener("DOMContentLoaded", function () {
             // syncState = newSyncState; // update sync state with any changes from generating a message
             
             if(msg != null){
-                console.log('ougoing sync msg', msg)
                 syncMessageDataChannel.send(msg)
     
             }
@@ -2514,7 +2513,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     // Send the answer via the signaling channel.
                     sendSignalingMessage(answer);
                 } else if (peerMessage.type === 'answer') {
-                    console.log(peerMessage)
 
                     // Received an answer for our offer.
                     await peerConnection.setRemoteDescription(new RTCSessionDescription(peerMessage));
