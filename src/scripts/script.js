@@ -1259,7 +1259,49 @@ document.addEventListener("DOMContentLoaded", function () {
             
 
             
-        } else {
+        } else if (cmd === 'buildFromSyncMessage'){
+            // Sync the positions in `elements`
+            const syncedElements = syncPositions(forkedDoc);
+            // clear 
+            cy.elements().remove();
+
+            // 3. Add new elements to Cytoscape
+            cy.add(syncedElements)
+
+            // loop through UI, update each param
+            const synthModules = forkedDoc.synth.graph.modules
+            Object.keys(synthModules).forEach((moduleID)=>{
+                // some nodes don't have params (like the feedbackDelayNode), so ignore them (otherwise this throws an error whenever there's a feedback cable)
+                if(synthModules[moduleID].params){
+                    Object.keys(synthModules[moduleID].params).forEach((param)=>{                  
+                        let id = `paramControl_parent:${moduleID}_param:${param}`
+                        
+                        let paramControl = document.getElementById(id) 
+                        if (paramControl) {
+                            switch(paramControl.tagName){
+                                case 'INPUT':
+                                    paramControl.value = synthModules[moduleID].params[param]
+                                    $(paramControl).knobSet(paramControl.value);
+                                break
+        
+                                case 'SELECT':
+                                    paramControl.value = synthModules[moduleID].params[param]
+                                break
+    
+                                default: console.warn('NEW UI DETECTED, CREATE A SWITCH CASE FOR IT ABOVE THIS LINE')
+                            }
+                          } else {
+                            console.warn(`param with id "${id}" not found.`);
+                          }               
+                    })
+                }
+                
+            })
+                
+        }
+        
+        
+        else {
             // Sync the positions in `elements`
             const syncedElements = syncPositions(forkedDoc);
             // clear 
@@ -2405,13 +2447,25 @@ document.addEventListener("DOMContentLoaded", function () {
     function updateFromSyncMessage(){
         // set docUpdated so that indexedDB will save it
         docUpdated = true
+        
+        console.log(meta.docs, meta.head)
+        // // need the branch
+        // // need the current hash
+        let requestedDoc = loadAutomergeDoc(meta.head.branch)
+        // Use `Automerge.view()` to view the state at this specific point in history
+        const updatedView = Automerge.view(requestedDoc, [meta.head.hash]);
+        
+        updateSynthWorklet('loadVersion', updatedView.synth.graph, null, updatedView.changeType)
+
+        
+        updateCytoscapeFromDocument(updatedView, 'buildFromSyncMessage')
 
         // update the historyGraph
         reDrawHistoryGraph()
 
-        if(audioGraphDirty){
-            audioGraphDirty = false
-        }
+        // if(audioGraphDirty){
+        //     audioGraphDirty = false
+        // }
     }
     // --- Initiating Connection ---
     // This function is called when you want this client to start the connection.
