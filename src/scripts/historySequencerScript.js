@@ -465,15 +465,20 @@ document.addEventListener("DOMContentLoaded", function () {
         // console.log('Message from server:', event.data);
     
         const msg = JSON.parse(event.data)
-        // console.log(msg)
-        historyDAG_cy.json(msg)
-        historyDAG_cy.panBy({x: 25, y: 25 })
+        switch(msg.cmd){
+            case 'historyGraphRenderUpdate':
+                // console.log(msg)
+                historyDAG_cy.json(msg.data)
+                historyDAG_cy.panBy({x: 25, y: 25 })
 
-        const latestNode = historyDAG_cy.nodes().last()
-        highlightNode(latestNode)
+                const latestNode = historyDAG_cy.nodes().last()
+                highlightNode(latestNode)
 
 
-        panToBranch(latestNode)
+                panToBranch(latestNode)
+            break
+        }
+
         
     };
     
