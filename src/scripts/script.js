@@ -37,6 +37,8 @@ const configuration = {
   
 // Create the RTCPeerConnection.
 let syncMessageDataChannel;
+let peerPointerDataChannel
+let peerPointer;
 let thisPeerID = uuidv7()
 console.log(thisPeerID)
 
@@ -2389,10 +2391,16 @@ document.addEventListener("DOMContentLoaded", function () {
     // If you're the initiating peer, you'll create the data channel.
     // Otherwise, listen for the remote data channel.
     peerConnection.ondatachannel = event => {
-        console.log("Data channel received from remote peer");
-        syncMessageDataChannel = event.channel;
-        syncMessageDataChannel.binaryType = 'arraybuffer';
-        setupDataChannel();
+        const channel = event.channel;
+        console.log("Data channel received from remote peer, label:", channel.label);
+        channel.binaryType = 'arraybuffer';
+        if (channel.label === "syncChannel" || channel.label === "myDataChannel") {
+            syncMessageDataChannel = channel;
+            setupDataChannel(syncMessageDataChannel);
+        } else if (channel.label === "peerPointerChannel") {
+            peerPointerDataChannel = channel;
+            setupPeerPointerDataChannel(peerPointerDataChannel);
+        }
     };
     
     // Function to set up the data channel events.
@@ -2435,12 +2443,39 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     
 
+    function setupPeerPointerDataChannel(channel) {
+        channel.onopen = () => {
+            console.log("Peer Pointer channel is open");
+            // You could send an initial message if needed:
+            // channel.send(JSON.stringify({ type: 'pointerInit', data: ... }));
+        };
+        channel.onmessage = event => {
+            let msg = JSON.parse(event.data)
+            
+            displayPeerPointers(msg.peerID, msg.mousePointer)
+            // if (event.data instanceof ArrayBuffer) {
+            //     incomingData = new Uint8Array(event.data);
+            //     // Process pointer messages accordingly.
+            //     console.log("Received peer pointer data:", incomingData);
+            //     // For example, convert to JSON (if you sent JSON as binary) or handle as needed.
+            // } else {
+            //     console.error("Expected ArrayBuffer on peer pointer channel but got:", event.data);
+            // }
+        };
+    }
+
+    
+
     // --- Initiating Connection ---
     // This function is called when you want this client to start the connection.
     async function initiateConnection() {
-        // Create a data channel (only on initiating peer)
-        syncMessageDataChannel = peerConnection.createDataChannel("myDataChannel");
+        // Create the sync channel (for Automerge sync)
+        syncMessageDataChannel = peerConnection.createDataChannel("syncChannel");
         setupDataChannel();
+        
+        // Create the peer pointer channel (for pointer messages)
+        peerPointerDataChannel = peerConnection.createDataChannel("peerPointerChannel");
+        setupPeerPointerDataChannel(peerPointerDataChannel);
         
         // Create an SDP offer.
         const offer = await peerConnection.createOffer();
@@ -2630,7 +2665,27 @@ document.addEventListener("DOMContentLoaded", function () {
 //* Functions that directly handle UI interactions
 //*
 
+    // Listen for mouse movements on the the cytoscape container
+    const cyDiv = document.getElementById('cy');
+    cyDiv.addEventListener('mousemove', (e) => {
+        const rect = cyDiv.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+ 
+        if (peerPointerDataChannel && peerPointerDataChannel.readyState === "open") {
 
+            // if(msg != null){
+                peerPointerDataChannel.send(JSON.stringify({
+                    peerID: thisPeerID,
+                    mousePointer: { x: x, y: y }
+                }))
+    
+            // }
+        }
+    
+        
+
+    });
     // updateSynthWorklet(setOutputVolume, gainLevel)
 
     // Slider functionality
@@ -3899,6 +3954,24 @@ document.addEventListener("DOMContentLoaded", function () {
             peers.remote[peer].mousePointer.position(position)
 
         }
+
+        //! this version is for multiple peers and worked in the earliest forking paths version:
+        // if(!peers.remote[peer]){
+        //     peers.remote[peer] = {
+        //         mousePointer: cy.add({
+        //             group: 'nodes',
+        //             data: { id: peer, label: peer, colour: randomColor()}, // Add a default color if needed },
+        //             position: position,
+        //             grabbable: false, // Prevents dragging
+        //             selectable: false, // Prevents selection
+        //             classes: 'peerPointer'
+
+        //         })
+        //     }
+        // }else {
+        //     peers.remote[peer].mousePointer.position(position)
+
+        // }
     }
 
     //*
