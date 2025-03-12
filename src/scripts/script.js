@@ -1363,36 +1363,6 @@ document.addEventListener("DOMContentLoaded", function () {
             throttleSend = true
         }
 
-
-        /* 
-        if (!existingHistoryNodeIDs || existingHistoryNodeIDs.size === 0){
-            existingHistoryNodeIDs = new Set(historyDAG_cy.nodes().map(node => node.id()));
-        }
-        
-        historyGraphWorker.onmessage = (event) => {
-            const { nodes, edges, historyNodes } = event.data;
-            
-            if(nodes.length > 0){
-                historyDAG_cy.add(nodes);
-            }
-            if(edges.length > 0){
-                historyDAG_cy.add(edges);
-
-            }
-            existingHistoryNodeIDs = historyNodes
-
-            // Refresh graph layout
-            historyDAG_cy.layout(graphLayouts[graphStyle]).run();
-            
-            highlightNode(historyDAG_cy.nodes().last())
-            // update the current history node ids for the next time we run this function
-            // existingHistoryNodeIDs = new Set(cy.nodes().map(node => node.id()));
-        };
-        
-        // Send data to the worker to get any position or parameter updates
-        historyGraphWorker.postMessage({ meta, existingHistoryNodeIDs, docHistoryGraphStyling });      
-
-        */
     }
 
     // merge 2 versions & create a new node in the graph
@@ -1802,6 +1772,30 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
 
+    }
+
+    function updateFromSyncMessage(){
+        // set docUpdated so that indexedDB will save it
+        docUpdated = true
+                // // need the branch
+        // // need the current hash
+        let requestedDoc = loadAutomergeDoc(meta.head.branch)
+        // Use `Automerge.view()` to view the state at this specific point in history
+        const updatedView = Automerge.view(requestedDoc, [meta.head.hash]);
+        
+        updateSynthWorklet('loadVersion', updatedView.synth.graph, null, updatedView.changeType)
+
+        
+        updateCytoscapeFromDocument(updatedView, 'buildFromSyncMessage')
+
+        // update the historyGraph
+        reDrawHistoryGraph()
+
+        // update local branch
+        amDoc = Automerge.clone(updatedView)
+        // if(audioGraphDirty){
+        //     audioGraphDirty = false
+        // }
     }
 
         // !
@@ -2440,29 +2434,7 @@ document.addEventListener("DOMContentLoaded", function () {
         };
     }
     
-    function updateFromSyncMessage(){
-        // set docUpdated so that indexedDB will save it
-        docUpdated = true
-                // // need the branch
-        // // need the current hash
-        let requestedDoc = loadAutomergeDoc(meta.head.branch)
-        // Use `Automerge.view()` to view the state at this specific point in history
-        const updatedView = Automerge.view(requestedDoc, [meta.head.hash]);
-        
-        updateSynthWorklet('loadVersion', updatedView.synth.graph, null, updatedView.changeType)
 
-        
-        updateCytoscapeFromDocument(updatedView, 'buildFromSyncMessage')
-
-        // update the historyGraph
-        reDrawHistoryGraph()
-
-        // update local branch
-        amDoc = Automerge.clone(updatedView)
-        // if(audioGraphDirty){
-        //     audioGraphDirty = false
-        // }
-    }
     // --- Initiating Connection ---
     // This function is called when you want this client to start the connection.
     async function initiateConnection() {
