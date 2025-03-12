@@ -250,6 +250,20 @@ html, body {
   display: none;
 }
 
+
+/* used to track mouse position over the synth cytoscape (originally i tracked the synth cytoscape cy div itself, but the knob overlays interferred with mouse tracking */
+  #mouseTracker {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  /* Optionally, you can set a background color with transparency for debugging: */
+  background-color: rgba(255, 255, 255, 0.0);
+  z-index: 9999; /* ensure it's above other content */
+}
+
 .bottom-button {
   position: absolute;
   bottom: 5%;

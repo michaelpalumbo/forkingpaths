@@ -154,6 +154,14 @@ let temporaryCables = {
 // *
 
 document.addEventListener("DOMContentLoaded", function () {
+    // first make sure that the mouseTracker div is positioned directly over the cytoscape div
+    const divA = document.getElementById('cy');
+    const divB = document.getElementById('mouseTracker');
+    const rect = divA.getBoundingClientRect();
+
+    divB.style.position = 'absolute';
+    divB.style.top = rect.top + 'px';
+    divB.style.left = rect.left + 'px';
     // Get the saved volume level from localStorage, default to 0.5 (50%)
     const savedVolume = parseFloat(localStorage.getItem('volume')) || config.audio.initialVolume;
 
@@ -1198,7 +1206,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function updateCytoscapeFromDocument(forkedDoc, cmd) {
 
         let elements = forkedDoc.elements
-
+        peers.remote = {}
         // only rebuild the UI if needed
         if(cmd === 'buildUI'){
             parentNodePositions = []; // Array to store positions of all parent nodes
@@ -2511,7 +2519,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 const peerMessage = JSON.parse(msg.msg).msg
                 // Process the signaling message based on its type.
                 if (peerMessage.type === 'offer') {
-                    console.log(peerMessage)
                     // Received an offer: set it as the remote description.
                     await peerConnection.setRemoteDescription(new RTCSessionDescription(peerMessage));
                     // Create an answer and set as local description.
@@ -2666,12 +2673,29 @@ document.addEventListener("DOMContentLoaded", function () {
 //*
 
     // Listen for mouse movements on the the cytoscape container
-    const cyDiv = document.getElementById('cy');
-    cyDiv.addEventListener('mousemove', (e) => {
-        const rect = cyDiv.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
+    // const cyDiv = document.getElementById('cy');
+    // cyDiv.addEventListener('mousemove', (e) => {
+    //     const rect = cyDiv.getBoundingClientRect();
+    //     const x = e.clientX - rect.left;
+    //     const y = e.clientY - rect.top;
  
+
+    
+        
+
+    // });
+
+    const tracker = document.getElementById('mouseTracker');
+
+      // You can attach a mousemove listener on the document or the tracker div.
+    // Note: If you attach it to tracker and it has pointer-events: none, 
+    // you may not get events reliably, so attaching to document is often best.
+    document.addEventListener('mousemove', (event) => {
+        // Compute the position relative to the tracker div.
+        const rect = tracker.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+
         if (peerPointerDataChannel && peerPointerDataChannel.readyState === "open") {
 
             // if(msg != null){
@@ -2682,10 +2706,9 @@ document.addEventListener("DOMContentLoaded", function () {
     
             // }
         }
-    
-        
-
     });
+    
+
     // updateSynthWorklet(setOutputVolume, gainLevel)
 
     // Slider functionality
