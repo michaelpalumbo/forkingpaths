@@ -1790,7 +1790,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function sendSyncMessage() {
         if (syncMessageDataChannel && syncMessageDataChannel.readyState === "open") {
-            console.log(Automerge.getHeads(meta));
             // syncState = Automerge.initSyncState();
             let msg = Uint8Array | null
             // Generate a sync message from the current doc and sync state.
@@ -2418,8 +2417,6 @@ document.addEventListener("DOMContentLoaded", function () {
             let incomingData;
             if (event.data instanceof ArrayBuffer) {
                 incomingData = new Uint8Array(event.data);
-                console.log("Received binary data length:", incomingData.length);
-                console.log("Sync message as Uint8Array:", incomingData);
 
             } else {
                 console.error("Expected ArrayBuffer but got:", event.data);
@@ -2447,9 +2444,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function updateFromSyncMessage(){
         // set docUpdated so that indexedDB will save it
         docUpdated = true
-        
-        console.log(meta.docs, meta.head)
-        // // need the branch
+                // // need the branch
         // // need the current hash
         let requestedDoc = loadAutomergeDoc(meta.head.branch)
         // Use `Automerge.view()` to view the state at this specific point in history
@@ -2463,6 +2458,8 @@ document.addEventListener("DOMContentLoaded", function () {
         // update the historyGraph
         reDrawHistoryGraph()
 
+        // update local branch
+        amDoc = Automerge.clone(updatedView)
         // if(audioGraphDirty){
         //     audioGraphDirty = false
         // }
