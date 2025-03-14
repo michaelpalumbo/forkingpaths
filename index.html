@@ -3,14 +3,32 @@
 <head>
   <meta charset="UTF-8">
   <title>Forking Paths Lobby</title>
-
+  <link rel="icon" href="./assets/favicon.ico" type="image/x-icon">
+  <!-- Reuse the synthApp styling for layout, container, menubar, etc. -->
+  <link rel="stylesheet" href="./css/synthApp.css">
+  <!-- Optional: Additional CSS for lobby-specific tweaks -->
   <link rel="stylesheet" href="./css/lobby.css">
-
 </head>
 <body>
-  <h1>Forking Paths Rooms</h1>
-  <div id="sharedRooms"></div>
-  <script type="module" src="src/scripts/lobby.js"></script>
+  <div id="container">
+    <!-- Menubar (you can simplify or adjust as desired for the lobby) -->
+    <div class="menubar">
+      <div class="menu-item">Lobby</div>
+      <div class="menu-buttons">
+        <!-- You can add lobby-specific buttons here if needed -->
+      </div>
+    </div>
 
+    <!-- Main content area for the lobby -->
+    <div id="lobbyContent" style="padding: 20px;">
+      <h1>Forking Paths Lobby</h1>
+      <h3>Rooms</h3>
+      <div id="sharedRooms">
+        <!-- This is where your lobby.js will dynamically populate the room list -->
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="src/scripts/lobby.js"></script>
 </body>
 </html>
