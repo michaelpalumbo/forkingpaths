@@ -54,7 +54,7 @@ ws.onmessage = (event) => {
                     joinButton.textContent = 'Join';
                     joinButton.id = room.room.replace(/\s/g, '').toLowerCase(); // e.g., "room1"
                     joinButton.addEventListener('click', () => {
-                        window.open(`index.html?room=${encodeURIComponent(room.room)}`, '_blank');
+                        window.open(`synthApp.html?room=${encodeURIComponent(room.room)}`, '_blank');
                     });
                     // Optionally add a click handler:
                     // joinButton.addEventListener('click', () => { ... });

@@ -168,7 +168,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const room = params.get('room');
     console.log('Joining room:', room);
 
-    
+
     // get username
     if(!localStorage.getItem('username')){
         let username = prompt("please type a username (any)")
@@ -2533,7 +2533,8 @@ document.addEventListener("DOMContentLoaded", function () {
         // console.log('Connected to WebSocket server');
         ws.send(JSON.stringify({
             cmd: 'joinRoom',
-            peerID: thisPeerID
+            peerID: thisPeerID,
+            room: room
         }));
 
         initiateConnection().catch(err => console.error("Error initiating connection:", err))
