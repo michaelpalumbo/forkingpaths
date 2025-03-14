@@ -8,7 +8,7 @@ html, body {
     width: 100vw; /* Match viewport width */
     height: 100%; /* Match viewport height */
     font-family: Arial, sans-serif;
-    background-color: #222;
+    background-color: #ffffff;
   }
   
   /* General container layout */
@@ -361,6 +361,8 @@ html, body {
     margin-bottom: 20px; /* adds space (line break) between rooms */
     border-bottom: 1px solid #ccc; /* optional: adds a separating line */
     padding-bottom: 10px;
+    list-style-type: none;
+
   }
   
   /* Style the room header in bold */
