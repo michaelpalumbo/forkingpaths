@@ -163,7 +163,12 @@ document.addEventListener("DOMContentLoaded", function () {
     divB.style.top = rect.top + 'px';
     divB.style.left = rect.left + 'px';
 
+    // Parse the query parameter to get the room name.
+    const params = new URLSearchParams(window.location.search);
+    const room = params.get('room');
+    console.log('Joining room:', room);
 
+    
     // get username
     if(!localStorage.getItem('username')){
         let username = prompt("please type a username (any)")
@@ -177,7 +182,6 @@ document.addEventListener("DOMContentLoaded", function () {
         thisPeerID = localStorage.getItem('username')
     }
 
-    console.log(thisPeerID)
 
 
     // Get the saved volume level from localStorage, default to 0.5 (50%)

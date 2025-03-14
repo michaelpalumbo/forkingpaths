@@ -1,0 +1,11 @@
+    /* Style for room name items: make the text bold */
+    li.room-item {
+        font-weight: bold;
+        margin-bottom: 0.5em;
+    }
+      /* Style for peer items: remove bullet points */
+    li.peer-item {
+        list-style: none;
+        margin-left: 20px;
+        margin-bottom: 0.5em;
+    }
