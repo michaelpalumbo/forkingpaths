@@ -2509,7 +2509,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     ws.onopen = () => {
         // console.log('Connected to WebSocket server');
-        // ws.send('Hello, server!');
+        ws.send(JSON.stringify({
+            cmd: 'joinRoom',
+            peerID: thisPeerID
+        }));
         initiateConnection().catch(err => console.error("Error initiating connection:", err))
     };
     
