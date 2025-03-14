@@ -39,8 +39,8 @@ const configuration = {
 let syncMessageDataChannel;
 let peerPointerDataChannel
 let peerPointer;
-let thisPeerID = uuidv7()
-console.log(thisPeerID)
+let thisPeerID
+
 
 // * Audio 
 let audioGraphDirty = false
@@ -162,6 +162,24 @@ document.addEventListener("DOMContentLoaded", function () {
     divB.style.position = 'absolute';
     divB.style.top = rect.top + 'px';
     divB.style.left = rect.left + 'px';
+
+
+    // get username
+    if(!localStorage.getItem('username')){
+        let username = prompt("please type a username (any)")
+        console.log(typeof username)
+        if(username === ''){
+            username = 'user'
+        }
+        thisPeerID = username + '-' + uuidv7().split('-')[3]
+        localStorage.setItem('username', thisPeerID)
+    } else {
+        thisPeerID = localStorage.getItem('username')
+    }
+
+    console.log(thisPeerID)
+
+
     // Get the saved volume level from localStorage, default to 0.5 (50%)
     const savedVolume = parseFloat(localStorage.getItem('volume')) || config.audio.initialVolume;
 
@@ -2513,6 +2531,7 @@ document.addEventListener("DOMContentLoaded", function () {
             cmd: 'joinRoom',
             peerID: thisPeerID
         }));
+
         initiateConnection().catch(err => console.error("Error initiating connection:", err))
     };
     
