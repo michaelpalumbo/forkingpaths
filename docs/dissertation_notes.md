@@ -515,3 +515,35 @@ Implement the basic oscillator loop that updates phase and computes waveform val
 Add support for multiple waveform types through a switch-case construct.
 Integrate frequency and gain modulation to allow dynamic control.
 Optimize the phase wrapping and processing loop to ensure consistent performance in real time.
+
+
+### gestures
+
+option-click-drag to select one or more edits. this will place these edits in the gesture window. a gesture doesn't even have to be from one single param, it can be multiple and includive of connect/disconnects*
+gesture player can plab back just these changes, and can loop them too. 
+the gesture can also be assigned onto another parameter -- and if you click clone, it creates a new branch from the gesture and applies it to this other parameter. . 
+
+
+## syncing between peers
+
+here's where the reseach gets interesting. 
+
+## progress:
+
+1. real-time vcs
+2. online
+3. multiplayer (in progress)
+4. create patch histories
+5. compare knob turns across histories
+6. isolate and loop sections of history
+7. branch from points of history
+8. patch history sequencer
+9. merge histories
+10. merge gestures (in progress)
+11. collapse gestures (to do)
+12. clone a gesture + apply it to another parameter
+13. 'gesture' doesn't have to be from one param. could be multiple. 
+14. option-select history nodes to create new gesture
+15. gesture playback just plays back the values, does not apply them to graph or call loadVersion
+16. store gestures (todo)
+17. assign a gesture to a sequencer step (todo)
