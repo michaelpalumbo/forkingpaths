@@ -250,6 +250,11 @@ html, body {
   display: none;
 }
 
+button:disabled {
+  background-color: grey;
+  color: #ccc;
+  cursor: not-allowed;
+}
 
 /* used to track mouse position over the synth cytoscape (originally i tracked the synth cytoscape cy div itself, but the knob overlays interferred with mouse tracking */
   #mouseTracker {

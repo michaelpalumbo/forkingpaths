@@ -2829,7 +2829,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
     
     // get .forkingpaths files from user's filesystem
-    document.getElementById('loadPatchHistoryButton').addEventListener('change', async (event) => {
+    document.getElementById('loadPatchHistory').addEventListener('change', async (event) => {
         const file = event.target.files[0];
     
         if (!file) {
@@ -2863,6 +2863,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 // document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
 
                 saveDocument('meta', Automerge.save(meta));
+                // enable new history button now that a synth has been loaded
+                document.getElementById('newPatchHistory').disabled = false
             } catch (err) {
                 console.error('Failed to load Automerge document:', err);
                 alert('Failed to load Automerge document. The file may be corrupted.');
@@ -2897,6 +2899,9 @@ document.addEventListener("DOMContentLoaded", function () {
           
           // Process the JSON content
           createNewPatchHistory(fileContent);
+
+          // enable new history button now that a synth has been loaded
+          document.getElementById('newPatchHistory').disabled = false
           
         } catch (error) {
           console.error("Error loading template file:", error);
