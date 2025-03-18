@@ -14,6 +14,7 @@ export default defineConfig({
   define: {
     'window.TONE_SILENCE_LOGGING': true,
   },
+  assetsInclude: ['./README.md'],
   build: {
     target: 'esnext',
     outDir: path.resolve(__dirname, 'dist'), // Ensures dist is created inside the project folder
@@ -25,7 +26,7 @@ export default defineConfig({
         synthApp: path.resolve(__dirname, 'synthApp.html'),
         historySequencer: path.resolve(__dirname, 'historySequencer.html'),
         synthDesigner: path.resolve(__dirname, 'synthDesigner.html'),
-        README: path.resolve(__dirname, 'README.md'),
+        // README: path.resolve(__dirname, 'README.md'),
       },
     },
     // manualChunks: {
