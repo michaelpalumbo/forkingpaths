@@ -25,6 +25,7 @@ export default defineConfig({
         synthApp: path.resolve(__dirname, 'synthApp.html'),
         historySequencer: path.resolve(__dirname, 'historySequencer.html'),
         synthDesigner: path.resolve(__dirname, 'synthDesigner.html'),
+        README: path.resolve(__dirname, 'README.md'),
       },
     },
     // manualChunks: {
