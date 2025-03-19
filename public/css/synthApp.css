@@ -102,6 +102,7 @@ html, body {
   color: white;
   border: none;
   padding: 5px 10px;
+  font: 20;
   text-align: left;
   cursor: pointer;
   width: auto; /* Ensure width matches content */

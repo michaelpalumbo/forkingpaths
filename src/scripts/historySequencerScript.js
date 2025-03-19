@@ -1278,7 +1278,8 @@ document.addEventListener("DOMContentLoaded", function () {
             transport.stop();
             startStopButton.textContent = "Start Sequencer";
             isPlaying = !isPlaying;
-        }        
+        }       
+        createSequencerTable() 
     });
 
     // Listen for the select event on nodes
