@@ -15,6 +15,7 @@ export default defineConfig({
     'window.TONE_SILENCE_LOGGING': true,
   },
   assetsInclude: ['./README.md'],
+  
   build: {
     target: 'esnext',
     outDir: path.resolve(__dirname, 'dist'), // Ensures dist is created inside the project folder
@@ -29,6 +30,7 @@ export default defineConfig({
         // README: path.resolve(__dirname, 'README.md'),
       },
     },
+    
     // manualChunks: {
     //   "script": ["./src/scripts/script.js"]
     // }

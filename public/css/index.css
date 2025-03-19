@@ -27,6 +27,12 @@ html, body {
     padding: 0;
     box-sizing: border-box; /* Prevent padding from affecting dimensions */
   }
+
+  #readmeRendered {
+    height: 100vh; /* Sets the container height to the viewport height */
+    overflow-y: auto; /* Adds a vertical scrollbar if content overflows */
+  }
+
   
   /* Menubar styles */
   .menubar {

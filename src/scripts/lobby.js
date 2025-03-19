@@ -1,3 +1,19 @@
+import { marked } from 'marked'
+
+fetch('/README.md')
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(`Attempted to fetch README.md HTTP error! Status: ${response.status}`);
+    }
+    return response.text();
+  })
+  .then(markdownText => {
+    const html = marked(markdownText);
+    document.getElementById('readmeRendered').innerHTML = html;
+  })
+  .catch(error => console.error('Error loading Markdown:', error));
+
+
 // Use the correct protocol based on your site's URL (requires Vite environment)
 const VITE_WS_URL = import.meta.env.VITE_WS_URL;
 // Alternatively, if you're not using Vite, you can use the URL directly:
@@ -15,7 +31,6 @@ ws.onmessage = (event) => {
     const data = JSON.parse(event.data);
     switch (data.cmd){
         case 'roomsInfo':
-            console.log(data.rooms)
             const roomsList = document.getElementById('sharedRooms');
             roomsList.innerHTML = ''; // Clear existing list items
             
