@@ -53,7 +53,7 @@ let virtualElements = {}
 
 // * History Sequencer
 let currentIndex = 0;
-let historySequencerWindow;
+let patchHistoryWindow;
 
 // * new automerge implementation
 let Automerge;
@@ -236,12 +236,12 @@ document.addEventListener("DOMContentLoaded", function () {
     setupAudioWorklet();
 
 
-    // on load, check if historySequencer window is already open:
-    const historySequencerWindowOpen = localStorage.getItem('historySequencerWindowOpen');
-    if (historySequencerWindowOpen) {
+    // on load, check if patchHistory window is already open:
+    const patchHistoryWindowOpen = localStorage.getItem('patchHistoryWindowOpen');
+    if (patchHistoryWindowOpen) {
         // Try to reconnect to the graph window
-        historySequencerWindow = window.open('', 'HistoryGraph'); // Reuse the named window
-        if (!historySequencerWindow || historySequencerWindow.closed) {
+        patchHistoryWindow = window.open('', 'HistoryGraph'); // Reuse the named window
+        if (!patchHistoryWindow || patchHistoryWindow.closed) {
             openGraphWindow();
         }
     } else {
@@ -250,11 +250,11 @@ document.addEventListener("DOMContentLoaded", function () {
     // console.warn('make sure to uncomment the code below this message when finished making big changes to the history seq page')
     // Remove the flag when the graph window is closed
     window.addEventListener('beforeunload', () => {
-        if (historySequencerWindow) {
-            historySequencerWindow.close();
+        if (patchHistoryWindow) {
+            patchHistoryWindow.close();
             // console.warn('remember to uncomment the line above this warning')
         }
-        localStorage.removeItem('historySequencerWindowOpen');
+        localStorage.removeItem('patchHistoryWindowOpen');
         // console.warn('remember to uncomment the line above this warning')
 
     });
@@ -2597,21 +2597,21 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     function openGraphWindow() {
-        historySequencerWindow = window.open('historySequencer.html', 'HistoryGraph');
-        localStorage.setItem('historySequencerWindowOpen', true);
+        patchHistoryWindow = window.open('patchHistory.html', 'HistoryGraph');
+        localStorage.setItem('patchHistoryWindowOpen', true);
         
     }
     // Example: Send graph data to the history tab
     function sendMsgToHistoryApp(data) {
-        if (historySequencerWindow && !historySequencerWindow.closed) {
-            historySequencerWindow.postMessage(data, '*');
+        if (patchHistoryWindow && !patchHistoryWindow.closed) {
+            patchHistoryWindow.postMessage(data, '*');
         } else {
             // console.error('Graph window is not open or has been closed.');
             openGraphWindow()
         }
     }
 
-    // Listen for the historySequencerReady message
+    // Listen for the patchHistoryReady message
     window.addEventListener('message', (event) => {
         if(!event.data.cmd){
             return
@@ -2800,8 +2800,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Open the history sequencer in a new tab
     document.getElementById('openHistoryWindow').addEventListener('click', () => {
-        historySequencerWindow = window.open('historySequencer.html', 'HistoryGraph');
-        localStorage.setItem('historySequencerWindowOpen', true); 
+        patchHistoryWindow = window.open('patchHistory.html', 'HistoryGraph');
+        localStorage.setItem('patchHistoryWindowOpen', true); 
 
     });
 
