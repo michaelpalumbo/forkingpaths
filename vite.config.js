@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite';
+import { viteStaticCopy } from 'vite-plugin-static-copy';
 import wasm from 'vite-plugin-wasm';
 import path from 'path';
 
@@ -10,7 +11,18 @@ export default defineConfig({
 
   
   // Any custom configurations here
-  plugins: [wasm()],
+  plugins: [
+    wasm(),
+    // use this to copy the README.md file to the public dir during build. 
+    viteStaticCopy({
+      targets: [
+        {
+          src: path.resolve(__dirname, 'README.md'),
+          dest: '.'  // Copies README.md to the root of dist
+        }
+      ]
+    })
+  ],
   define: {
     'window.TONE_SILENCE_LOGGING': true,
   },
@@ -30,6 +42,7 @@ export default defineConfig({
         // README: path.resolve(__dirname, 'README.md'),
       },
     },
+    
     
     // manualChunks: {
     //   "script": ["./src/scripts/script.js"]
