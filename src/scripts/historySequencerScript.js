@@ -1009,8 +1009,13 @@ document.addEventListener("DOMContentLoaded", function () {
     const playGestureButton = document.getElementById("playGestureButton");
 
     playGestureButton.addEventListener("click", async () => {
+        // stop sequencer
+        transport.stop();
+        loop.stop()
+        startStopButton.textContent = "Start Sequencer";
         // Call playback with a callback to handle each scheduled node in the gesture
         playGesture();
+        
     })
 
     const loopGesturesButton = document.getElementById("loopGesturesButton");
@@ -1533,14 +1538,24 @@ document.addEventListener("DOMContentLoaded", function () {
             data: selectedValue,
         }
         sendToMainApp(update)
+
+        
+
     });
 
     function setSequenceOrder(order){
         switch(order){
-            // case 'entry':
+            case 'entry':
+                createSequencerTable(storedSequencerTable)
+            break
+            case 'topologicalSort':
 
-            // break
-            default: console.warn('nothing is setup for changing the order of the sequencer rows (low priority')
+            break
+            case 'random':
+                randomSequencerStepOrder()
+
+            break
+            default: console.log(order)
         }
     }
 
@@ -1630,7 +1645,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     }
 
-
+    
     // Function to populate the table with a fixed number of rows (8)
     function createSequencerTable(storedTable) {
         const tableBody = document.getElementById("dynamicTableBody");
@@ -1753,6 +1768,24 @@ document.addEventListener("DOMContentLoaded", function () {
     createSequencerTable();
 
 
+    function randomSequencerStepOrder(){
+        const tableBody = document.getElementById("dynamicTableBody");
+        const rows = Array.from(tableBody.querySelectorAll("tr")); // Convert NodeList to Array
+
+        // Shuffle rows using Fisher-Yates algorithm
+        for (let i = rows.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [rows[i], rows[j]] = [rows[j], rows[i]];
+        }
+
+        // Clear the table body
+        tableBody.innerHTML = "";
+
+        // Append the rows in the new random order
+        rows.forEach(row => tableBody.appendChild(row));
+
+
+    }
     function setFixedLengths(){
         const tableBody = document.getElementById("dynamicTableBody");
         const rows = tableBody.querySelectorAll("tr");
