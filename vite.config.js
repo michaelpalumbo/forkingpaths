@@ -37,7 +37,7 @@ export default defineConfig({
       input: {
         main: path.resolve(__dirname, 'index.html'),
         synthApp: path.resolve(__dirname, 'synthApp.html'),
-        historySequencer: path.resolve(__dirname, 'historySequencer.html'),
+        patchHistory: path.resolve(__dirname, 'patchHistory.html'),
         synthDesigner: path.resolve(__dirname, 'synthDesigner.html'),
         // README: path.resolve(__dirname, 'README.md'),
       },

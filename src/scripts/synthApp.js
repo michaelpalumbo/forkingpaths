@@ -2711,8 +2711,10 @@ document.addEventListener("DOMContentLoaded", function () {
     //     const x = e.clientX - rect.left;
     //     const y = e.clientY - rect.top;
  
-
-    
+    // opens the GitHub issue page in a new browser tab.
+    document.getElementById("createGithubIssue").addEventListener("click", function() {
+        window.open("https://github.com/michaelpalumbo/forkingpaths/issues/new", "_blank");
+    });
         
 
     // });
