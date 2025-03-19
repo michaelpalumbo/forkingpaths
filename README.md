@@ -114,21 +114,25 @@ This is a pretty neat little controller. It allows for playback and looping of a
 
 <br>
 
+## Multiplayer
+
+You can play Forking Paths with another player, they just have to join the same room that you are in through the Lobby on this page. All changes either of you make will be immediately applied to the other's synth and Patch History. 
+
+<br> 
+
+This is the aspect I have tested the least, so please do try and and let me know if you encountered any bugs or have indeas for improvement. 
+
+<br> 
+
 ## Synth Designer
 You can create your own synths! In the Synth App, click *View > Open Synth Designer*
-**Add Module:**  
-Click any module name from the left panel to add it to the synth. 
-**Move Modules**
-Click + drag any module to reposition it
-**Delete Modules**
-Click + delete any module to remove it
-**Drag multiple modules:**  
-Cmd/Ctrl + click + drag to select multiple elements, then drag any module to move them all at once.
-**Save Synth**
-Click File > Save Synth... to save it to anywhere in your computer. 
-**Load Synth In Synth App**
-In the Synth App, click *File > Load Synth From Disk*, and choose your synth file (it will have the file extension *.fpsynth*)
-<br>
+- **Add Module**: Click any module name from the left panel to add it to the synth. 
+- **Move Modules**: Click + drag any module to reposition it
+- **Delete Modules**: Click + delete any module to remove it
+- **Drag multiple modules**: Cmd/Ctrl + click + drag to select multiple elements, then drag any module to move them all at once.
+- **Save Synth**: Click File > Save Synth... to save it to anywhere in your computer. 
+- **Load Synth In Synth App**: In the Synth App, click *File > Load Synth From Disk*, and choose your synth file (it will have the file extension *.fpsynth*)
+
 **NOTE**: Loading a synth file will clear your Patch History
 
 
