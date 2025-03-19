@@ -13,6 +13,15 @@ fetch('/README.md')
   })
   .catch(error => console.error('Error loading Markdown:', error));
 
+document.addEventListener("DOMContentLoaded", function() {
+    // Check if the browser is Chrome: it must include "Chrome" in the user agent
+    // and have a vendor of "Google Inc"
+    var isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
+    
+    if (!isChrome) {
+      alert("This app is still under development and works best on Google Chrome, please try using that instead, thanks!");
+    }
+});
 
 // Use the correct protocol based on your site's URL (requires Vite environment)
 const VITE_WS_URL = import.meta.env.VITE_WS_URL;
