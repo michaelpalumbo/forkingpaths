@@ -1,12 +1,14 @@
 # Forking Paths
 
+Forking Paths is a modular synthesizer app that integrates version control principles, allowing users to capture the complete history of their patch changes—a concept I refer to as *Patch Histories*. Unlike traditional modular synth setups, where changes are ephemeral and difficult to reproduce, Forking Paths preserves every modification, enabling users to revisit, branch, and explore different versions of their patches over time. Patch Histories aren’t just a way to revisit past states; they can also function as a sequencing tool, where changes themselves can be reordered and played back in structured time. By embedding Patch Histories into the workflow, it enhances the iterative process of patching, allowing historical states to be reinterpreted, merged, or used as compositional elements.
+
 ## About
 
 Created by Michael Palumbo, 2024. 
 
 [My website](www.palumbomichael.com) // [Instagram](https://instagram.com/michaelpalumbo_)
 
-This work is part of my PhD dissertation. Previous related work includes:
+This work is part of my PhD dissertation. For earlier writings and demonstrations of this work, see:
 
 [Affordances and Constraints of Modular Synthesis in Virtual Reality](https://alicelab.world/msvr/) Co-authored with Dr. Graham Wakefield
 
