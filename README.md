@@ -30,7 +30,7 @@ This work is part of my PhD dissertation. For earlier writings and demonstration
 To begin playing the synth, click the **Join** button in an empty room of the Lobby column to the left of this page. This will open the Synth App in a new tab. 
 
 1. Along the top of the window is the menubar. Click *File > Load Demo Synth*. 
-2. In adddition to loading the demo synth, the Patch History window will also open in a new tab. Keep this open, andand try to have it visible alongside the synth at all times. 
+2. In addition to loading the demo synth, the Patch History window will also open in a new tab. Keep this open, and try to have it visible alongside the synth at all times. 
 3. Back on the Synth App. In the demo synth, there are 5 synth modules:
     - AudioDestination: The audio output. Connect to here to hear audio play through your speakers/headphones.
     - LFO: Low frequency oscillator with waveform selection
@@ -54,10 +54,10 @@ Inputs are orange triangles, outputs are blue squares. Click and drag from eithe
 ## Patch History
 
 There are 4 views in this page:
-    - **History Graph** The history of your patch changes, reperesented as a graph in the left side of the page. 
-    - **History Query Tool** A query tool for returning similar changes 
-    - **History Sequencer** A simple sequencer for playing back changes in any order
-    - **Gesture Player** Another sequencer which plays back selected regions of the history
+- **History Graph** The history of your patch changes, reperesented as a graph in the left side of the page. 
+- **History Query Tool** A query tool for returning similar changes 
+- **History Sequencer** A simple sequencer for playing back changes in any order
+- **Gesture Player** Another sequencer which plays back selected regions of the history
 
 1. Lets begin by looking at the **History Graph**. We can see each of the changes you made to the synth path in the other window. If you click on any of the dots representing the changes (we'll refer to them as "Change Nodes"), this will load that state back into the synth. Try that now. 
 2. **Branching** Whenever you have loaded a previous state, the History Graph will begin recording all new changes on a new branch in the graph. Try that now to see it. 
@@ -88,12 +88,12 @@ There are 4 views in this page:
 This will return all Change Nodes of the same type for easier selection to the Results list. Change Nodes in the Results list can be clicked to recall them in the synth, and also applied as steps in the sequencer by then clicking any step. 
     
 - Graph Based
-    - Leaves: Leaf Change Nodes are the latest changes on a given branch in the graph
+    - - Leaves: Leaf Change Nodes are the latest changes on a given branch in the graph
 
 - Change Based
-    - Param Changes: Return all parameter changes
-    - Cable Changes: Return all cable changes
-    - Merges: Return all history graph merges
+    - - Param Changes: Return all parameter changes
+    - - Cable Changes: Return all cable changes
+    - - Merges: Return all history graph merges
 
 - Selected Module Changes: If a module is selected in the Synth App (click it), then selecting this menu item will return all Change Nodes related to this module.
 
