@@ -6,23 +6,26 @@ Forking Paths is a modular synthesizer app that integrates software version cont
 
 Created by Michael Palumbo, 2024. 
 
-[My website](https://www.palumbomichael.com) // [Instagram](https://instagram.com/michaelpalumbo_)
+<a href="https://www.palumbomichael.com" target="_blank" rel="noopener noreferrer">My website</a>
+<br>
+<a href="https://instagram.com/michaelpalumbo_" target="_blank" rel="noopener noreferrer">Instagram</a>
 
 This work is part of my PhD dissertation. For earlier writings and demonstrations of this work, see:
 
-[Affordances and Constraints of Modular Synthesis in Virtual Reality](https://alicelab.world/msvr/) Co-authored with Dr. Graham Wakefield
-
-[Modular Reality: Analogues of Patching in Immersive Space](https://scholar.google.ca/citations?view_op=view_citation&hl=en&user=iKEglLIAAAAJ&citation_for_view=iKEglLIAAAAJ:d1gkVwhDpl0C) Co-authored with Dr. Graham Wakefield and Alexander Zonta
-
-[(Video) Mischmasch: Modular Synthesizer in VR](https://www.youtube.com/watch?v=kq_0cVode9g)
+<a href="https://alicelab.world/msvr/" target="_blank" rel="noopener noreferrer">Affordances and Constraints of Modular Synthesis in Virtual Reality</a> -  Co-authored with Dr. Graham Wakefield
+<br>
+<a href="https://scholar.google.ca/citations?view_op=view_citation&hl=en&user=iKEglLIAAAAJ&citation_for_view=iKEglLIAAAAJ:d1gkVwhDpl0C" target="_blank" rel="noopener noreferrer">Modular Reality: Analogues of Patching in Immersive Space</a> - Co-authored with Dr. Graham Wakefield and Alexander Zonta
+<br>
+<a href="https://www.youtube.com/watch?v=kq_0cVode9g" target="_blank" rel="noopener noreferrer">(Video Demo) Mischmasch: Modular Synthesizer in VR</a>
 
 
 # Instructions
 <br>
 
 ## First Up
-- **Bug Reports** If you encounter any bugs or difficulties, please consider creating an issue in the Forking Paths Github Repository by [clicking here](https://github.com/michaelpalumbo/forkingpaths/issues/new). Thank you!
-- If participating in *User Testing*, [click here for the questionnaire](https://forms.gle/aerpRUgBR7bH1xpB9). 
+- **Bug Reports** If you encounter any bugs or difficulties, please consider creating an issue in the Forking Paths Github Repository by <a href="https://github.com/michaelpalumbo/forkingpaths/issues/new" target="_blank" rel="noopener noreferrer">Clicking Here</a>
+
+- If participating in *User Testing*, <a href="https://forms.gle/aerpRUgBR7bH1xpB9" target="_blank" rel="noopener noreferrer">click here for the questionnaire, thanks!</a>
 
 <br>
 
