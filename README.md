@@ -6,7 +6,7 @@ Forking Paths is a modular synthesizer app that integrates software version cont
 
 Created by Michael Palumbo, 2024. 
 
-[My website](www.palumbomichael.com) // [Instagram](https://instagram.com/michaelpalumbo_)
+[My website](https://www.palumbomichael.com) // [Instagram](https://instagram.com/michaelpalumbo_)
 
 This work is part of my PhD dissertation. For earlier writings and demonstrations of this work, see:
 
