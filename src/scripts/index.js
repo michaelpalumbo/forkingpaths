@@ -1,5 +1,15 @@
 import { marked } from 'marked'
 
+// Override the link function to open in new tab by default
+renderer.link = function(href, title, text) {
+    return `<a href="${href}" target="_blank" rel="noopener noreferrer"${
+      title ? ` title="${title}"` : ''
+    }>${text}</a>`;
+  };
+  
+// Set the renderer in the options
+marked.setOptions({ renderer });
+
 fetch('/README.md')
   .then(response => {
     if (!response.ok) {
