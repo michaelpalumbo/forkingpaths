@@ -53,6 +53,9 @@ let gestureData = {
         param: 'default',
         range: null
     },
+    gesturePoints: [],
+    values: [],
+    timestamps: [], 
     range: null,
     min: null,
     max: null
@@ -467,6 +470,9 @@ document.addEventListener("DOMContentLoaded", function () {
                     gestureData.startTime = event.data.data.timestamps[0]
                     gestureData.endTime = event.data.data.timestamps[event.data.data.timestamps.length - 1]
                     gestureData.length = gestureData.endTime - gestureData.startTime
+
+                    gestureData.values = event.data.data.values
+                    gestureData.timestamps = event.data.data.timestamps
                     // map the gesture values and timestamps to a new array of objects
                     const gestureArray = event.data.data.values.map((value, i) => ({
                         value: value,
@@ -476,9 +482,9 @@ document.addEventListener("DOMContentLoaded", function () {
                         msg: 'gesture'
                     }));
 
-                    
-                    //   console.log(gestureArray)
-                      createGestureGraph(gestureArray, gestureRange, minVal, maxVal)
+                    gestureData.gesturePoints = gestureArray
+          
+                    createGestureGraph(gestureArray, gestureRange, minVal, maxVal)
                 break
                 // commented out because this is now handled by the main app
                 // case 'clearHistoryGraph':
@@ -588,8 +594,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // if step is active, send request to load the version
         if (currentStep.status == "Active"){
+            console.log(currentStep.node)
             // load the version
             loadVersion(currentStep.node.id, currentStep.node.branch)
+            console.log(targetRow.dataset)
+            if(targetRow.dataset.gesture){
+                console.log('it is a gesture')
+                console.log(JSON.parse(targetRow.dataset.gestureData))
+                playGestureFromSequencerStep(JSON.parse(targetRow.dataset.gesture))
+                // createGestureGraph(targetRow.dataset.gestureData.gesturePoints, targetRow.dataset.gestureData.range, targetRow.dataset.gestureData.min, targetRow.dataset.gestureData.max)
+            }
         }
     }, "4n")
 
@@ -628,7 +642,6 @@ document.addEventListener("DOMContentLoaded", function () {
         for (let i = 0; i < nodes.length; i++) {
             let node = nodes[i]
             const nodeId = uuidv7()
-            console.log(nodeId)
             // determine the x position of the node
             let timePosition;
             if(i === 0){
@@ -815,6 +828,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     }
 
+    function playGestureFromSequencerStep(gesture, stepLength){
+        console.log('points', gesture)
+    }
     // function animateSlider(duration) {
     //     const slider = document.getElementById('gesturePlayhead');
     //     const startTime = performance.now();
@@ -1641,6 +1657,12 @@ document.addEventListener("DOMContentLoaded", function () {
                     row.dataset.id = selectedNode.id
                     row.dataset.label = selectedNode.label
                     row.dataset.branch = selectedNode.branch
+                    console.log(selectedNode)
+                    // check if the node is a gesture, because we have additional data to add
+                    if(selectedNode.label.split(' ')[0] === 'gesture'){
+                        // row.dataset.values =
+                        console.log(selectedNode)
+                    }
     
                     statusCell.textContent = 'Active'
                     saveSequencerTable()
@@ -1677,6 +1699,7 @@ document.addEventListener("DOMContentLoaded", function () {
         
                 // Re-add click event listener to the row
                 row.addEventListener("click", () => {
+                    console.log(selectedNode)
                     stepCell.textContent = selectedNode.label;
                     stepLengthCell.textContent = "4n"; // Example modification
                     row.dataset.id = selectedNode.id
@@ -1718,6 +1741,11 @@ document.addEventListener("DOMContentLoaded", function () {
                         row.dataset.id = selectedNode.id
                         row.dataset.label = selectedNode.label
                         row.dataset.branch = selectedNode.branch
+
+                        if(selectedNode.label.split(' ')[0] === 'gesture'){
+                            row.dataset.gesture = true
+                            row.dataset.gestureData = JSON.stringify(gestureData)
+                        }
         
                         statusCell.textContent = 'Active'
                         saveSequencerTable()
