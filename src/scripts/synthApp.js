@@ -867,8 +867,10 @@ document.addEventListener("DOMContentLoaded", function () {
             groupChange.paramLabel = paramLabel
             groupChange.values = [value],
             groupChange.timestamps = [new Date().getTime()]
+
+            //! important: see the 'mouseup' event listener in this script (not the cy. one, the one for the entire DOM) for how paramChanges are handled by automerge. 
         }
-        console.log(groupChange)
+       
         
     }
 
@@ -2740,21 +2742,41 @@ document.addEventListener("DOMContentLoaded", function () {
     // Listen for mouse up event on the document
     document.addEventListener('mouseup', function(event) {
         hid.mouse.left = false
-        console.log('mouseup', groupChange)
+      
         // if the user has been playing with a param knob, we need to store it as a param change (or list of param changes) in automerge
         if(Object.keys(groupChange).length > 0){
-            // Update in Automerge
-            amDoc = applyChange(amDoc, (amDoc) => {
-                amDoc.synth.graph.modules[groupChange.parentNode].params[groupChange.paramLabel] = groupChange.values;
-                audioGraphDirty = true;
-                // set the change type
-                amDoc.changeType = {
-                    msg: 'paramUpdate',
-                    param: groupChange.paramLabel,
-                    parent: groupChange.parentNode,
-                    value: groupChange.values
-                }
-            }, onChange, `paramUpdate ${groupChange.paramLabel} = ${groupChange.value}$PARENT ${groupChange.parentNode}`);
+            // if we are storing a single param change, do a paramUpdate
+            if(groupChange.values.length === 1){
+                // change is singular
+                // Update in Automerge
+                amDoc = applyChange(amDoc, (amDoc) => {
+                    amDoc.synth.graph.modules[groupChange.parentNode].params[groupChange.paramLabel] = groupChange.values[0];
+                    audioGraphDirty = true;
+                    // set the change type
+                    amDoc.changeType = {
+                        msg: 'paramUpdate',
+                        param: groupChange.paramLabel,
+                        parent: groupChange.parentNode,
+                        value: groupChange.values
+                    }
+                }, onChange, `paramUpdate ${groupChange.paramLabel} = ${groupChange.values[0]}$PARENT ${groupChange.parentNode}`);
+            } else if(groupChange.values.length > 1){
+                // are storing a gesture
+                // Update in Automerge
+                amDoc = applyChange(amDoc, (amDoc) => {
+                    amDoc.synth.graph.modules[groupChange.parentNode].params[groupChange.paramLabel] = groupChange.values;
+                    audioGraphDirty = true;
+                    // set the change type
+                    amDoc.changeType = {
+                        msg: 'paramUpdate',
+                        param: groupChange.paramLabel,
+                        parent: groupChange.parentNode,
+                        value: groupChange.values
+                    }
+                }, onChange, `gesture ${groupChange.paramLabel}$PARENT ${groupChange.parentNode}`);
+
+            }
+
             // clear the groupChange
             groupChange = { }
         }
