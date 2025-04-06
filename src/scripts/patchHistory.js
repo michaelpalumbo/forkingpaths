@@ -1349,6 +1349,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 populateAnalysisNodeList(historyDAG_cy.nodes(`[label *= "paramUpdate"]`).map((node) => node.data()), 'All Param Changes')
 
             break
+
+            case 'getGestures':
+                populateAnalysisNodeList(historyDAG_cy.nodes(`[label *= "gesture"]`).map((node) => node.data()), 'All Gestures')
+
+            break
+
             case 'getCables':
                 populateAnalysisNodeList(historyDAG_cy.nodes(`[label *= "connect"]`).map((node) => node.data()), 'All Cable Changes')
             break
@@ -1492,6 +1498,15 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             loadVersion(clickedItem.dataset.id, clickedItem.dataset.branch)
+            // if we requested a gesture, push it to the gesture player as well
+            if(selectedNode.label.split(' ')[0] === 'gesture'){
+                sendToMainApp(
+                    {
+                        cmd: "getGestureData",
+                        data: { hash: clickedItem.dataset.id, branch: clickedItem.dataset.branch },
+                    }
+                ); 
+            }
         }
     });
     const titleElement = document.getElementById("analysisResultTitle");
