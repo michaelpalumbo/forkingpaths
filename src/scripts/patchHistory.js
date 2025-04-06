@@ -58,13 +58,17 @@ let gestureData = {
     timestamps: [], 
     range: null,
     min: null,
-    max: null
+    max: null,
+    branch: null,
+    historyID: null
 }
 let timestampRange
 
 let synthParamRanges = {
 
 }
+
+
 let historyCyRectangle;
 let gestureCyRectangle;
 let selectedNode= null
@@ -479,7 +483,9 @@ document.addEventListener("DOMContentLoaded", function () {
                         timestamp: event.data.data.timestamps[i],
                         parent: event.data.data.parent,
                         param: event.data.data.param,
-                        msg: 'gesture'
+                        msg: 'gesture',
+                        historyID: gestureData.historyID,
+                        branch: gestureData.branch
                     }));
 
                     gestureData.gesturePoints = gestureArray
@@ -607,6 +613,423 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }, "4n")
 
+
+    function setStepLengthFunction(func){
+            // Perform actions based on the selected value
+        if (func === "fixed") {
+            setFixedLengths()
+        } else if (func === "userEditable") {
+            console.log("Step Length Function set to: User Editable");
+            // Add logic for user-editable step length
+        } else if (func === "closenessCentrality") {
+            calculateDistancesFromTableRows()
+        }
+        else if (func === "euclideanDistance") {
+            calculateEuclideanDistances()
+        }
+    }
+
+    function replaceStepSequencerTable(selectedNodes){
+        const numberOfRows = selectedNodes.length
+        const tableBody = document.getElementById("dynamicTableBody");
+        tableBody.innerHTML = ""; // Clear any existing rows
+
+        for (let i = 0; i < numberOfRows; i++) {
+            const row = document.createElement("tr");
+            row.classList.add("is-size-6"); // Apply text size to the entire row
+            const node = selectedNodes[i].data()
+            // Step (Change) cell
+            const stepCell = document.createElement("td");
+            stepCell.textContent = node.label; // Placeholder for step name
+            row.appendChild(stepCell);
+
+            // Step Length cell
+            const stepLengthCell = document.createElement("td");
+
+            // calculate step length based on step length function
+
+            stepLengthCell.textContent = "4n"; // Placeholder for step length
+            row.appendChild(stepLengthCell);
+
+            // create status cell
+            const statusCell = document.createElement("td");
+            statusCell.textContent = `Active`; // Placeholder for step name
+
+            row.appendChild(statusCell);
+
+            row.dataset.id = node.id
+            row.dataset.label = node.label
+            row.dataset.branch = node.branch
+
+            // Add click event listener to the row
+            // this will make it so that each row can be updated by clicks
+            row.addEventListener("click", () => {
+                if(selectedNode){
+                    // Update row values with data from selectedNode
+                    stepCell.textContent = selectedNode.label;
+                    stepLengthCell.textContent = '4n'
+                    row.dataset.id = selectedNode.id
+                    row.dataset.label = selectedNode.label
+                    row.dataset.branch = selectedNode.branch
+                    // check if the node is a gesture, because we have additional data to add
+                    if(selectedNode.label.split(' ')[0] === 'gesture'){
+                        row.dataset.gesture = true
+                        row.dataset.gestureData = JSON.stringify(gestureData)
+                    }
+                    statusCell.textContent = 'Active'
+                    saveSequencerTable()
+                }
+
+            });
+            tableBody.appendChild(row);
+            saveSequencerTable()
+        }
+
+    }
+
+
+    // Function to populate the table with a fixed number of rows (8)
+    function createSequencerTable(storedTable) {
+        const tableBody = document.getElementById("dynamicTableBody");
+        tableBody.innerHTML = ""; // Clear any existing rows
+
+        const numberOfRows = 8; // Fixed number of rows
+
+        if(storedTable){
+            savedData.forEach((rowData, index) => {
+                const row = document.createElement("tr");
+                row.classList.add("is-size-6"); // Apply text size to the entire row
+                // Step (Change) cell
+                const stepCell = document.createElement("td");
+                stepCell.textContent = rowData.stepChange || `(Empty)`; // Fallback for empty rows
+                row.appendChild(stepCell);
+        
+                // Step Length cell
+                const stepLengthCell = document.createElement("td");
+                stepLengthCell.textContent = rowData.stepLength || "4n"; // Fallback for default step length
+                row.appendChild(stepLengthCell);
+        
+                // Re-add click event listener to the row
+                row.addEventListener("click", () => {
+                    stepCell.textContent = selectedNode.label;
+                    stepLengthCell.textContent = "4n"; // Example modification
+                    row.dataset.id = selectedNode.id
+                    row.dataset.label = selectedNode.label
+                    row.dataset.branch = selectedNode.branch
+
+                    if(selectedNode.label.split(' ')[0] === 'gesture'){
+                        row.dataset.gesture = true
+                        row.dataset.gestureData = JSON.stringify(gestureData)
+                    }
+
+                });
+        
+                tableBody.appendChild(row);
+            });
+        } else {
+            for (let i = 0; i < numberOfRows; i++) {
+                const row = document.createElement("tr");
+                row.classList.add("is-size-6"); // Apply text size to the entire row
+
+                // Step (Change) cell
+                const stepCell = document.createElement("td");
+                stepCell.textContent = `(Empty)`; // Placeholder for step name
+                row.appendChild(stepCell);
+
+                // Step Length cell
+                const stepLengthCell = document.createElement("td");
+
+                // calculate step length based on step length function
+
+                stepLengthCell.textContent = "4n"; // Placeholder for step length
+                row.appendChild(stepLengthCell);
+
+                // create status cell
+                const statusCell = document.createElement("td");
+                statusCell.textContent = `Inactive`; // Placeholder for step name
+                row.appendChild(statusCell);
+                
+                        // Add click event listener to the row
+                row.addEventListener("click", () => {
+                    if(selectedNode){
+                        // Update row values with data from selectedNode
+                        stepCell.textContent = selectedNode.label;
+                        stepLengthCell.textContent = '4n'
+                        row.dataset.id = selectedNode.id
+                        row.dataset.label = selectedNode.label
+                        row.dataset.branch = selectedNode.branch
+
+                        if(selectedNode.label.split(' ')[0] === 'gesture'){
+                            row.dataset.gesture = true
+                            row.dataset.gestureData = JSON.stringify(gestureData)
+                        }
+        
+                        statusCell.textContent = 'Active'
+                        saveSequencerTable()
+                    }
+
+                });
+                tableBody.appendChild(row);
+            }
+        }
+    }
+
+    // Function to save the table's contents as a JS object
+    function saveSequencerTable() {
+        const tableBody = document.getElementById("dynamicTableBody");
+        const rows = tableBody.querySelectorAll("tr");
+
+        // Extract the contents of each row into an array of objects
+        const tableData = Array.from(rows).map(row => {
+            const cells = row.querySelectorAll("td");
+            if(row.dataset.id){
+                return {
+                    stepChange: cells[0].textContent, // Step (Change) cell content
+                    stepLength: cells[1].textContent, // Step Length cell content
+                    status: 'Active',
+                    node: {
+                        id: row.dataset.id,
+                        label: row.dataset.label,
+                        branch: row.dataset.branch
+                    }
+                };
+            } else {
+                // row doesn't have an assigned history node
+                return {
+                    stepChange: cells[0].textContent, // Step (Change) cell content
+                    stepLength: cells[1].textContent, // Step Length cell content
+                    status: 'Inactive',
+                }
+            }
+
+        });
+
+        const update = {
+            cmd: 'updateSequencer',
+            setting: 'tableData',
+            data: tableData,
+        }
+        sendToMainApp(update)
+
+        storedSequencerTable = tableData
+
+        // localStorage.sequencerTable = tableData
+        return tableData; // Return the table data
+    }
+
+    // Populate the table with 8 rows on page load
+    createSequencerTable();
+
+
+    function randomSequencerStepOrder(){
+        const tableBody = document.getElementById("dynamicTableBody");
+        const rows = Array.from(tableBody.querySelectorAll("tr")); // Convert NodeList to Array
+
+        // Shuffle rows using Fisher-Yates algorithm
+        for (let i = rows.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [rows[i], rows[j]] = [rows[j], rows[i]];
+        }
+
+        // Clear the table body
+        tableBody.innerHTML = "";
+
+        // Append the rows in the new random order
+        rows.forEach(row => tableBody.appendChild(row));
+
+
+    }
+    function setFixedLengths(){
+        const tableBody = document.getElementById("dynamicTableBody");
+        const rows = tableBody.querySelectorAll("tr");
+
+        if(storedSequencerTable){
+            for (let i = 0; i < storedSequencerTable.length - 1; i++) { 
+                // Update the 2nd column (Step Length) of the current row
+                const stepLengthCell = rows[i].children[1]; // 2nd cell of the current row
+                stepLengthCell.textContent = "4n"
+                storedSequencerTable[i].stepLength = "4n"
+            }
+            saveSequencerTable()
+        }
+    }
+    function calculateEuclideanDistances(){
+        if(!storedSequencerTable){
+            return
+        }
+        const maxDistance = calculateMaxEuclideanDistance()
+
+        
+        const tableBody = document.getElementById("dynamicTableBody");
+        const rows = tableBody.querySelectorAll("tr");
+
+
+        for (let i = 0; i < storedSequencerTable.length - 1; i++) {
+            if(!storedSequencerTable[i].node){
+                continue
+            }
+            const currentNodeID = storedSequencerTable[i].node.id;
+
+            // Get the ID of the next node (circular for the last row)
+            const nextNodeID = i < storedSequencerTable.length - 1
+            ? storedSequencerTable[i + 1].node.id // Next row for all except last
+            : storedSequencerTable[0].node.id;    // get value of first row for the last row's length
+
+            // compute the euclidean distance between 2 nodes
+            const currentPosition = historyDAG_cy.$(`#${currentNodeID}`).position();
+            const nextPosition = historyDAG_cy.$(`#${nextNodeID}`).position();
+
+            let distance = Math.sqrt(
+                Math.pow(currentPosition.x - nextPosition.x, 2) +
+                Math.pow(currentPosition.y - nextPosition.y, 2)
+            );
+
+            
+
+            // Update the 2nd column (Step Length) of the current row
+            const stepLengthCell = rows[i].children[1]; // 2nd cell of the current row
+            // Map a distance value to a corresponding musical note length in Tone.js based on a defined range.
+            stepLengthCell.textContent = mapDistanceToNoteLength(distance.toFixed(2), maxDistance)
+            storedSequencerTable[i].stepLength = stepLengthCell.textContent
+
+        }
+        saveSequencerTable()
+        
+    }
+    function calculateDistancesFromTableRows() {
+        if(!storedSequencerTable){
+            return
+        }
+        const tableBody = document.getElementById("dynamicTableBody");
+        const rows = tableBody.querySelectorAll("tr");
+        
+        for (let i = 0; i < storedSequencerTable.length - 1; i++) {
+            const currentNodeID = storedSequencerTable[i].node.id;
+            // Get the ID of the next node (circular for the last row)
+            const nextNodeID = i < storedSequencerTable.length - 1
+            ? storedSequencerTable[i + 1].node.id // Next row for all except last
+            : storedSequencerTable[0].node.id;    // First row for the last row
+
+
+            // Compute the shortest path distance using Dijkstra
+            const dijkstra = historyDAG_cy.elements().dijkstra({
+                root: historyDAG_cy.$(`#${currentNodeID}`), // Current node
+                directed: true // Set to false if the graph is undirected
+            });
+
+            const distance = dijkstra.distanceTo(historyDAG_cy.$(`#${nextNodeID}`));
+
+            // Update the 2nd column (Step Length) of the current row
+            const stepLengthCell = rows[i].children[1]; // 2nd cell of the current row
+            stepLengthCell.textContent = isFinite(distance) ? distance.toFixed(2) : "No Path";
+
+            if(stepLengthCell.textContent === 'No Path'){
+                // set the active step setting to 'skip'
+                rows[i].children[2].textContent = 'Inactive'
+            }else {
+                rows[i].children[2].textContent = 'Active'
+            }
+
+        }
+
+            // Handle the last row's Step Length column (no "next" node)
+            // rows[storedSequencerTable.length - 1].children[1].textContent = "N/A";
+        saveSequencerTable()
+    }
+
+    function setSequenceOrder(order){
+        switch(order){
+            case 'entry':
+                createSequencerTable(storedSequencerTable)
+            break
+            case 'topologicalSort':
+
+            break
+            case 'random':
+                randomSequencerStepOrder()
+
+            break
+            default: console.log(order)
+        }
+    }
+
+
+
+    // playback a stored gesture from a sequencer step
+    function playGestureFromSequencerStep(gesture, stepLength){
+        let quantizedGesture = quantizeGesture(gesture, stepLength)
+        // create the scheduler
+        quantizedGesture.forEach((node) => {
+            const delay = node.t * 1000; // (convert to milliseconds)
+            
+            // Use setTimeout to schedule the callback
+            const timeoutID = setTimeout(() => {
+                console.log(stepLength, delay)
+
+                if(gesture.assign.param === 'default'){
+                    
+                    let data = {
+                        parent: node.parent,
+                        param: node.param,
+                        value: node.value
+                    }
+                    // console.log(data)
+                    
+                    //! uncomment this when in patcHistory Script
+                    sendToMainApp({
+                        cmd: 'playGesture',
+                        data: data,
+                        kind: 'n/a'
+                    })
+    
+                    
+                } else {
+                    // process it using the gesturedata assign range data for scaling
+    
+                    // convert the value from the source value's min and max to gestureData.assign.range
+                    // first get the min and max of the source value
+                    // synthParamRanges
+    
+                    
+                    let value = node.value
+                    
+                    let storedParam = meta.synthFile.audioGraph.modules[node.parent].moduleSpec.parameters[node.param]
+                    let targetParam = gesture.assign
+                    
+                    sendToMainApp({
+                        cmd: 'playGesture',
+                        data: convertParams(storedParam, targetParam, value),
+                        kind: targetParam.kind
+    
+                    })
+            
+                }
+    
+                // if(gesture.loop && gesture.length === delay){
+                //     playGesture('repeat')
+                //     // setTimeout(() => {
+                //     //     playGesture('repeat')
+                //     // }, 250);
+                // }
+            }, delay);
+    
+            gesture.scheduler.push(timeoutID)
+        });
+    }
+    
+    function quantizeGesture(gesture, stepLength) {
+    
+        const duration = gesture.endTime - gesture.startTime;
+        const scale = stepLength / duration;
+      
+        // Map each point's timestamp to the new interval [0, stepLength]
+        return gesture.gesturePoints.map(point => ({
+          ...point,
+          t: (point.timestamp - gesture.startTime) * scale
+        }));
+    }
+
+
     /*
 
         GESTURE PLAYER
@@ -669,7 +1092,7 @@ document.addEventListener("DOMContentLoaded", function () {
             
             const gesturePoint = { 
                 group: 'nodes',
-                data: { id: nodeId, label: '', change: node.param, color: nodeColor, timestamp: node.timestamp, parents: node.parent, param: param, value: node.value },
+                data: { id: nodeId, label: '', change: node.param, color: nodeColor, timestamp: node.timestamp, parents: node.parent, param: param, value: node.value, historyID: node.historyID, branch: node.branch, gestureNode: true },
                 position: { x: x, y: y } // Set position explicitly
             }
             elements.push(gesturePoint);
@@ -823,78 +1246,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     }
 
-    function playGestureFromSequencerStep(gesture, stepLength){
-        let quantizedGesture = quantizeGesture(gesture, stepLength)
-        // create the scheduler
-        quantizedGesture.forEach((node) => {
-            const delay = node.t * 1000; // (convert to milliseconds)
-            
-            // Use setTimeout to schedule the callback
-            const timeoutID = setTimeout(() => {
-                console.log(stepLength, delay)
-
-                if(gesture.assign.param === 'default'){
-                    
-                    let data = {
-                        parent: node.parent,
-                        param: node.param,
-                        value: node.value
-                    }
-                    // console.log(data)
-                    
-                    //! uncomment this when in patcHistory Script
-                    sendToMainApp({
-                        cmd: 'playGesture',
-                        data: data,
-                        kind: 'n/a'
-                    })
     
-                    
-                } else {
-                    // process it using the gesturedata assign range data for scaling
-    
-                    // convert the value from the source value's min and max to gestureData.assign.range
-                    // first get the min and max of the source value
-                    // synthParamRanges
-    
-                    
-                    let value = node.value
-                    
-                    let storedParam = meta.synthFile.audioGraph.modules[node.parent].moduleSpec.parameters[node.param]
-                    let targetParam = gesture.assign
-                    
-                    sendToMainApp({
-                        cmd: 'playGesture',
-                        data: convertParams(storedParam, targetParam, value),
-                        kind: targetParam.kind
-    
-                    })
-            
-                }
-    
-                // if(gesture.loop && gesture.length === delay){
-                //     playGesture('repeat')
-                //     // setTimeout(() => {
-                //     //     playGesture('repeat')
-                //     // }, 250);
-                // }
-            }, delay);
-    
-            gesture.scheduler.push(timeoutID)
-        });
-    }
-    
-    function quantizeGesture(gesture, stepLength) {
-    
-        const duration = gesture.endTime - gesture.startTime;
-        const scale = stepLength / duration;
-      
-        // Map each point's timestamp to the new interval [0, stepLength]
-        return gesture.gesturePoints.map(point => ({
-          ...point,
-          t: (point.timestamp - gesture.startTime) * scale
-        }));
-    }
     
     // function animateSlider(duration) {
     //     const slider = document.getElementById('gesturePlayhead');
@@ -1111,6 +1463,50 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 
+    gestureCy.on('tap', 'node', (event) => {
+        if(hid.key.shift){
+            // add node to sequencer
+
+        } else {
+            highlightNode(event.target)
+            selectedNode = event.target.data()
+            console.log(selectedNode)
+
+            let data = {
+                parent: event.target.data().parents,
+                param: event.target.data().param,
+                value: event.target.data().value,
+                // gestureID: event.target.data().historyID,
+                // gestureBranch: event.target.data().branch,
+                // gestureNode: event.target.data().gestureNode
+            }
+            // console.log(data)
+            
+            //! uncomment this when in patcHistory Script
+            sendToMainApp({
+                cmd: 'playGesture',
+                data: data,
+                kind: 'n/a'
+            })
+            //!
+            // // loadVersion(event.target.data().id, event.target.data().branch)
+            // loadVersion(event.target.data().id, event.target.data().branch)
+
+            // selectedNode = event.target.data()
+            // // we want to handle gesture nodes differently than the others
+            // if(event.target.data().label.split(' ')[0] === 'gesture'){
+            //     // node is a gesture
+            //     // get the gestureData from the main app
+            //     sendToMainApp(
+            //         {
+            //             cmd: "getGestureData",
+            //             data: { hash: event.target.data().id, branch: event.target.data().branch },
+            //         }
+            //     ); 
+            // }
+        }
+    })
+
 
     
     // Listen to mousemove events on the document
@@ -1227,9 +1623,13 @@ document.addEventListener("DOMContentLoaded", function () {
             loadVersion(event.target.data().id, event.target.data().branch)
 
             selectedNode = event.target.data()
+            console.log(selectedNode)
             // we want to handle gesture nodes differently than the others
             if(event.target.data().label.split(' ')[0] === 'gesture'){
                 // node is a gesture
+                // store history info
+                gestureData.branch = event.target.data().branch
+                gestureData.historyID = event.target.data().id
                 // get the gestureData from the main app
                 sendToMainApp(
                     {
@@ -1632,22 +2032,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     });
 
-    function setSequenceOrder(order){
-        switch(order){
-            case 'entry':
-                createSequencerTable(storedSequencerTable)
-            break
-            case 'topologicalSort':
-
-            break
-            case 'random':
-                randomSequencerStepOrder()
-
-            break
-            default: console.log(order)
-        }
-    }
-
+    
 
     // Add an event listener for the 'change' event
     stepLengthFunctionSelect.addEventListener("change", (event) => {
@@ -1665,325 +2050,7 @@ document.addEventListener("DOMContentLoaded", function () {
         
     });
 
-    function setStepLengthFunction(func){
-            // Perform actions based on the selected value
-        if (func === "fixed") {
-            setFixedLengths()
-        } else if (func === "userEditable") {
-            console.log("Step Length Function set to: User Editable");
-            // Add logic for user-editable step length
-        } else if (func === "closenessCentrality") {
-            calculateDistancesFromTableRows()
-        }
-        else if (func === "euclideanDistance") {
-            calculateEuclideanDistances()
-        }
-    }
-
-    function replaceStepSequencerTable(selectedNodes){
-        const numberOfRows = selectedNodes.length
-        const tableBody = document.getElementById("dynamicTableBody");
-        tableBody.innerHTML = ""; // Clear any existing rows
-
-        for (let i = 0; i < numberOfRows; i++) {
-            const row = document.createElement("tr");
-            row.classList.add("is-size-6"); // Apply text size to the entire row
-            const node = selectedNodes[i].data()
-            // Step (Change) cell
-            const stepCell = document.createElement("td");
-            stepCell.textContent = node.label; // Placeholder for step name
-            row.appendChild(stepCell);
-
-            // Step Length cell
-            const stepLengthCell = document.createElement("td");
-
-            // calculate step length based on step length function
-
-            stepLengthCell.textContent = "4n"; // Placeholder for step length
-            row.appendChild(stepLengthCell);
-
-            // create status cell
-            const statusCell = document.createElement("td");
-            statusCell.textContent = `Active`; // Placeholder for step name
-
-            row.appendChild(statusCell);
-
-            row.dataset.id = node.id
-            row.dataset.label = node.label
-            row.dataset.branch = node.branch
-
-            // Add click event listener to the row
-            // this will make it so that each row can be updated by clicks
-            row.addEventListener("click", () => {
-                if(selectedNode){
-                    // Update row values with data from selectedNode
-                    stepCell.textContent = selectedNode.label;
-                    stepLengthCell.textContent = '4n'
-                    row.dataset.id = selectedNode.id
-                    row.dataset.label = selectedNode.label
-                    row.dataset.branch = selectedNode.branch
-                    console.log(selectedNode)
-                    // check if the node is a gesture, because we have additional data to add
-                    if(selectedNode.label.split(' ')[0] === 'gesture'){
-                        // row.dataset.values =
-                        console.log(selectedNode)
-                    }
     
-                    statusCell.textContent = 'Active'
-                    saveSequencerTable()
-                }
-
-            });
-            tableBody.appendChild(row);
-            saveSequencerTable()
-        }
-
-    }
-
-    
-    // Function to populate the table with a fixed number of rows (8)
-    function createSequencerTable(storedTable) {
-        const tableBody = document.getElementById("dynamicTableBody");
-        tableBody.innerHTML = ""; // Clear any existing rows
-
-        const numberOfRows = 8; // Fixed number of rows
-
-        if(storedTable){
-            savedData.forEach((rowData, index) => {
-                const row = document.createElement("tr");
-                row.classList.add("is-size-6"); // Apply text size to the entire row
-                // Step (Change) cell
-                const stepCell = document.createElement("td");
-                stepCell.textContent = rowData.stepChange || `(Empty)`; // Fallback for empty rows
-                row.appendChild(stepCell);
-        
-                // Step Length cell
-                const stepLengthCell = document.createElement("td");
-                stepLengthCell.textContent = rowData.stepLength || "4n"; // Fallback for default step length
-                row.appendChild(stepLengthCell);
-        
-                // Re-add click event listener to the row
-                row.addEventListener("click", () => {
-                    console.log(selectedNode)
-                    stepCell.textContent = selectedNode.label;
-                    stepLengthCell.textContent = "4n"; // Example modification
-                    row.dataset.id = selectedNode.id
-                    row.dataset.label = selectedNode.label
-                    row.dataset.branch = selectedNode.branch
-                });
-        
-                tableBody.appendChild(row);
-            });
-        } else {
-            for (let i = 0; i < numberOfRows; i++) {
-                const row = document.createElement("tr");
-                row.classList.add("is-size-6"); // Apply text size to the entire row
-
-                // Step (Change) cell
-                const stepCell = document.createElement("td");
-                stepCell.textContent = `(Empty)`; // Placeholder for step name
-                row.appendChild(stepCell);
-    
-                // Step Length cell
-                const stepLengthCell = document.createElement("td");
-
-                // calculate step length based on step length function
-
-                stepLengthCell.textContent = "4n"; // Placeholder for step length
-                row.appendChild(stepLengthCell);
-    
-                // create status cell
-                const statusCell = document.createElement("td");
-                statusCell.textContent = `Inactive`; // Placeholder for step name
-                row.appendChild(statusCell);
-                
-                        // Add click event listener to the row
-                row.addEventListener("click", () => {
-                    if(selectedNode){
-                        // Update row values with data from selectedNode
-                        stepCell.textContent = selectedNode.label;
-                        stepLengthCell.textContent = '4n'
-                        row.dataset.id = selectedNode.id
-                        row.dataset.label = selectedNode.label
-                        row.dataset.branch = selectedNode.branch
-
-                        if(selectedNode.label.split(' ')[0] === 'gesture'){
-                            row.dataset.gesture = true
-                            row.dataset.gestureData = JSON.stringify(gestureData)
-                        }
-        
-                        statusCell.textContent = 'Active'
-                        saveSequencerTable()
-                    }
-
-                });
-                tableBody.appendChild(row);
-            }
-        }
-    }
-
-    // Function to save the table's contents as a JS object
-    function saveSequencerTable() {
-        const tableBody = document.getElementById("dynamicTableBody");
-        const rows = tableBody.querySelectorAll("tr");
-
-        // Extract the contents of each row into an array of objects
-        const tableData = Array.from(rows).map(row => {
-            const cells = row.querySelectorAll("td");
-            if(row.dataset.id){
-                return {
-                    stepChange: cells[0].textContent, // Step (Change) cell content
-                    stepLength: cells[1].textContent, // Step Length cell content
-                    status: 'Active',
-                    node: {
-                        id: row.dataset.id,
-                        label: row.dataset.label,
-                        branch: row.dataset.branch
-                    }
-                };
-            } else {
-                // row doesn't have an assigned history node
-                return {
-                    stepChange: cells[0].textContent, // Step (Change) cell content
-                    stepLength: cells[1].textContent, // Step Length cell content
-                    status: 'Inactive',
-                }
-            }
-
-        });
-
-        const update = {
-            cmd: 'updateSequencer',
-            setting: 'tableData',
-            data: tableData,
-        }
-        sendToMainApp(update)
-
-        storedSequencerTable = tableData
-
-        // localStorage.sequencerTable = tableData
-        return tableData; // Return the table data
-    }
-
-    // Populate the table with 8 rows on page load
-    createSequencerTable();
-
-
-    function randomSequencerStepOrder(){
-        const tableBody = document.getElementById("dynamicTableBody");
-        const rows = Array.from(tableBody.querySelectorAll("tr")); // Convert NodeList to Array
-
-        // Shuffle rows using Fisher-Yates algorithm
-        for (let i = rows.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [rows[i], rows[j]] = [rows[j], rows[i]];
-        }
-
-        // Clear the table body
-        tableBody.innerHTML = "";
-
-        // Append the rows in the new random order
-        rows.forEach(row => tableBody.appendChild(row));
-
-
-    }
-    function setFixedLengths(){
-        const tableBody = document.getElementById("dynamicTableBody");
-        const rows = tableBody.querySelectorAll("tr");
-    
-        if(storedSequencerTable){
-            for (let i = 0; i < storedSequencerTable.length - 1; i++) { 
-                // Update the 2nd column (Step Length) of the current row
-                const stepLengthCell = rows[i].children[1]; // 2nd cell of the current row
-                stepLengthCell.textContent = "4n"
-                storedSequencerTable[i].stepLength = "4n"
-            }
-            saveSequencerTable()
-        }
-    }
-    function calculateEuclideanDistances(){
-        if(!storedSequencerTable){
-            return
-        }
-        const maxDistance = calculateMaxEuclideanDistance()
-
-        
-        const tableBody = document.getElementById("dynamicTableBody");
-        const rows = tableBody.querySelectorAll("tr");
-
-
-        for (let i = 0; i < storedSequencerTable.length - 1; i++) {
-            if(!storedSequencerTable[i].node){
-                continue
-            }
-            const currentNodeID = storedSequencerTable[i].node.id;
-
-            // Get the ID of the next node (circular for the last row)
-            const nextNodeID = i < storedSequencerTable.length - 1
-            ? storedSequencerTable[i + 1].node.id // Next row for all except last
-            : storedSequencerTable[0].node.id;    // get value of first row for the last row's length
-
-            // compute the euclidean distance between 2 nodes
-            const currentPosition = historyDAG_cy.$(`#${currentNodeID}`).position();
-            const nextPosition = historyDAG_cy.$(`#${nextNodeID}`).position();
-
-            let distance = Math.sqrt(
-                Math.pow(currentPosition.x - nextPosition.x, 2) +
-                Math.pow(currentPosition.y - nextPosition.y, 2)
-            );
-    
-            
-
-            // Update the 2nd column (Step Length) of the current row
-            const stepLengthCell = rows[i].children[1]; // 2nd cell of the current row
-            // Map a distance value to a corresponding musical note length in Tone.js based on a defined range.
-            stepLengthCell.textContent = mapDistanceToNoteLength(distance.toFixed(2), maxDistance)
-            storedSequencerTable[i].stepLength = stepLengthCell.textContent
-
-        }
-        saveSequencerTable()
-        
-    }
-    function calculateDistancesFromTableRows() {
-        if(!storedSequencerTable){
-            return
-        }
-        const tableBody = document.getElementById("dynamicTableBody");
-        const rows = tableBody.querySelectorAll("tr");
-        
-        for (let i = 0; i < storedSequencerTable.length - 1; i++) {
-            const currentNodeID = storedSequencerTable[i].node.id;
-            // Get the ID of the next node (circular for the last row)
-            const nextNodeID = i < storedSequencerTable.length - 1
-            ? storedSequencerTable[i + 1].node.id // Next row for all except last
-            : storedSequencerTable[0].node.id;    // First row for the last row
-
-    
-            // Compute the shortest path distance using Dijkstra
-            const dijkstra = historyDAG_cy.elements().dijkstra({
-                root: historyDAG_cy.$(`#${currentNodeID}`), // Current node
-                directed: true // Set to false if the graph is undirected
-            });
-    
-            const distance = dijkstra.distanceTo(historyDAG_cy.$(`#${nextNodeID}`));
-    
-            // Update the 2nd column (Step Length) of the current row
-            const stepLengthCell = rows[i].children[1]; // 2nd cell of the current row
-            stepLengthCell.textContent = isFinite(distance) ? distance.toFixed(2) : "No Path";
-
-            if(stepLengthCell.textContent === 'No Path'){
-                // set the active step setting to 'skip'
-                rows[i].children[2].textContent = 'Inactive'
-            }else {
-                rows[i].children[2].textContent = 'Active'
-            }
-
-        }
-    
-            // Handle the last row's Step Length column (no "next" node)
-            // rows[storedSequencerTable.length - 1].children[1].textContent = "N/A";
-        saveSequencerTable()
-    }
 
     // *
     // *

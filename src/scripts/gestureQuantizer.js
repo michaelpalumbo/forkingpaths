@@ -1,9 +1,9 @@
 
-function calculate(gesture, loopInterval, tempo){
+function playGestureFromSequencerStep(gesture, stepLength){
     // console.log(gesture.nodes[0])
 
-    // console.log(quantizeGesture(gesture, loopInterval))
-    let quantizedGesture = quantizeGesture(gesture, loopInterval)
+    // console.log(quantizeGesture(gesture, stepLength))
+    let quantizedGesture = quantizeGesture(gesture, stepLength)
     // create the scheduler
     quantizedGesture.forEach((node) => {
         const delay = node.t * 1000; // (convert to milliseconds)
@@ -4804,4 +4804,4 @@ let gesture = {
     "max": 2872.75
 }
 
-calculate(gesture, 2, 120)
+calculate(gesture, 1, 120)
