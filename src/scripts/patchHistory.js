@@ -513,15 +513,24 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function loadVersion(nodeID, branch, gestureDataPoint){
         // Perform your action with the step data
-        console.log('check before sending', gestureDataPoint)
         sendToMainApp(
             {
                 cmd: "loadVersion",
-                data: { hash: nodeID, branch: branch, gestureDataPoint: gestureDataPoint },
+                data: { hash: nodeID, branch: branch },
             }
         );
     }
 
+    function loadVersionWithGestureDataPoint(nodeID, branch, gestureDataPoint){
+        // Perform your action with the step data
+        sendToMainApp(
+            {
+                cmd: "loadVersionWithGestureDataPoint",
+                data: { hash: nodeID, branch: branch, gestureDataPoint: gestureDataPoint },
+            }
+        );
+
+    }
 
     ws.onopen = () => {
         console.log('Connected to WebSocket server at ', VITE_WS_URL);
@@ -610,7 +619,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
                 console.log('should trigger', dataPoint)
                 // it's a special form of loadVersion, where we want to load the version, but ensure that the associated gesture point value is loaded 
-                loadVersion(currentStep.node.id, currentStep.node.branch, dataPoint)
+                loadVersionWithGestureDataPoint(currentStep.node.id, currentStep.node.branch, dataPoint)
             
             } else {
                 // load the version

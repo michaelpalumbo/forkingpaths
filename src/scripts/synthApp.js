@@ -1497,10 +1497,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     }
 
-    // Load a version from the DAG
-    async function loadVersion(targetHash, branch, gestureDataPoint) {
+    async function loadVersionWithGestureDataPoint(targetHash, branch, gestureDataPoint){
 
-        console.log(gestureDataPoint)
         // get the head from this branch
         let head = meta.branches[branch].head
 
@@ -1508,14 +1506,52 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Use `Automerge.view()` to view the state at this specific point in history
         const historicalView = Automerge.view(requestedDoc, [targetHash]);
-    
+        let tempMutableView = JSON.parse(JSON.stringify(historicalView));
+        console.log(tempMutableView)
+
+        
+        
+        let updatedView = updateTempMutableView(tempMutableView, gestureDataPoint.parent, gestureDataPoint.param, Number(gestureDataPoint.value))
+        
+        updateSynthWorklet('loadVersion', updatedView.synth.graph)
+
+        updateCytoscapeFromDocument(updatedView);
+        
+        // updateSynthWorklet('loadVersion', historicalView.synth.graph)
+        // console.log(updateModuleParam(tempMutableView.synth.graph, moduleName, paramName, updatedValue))
+        // updateCytoscapeFromDocument(historicalView);
+
+
+        // if(gestureDataPoint){
+        //     // if a gesture data point was recalled by the sequencer, then we need to apply its param values to the temporary mutable historical view
+        //     let propName = `${gestureDataPoint.parent}_${gestureDataPoint.param}`
+            
+        //     // apply it to the visual graph
+        //     updateVisualGraphElement(tempMutableView, propName, Number(gestureDataPoint.value))
+
+        //     // apply it to the audio graph
+        //     updateModuleParam(tempMutableView.synth.graph, moduleName, paramName, updatedValue)
+        // }
+
+    }
+    // Load a version from the DAG
+    async function loadVersion(targetHash, branch) {
+
+        // get the head from this branch
+        let head = meta.branches[branch].head
+
+        let requestedDoc = loadAutomergeDoc(branch)
+
+        // Use `Automerge.view()` to view the state at this specific point in history
+        const historicalView = Automerge.view(requestedDoc, [targetHash]);
+         
         // Check if we're on the head; reset clone if true (so we don't trigger opening a new branch with changes made to head)
         // compare the point in history we want (Automerge.getHeads(historicalView)[0]) against the head of its associated branch (Automerge.getHeads(requestedDoc)[0])
         // if (Automerge.getHeads(historicalView)[0] === Automerge.getHeads(requestedDoc)[0]){
         if (head === targetHash){
             automergeDocuments.newClone = false
 
-            updateSynthWorklet('loadVersion', historicalView.synth.graph, null, historicalView.changeType)
+            updateSynthWorklet('loadVersion', historicalView.synth.graph)
 
             updateCytoscapeFromDocument(historicalView);
 
@@ -2657,6 +2693,10 @@ document.addEventListener("DOMContentLoaded", function () {
             break
             case 'loadVersion':
                 loadVersion(event.data.data.hash, event.data.data.branch, event.data.data.gestureDataPoint)
+            break
+
+            case 'loadVersionWithGestureDataPoint':
+                loadVersionWithGestureDataPoint(event.data.data.hash, event.data.data.branch, event.data.data.gestureDataPoint)
             break
 
             case 'updateSequencer':
@@ -4704,10 +4744,56 @@ document.addEventListener("DOMContentLoaded", function () {
         return edgeInCycle; // Return true if the edge belongs to any cycle
     }
     
+    // we use this to update a knob position from a gesture point recall from the history sequencer
+    function updateTempMutableView(jsonObject, parent, param, updatedValue) {
 
+        let targetId = `${parent}_${param}`
+        // Find the element in the "elements" array with a matching data.id
+        const element = jsonObject.elements.find(el => el.data && el.data.id === targetId);
+        
+        // update the visual graph 
+        if (element) {
+          // Update the value property
+          element.data.value = updatedValue;
+          
+        } else {
+          console.warn(`Element with id "${targetId}" not found.`);
+        
+        }
 
-
+        // update the synth graph
+        if (
+            jsonObject.synth.graph.modules &&
+            jsonObject.synth.graph.modules[parent] &&
+            jsonObject.synth.graph.modules[parent].params &&
+            Object.prototype.hasOwnProperty.call(jsonObject.synth.graph.modules[parent].params, param)
+          ) {
+            jsonObject.synth.graph.modules[parent].params[param] = updatedValue;
+          } else {
+            console.warn(`Module "${parent}" or parameter "${param}" not found.`);
   
+          }
+
+
+        // return it
+        return jsonObject
+    }
+
+    // we use this to update a synth param from a gesture point recall from the history sequencer
+    function updateModuleParam(jsonObject, moduleName, paramName, updatedValue) {
+        if (
+          jsonObject.modules &&
+          jsonObject.modules[moduleName] &&
+          jsonObject.modules[moduleName].params &&
+          Object.prototype.hasOwnProperty.call(jsonObject.modules[moduleName].params, paramName)
+        ) {
+          jsonObject.modules[moduleName].params[paramName] = updatedValue;
+          return jsonObject;
+        } else {
+          console.warn(`Module "${moduleName}" or parameter "${paramName}" not found.`);
+
+        }
+      }
 
 });
 
