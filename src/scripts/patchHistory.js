@@ -422,6 +422,11 @@ document.addEventListener("DOMContentLoaded", function () {
                     }
 
                 break
+
+                case 'getGestureData':
+
+                    console.log(event.data.data)
+                break
                 // commented out because this is now handled by the main app
                 // case 'clearHistoryGraph':
                 //     ws.send(JSON.stringify({
@@ -1159,11 +1164,30 @@ document.addEventListener("DOMContentLoaded", function () {
 
         } else {
             console.log(event.target.data())
-            // loadVersion(event.target.data().id, event.target.data().branch)
-            loadVersion(event.target.data().id, event.target.data().branch)
             highlightNode(event.target)
 
+            // loadVersion(event.target.data().id, event.target.data().branch)
+            loadVersion(event.target.data().id, event.target.data().branch)
+
+
             selectedNode = event.target.data()
+            // we want to handle gesture nodes differently than the others
+            if(event.target.data().label.split(' ')[0] === 'gesture'){
+                // node is a gesture
+                
+                // get the gestureData from the main app
+                sendToMainApp(
+                    {
+                        cmd: "getGestureData",
+                        data: { hash: event.target.data().id, branch: event.target.data().branch },
+                    }
+                );
+            
+            }
+
+
+            
+
         }
 
     })
@@ -1315,7 +1339,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 if(hid.key.cmd){
                     // if the cmd key was held during selection, set these nodes as a gesture
-                    createGestureGraph(selected)
+                    // createGestureGraph(selected)
                 }else {
                     // if just shift was held down, update the sequencer table
                     // update sequencer table

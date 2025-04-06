@@ -2625,7 +2625,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Listen for the patchHistoryReady message
+    // Listen for messages from the history window
     window.addEventListener('message', (event) => {
         if(!event.data.cmd){
             return
@@ -2663,6 +2663,22 @@ document.addEventListener("DOMContentLoaded", function () {
                 
             break
 
+            case 'getGestureData':
+                // get the head from this branch
+                let head = meta.branches[event.data.data.branch].head
+
+                let gestureDoc = loadAutomergeDoc(event.data.data.branch)
+
+                // Use `Automerge.view()` to view the state at this specific point in history
+                const gestureView = Automerge.view(gestureDoc, [event.data.data.hash]);
+
+                sendMsgToHistoryApp({
+                    appID: 'forkingPathsMain',
+                    cmd: 'getGestureData',
+                    data: gestureView.changeType
+                        
+                })
+            break
             case 'playGesture':
                 const node = event.data.data
                 const data = {
@@ -2768,12 +2784,13 @@ document.addEventListener("DOMContentLoaded", function () {
                     audioGraphDirty = true;
                     // set the change type
                     amDoc.changeType = {
-                        msg: 'paramUpdate',
+                        msg: 'gesture',
                         param: groupChange.paramLabel,
                         parent: groupChange.parentNode,
-                        value: groupChange.values
+                        values: groupChange.values,
+                        timestamps: groupChange.timestamps
                     }
-                }, onChange, `gesture ${groupChange.paramLabel}$PARENT ${groupChange.parentNode}`);
+                }, onChange, `gesture ${groupChange.paramLabel}$PARENT ${groupChange.parentNode} GESTUREDATA${groupChange.values}`);
 
             }
 
