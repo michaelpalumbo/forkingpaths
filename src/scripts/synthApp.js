@@ -91,6 +91,8 @@ let allowPan = false;
 
 let isSliderDragging = false;
 
+// store param changes belonging to a single param within a gesture as a list     
+let groupChange = { }
 
 // * CYTOSCAPE
 
@@ -842,8 +844,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
     };
-    // store param changes belonging to a single param within a gesture as a list     
-    let groupChange = []
+
     function paramChange(parentNode, paramLabel, value){
 
         updateSynthWorklet('paramChange', {
@@ -853,23 +854,22 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
         if(hid.mouse.left === true){
-            console.log('will store in array')
+            
+            groupChange.values.push(value),
+            groupChange.timestamps.push(new Date().getTime())
+            
         }
         else {
-            console.log('not storing in array')
+            // clear the groupChange object
+            groupChange = {}
+            // set new groupChange
+            groupChange.parentNode = parentNode
+            groupChange.paramLabel = paramLabel
+            groupChange.values = [value],
+            groupChange.timestamps = [new Date().getTime()]
         }
-        // Update in Automerge
-        amDoc = applyChange(amDoc, (amDoc) => {
-            amDoc.synth.graph.modules[parentNode].params[paramLabel] = value;
-            audioGraphDirty = true;
-            // set the change type
-            amDoc.changeType = {
-                msg: 'paramUpdate',
-                param: paramLabel,
-                parent: parentNode,
-                value, value
-            }
-        }, onChange, `paramUpdate ${paramLabel} = ${value}$PARENT ${parentNode}`);
+        console.log(groupChange)
+        
     }
 
 
@@ -2740,7 +2740,24 @@ document.addEventListener("DOMContentLoaded", function () {
     // Listen for mouse up event on the document
     document.addEventListener('mouseup', function(event) {
         hid.mouse.left = false
-
+        console.log('mouseup', groupChange)
+        // if the user has been playing with a param knob, we need to store it as a param change (or list of param changes) in automerge
+        if(Object.keys(groupChange).length > 0){
+            // Update in Automerge
+            amDoc = applyChange(amDoc, (amDoc) => {
+                amDoc.synth.graph.modules[groupChange.parentNode].params[groupChange.paramLabel] = groupChange.values;
+                audioGraphDirty = true;
+                // set the change type
+                amDoc.changeType = {
+                    msg: 'paramUpdate',
+                    param: groupChange.paramLabel,
+                    parent: groupChange.parentNode,
+                    value: groupChange.values
+                }
+            }, onChange, `paramUpdate ${groupChange.paramLabel} = ${groupChange.value}$PARENT ${groupChange.parentNode}`);
+            // clear the groupChange
+            groupChange = { }
+        }
 
 
     });
