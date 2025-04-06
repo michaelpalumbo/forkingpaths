@@ -600,8 +600,8 @@ document.addEventListener("DOMContentLoaded", function () {
             console.log(targetRow.dataset)
             if(targetRow.dataset.gesture){
                 console.log('it is a gesture')
-                console.log(JSON.parse(targetRow.dataset.gestureData))
-                playGestureFromSequencerStep(JSON.parse(targetRow.dataset.gesture))
+                console.log('loopInterval', loop.interval, transport.bpm.value)
+                playGestureFromSequencerStep(JSON.parse(targetRow.dataset.gestureData), loop.interval)
                 // createGestureGraph(targetRow.dataset.gestureData.gesturePoints, targetRow.dataset.gestureData.range, targetRow.dataset.gestureData.min, targetRow.dataset.gestureData.max)
             }
         }
@@ -766,13 +766,8 @@ document.addEventListener("DOMContentLoaded", function () {
  
         // create the scheduler
         gestureData.nodes.forEach((node) => {
-
-
-            
-            
             const delay = node.data.timestamp - gestureData.startTime; // Calculate delay from the start
 
-            
             // Use setTimeout to schedule the callback
             const timeoutID = setTimeout(() => {
                 
@@ -829,8 +824,78 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function playGestureFromSequencerStep(gesture, stepLength){
-        console.log('points', gesture)
+        let quantizedGesture = quantizeGesture(gesture, stepLength)
+        // create the scheduler
+        quantizedGesture.forEach((node) => {
+            const delay = node.t * 1000; // (convert to milliseconds)
+            
+            // Use setTimeout to schedule the callback
+            const timeoutID = setTimeout(() => {
+                console.log(stepLength, delay)
+
+                if(gesture.assign.param === 'default'){
+                    
+                    let data = {
+                        parent: node.parent,
+                        param: node.param,
+                        value: node.value
+                    }
+                    // console.log(data)
+                    
+                    //! uncomment this when in patcHistory Script
+                    sendToMainApp({
+                        cmd: 'playGesture',
+                        data: data,
+                        kind: 'n/a'
+                    })
+    
+                    
+                } else {
+                    // process it using the gesturedata assign range data for scaling
+    
+                    // convert the value from the source value's min and max to gestureData.assign.range
+                    // first get the min and max of the source value
+                    // synthParamRanges
+    
+                    
+                    let value = node.value
+                    
+                    let storedParam = meta.synthFile.audioGraph.modules[node.parent].moduleSpec.parameters[node.param]
+                    let targetParam = gesture.assign
+                    
+                    sendToMainApp({
+                        cmd: 'playGesture',
+                        data: convertParams(storedParam, targetParam, value),
+                        kind: targetParam.kind
+    
+                    })
+            
+                }
+    
+                // if(gesture.loop && gesture.length === delay){
+                //     playGesture('repeat')
+                //     // setTimeout(() => {
+                //     //     playGesture('repeat')
+                //     // }, 250);
+                // }
+            }, delay);
+    
+            gesture.scheduler.push(timeoutID)
+        });
     }
+    
+    function quantizeGesture(gesture, stepLength) {
+    
+        const duration = gesture.endTime - gesture.startTime;
+        const scale = stepLength / duration;
+      
+        // Map each point's timestamp to the new interval [0, stepLength]
+        return gesture.gesturePoints.map(point => ({
+          ...point,
+          t: (point.timestamp - gesture.startTime) * scale
+        }));
+    }
+    
     // function animateSlider(duration) {
     //     const slider = document.getElementById('gesturePlayhead');
     //     const startTime = performance.now();
