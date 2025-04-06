@@ -114,6 +114,7 @@ let docHistoryGraphStyling = {
         remove: "#b8000f",
         move: "#b89000",
         paramUpdate: "#6b00b8",
+        gesture: "#00ffff",
         clear: "#000000",
         blank_patch: "#ccc"
     }
