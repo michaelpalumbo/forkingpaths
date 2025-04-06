@@ -359,7 +359,15 @@ document.addEventListener("DOMContentLoaded", function () {
                     // 'shape': 'data(shape)' // set this for accessibility (colour blindness)
                 }
 
-            }
+            },
+            {
+                selector: 'node.highlighted',
+                style: {
+                  'background-color': '#f00',    // highlighted background color
+                //   'border-width': '3px',
+                //   'border-color': '#ff0'
+                }
+              }
         ],
 
         layout: {
@@ -620,7 +628,7 @@ document.addEventListener("DOMContentLoaded", function () {
         for (let i = 0; i < nodes.length; i++) {
             let node = nodes[i]
             const nodeId = uuidv7()
-
+            console.log(nodeId)
             // determine the x position of the node
             let timePosition;
             if(i === 0){
@@ -635,7 +643,7 @@ document.addEventListener("DOMContentLoaded", function () {
             let valuePosition = (node.value - nodes[0].value) / gestureData.range
         
 
-            const y = valuePosition * viewportHeight; // Interpolate to y-coordinate
+            const y = viewportHeight - (valuePosition * viewportHeight); // Inverted y-coordinate
             const nodeColor = docHistoryGraphStyling.nodeColours['paramUpdate']
             // const index = node.data().label.indexOf(' ');
             // const trimmedLabel = index !== -1 ? node.data().label.substring(index + 1) : '';
@@ -729,11 +737,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let sortedGestureNodes
     function playGesture(mode) {
+        gestureCy.nodes().removeClass('highlighted')
         // 'repeat' is passed by the function call when looping is on, so we don't want to have to get the same data again if the loop is on
         if(mode != 'repeat'){
             // reset the gesture scheduler
             gestureData.scheduler = [ ]
-
+            
             // sort objects by timestamp
             // sortedGestureNodes = [...gestureData.nodes].sort((a, b) => a.data.timestamp - b.data.timestamp);
             // Get the starting timestamp (the earliest one)
@@ -741,16 +750,23 @@ document.addEventListener("DOMContentLoaded", function () {
             // gestureData.endTime = sortedGestureNodes[sortedGestureNodes.length - 1].data.timestamp;
             // gestureData.length = gestureData.endTime - gestureData.startTime
         }
-        
-        animateSlider(gestureData.length)
+ 
         // create the scheduler
         gestureData.nodes.forEach((node) => {
+
+
+            
+            
             const delay = node.data.timestamp - gestureData.startTime; // Calculate delay from the start
 
-            console.log(node.data.value, delay)
+            
             // Use setTimeout to schedule the callback
             const timeoutID = setTimeout(() => {
                 
+                // highlight the node
+                let hNode = gestureCy.getElementById(node.data.id);
+                hNode.addClass('highlighted');
+
                 if(gestureData.assign.param === 'default'){
                     
                     let data = {
@@ -782,118 +798,14 @@ document.addEventListener("DOMContentLoaded", function () {
                         kind: targetParam.kind
 
                     })
-                    // if(srcMetadata.ui === 'knob' && gestureData.assign.kind === 'knob'){
-                    //     // source and destination params are both knobs
-                    //     let inputMin = srcMetadata.min
-                    //     let inputMax = srcMetadata.max
-                        
-                    //     let outputMin = gestureData.assign.range.min
-                    //     let outputMax = gestureData.assign.range.max
-                    //     // (value, inputMin, inputMax, outputMin, outputMax)
-                    //     let scaledValue = roundToHundredth(scaleKnob(value, Number(inputMin), Number(inputMax), Number(outputMin), Number(outputMax)))
-                        
-
-                    //     let data = {
-                    //         parent: gestureData.assign.parent,
-                    //         param: gestureData.assign.param,
-                    //         value: scaledValue
-                    //     }
-                    //     sendToMainApp({
-                    //         cmd: 'playGesture',
-                    //         data: data
-                    //     })
-                    // } else if(srcMetadata.ui === 'knob' && gestureData.assign.kind === 'menu'){
-                    //     // source is a knob
-                    //     let inputMin = srcMetadata.min
-                    //     let inputMax = srcMetadata.max
-                    //     // destination is a menu
-                    //     let options = gestureData.assign.range.split(',')
-                    //     let outputMin = 0
-                    //     let outputMax = options.length - 1
-
-                    //     // (value, inputMin, inputMax, outputMin, outputMax)
-                    //     let optionIndex = Math.floor(scaleKnob(value, Number(inputMin), Number(inputMax), Number(outputMin), Number(outputMax)))
-
-                    //     let data = {
-                    //         parent: gestureData.assign.parent,
-                    //         param: gestureData.assign.param,
-                    //         value: options[optionIndex]
-                    //     }
-                        
-                    //     sendToMainApp({
-                    //         cmd: 'playGesture',
-                    //         data: data
-                    //     })
-
-                    // } else if(srcMetadata.ui === 'menu' && gestureData.assign.kind === 'menu'){
-         
-                    //     let sourceOptions = srcMetadata.values
-                        
-                    //     let inputMin = 0
-                    //     let inputMax = sourceOptions.length - 1
-
-                    //     let options = gestureData.assign.range.split(',')
-                    //     let outputMin = 0
-                    //     let outputMax = options.length - 1
-
-                    //     // (value, inputMin, inputMax, outputMin, outputMax)
-                    //     let optionIndex = Math.floor(scaleKnob(sourceOptions.indexOf(value), Number(inputMin), Number(inputMax), Number(outputMin), Number(outputMax)))
-
-                    //     let data = {
-                    //         parent: gestureData.assign.parent,
-                    //         param: gestureData.assign.param,
-                    //         value: options[optionIndex]
-                    //     }
-                        
-                        
-                    //     sendToMainApp({
-                    //         cmd: 'playGesture',
-                    //         data: data
-                    //     })
-
-                    // } else if(srcMetadata.ui === 'menu' && gestureData.assign.kind === 'knob'){
-                        
-                    //     let sourceOptions = srcMetadata.values
-                    //     let menuIndex = sourceOptions.indexOf(value)
-                    //     let inputMin = 0
-                    //     let inputMax = sourceOptions.length - 1
-
-                    //     let outputMin = gestureData.assign.range.min
-                    //     let outputMax = gestureData.assign.range.max
-
-                    //     // (value, inputMin, inputMax, outputMin, outputMax)
-                    //     let scaledValue = roundToHundredth(scaleKnob(menuIndex, Number(inputMin), Number(inputMax), Number(outputMin), Number(outputMax)))
-
-                    //     let data = {
-                    //         parent: gestureData.assign.parent,
-                    //         param: gestureData.assign.param,
-                    //         value: scaledValue
-                    //     }
-                        
-                    //     sendToMainApp({
-                    //         cmd: 'playGesture',
-                    //         data: data
-                    //     })
-                    // }
-
-
-
-                    // console.log()
+            
                 }
 
-
-                // if looping is on, repeat the gesture after the last point
-                // first get the average distance between nodes in the gestureCy and use that as the setTimeout interval
-                
-                // let avgDistance = calculateAverageDistance()
-
-                // if(avgDistance >= 1){
-                //     avgDistance = avgDistance * 1000
-                // }
                 if(gestureData.loop && gestureData.length === delay){
-                    setTimeout(() => {
-                        playGesture('repeat')
-                    }, 250);
+                    playGesture('repeat')
+                    // setTimeout(() => {
+                    //     playGesture('repeat')
+                    // }, 250);
                 }
             }, delay);
 
@@ -903,22 +815,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
     }
 
-    function animateSlider(duration) {
-        const slider = document.getElementById('gesturePlayhead');
-        const startTime = performance.now();
+    // function animateSlider(duration) {
+    //     const slider = document.getElementById('gesturePlayhead');
+    //     const startTime = performance.now();
 
-        function updateSlider(timestamp) {
-            const elapsed = timestamp - startTime;
-            const progress = Math.min((elapsed / duration) * 100, 100); // Calculate progress percentage
-            slider.value = progress; // Update the slider's position
+    //     function updateSlider(timestamp) {
+    //         const elapsed = timestamp - startTime;
+    //         const progress = Math.min((elapsed / duration) * 100, 100); // Calculate progress percentage
+    //         slider.value = progress; // Update the slider's position
 
-            if (progress < 100) {
-                requestAnimationFrame(updateSlider); // Continue animation
-            }
-        }
+    //         if (progress < 100) {
+    //             requestAnimationFrame(updateSlider); // Continue animation
+    //         }
+    //     }
 
-        requestAnimationFrame(updateSlider); // Start the animation
-    }
+    //     requestAnimationFrame(updateSlider); // Start the animation
+    // }
 
 
     const assignGestureToParam = document.getElementById("assignGestureToParam")
