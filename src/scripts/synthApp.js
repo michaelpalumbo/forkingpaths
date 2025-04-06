@@ -2790,7 +2790,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         values: groupChange.values,
                         timestamps: groupChange.timestamps
                     }
-                }, onChange, `gesture ${groupChange.paramLabel}$PARENT ${groupChange.parentNode} GESTUREDATA${groupChange.values}`);
+                }, onChange, `gesture ${groupChange.paramLabel}$PARENT ${groupChange.parentNode}`);
 
             }
 

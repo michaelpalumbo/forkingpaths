@@ -53,6 +53,7 @@ let gestureData = {
     }
 }
 let timestampRange
+let valueRange
 let synthParamRanges = {
 
 }
@@ -426,6 +427,16 @@ document.addEventListener("DOMContentLoaded", function () {
                 case 'getGestureData':
 
                     console.log(event.data.data)
+                    // map the gesture values and timestamps to a new array of objects
+                    const gestureArray = event.data.data.values.map((value, i) => ({
+                        value: value,
+                        timestamp: event.data.data.timestamps[i],
+                        parent: event.data.data.parent,
+                        param: event.data.data.param,
+                        msg: 'gesture'
+                      }));
+                    //   console.log(gestureArray)
+                      createGestureGraph(gestureArray)
                 break
                 // commented out because this is now handled by the main app
                 // case 'clearHistoryGraph':
@@ -570,36 +581,46 @@ document.addEventListener("DOMContentLoaded", function () {
         const viewportHeight = gestureCy.height(); // Get the height of the Cytoscape container
 
         const baseY = 100; // Fixed Y position for all nodes
-        timestampRange = nodes[nodes.length - 1].data().timeStamp - nodes[0].data().timeStamp;
+        timestampRange = nodes[nodes.length - 1].timestamp - nodes[0].timestamp;
+        valueRange = nodes[nodes.length - 1].value - nodes[0].value;
+        
 
+        
         // Create nodes and edges dynamically
         for (let i = 0; i < nodes.length; i++) {
             let node = nodes[i]
-            const nodeId = node.data().id
+            const nodeId = uuidv7()
+
+            // determine the x position of the node
             let timePosition;
             if(i === 0){
                 timePosition = 0
             } else {
-                timePosition = (node.data().timeStamp - nodes[0].data().timeStamp) / timestampRange
+                timePosition = (node.timestamp - nodes[0].timestamp) / timestampRange
             }
-
             
             const x = timePosition * viewportWidth; // Interpolate to x-coordinate
 
-            const nodeColor = docHistoryGraphStyling.nodeColours[node.data().label.split(' ')[0]]
-            const index = node.data().label.indexOf(' ');
-            const trimmedLabel = index !== -1 ? node.data().label.substring(index + 1) : '';
-            const param = trimmedLabel.split(' = ')[0]
+            // determine the y position of the node
+            let valuePosition = (node.value - nodes[0].value) / valueRange
+            
 
-            // extract the param value from the label
-            const valueString = trimmedLabel.split(' = ')[1]
-            const parsedNumber = parseFloat(valueString);
-            const value = isNaN(parsedNumber) ? valueString : parsedNumber;
 
+            const y = valuePosition * viewportHeight; // Interpolate to y-coordinate
+            const nodeColor = docHistoryGraphStyling.nodeColours['paramUpdate']
+            // const index = node.data().label.indexOf(' ');
+            // const trimmedLabel = index !== -1 ? node.data().label.substring(index + 1) : '';
+            const param = node.param
+
+            // // extract the param value from the label
+            // const valueString = trimmedLabel.split(' = ')[1]
+            // const parsedNumber = parseFloat(valueString);
+            // const value = isNaN(parsedNumber) ? valueString : parsedNumber;
+            
             const gesturePoint = { 
                 group: 'nodes',
-                data: { id: nodeId, label: trimmedLabel, change: node.data().label, color: nodeColor, timestamp: node.data().timeStamp, branch: node.data().branch, parents: node.data().parents, param: param, value: value },
-                position: { x: x, y: baseY } // Set position explicitly
+                data: { id: nodeId, label: node.value, change: node.param, color: nodeColor, timestamp: node.timestamp, parents: node.parent, param: param, value: node.value },
+                position: { x: x, y: y } // Set position explicitly
             }
             elements.push(gesturePoint);
             gestureData.nodes.push(gesturePoint)
@@ -645,6 +666,8 @@ document.addEventListener("DOMContentLoaded", function () {
         gestureCy.layout({ name: 'preset' }).run();
         
         gestureCy.fit();
+
+        
     }
 
     // function playbackObjectsInRealTime(objects, onPlayback) {
@@ -1163,33 +1186,24 @@ document.addEventListener("DOMContentLoaded", function () {
             // add node to sequencer
 
         } else {
-            console.log(event.target.data())
             highlightNode(event.target)
 
             // loadVersion(event.target.data().id, event.target.data().branch)
             loadVersion(event.target.data().id, event.target.data().branch)
 
-
             selectedNode = event.target.data()
             // we want to handle gesture nodes differently than the others
             if(event.target.data().label.split(' ')[0] === 'gesture'){
                 // node is a gesture
-                
                 // get the gestureData from the main app
                 sendToMainApp(
                     {
                         cmd: "getGestureData",
                         data: { hash: event.target.data().id, branch: event.target.data().branch },
                     }
-                );
-            
+                ); 
             }
-
-
-            
-
         }
-
     })
 
     // Remove the flag when the graph window is closed
