@@ -2611,7 +2611,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     function openGraphWindow() {
-        patchHistoryWindow = window.open('patchHistory.html', 'HistoryGraph');
+        patchHistoryWindow = window
+        // Get the current window's outer dimensions
+        const width = window.outerWidth;
+        const height = window.outerHeight;
+        
+        // Optionally, get the current window's position on the screen
+        const left = window.screenX;
+        const top = window.screenY;
+        
+        // Build the feature string
+        const features = `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`;
+        
+        
+        patchHistoryWindow = window.open('patchHistory.html', 'HistoryGraph', features);
         localStorage.setItem('patchHistoryWindowOpen', true);
         
     }
@@ -2883,7 +2896,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Open the history sequencer in a new tab
     document.getElementById('openHistoryWindow').addEventListener('click', () => {
-        patchHistoryWindow = window.open('patchHistory.html', 'HistoryGraph');
+        openGraphWindow()
         localStorage.setItem('patchHistoryWindowOpen', true); 
 
     });
