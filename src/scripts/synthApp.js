@@ -110,6 +110,10 @@ let hid = {
     mouse: {
         left: false,
         right: false
+    },
+    cyMouse: {
+        left: false,
+        right: false
     }
 }
 
@@ -838,7 +842,8 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
     };
-    
+    // store param changes belonging to a single param within a gesture as a list     
+    let groupChange = []
     function paramChange(parentNode, paramLabel, value){
 
         updateSynthWorklet('paramChange', {
@@ -846,6 +851,13 @@ document.addEventListener("DOMContentLoaded", function () {
             param: paramLabel,
             value: value,
         });
+
+        if(hid.mouse.left === true){
+            console.log('will store in array')
+        }
+        else {
+            console.log('not storing in array')
+        }
         // Update in Automerge
         amDoc = applyChange(amDoc, (amDoc) => {
             amDoc.synth.graph.modules[parentNode].params[paramLabel] = value;
@@ -2719,6 +2731,21 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // });
 
+    // Listen for mouse down event on the document
+    document.addEventListener('mousedown', function(event) {
+        hid.mouse.left = true
+
+    });
+    
+    // Listen for mouse up event on the document
+    document.addEventListener('mouseup', function(event) {
+        hid.mouse.left = false
+
+
+
+    });
+
+
     const tracker = document.getElementById('mouseTracker');
 
       // You can attach a mousemove listener on the document or the tracker div.
@@ -3044,7 +3071,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // get mousedown events from cytoscape
     cy.on('mousedown', (event) => {
-        hid.mouse.left = true
+        hid.cyMouse.left = true
         // handle slider events
         if(event.target.data().kind && event.target.data().kind === 'slider'){
             
@@ -3343,7 +3370,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Step 3: Finalize edge on mouseup
     cy.on('mouseup', (event) => {
-        hid.mouse.left = false
+        hid.cyMouse.left = false
 
         if(isSliderDragging){
             isSliderDragging = false
