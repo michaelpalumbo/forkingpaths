@@ -455,6 +455,10 @@ document.addEventListener("DOMContentLoaded", function () {
                     gestureData.range = maxVal - minVal
                     gestureData.min = minVal
                     gestureData.max = maxVal
+                    // set the gesture length, start and end times
+                    gestureData.startTime = event.data.data.timestamps[0]
+                    gestureData.endTime = event.data.data.timestamps[event.data.data.timestamps.length - 1]
+                    gestureData.length = gestureData.endTime - gestureData.startTime
                     // map the gesture values and timestamps to a new array of objects
                     const gestureArray = event.data.data.values.map((value, i) => ({
                         value: value,
@@ -731,18 +735,19 @@ document.addEventListener("DOMContentLoaded", function () {
             gestureData.scheduler = [ ]
 
             // sort objects by timestamp
-            sortedGestureNodes = [...gestureData.nodes].sort((a, b) => a.data.timestamp - b.data.timestamp);
+            // sortedGestureNodes = [...gestureData.nodes].sort((a, b) => a.data.timestamp - b.data.timestamp);
             // Get the starting timestamp (the earliest one)
-            gestureData.startTime = sortedGestureNodes[0].data.timestamp;
-            gestureData.endTime = sortedGestureNodes[sortedGestureNodes.length - 1].data.timestamp;
-            gestureData.length = gestureData.endTime - gestureData.startTime
+            // gestureData.startTime = sortedGestureNodes[0].data.timestamp;
+            // gestureData.endTime = sortedGestureNodes[sortedGestureNodes.length - 1].data.timestamp;
+            // gestureData.length = gestureData.endTime - gestureData.startTime
         }
         
         animateSlider(gestureData.length)
         // create the scheduler
-        sortedGestureNodes.forEach((node) => {
+        gestureData.nodes.forEach((node) => {
             const delay = node.data.timestamp - gestureData.startTime; // Calculate delay from the start
 
+            console.log(node.data.value, delay)
             // Use setTimeout to schedule the callback
             const timeoutID = setTimeout(() => {
                 
