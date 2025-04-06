@@ -511,13 +511,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
-    function loadVersion(nodeID, branch){
+    function loadVersion(nodeID, branch, gestureDataPoint){
         // Perform your action with the step data
-        
+        console.log('check before sending', gestureDataPoint)
         sendToMainApp(
             {
                 cmd: "loadVersion",
-                data: { hash: nodeID, branch: branch },
+                data: { hash: nodeID, branch: branch, gestureDataPoint: gestureDataPoint },
             }
         );
     }
@@ -600,16 +600,29 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // if step is active, send request to load the version
         if (currentStep.status == "Active"){
-            console.log(currentStep.node)
-            // load the version
-            loadVersion(currentStep.node.id, currentStep.node.branch)
-            console.log(targetRow.dataset)
-            if(targetRow.dataset.gesture){
-                console.log('it is a gesture')
-                console.log('loopInterval', loop.interval, transport.bpm.value)
-                playGestureFromSequencerStep(JSON.parse(targetRow.dataset.gestureData), loop.interval)
-                // createGestureGraph(targetRow.dataset.gestureData.gesturePoints, targetRow.dataset.gestureData.range, targetRow.dataset.gestureData.min, targetRow.dataset.gestureData.max)
+
+            // first check if we're loading a gesture point (a single knob position within a gesture)
+            if(targetRow.dataset.isGestureDataPoint){
+                let dataPoint = {
+                    parent: targetRow.dataset.parent,
+                    param: targetRow.dataset.param,
+                    value: targetRow.dataset.gestureDataPointValue
+                }
+                console.log('should trigger', dataPoint)
+                // it's a special form of loadVersion, where we want to load the version, but ensure that the associated gesture point value is loaded 
+                loadVersion(currentStep.node.id, currentStep.node.branch, dataPoint)
+            
+            } else {
+                // load the version
+                loadVersion(currentStep.node.id, currentStep.node.branch)
+                
+                if(targetRow.dataset.gesture){
+            
+                    playGestureFromSequencerStep(JSON.parse(targetRow.dataset.gestureData), loop.interval)
+                    // createGestureGraph(targetRow.dataset.gestureData.gesturePoints, targetRow.dataset.gestureData.range, targetRow.dataset.gestureData.min, targetRow.dataset.gestureData.max)
+                }
             }
+
         }
     }, "4n")
 
@@ -676,8 +689,28 @@ document.addEventListener("DOMContentLoaded", function () {
                         row.dataset.gesture = true
                         row.dataset.gestureData = JSON.stringify(gestureData)
                     }
+
+                    if(selectedNode.gestureDataPoint){
+                        // set the label
+                        let parentNameAbrv = `${selectedNode.parents.split('_')[0]}_${selectedNode.parents.split('_')[1]}`
+                        row.dataset.label = `gesturePoint: ${parentNameAbrv}:${selectedNode.param}:${selectedNode.value}`
+                        stepCell.textContent = row.dataset.label
+                        
+                        // for logic in the main app
+                        row.dataset.isGestureDataPoint = true
+                        // since this data is coming from a the gesture graph, we need to pull the history ID from the history graph
+                        row.dataset.id = selectedNode.historyID
+                        // we also need to pull the value
+                        row.dataset.gestureDataPointValue = selectedNode.value
+                        // and the param
+                        row.dataset.param = selectedNode.param
+                        // and the parent
+                        row.dataset.parent = selectedNode.parents
+                    }
                     statusCell.textContent = 'Active'
                     saveSequencerTable()
+
+
                 }
 
             });
@@ -722,6 +755,25 @@ document.addEventListener("DOMContentLoaded", function () {
                         row.dataset.gestureData = JSON.stringify(gestureData)
                     }
 
+                    if(selectedNode.gestureDataPoint){
+                        // set the label
+                        let parentNameAbrv = `${selectedNode.parents.split('_')[0]}_${selectedNode.parents.split('_')[1]}`
+                        row.dataset.label = `gesturePoint: ${parentNameAbrv}:${selectedNode.param}:${selectedNode.value}`
+                        stepCell.textContent = row.dataset.label
+                        // for logic in the main app
+                        row.dataset.isGestureDataPoint = true
+                        // since this data is coming from a the gesture graph, we need to pull the history ID from the history graph
+                        row.dataset.id = selectedNode.historyID
+                        // we also need to pull the value
+                        row.dataset.gestureDataPointValue = selectedNode.value
+                        // and the param
+                        row.dataset.param = selectedNode.param
+                        // and the parent
+                        row.dataset.parent = selectedNode.parents
+                    }
+
+        
+
                 });
         
                 tableBody.appendChild(row);
@@ -755,20 +807,39 @@ document.addEventListener("DOMContentLoaded", function () {
                         // Update row values with data from selectedNode
                         stepCell.textContent = selectedNode.label;
                         stepLengthCell.textContent = '4n'
+
+                        row.dataset.branch = selectedNode.branch
                         row.dataset.id = selectedNode.id
                         row.dataset.label = selectedNode.label
-                        row.dataset.branch = selectedNode.branch
-
                         if(selectedNode.label.split(' ')[0] === 'gesture'){
                             row.dataset.gesture = true
                             row.dataset.gestureData = JSON.stringify(gestureData)
                         }
+
+                        if(selectedNode.gestureDataPoint){
+                            // set the label
+                            let parentNameAbrv = `${selectedNode.parents.split('_')[0]}_${selectedNode.parents.split('_')[1]}`
+                            row.dataset.label = `gesturePoint: ${parentNameAbrv}:${selectedNode.param}:${selectedNode.value}`
+                            stepCell.textContent = row.dataset.label
+                            // for logic in the main app
+                            row.dataset.isGestureDataPoint = true
+                            // since this data is coming from a the gesture graph, we need to pull the history ID from the history graph
+                            row.dataset.id = selectedNode.historyID
+                            // we also need to pull the value
+                            row.dataset.gestureDataPointValue = selectedNode.value
+                            // and the param
+                            row.dataset.param = selectedNode.param
+                            // and the parent
+                            row.dataset.parent = selectedNode.parents
+                        } 
         
+      
                         statusCell.textContent = 'Active'
                         saveSequencerTable()
                     }
 
                 });
+
                 tableBody.appendChild(row);
             }
         }
@@ -1092,7 +1163,7 @@ document.addEventListener("DOMContentLoaded", function () {
             
             const gesturePoint = { 
                 group: 'nodes',
-                data: { id: nodeId, label: '', change: node.param, color: nodeColor, timestamp: node.timestamp, parents: node.parent, param: param, value: node.value, historyID: node.historyID, branch: node.branch, gestureNode: true },
+                data: { id: nodeId, label: '', change: node.param, color: nodeColor, timestamp: node.timestamp, parents: node.parent, param: param, value: node.value, historyID: node.historyID, branch: node.branch, gestureDataPoint: true },
                 position: { x: x, y: y } // Set position explicitly
             }
             elements.push(gesturePoint);

@@ -1498,8 +1498,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // Load a version from the DAG
-    async function loadVersion(targetHash, branch) {
+    async function loadVersion(targetHash, branch, gestureDataPoint) {
 
+        console.log(gestureDataPoint)
         // get the head from this branch
         let head = meta.branches[branch].head
 
@@ -2655,7 +2656,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 
             break
             case 'loadVersion':
-                loadVersion(event.data.data.hash, event.data.data.branch)
+                loadVersion(event.data.data.hash, event.data.data.branch, event.data.data.gestureDataPoint)
             break
 
             case 'updateSequencer':
