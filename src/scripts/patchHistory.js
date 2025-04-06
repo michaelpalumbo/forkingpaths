@@ -1,4 +1,5 @@
 import dagre from 'cytoscape-dagre';
+import { min } from 'lodash';
 import * as Tone from "tone";
 import { uuidv7 } from "uuidv7";
 
@@ -36,6 +37,7 @@ let selectedModule = null
 // meta doc
 let meta;
 let gestureNodes;
+let gestureRange
 let mouseoverState = null
 
 // gestureCy data
@@ -50,10 +52,13 @@ let gestureData = {
         parent: null,
         param: 'default',
         range: null
-    }
+    },
+    range: null,
+    min: null,
+    max: null
 }
 let timestampRange
-let valueRange
+
 let synthParamRanges = {
 
 }
@@ -300,8 +305,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     'color': '#000', 
                     // 'text-outline-width': 2,
                     // 'text-outline-color': '#0074D9',
-                    'width': 30,
-                    'height': 30,
+                    'width': 10,
+                    'height': 10,
                     'font-size': 12,
                     'text-rotation': '-90deg', // Rotates the label 45 degrees counter-clockwise
                     'text-halign': 'right',  // Optional: Align text horizontally (default is 'center')
@@ -322,13 +327,31 @@ document.addEventListener("DOMContentLoaded", function () {
             {
                 selector: 'node.timestamp',
                 style: {
-                    'background-color': 'white', 
+                    'background-color': 'transparent', 
                     'label': 'data(label)', // Use the custom label attribute
                     'font-size': 20,
-                    'width': 30,
-                    'height': 30,
+                    'width': 1,
+                    'height': 1,
                     'color': '#000',            // Label text color
                     'text-valign': 'center',    // Vertically center the label
+                    'text-halign': 'center',      // Horizontally align label to the left of the node
+                    'grabbable': false
+                    // 'text-margin-x': 15, // 
+                    // 'text-margin-y': 15, // move the label down a little to make space for branch edges
+                    // 'shape': 'data(shape)' // set this for accessibility (colour blindness)
+                }
+
+            },
+            {
+                selector: 'node.valueStamp',
+                style: {
+                    'background-color': 'transparent', 
+                    'label': 'data(label)', // Use the custom label attribute
+                    'font-size': 20,
+                    'width': 1,
+                    'height': 1,
+                    'color': '#000',            // Label text color
+                    'text-valign': 'left',    // Vertically center the label
                     'text-halign': 'center',      // Horizontally align label to the left of the node
                     'grabbable': false
                     // 'text-margin-x': 15, // 
@@ -426,7 +449,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 case 'getGestureData':
 
-                    console.log(event.data.data)
+
+                    const minVal = Math.min(...event.data.data.values);
+                    const maxVal = Math.max(...event.data.data.values);
+                    gestureData.range = maxVal - minVal
+                    gestureData.min = minVal
+                    gestureData.max = maxVal
                     // map the gesture values and timestamps to a new array of objects
                     const gestureArray = event.data.data.values.map((value, i) => ({
                         value: value,
@@ -434,9 +462,11 @@ document.addEventListener("DOMContentLoaded", function () {
                         parent: event.data.data.parent,
                         param: event.data.data.param,
                         msg: 'gesture'
-                      }));
+                    }));
+
+                    
                     //   console.log(gestureArray)
-                      createGestureGraph(gestureArray)
+                      createGestureGraph(gestureArray, gestureRange, minVal, maxVal)
                 break
                 // commented out because this is now handled by the main app
                 // case 'clearHistoryGraph':
@@ -580,12 +610,8 @@ document.addEventListener("DOMContentLoaded", function () {
         const viewportWidth = gestureCy.width(); // Get the width of the Cytoscape container
         const viewportHeight = gestureCy.height(); // Get the height of the Cytoscape container
 
-        const baseY = 100; // Fixed Y position for all nodes
         timestampRange = nodes[nodes.length - 1].timestamp - nodes[0].timestamp;
-        valueRange = nodes[nodes.length - 1].value - nodes[0].value;
-        
 
-        
         // Create nodes and edges dynamically
         for (let i = 0; i < nodes.length; i++) {
             let node = nodes[i]
@@ -602,9 +628,8 @@ document.addEventListener("DOMContentLoaded", function () {
             const x = timePosition * viewportWidth; // Interpolate to x-coordinate
 
             // determine the y position of the node
-            let valuePosition = (node.value - nodes[0].value) / valueRange
-            
-
+            let valuePosition = (node.value - nodes[0].value) / gestureData.range
+        
 
             const y = valuePosition * viewportHeight; // Interpolate to y-coordinate
             const nodeColor = docHistoryGraphStyling.nodeColours['paramUpdate']
@@ -619,7 +644,7 @@ document.addEventListener("DOMContentLoaded", function () {
             
             const gesturePoint = { 
                 group: 'nodes',
-                data: { id: nodeId, label: node.value, change: node.param, color: nodeColor, timestamp: node.timestamp, parents: node.parent, param: param, value: node.value },
+                data: { id: nodeId, label: '', change: node.param, color: nodeColor, timestamp: node.timestamp, parents: node.parent, param: param, value: node.value },
                 position: { x: x, y: y } // Set position explicitly
             }
             elements.push(gesturePoint);
@@ -643,7 +668,7 @@ document.addEventListener("DOMContentLoaded", function () {
         } else {
             timestampRange = `${timestampRange}ms`
         }
-        // Add two fixed nodes at the bottom corners of the viewport for displaying the time range.
+        // Add  fixed nodes at the bottom corners of the viewport for displaying the time and value ranges.
         elements.push(
             {
                 group: 'nodes',
@@ -656,6 +681,18 @@ document.addEventListener("DOMContentLoaded", function () {
                 classes: 'timestamp',
                 data: { id: 'bottom-right', label: timestampRange },
                 position: { x: viewportWidth, y: viewportHeight - 50 } // 50px padding from bottom
+            },
+            {
+                group: 'nodes',
+                classes: 'valueStamp',
+                data: { id: 'bottom-left2', label: gestureData.min },
+                position: { x: -10, y: viewportHeight - 5} // 50px padding from bottom
+            },
+            {
+                group: 'nodes',
+                classes: 'valueStamp',
+                data: { id: 'top-left', label: gestureData.max },
+                position: { x: -10, y: 10 } // 50px padding from bottom
             }
         );
         
