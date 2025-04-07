@@ -1,6 +1,11 @@
 # Forking Paths
+*A Modular Synthesizer with Patch Histories*  
 
-Forking Paths is a modular synthesizer app that integrates software version control principles, allowing users to capture the complete history of their patch changes—a concept I refer to as *Patch Histories*. Unlike traditional modular synth setups, where changes are ephemeral and difficult to reproduce, Forking Paths preserves every modification, enabling users to revisit, branch, and explore different versions of their patches over time. Patch Histories aren’t just a way to revisit past states; they can also function as a sequencing tool, where changes themselves can be reordered and played back in structured time. By embedding Patch Histories into the workflow, it enhances the iterative process of patching, allowing historical states to be reinterpreted, merged, or used as compositional elements.
+Forking Paths is a modular synthesizer app that uses software version control concepts to capture every change you make to your patch. These records, which I call *Patch Histories*, let you revisit any previous synth state, make modifications without overwriting, and even sequence the playback of different versions of your patches in a sequencer.  
+
+ELI5: Think of it as getting creative with the undo/redo history of a software synthesizer. 
+
+<!-- Forking Paths is a modular synthesizer app that integrates software version control principles, allowing users to capture the complete history of their patch changes—a concept I refer to as *Patch Histories*. Unlike traditional modular synth setups, where changes are ephemeral and difficult to reproduce, Forking Paths preserves every modification, enabling users to revisit, branch, and explore different versions of their patches over time. Patch Histories aren’t just a way to revisit past states; they can also function as a sequencing tool, where changes themselves can be reordered and played back in structured time. By embedding Patch Histories into the workflow, it enhances the iterative process of patching, allowing historical states to be reinterpreted, merged, or used as compositional elements.-->
 
 ## About
 
@@ -23,145 +28,198 @@ This work is part of my PhD dissertation. For earlier writings and demonstration
 <br>
 
 ## First Up
-- **Bug Reports** If you encounter any bugs or difficulties, please consider creating an issue in the Forking Paths Github Repository by <a href="https://github.com/michaelpalumbo/forkingpaths/issues/new" target="_blank" rel="noopener noreferrer">Clicking Here</a>
+- **Bug Reports** If you encounter any issues, please create a bug report in the <a href="https://github.com/michaelpalumbo/forkingpaths/issues/new" target="_blank" rel="noopener noreferrer">Forking Paths Github Repository</a>
 
-- If participating in *User Testing*, <a href="https://forms.gle/aerpRUgBR7bH1xpB9" target="_blank" rel="noopener noreferrer">click here for the questionnaire, thanks!</a>
+- If you're participating in *User Testing*, <a href="https://forms.gle/aerpRUgBR7bH1xpB9" target="_blank" rel="noopener noreferrer">click here for the questionnaire, thanks!</a>
 
 <br>
 
 ## Getting Started
-To begin playing the synth, click the **Join** button in an empty room of the Lobby column to the left of this page. This will open the Synth App in a new tab. 
 
-1. Along the top of the window is the menubar. Click *File > Load Demo Synth*. 
-2. In addition to loading the demo synth, the Patch History window will also open in a new tab. Keep this open, and try to have it visible alongside the synth at all times. 
-3. Back on the Synth App. In the demo synth, there are 5 synth modules:
-    - AudioDestination: The audio output. Connect to here to hear audio play through your speakers/headphones.
-    - LFO: Low frequency oscillator with waveform selection
-    - SLOWFO: A very slow LFO.
-    - Oscillator: Standard oscillator with waveform selection
-    - Flutter: A delay effect with a very short delay time range. 
+To start playing the synth:
 
-4. **Making a cable connection**
-Inputs are orange triangles, outputs are blue squares. Click and drag from either of these elements to spawn a cable. Release the click when hovering over an input or output. Note that inputs can only be connected to outputs and vice versa. 
+1. **Join a Room:** Click the Join button in an empty room in the Lobby column (left side of this page). This will open the Synth App in a new tab.
+2. **Load the Demo Synth:** In the Synth App, use the menubar at the top: click *File > Load Demo Synth*. This action also opens the Patch History window in a new window (please allow this popup).
+3. **Explore the Demo Synth Modules:** The demo includes five synth modules:
+- **AudioDestination:** The audio output. Connect here to hear sound through your speakers/headphones.
+- **LFO:** A low-frequency oscillator with waveform selection.
+- **SLOWFO:** A very slow LFO.
+- **Oscillator:** A standard oscillator with waveform selection.
+- **Flutter:** A delay effect with a very short delay range.
 
-5. To hear some audio, patch a cable between the output of the oscillator and the input of the AudioDestination.
+4. **Making a Cable Connection:**
+- Inputs are orange triangles, outputs are blue squares.
+- Click and drag from an input or output to create a cable, then release when hovering over a valid connection point.
+- Note: Inputs can only be connected to outputs, and vice versa.
+
+5. **Hear the Audio:** Patch a cable between the Oscillator's output and the AudioDestination's input. If you don't hear sound:
+- Check the audio engine indicator at the top-right of the Synth App:
+    - **Pause Audio:** Audio is running.
+    - **Resume Audio (with flashing red/grey):** Audio is stopped.
+
+- Click this button to toggle the audio engine state.
+
 6. You should hear audio, but if not, please check the state of the audio engine by viewing the element at the top-right of the window:
-    - "Pause Audio": If in this state, audio is running.
-    - "Resume Audio" and flashing red/grey: If in this state, audio has stopped running. 
-    - Clicking this button in either state will set the audio engine to the other state. 
-7. Try patching the *LFO output* into the Oscillator *frequency input*
-8. Now look at the Patch History window browser tab. If it isn't open, go to *View > Open Patch History window*
+- "Pause Audio": If in this state, audio is running.
+- "Resume Audio" and flashing red/grey: If in this state, audio has stopped running. 
+- Clicking this button in either state will set the audio engine to the other state. 
+
+7. **Additional Patch Connections:** Try patching the LFO output into the Oscillator’s frequency input.
+
+8. **Now Open The Patch History Window:** If you don’t see it, open it from *View > Open Patch History window*.
 
 <br>
 
 ## Patch History
 
-There are 4 views in this page:
-- **History Graph** The history of your patch changes, reperesented as a graph in the left side of the page. 
-- **History Query Tool** A query tool for returning similar changes 
-- **History Sequencer** A simple sequencer for playing back changes in any order
-- **Gesture Player** Another sequencer which plays back gestures (i.e. knob turns)
+The Patch History Window is the primary focus of Forking Paths, offering an interactive timeline that records every patch change and enables you to recall and sequence past states, explore new creative directions from earlier changes, and edit and play back knob gestures.
+
+The Patch History window provides four views:
+
+- **History Graph:**  Displays your patch changes as a graph on the left side. Clicking a dot (a "Change Node") loads that patch state into the synth.
+  <!-- Added a brief explanation of what "Change Node" means -->
+
+- **History Query Tool:**  Lets you search for similar changes. Clicking any change will load that patch state into the synth. 
+  
+- **History Sequencer:**  A simple sequencer to play back changes in any order.
+  
+- **Gesture Player:**  A sequencer for playing back gestures (like knob turns).
 
 
-### History Graph
+### History Graph Details
 
-1. Lets begin by looking at the **History Graph**. We can see each of the changes you made to the synth path in the other window. If you click on any of the dots representing the changes (we'll refer to them as "Change Nodes"), this will load that state back into the synth. 
-    1. **Change Node Types**
-    - *paramUpdate*: These are individual paramater changes, i.e. if you click a knob and it jumps to that point
-    - *gesture*: These are parameter changes that occur over the duration that your mouse left button is held down i.e. click+drag a knob
-    - *connect*: Anytime you create a patch cable connection between 2 jacks
-    - *disconnect*: Anytime you delete a cable
+1. **Viewing the History Graph:** You can see each change you made to your synth patch.  
+- **Change Node Types:**  
+    - *paramUpdate:* Individual parameter changes (e.g., when a knob jumps to a new value).
+    - *gesture:* Changes that occur over time while you click+drag a knob.
+    - *connect:* When you create a patch cable connection.
+    - *disconnect:* When you delete a cable.
+   <!-- Fixed typos and added ELI5-style clarifications -->
 
-2. Let's try recalling some past states. Click on any of the Change Nodes. You will see in the synth app that the state will update visually as well as audibly. 
-3. **Branching** Whenever you have loaded a previous state, the History Graph will begin recording all new changes on a new branch in the graph. Try that now to see it. 
+2. **Recalling Past States:** Click on any Change Node to see the synth update both visually and audibly.
 
-**Tips:**
-Change Nodes can be merged together (meaning that changes in either node will be automatically combined in a logical way). To do this, click+drag any Change Node onto any other Change Node. A 3rd new node will appear, notice the combination of changes from both parent nodes. *NOTE: This is kinda buggy, where the graph is currently incorrectly representing these changes within the history*
+3. **Branching:** Loading a previous state starts a new branch in the History Graph. Try it to see how new changes form a new branch.
+   <!-- Clarified the branching concept -->
 
+**Tips:**  
+Change Nodes can be merged together. To merge, click+drag one Change Node onto another. A new merged node will appear, combining the changes from both parents.  
+*NOTE: Merging is a bit buggy at the moment, and the graph might not correctly represent the merged changes.*
+<!-- Clarified the merging process with a note -->
 
-### History Sequencer
+The History Sequencer lets you assign any Change Node from the History Graph as a step in a sequence:
 
-With the History Sequencer, you can assign any Change Node from the History Graph as a step in the sequnce!
+1. **Building a Sequence:**  
+   - Click on a Change Node, then cmd-click (or ctrl-click on PC) on an empty step cell.  
+   - Click another Change Node to assign it to one or more empty step slots.  
+   **NOTE:** Active steps can be overwritten.
+   <!-- Rephrased for clarity -->
 
-1. To build a sequence, click on any change node, and then cmd-click (or ctrl-click on PC) on any of the cells marked as *(Empty)*. Now click another change node, and apply it to one or more empty step slots. **NOTE:** Active steps can be overwritten. 
-2. Note that gestures can be applied to sequence steps. When you do this, the entire gesture will be played back within the step's duration. The gesture's length is quantized to the step duration. You can try playing with the BPM to hear this in action. 
-3. Click the **Start Sequencer** button to begin playing the sequence, and then observe the changes in the synth and audio playback. 
+2. **Gesture Sequencing:**  
+   Gestures can be applied to sequence steps. The entire gesture will play back within the step's duration. Try changing the BPM to hear this effect.
+   
+3. **Playing the Sequence:**  
+   Click the **Start Sequencer** button to begin playback, and observe how the synth and audio change.
+   <!-- Clarified the steps -->
 
+##### Sequencer Options
+
+1. **BPM Slider:**  
+   Sets the sequencer BPM (between 30 and 300 BPM).
+
+2. **Step Length:**  
+   Currently, there are two options:
+   - **Fixed:** Every step is the same length (default is quarter notes).
+   - **User Editable:** *Coming soon*
+   - **Closeness Centrality:** *Coming soon*
+   - **Euclidean Distance:** The note length is determined by the graph distance between Change Nodes (longer distance = longer note length).
+   <!-- Reorganized and clarified the options -->
+
+3. **Sequence Order:**  
+   - **Entry:** The default order you set the steps (currently broken).
+   - **Topological Sort:** *Coming soon*
+   - **Random:** Randomizes the sequence order.
+
+**Tip:**  
+Shift+Click+Drag over multiple Change Nodes in the History Graph to add them as sequencer steps.  
+*Coming soon: Save/Recall History Sequences*
+<!-- Clarified the tip and options -->
+
+<br>
+
+#### History Query Tool
+
+This tool returns all Change Nodes of a specific type for easier selection. Click a result to recall that state in the synth, and then assign it to a sequencer step.
+
+- **Graph Based:**  
+  - *Leaves:* The latest Change Nodes on a given branch.
+  
+- **Change Based:**  
+  - *Param Changes:* Returns all parameter changes.  
+  - *Gesture Changes:* Returns all gestures.  
+  - *Cable Changes:* Returns all cable changes.  
+  - *Merges:* Returns all merged Change Nodes.
+  
+- **Selected Module Changes:**  
+  If you select a module in the Synth App, this option will return all Change Nodes related to that module.
+<!-- Simplified and organized this section -->
+
+<br>
 
 
 <br>
 
-#### Sequencer Options
-1. **BMP Slider**: Use to define the sequencer BPM, between 30-300 BPM. 
-2. **Step Length**: At present there are 2 options for setting the step lengths:
-    - Fixed: Every step is the same length, defaulted to quarter notes
-    - User Editable: *Coming soon*
-    - Closeness Centrality: *Coming Soon*
-    - Euclidean Distance: Since the history is represented as graph, we can compare the distance between the Change Nodes of 2 steps and apply that as a note length. So if the Change Nodes of step 1 and step 2 are very far apart, their note lengths will be longer than if they were closer toghether. 
-3. **Sequence Order**:
-    - Entry: The default setting. Clicking this will return to the order that you have set the steps. (Currently broken)
-    - Topological Sort: *Coming soon*
-    - Random: Randomizes the sequence order. 
+The Gesture Player is a controller for playing, looping, and editing gestures. It maps parameter changes from one gesture onto any other parameter and can assign gestures (or individual gesture data points) to sequencer steps.
 
-**Tip:** Shift+Click+Drag over any amount of Change Nodes in the History Graph to apply all of them as sequencer steps. 
-
-*Coming soon: Save/Recall History Sequences* 
-
-<br>
-
-### History Query Tool
-This will return all Change Nodes of the same type for easier selection to the Results list. Change Nodes in the Results list can be clicked to recall them in the synth, and also applied as steps in the sequencer by then clicking any step. 
-    
-- Graph Based
-    - - Leaves: Leaf Change Nodes are the latest changes on a given branch in the graph
-
-- Change Based
-    - - Param Changes: Return all parameter changes
-    - - Gesture Changes: Return all gestures
-    - - Cable Changes: Return all cable changes
-    - - Merges: Return all history graph merges
-
-- Selected Module Changes: If a module is selected in the Synth App (click it), then selecting this menu item will return all Change Nodes related to this module.
-
-<br>
-
-
-<br>
-
-### Gesture Player
-This is a pretty neat little controller. It allows for playback and looping of gestures, as well as mapping parameter changes from one gesture onto any other parameter. 
-1. Begin by selecting a gesture node from the history graph. The gesture's total time length is displayed along the X Axis (0ms to nn milliseconds or nn seconds) and the minimum and maximum values of the gesture are displayed along the Y Axis
-2. Click *Play* to play back this sequence. 
-3. There is a dropdown menu that currently reads *default*. Open this menu and notice that all parameters in the synth are listed. This menu allows you to temporarily map the values of the gesture onto any other parameter in the synth. Try selecting a few parameters and playback the gesture. **NOTE**: Multiple parameters can be represented in the gesture, each with different value ranges, and the system automatically maps each gesture param's range (min and max) within the target parameter's range. 
-4. Once you have found a parameter that the gesture works well on, you can click the **Clone** button to permanently assign this gesture to that parameter. If you check the History Graph, this means that the newly assigned gesture is represented as a new branch. 
-
-**Tips:**
-Individual gesture points can be played back or assigned to the step sequencer. To do this, ensure a gesture is loaded into the player, then click any of the little nodes in the gesture player to hear its value. Then just cmd-click a step in the sequencer to assign it to that step. 
-
-
-- *Coming soon: Save/Recall Gestures*
+1. **Loading a Gesture:**  
+   Select a gesture node from the History Graph. The total time length is displayed along the X-axis, and the minimum/maximum values along the Y-axis.
+   
+2. **Playing a Gesture:**  
+   Click *Play* to listen to the gesture playback.
+   
+3. **Temporary Mapping:**  
+   Use the dropdown menu (default is *default*) to map the gesture’s values to any other synth parameter. Try different parameters and listen for changes.  
+   **NOTE:** Multiple gesture parameters can be automatically scaled to match the target parameter’s range.
+   
+4. **Cloning a Gesture:**  
+   Once you find a parameter where the gesture sounds good, click **Clone** to permanently assign the gesture. This creates a new branch in the History Graph.
+   
+**Tips:**  
+- You can play back or assign individual gesture points.  
+- Cmd-click a step in the sequencer to assign a specific gesture point.
+  
+**Editing Gestures:**  
+Click+drag vertically any node in the Gesture Player to adjust its value in real time. If the synth is running, you'll hear the change immediately.  
+*Coming soon: Save/Recall Gestures*
+<!-- Added ELI5 explanations and rephrased steps for clarity -->
 
 <br>
 
 ## Multiplayer
 
-You can play Forking Paths with another player, they just have to join the same room that you are in through the Lobby on this page. All changes either of you make will be immediately applied to the other's synth and Patch History. 
+You can collaborate with another player by joining the same room via the Lobby. All changes are synced between players’ synths and Patch Histories in real time.  
+<!-- Clarified the multiplayer aspect -->
 
-<br> 
+This feature has been tested the least, so please try it out with a friend and let me know if you encounter bugs or have improvement ideas.
+<!-- Minor rephrasing -->
 
-This is the aspect I have tested the least, so please do try it out with a friend and and let me know if you encountered any bugs or have indeas for improvement. 
-
-<br> 
+---
 
 ## Synth Designer
-You can create your own synths! In the Synth App, click *View > Open Synth Designer*
-- **Add Module**: Click any module name from the left panel to add it to the synth. 
-- **Move Modules**: Click + drag any module to reposition it
-- **Delete Modules**: Click + delete any module to remove it
-- **Drag multiple modules**: Cmd/Ctrl + click + drag to select multiple elements, then drag any module to move them all at once.
-- **Save Synth**: Click File > Save Synth... to save it to anywhere in your computer. 
-- **Load Synth In Synth App**: In the Synth App, click *File > Load Synth From Disk*, and choose your synth file (it will have the file extension *.fpsynth*)
 
-**NOTE**: Loading a synth file will clear your Patch History
+In the Synth App, click *View > Open Synth Designer* to create your own synths.
 
+- **Add Module:**  
+  Click any module name from the left panel to add it to your synth.
+- **Move Modules:**  
+  Click and drag any module to reposition it.
+- **Delete Modules:**  
+  Click and press delete on any module to remove it.
+- **Drag Multiple Modules:**  
+  Cmd/Ctrl + click + drag to select multiple modules, then drag one to move them all.
+- **Save Synth:**  
+  Click *File > Save Synth...* to save your synth to your computer.
+- **Load Synth in Synth App:**  
+  Click *File > Load Synth From Disk* and select your synth file (with a *.fpsynth* extension).
 
+**NOTE:** Loading a synth file will clear your Patch History.
+<!-- Reorganized and clarified the instructions -->
