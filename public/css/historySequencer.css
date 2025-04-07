@@ -122,6 +122,11 @@ html, body {
   color: #000 !important; /* Optional: Ensure text color is readable */
 }
 
+#dynamicTableBody tr.table-set-step {
+  background-color: #ff833b !important; /* orange highlight */
+  color: #000 !important; /* Optional: Ensure text color is readable */
+}
+
 /* Highlight row (Bulma's `is-selected` class does this automatically) */
 .is-selected {
   background-color: #f0f8ff; /* Light blue, part of Bulma's default styling */

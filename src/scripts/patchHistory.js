@@ -1547,7 +1547,16 @@ document.addEventListener("DOMContentLoaded", function () {
         }, 200); // Adjust the delay as needed
     });
 
+    // get node mouseovers for displaying the value
+    gestureCy.on('mouseover', 'node', (event)=>{
+        const node = event.target.data()
 
+        const displayValue = document.getElementById('displayPointValue');
+        displayValue.textContent = `${node.param}: ${node.value}`;
+
+        highlightNode(event.target)
+
+    })
     gestureCy.on('tap', 'node', (event) => {
         if(hid.key.shift){
             // add node to sequencer
@@ -1593,7 +1602,47 @@ document.addEventListener("DOMContentLoaded", function () {
     })
 
 
+    // When the node is grabbed, store its current x position to later prevent it from moving along the X axis
+    gestureCy.on('grab', 'node', (event) => {
+        const node = event.target;
+        node.scratch('lockedX', node.position('x'));
+    });
     
+    // During dragging, override the x position so it remains constant
+    gestureCy.on('drag', 'node', (event) => {
+        const node = event.target;
+        const lockedX = node.scratch('lockedX');
+        const newY = node.position('y');
+        node.position({ x: lockedX, y: newY });
+
+        const index = gestureCy.nodes().indexOf(node);
+        // console.log(gestureData.gesturePoints[index])
+        // console.log(currentY, gestureData.min, gestureData.max, gestureData.range, index, gestureData.gesturePoints[index].value)
+    
+        // Update the node value based on its new y position.
+        const updatedValue = updateNodeValueFromY(newY, node, gestureData.gesturePoints[0].value, gestureData.range, gestureCy.height());
+        console.log('Updated node value:', updatedValue);
+
+        gestureData.gesturePoints[index].value = updatedValue
+        node.data().value = updatedValue
+
+        let gestureNode = gestureData.gesturePoints[index]
+        let data = {
+            parent: gestureNode.parent,
+            param: gestureNode.param,
+            value: updatedValue
+        }
+        sendToMainApp({
+            cmd: 'playGesture',
+            data: data,
+            kind: 'n/a'
+        })
+
+
+    });
+
+
+
     // Listen to mousemove events on the document
     document.addEventListener('mousemove', (event) => {
         hid.mouse.x = event.clientX; // Mouse X position
@@ -1853,6 +1902,25 @@ document.addEventListener("DOMContentLoaded", function () {
         createSequencerTable() 
     });
 
+    document.getElementById('dynamicTableBody').addEventListener('mouseover', (event) => {
+        // Find the closest table row from the event target
+        const row = event.target.closest('tr');
+        // Ensure the row is within the dynamicTableBody
+        if (row && document.getElementById('dynamicTableBody').contains(row) && hid.key.cmd) {
+            console.log('Hovered row:', row, hid.key.cmd);
+            // You can perform your desired actions here
+
+            // Highlight the current step in the table
+            const tableRows = document.querySelectorAll("#dynamicTableBody tr");
+            tableRows.forEach((row) => row.classList.remove("table-set-step"));
+         
+            row.classList.add("table-set-step");
+            
+        }
+    });
+
+
+
     // Listen for the select event on nodes
     let historyBoxSelect = true // this is necessary because this event listener fires many times otherwise
     historyDAG_cy.on("boxselect", "node", () => {
@@ -1897,6 +1965,9 @@ document.addEventListener("DOMContentLoaded", function () {
             }, 50); // Adjust the delay as needed to debounce the event
         }
     });
+
+
+
 
     // *
     // *
@@ -2472,6 +2543,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
         return data
     }
+
+    function updateNodeValueFromY(newY, node, value, gestureRange, viewportHeight) {
+        // Calculate the new value based on the new y position
+        const newValue = (value + gestureRange * (1 - newY / viewportHeight));
+        
+        return newValue;
+      }
 })
 
 
