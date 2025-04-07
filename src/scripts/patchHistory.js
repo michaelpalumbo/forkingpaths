@@ -554,6 +554,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 const latestNode = historyDAG_cy.nodes().last()
                 highlightNode(latestNode)
 
+                selectedNode = latestNode.data()
 
                 panToBranch(latestNode)
             break
@@ -606,7 +607,6 @@ document.addEventListener("DOMContentLoaded", function () {
         if (targetRow) targetRow.classList.add("table-active");
 
         currentStepIndex = (currentStepIndex + 1) % storedSequencerTable.length;
-
         // if step is active, send request to load the version
         if (currentStep.status == "Active"){
 
@@ -617,7 +617,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     param: targetRow.dataset.param,
                     value: targetRow.dataset.gestureDataPointValue
                 }
-                console.log('should trigger', dataPoint)
+                
                 // it's a special form of loadVersion, where we want to load the version, but ensure that the associated gesture point value is loaded 
                 loadVersionWithGestureDataPoint(currentStep.node.id, currentStep.node.branch, dataPoint)
             
@@ -632,6 +632,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             }
 
+            let historyNode = historyDAG_cy.getElementById(currentStep.node.id)
+            highlightNode(historyNode)
         }
     }, "4n")
 
