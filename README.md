@@ -60,12 +60,34 @@ There are 4 views in this page:
 - **History Graph** The history of your patch changes, reperesented as a graph in the left side of the page. 
 - **History Query Tool** A query tool for returning similar changes 
 - **History Sequencer** A simple sequencer for playing back changes in any order
-- **Gesture Player** Another sequencer which plays back selected regions of the history
+- **Gesture Player** Another sequencer which plays back gestures (i.e. knob turns)
 
-1. Lets begin by looking at the **History Graph**. We can see each of the changes you made to the synth path in the other window. If you click on any of the dots representing the changes (we'll refer to them as "Change Nodes"), this will load that state back into the synth. Try that now. 
-2. **Branching** Whenever you have loaded a previous state, the History Graph will begin recording all new changes on a new branch in the graph. Try that now to see it. 
-3. Let's now try the **History Sequencer**. To build a sequence, click on any change node, and then click on any of the cells marked as *(Empty)*. Now click another change node, and apply it to one or more empty step slots. **NOTE:** Active steps can be overwritten. 
-4. Click the **Start Sequencer** button to begin playing the sequence, and then observe the changes in the synth and audio playback. 
+
+### History Graph
+
+1. Lets begin by looking at the **History Graph**. We can see each of the changes you made to the synth path in the other window. If you click on any of the dots representing the changes (we'll refer to them as "Change Nodes"), this will load that state back into the synth. 
+    1. **Change Node Types**
+    - *paramUpdate*: These are individual paramater changes, i.e. if you click a knob and it jumps to that point
+    - *gesture*: These are parameter changes that occur over the duration that your mouse left button is held down i.e. click+drag a knob
+    - *connect*: Anytime you create a patch cable connection between 2 jacks
+    - *disconnect*: Anytime you delete a cable
+
+2. Let's try recalling some past states. Click on any of the Change Nodes. You will see in the synth app that the state will update visually as well as audibly. 
+3. **Branching** Whenever you have loaded a previous state, the History Graph will begin recording all new changes on a new branch in the graph. Try that now to see it. 
+
+**Tips:**
+Change Nodes can be merged together (meaning that changes in either node will be automatically combined in a logical way). To do this, click+drag any Change Node onto any other Change Node. A 3rd new node will appear, notice the combination of changes from both parent nodes. *NOTE: This is kinda buggy, where the graph is currently incorrectly representing these changes within the history*
+
+
+### History Sequencer
+
+With the History Sequencer, you can assign any Change Node from the History Graph as a step in the sequnce!
+
+1. To build a sequence, click on any change node, and then click on any of the cells marked as *(Empty)*. Now click another change node, and apply it to one or more empty step slots. **NOTE:** Active steps can be overwritten. 
+2. Note that gestures can be applied to sequence steps. When you do this, the entire gesture will be played back within the step's duration. The gesture's length is quantized to the step duration. You can try playing with the BPM to hear this in action. 
+3. Click the **Start Sequencer** button to begin playing the sequence, and then observe the changes in the synth and audio playback. 
+
+
 
 <br>
 
@@ -87,7 +109,7 @@ There are 4 views in this page:
 
 <br>
 
-## History Query Tool
+### History Query Tool
 This will return all Change Nodes of the same type for easier selection to the Results list. Change Nodes in the Results list can be clicked to recall them in the synth, and also applied as steps in the sequencer by then clicking any step. 
     
 - Graph Based
@@ -95,6 +117,7 @@ This will return all Change Nodes of the same type for easier selection to the R
 
 - Change Based
     - - Param Changes: Return all parameter changes
+    - - Gesture Changes: Return all gestures
     - - Cable Changes: Return all cable changes
     - - Merges: Return all history graph merges
 
@@ -102,19 +125,20 @@ This will return all Change Nodes of the same type for easier selection to the R
 
 <br>
 
-## History Graph: Merging Change Nodes
-Change Nodes can be merged together (meaning that changes in either node will be automatically combined in a logical way). To do this, click+drag any Change Node onto any other Change Node. A 3rd new node will appear, notice the combination of changes from both parent nodes. *NOTE: This is kinda buggy, where the graph is currently incorrectly representing these changes within the history*
 
 <br>
 
-## Gesture Player
-This is a pretty neat little controller. It allows for playback and looping of a specific region of history, as well as mapping parameter changes onto any other parameter. 
-1. Begin by cmd/ctrl+Click+Drag over any number of Change Nodes. Release the mouse and the nodes will appear in the Gesture Player. The total length of time from the first node to the last is displayed in the bottom-right corner. 
+### Gesture Player
+This is a pretty neat little controller. It allows for playback and looping of gestures, as well as mapping parameter changes from one gesture onto any other parameter. 
+1. Begin by selecting a gesture node from the history graph. The gesture's total time length is displayed along the X Axis (0ms to nn milliseconds or nn seconds) and the minimum and maximum values of the gesture are displayed along the Y Axis
 2. Click *Play* to play back this sequence. 
 3. There is a dropdown menu that currently reads *default*. Open this menu and notice that all parameters in the synth are listed. This menu allows you to temporarily map the values of the gesture onto any other parameter in the synth. Try selecting a few parameters and playback the gesture. **NOTE**: Multiple parameters can be represented in the gesture, each with different value ranges, and the system automatically maps each gesture param's range (min and max) within the target parameter's range. 
 4. Once you have found a parameter that the gesture works well on, you can click the **Clone** button to permanently assign this gesture to that parameter. If you check the History Graph, this means that the newly assigned gesture is represented as a new branch. 
 
-- *Coming soon: apply a gesture as a step in the sequencer*
+**Tips:**
+Individual gesture points can be played back or assigned to the step sequencer. To do this, ensure a gesture is loaded into the player, then click any of the little nodes in the gesture player to hear its value. Then just click a step in the sequencer to assign it to that step. 
+
+
 - *Coming soon: Save/Recall Gestures*
 
 <br>
@@ -125,7 +149,7 @@ You can play Forking Paths with another player, they just have to join the same 
 
 <br> 
 
-This is the aspect I have tested the least, so please do try and and let me know if you encountered any bugs or have indeas for improvement. 
+This is the aspect I have tested the least, so please do try it out with a friend and and let me know if you encountered any bugs or have indeas for improvement. 
 
 <br> 
 
