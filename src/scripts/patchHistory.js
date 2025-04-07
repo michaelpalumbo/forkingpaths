@@ -1703,7 +1703,7 @@ document.addEventListener("DOMContentLoaded", function () {
             loadVersion(event.target.data().id, event.target.data().branch)
 
             selectedNode = event.target.data()
-            console.log(selectedNode)
+           
             // we want to handle gesture nodes differently than the others
             if(event.target.data().label.split(' ')[0] === 'gesture'){
                 // node is a gesture
@@ -1717,6 +1717,13 @@ document.addEventListener("DOMContentLoaded", function () {
                         data: { hash: event.target.data().id, branch: event.target.data().branch },
                     }
                 ); 
+            } else {
+                // clear the gesture player
+                // clear the gestureData.nodes
+                gestureData.nodes = []
+
+                // Clear the current graph
+                gestureCy.elements().remove();
             }
         }
     })
