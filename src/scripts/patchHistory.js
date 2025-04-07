@@ -688,7 +688,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // Add click event listener to the row
             // this will make it so that each row can be updated by clicks
             row.addEventListener("click", () => {
-                if(selectedNode){
+                if(selectedNode && hid.key.cmd){
                     // Update row values with data from selectedNode
                     stepCell.textContent = selectedNode.label;
                     stepLengthCell.textContent = '4n'
@@ -755,32 +755,35 @@ document.addEventListener("DOMContentLoaded", function () {
         
                 // Re-add click event listener to the row
                 row.addEventListener("click", () => {
-                    stepCell.textContent = selectedNode.label;
-                    stepLengthCell.textContent = "4n"; // Example modification
-                    row.dataset.id = selectedNode.id
-                    row.dataset.label = selectedNode.label
-                    row.dataset.branch = selectedNode.branch
+                    if(hid.key.cmd){
+                        stepCell.textContent = selectedNode.label;
+                        stepLengthCell.textContent = "4n"; // Example modification
+                        row.dataset.id = selectedNode.id
+                        row.dataset.label = selectedNode.label
+                        row.dataset.branch = selectedNode.branch
 
-                    if(selectedNode.label.split(' ')[0] === 'gesture'){
-                        row.dataset.gesture = true
-                        row.dataset.gestureData = JSON.stringify(gestureData)
-                    }
+                        if(selectedNode.label.split(' ')[0] === 'gesture'){
+                            row.dataset.gesture = true
+                            row.dataset.gestureData = JSON.stringify(gestureData)
+                        }
 
-                    if(selectedNode.gestureDataPoint){
-                        // set the label
-                        let parentNameAbrv = `${selectedNode.parents.split('_')[0]}_${selectedNode.parents.split('_')[1]}`
-                        row.dataset.label = `gesturePoint: ${parentNameAbrv}:${selectedNode.param}:${selectedNode.value}`
-                        stepCell.textContent = row.dataset.label
-                        // for logic in the main app
-                        row.dataset.isGestureDataPoint = true
-                        // since this data is coming from a the gesture graph, we need to pull the history ID from the history graph
-                        row.dataset.id = selectedNode.historyID
-                        // we also need to pull the value
-                        row.dataset.gestureDataPointValue = selectedNode.value
-                        // and the param
-                        row.dataset.param = selectedNode.param
-                        // and the parent
-                        row.dataset.parent = selectedNode.parents
+                        if(selectedNode.gestureDataPoint){
+                            // set the label
+                            let parentNameAbrv = `${selectedNode.parents.split('_')[0]}_${selectedNode.parents.split('_')[1]}`
+                            row.dataset.label = `gesturePoint: ${parentNameAbrv}:${selectedNode.param}:${selectedNode.value}`
+                            stepCell.textContent = row.dataset.label
+                            // for logic in the main app
+                            row.dataset.isGestureDataPoint = true
+                            // since this data is coming from a the gesture graph, we need to pull the history ID from the history graph
+                            row.dataset.id = selectedNode.historyID
+                            // we also need to pull the value
+                            row.dataset.gestureDataPointValue = selectedNode.value
+                            // and the param
+                            row.dataset.param = selectedNode.param
+                            // and the parent
+                            row.dataset.parent = selectedNode.parents
+                        }
+
                     }
 
         
@@ -814,7 +817,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 
                         // Add click event listener to the row
                 row.addEventListener("click", () => {
-                    if(selectedNode){
+                    if(selectedNode && hid.key.cmd){
                         // Update row values with data from selectedNode
                         stepCell.textContent = selectedNode.label;
                         stepLengthCell.textContent = '4n'

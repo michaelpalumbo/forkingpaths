@@ -83,7 +83,7 @@ Change Nodes can be merged together (meaning that changes in either node will be
 
 With the History Sequencer, you can assign any Change Node from the History Graph as a step in the sequnce!
 
-1. To build a sequence, click on any change node, and then click on any of the cells marked as *(Empty)*. Now click another change node, and apply it to one or more empty step slots. **NOTE:** Active steps can be overwritten. 
+1. To build a sequence, click on any change node, and then cmd-click (or ctrl-click on PC) on any of the cells marked as *(Empty)*. Now click another change node, and apply it to one or more empty step slots. **NOTE:** Active steps can be overwritten. 
 2. Note that gestures can be applied to sequence steps. When you do this, the entire gesture will be played back within the step's duration. The gesture's length is quantized to the step duration. You can try playing with the BPM to hear this in action. 
 3. Click the **Start Sequencer** button to begin playing the sequence, and then observe the changes in the synth and audio playback. 
 
@@ -136,7 +136,7 @@ This is a pretty neat little controller. It allows for playback and looping of g
 4. Once you have found a parameter that the gesture works well on, you can click the **Clone** button to permanently assign this gesture to that parameter. If you check the History Graph, this means that the newly assigned gesture is represented as a new branch. 
 
 **Tips:**
-Individual gesture points can be played back or assigned to the step sequencer. To do this, ensure a gesture is loaded into the player, then click any of the little nodes in the gesture player to hear its value. Then just click a step in the sequencer to assign it to that step. 
+Individual gesture points can be played back or assigned to the step sequencer. To do this, ensure a gesture is loaded into the player, then click any of the little nodes in the gesture player to hear its value. Then just cmd-click a step in the sequencer to assign it to that step. 
 
 
 - *Coming soon: Save/Recall Gestures*
