@@ -94,17 +94,14 @@ The Patch History window provides four views:
     - *gesture:* Changes that occur over time while you click+drag a knob.
     - *connect:* When you create a patch cable connection.
     - *disconnect:* When you delete a cable.
-   <!-- Fixed typos and added ELI5-style clarifications -->
 
 2. **Recalling Past States:** Click on any Change Node to see the synth update both visually and audibly.
 
 3. **Branching:** Loading a previous state starts a new branch in the History Graph. Try it to see how new changes form a new branch.
-   <!-- Clarified the branching concept -->
 
 **Tips:**  
 Change Nodes can be merged together. To merge, click+drag one Change Node onto another. A new merged node will appear, combining the changes from both parents.  
 *NOTE: Merging is a bit buggy at the moment, and the graph might not correctly represent the merged changes.*
-<!-- Clarified the merging process with a note -->
 
 The History Sequencer lets you assign any Change Node from the History Graph as a step in a sequence:
 
@@ -112,16 +109,14 @@ The History Sequencer lets you assign any Change Node from the History Graph as 
    - Click on a Change Node, then cmd-click (or ctrl-click on PC) on an empty step cell.  
    - Click another Change Node to assign it to one or more empty step slots.  
    **NOTE:** Active steps can be overwritten.
-   <!-- Rephrased for clarity -->
 
 2. **Gesture Sequencing:**  
    Gestures can be applied to sequence steps. The entire gesture will play back within the step's duration. Try changing the BPM to hear this effect.
    
 3. **Playing the Sequence:**  
    Click the **Start Sequencer** button to begin playback, and observe how the synth and audio change.
-   <!-- Clarified the steps -->
 
-##### Sequencer Options
+#### Sequencer Options
 
 1. **BPM Slider:**  
    Sets the sequencer BPM (between 30 and 300 BPM).
@@ -132,7 +127,6 @@ The History Sequencer lets you assign any Change Node from the History Graph as 
    - **User Editable:** *Coming soon*
    - **Closeness Centrality:** *Coming soon*
    - **Euclidean Distance:** The note length is determined by the graph distance between Change Nodes (longer distance = longer note length).
-   <!-- Reorganized and clarified the options -->
 
 3. **Sequence Order:**  
    - **Entry:** The default order you set the steps (currently broken).
@@ -142,11 +136,10 @@ The History Sequencer lets you assign any Change Node from the History Graph as 
 **Tip:**  
 Shift+Click+Drag over multiple Change Nodes in the History Graph to add them as sequencer steps.  
 *Coming soon: Save/Recall History Sequences*
-<!-- Clarified the tip and options -->
 
 <br>
 
-#### History Query Tool
+### History Query Tool
 
 This tool returns all Change Nodes of a specific type for easier selection. Click a result to recall that state in the synth, and then assign it to a sequencer step.
 
@@ -161,27 +154,27 @@ This tool returns all Change Nodes of a specific type for easier selection. Clic
   
 - **Selected Module Changes:**  
   If you select a module in the Synth App, this option will return all Change Nodes related to that module.
-<!-- Simplified and organized this section -->
 
 <br>
 
 
 <br>
 
-The Gesture Player is a controller for playing, looping, and editing gestures. It maps parameter changes from one gesture onto any other parameter and can assign gestures (or individual gesture data points) to sequencer steps.
+### Gesture Editor
+
+The Gesture Editor is a controller for playing, looping, and editing gestures. You can also map a gesture onto any other parameter and can assign gestures (or individual gesture data points) to sequencer steps.
 
 1. **Loading a Gesture:**  
-   Select a gesture node from the History Graph. The total time length is displayed along the X-axis, and the minimum/maximum values along the Y-axis.
+   Select a gesture node from the History Graph. The total time length is displayed at the end of the gesture, and the minimum/maximum values of the gesture are along the Y-axis.
    
 2. **Playing a Gesture:**  
    Click *Play* to listen to the gesture playback.
    
 3. **Temporary Mapping:**  
-   Use the dropdown menu (default is *default*) to map the gesture’s values to any other synth parameter. Try different parameters and listen for changes.  
-   **NOTE:** Multiple gesture parameters can be automatically scaled to match the target parameter’s range.
+   Use the dropdown menu to map the gesture’s values to any other synth parameter. Try different parameters and listen for changes by clicking *Play*. Values are automatically scaled when assigned to a different parameter. **NOTE:** If you assign it to a parameter whose module isn't connected, you can see it's gesture, but you won't hear anything!
    
 4. **Cloning a Gesture:**  
-   Once you find a parameter where the gesture sounds good, click **Clone** to permanently assign the gesture. This creates a new branch in the History Graph.
+   Once you find a new gesture mapping that you're happy with, click **Clone** to permanently assign the gesture. This creates a new branch in the History Graph and adds the cloned gesture as a new *Change Node*
    
 **Tips:**  
 - You can play back or assign individual gesture points.  
@@ -189,18 +182,20 @@ The Gesture Player is a controller for playing, looping, and editing gestures. I
   
 **Editing Gestures:**  
 Click+drag vertically any node in the Gesture Player to adjust its value in real time. If the synth is running, you'll hear the change immediately.  
-*Coming soon: Save/Recall Gestures*
-<!-- Added ELI5 explanations and rephrased steps for clarity -->
+
+You can save and recall edited gestures as well. To do this:
+1. Edit the gesture
+2. Make sure 'default' is selected in the dropdown menu
+3. Click *Clone*
+4. Voila. The edited gesture will now be stored as a new *Change Node* 
 
 <br>
 
 ## Multiplayer
 
 You can collaborate with another player by joining the same room via the Lobby. All changes are synced between players’ synths and Patch Histories in real time.  
-<!-- Clarified the multiplayer aspect -->
 
 This feature has been tested the least, so please try it out with a friend and let me know if you encounter bugs or have improvement ideas.
-<!-- Minor rephrasing -->
 
 ---
 
@@ -222,4 +217,3 @@ In the Synth App, click *View > Open Synth Designer* to create your own synths.
   Click *File > Load Synth From Disk* and select your synth file (with a *.fpsynth* extension).
 
 **NOTE:** Loading a synth file will clear your Patch History.
-<!-- Reorganized and clarified the instructions -->
