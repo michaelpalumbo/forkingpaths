@@ -83,7 +83,7 @@ The Patch History window provides four views:
   
 - **History Sequencer:**  A simple sequencer to play back changes in any order.
   
-- **Gesture Player:**  A sequencer for playing back gestures (like knob turns).
+- **Gesture Editor:**  A sequencer for playing back gestures (like knob turns).
 
 
 ### History Graph Details

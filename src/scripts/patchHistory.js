@@ -320,8 +320,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     'color': '#000', 
                     // 'text-outline-width': 2,
                     // 'text-outline-color': '#0074D9',
-                    'width': 10,
-                    'height': 10,
+                    'width': 15,
+                    'height': 15,
                     'font-size': 12,
                     // 'text-rotation': '-90deg', // Rotates the label 45 degrees counter-clockwise
                     'text-halign': 'left',  // Optional: Align text horizontally (default is 'center')
@@ -391,7 +391,7 @@ document.addEventListener("DOMContentLoaded", function () {
             horizontal: true, // Makes the layout left-to-right
 
             // padding: 10,
-            spacingFactor: 2, // Adjust spacing between nodes
+            spacingFactor: 1, // Adjust spacing between nodes
             nodeDimensionsIncludeLabels: true,
         }
     });
@@ -1234,12 +1234,12 @@ document.addEventListener("DOMContentLoaded", function () {
         
         // Add  fixed nodes at the bottom corners of the viewport for displaying the time and value ranges.
         elements.push(
-            {
-                group: 'nodes',
-                classes: 'timestamp',
-                data: { id: 'bottom-left', label: '0ms' },
-                position: { x: -30, y: nodeOneY } // 50px padding from bottom
-            },
+            // {
+            //     group: 'nodes',
+            //     classes: 'timestamp',
+            //     data: { id: 'bottom-left', label: '0ms' },
+            //     position: { x: -30, y: nodeOneY } // 50px padding from bottom
+            // },
             {
                 group: 'nodes',
                 classes: 'timestamp',
@@ -1482,27 +1482,48 @@ document.addEventListener("DOMContentLoaded", function () {
         let sourceGestureNode = historyDAG_cy.getElementById(gestureData.historyID)
         let parentNode = sourceGestureNode.incomers('node').data();
         
-        console.log('gesture data', gestureData)
-        let scaledValues = []
-        
-        let targetParam = gestureData.assign
-        // get the updated param value (user may have made edits to gesture)
-        // scale it to the range of the newly assigned param
-        gestureData.gesturePoints.forEach((point)=>{
-            let storedParam = meta.synthFile.audioGraph.modules[point.parent].moduleSpec.parameters[point.param]
-            let value = point.value
-            scaledValues.push(convertParams(storedParam, targetParam, value).value)
-        })
+        let scaledValues = []        
+        let targetParam 
+        let data
 
-        let data = { 
-            parentNode: parentNode, 
-            // gesture: gestureData.nodes, 
-            assignTo: gestureData.assign,
-            scaledValues: scaledValues,
-            timestamps: gestureData.timestamps
+        if(gestureData.assign.param === 'default'){
+            // in this case, we have simply modified the gesture and want to save it in the history graph
+            // so just grab all the values as they are currently
+            gestureData.gesturePoints.forEach((point)=>{
+                let value = point.value
+                scaledValues.push(value)
+            })
+            // load into obj
+            data = { 
+                parentNode: parentNode, 
+                assignTo: {
+                    parent: gestureData.gesturePoints[0].parent,
+                    param: gestureData.gesturePoints[0].parent,
+                    // range: null // not needed for this operation
+                },
+                scaledValues: scaledValues,
+                timestamps: gestureData.timestamps
+            }
+       
+        } else {
+            // we are cloning the gesture onto a different param, so we now we need to map the values
+            targetParam = gestureData.assign
+
+            // get the updated param value (user may have made edits to gesture)
+            // scale it to the range of the newly assigned param
+            gestureData.gesturePoints.forEach((point)=>{
+                let storedParam = meta.synthFile.audioGraph.modules[point.parent].moduleSpec.parameters[point.param]
+                let value = point.value
+                scaledValues.push(convertParams(storedParam, targetParam, value).value)
+            })
+    
+            data = { 
+                parentNode: parentNode, 
+                assignTo: gestureData.assign,
+                scaledValues: scaledValues,
+                timestamps: gestureData.timestamps
+            }
         }
-
-        console.log(data)
 
         sendToMainApp(
             {
