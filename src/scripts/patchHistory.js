@@ -1156,7 +1156,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const viewportHeight = gestureCy.height(); // Get the height of the Cytoscape container
 
         timestampRange = nodes[nodes.length - 1].timestamp - nodes[0].timestamp;
-
+        console.log(gestureData)
         // Create nodes and edges dynamically
         for (let i = 0; i < nodes.length; i++) {
             let node = nodes[i]
@@ -1172,10 +1172,9 @@ document.addEventListener("DOMContentLoaded", function () {
             const x = timePosition * viewportWidth; // Interpolate to x-coordinate
 
             // determine the y position of the node
-            let valuePosition = (node.value - nodes[0].value) / gestureData.range
-        
-
+            let valuePosition = (node.value - gestureData.min) / gestureData.range;
             const y = viewportHeight - (valuePosition * viewportHeight); // Inverted y-coordinate
+            
             const nodeColor = docHistoryGraphStyling.nodeColours['paramUpdate']
             // const index = node.data().label.indexOf(' ');
             // const trimmedLabel = index !== -1 ? node.data().label.substring(index + 1) : '';
