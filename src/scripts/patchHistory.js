@@ -557,6 +557,17 @@ document.addEventListener("DOMContentLoaded", function () {
                 selectedNode = latestNode.data()
 
                 panToBranch(latestNode)
+
+                if(selectedNode.label.split(' ')[0] === 'gesture'){
+                    // load the gesture into the gesture viewer
+                    sendToMainApp(
+                        {
+                            cmd: "getGestureData",
+                            data: { hash: selectedNode.id, branch: selectedNode.branch },
+                        }
+                    ); 
+
+                }
             break
         }
 
