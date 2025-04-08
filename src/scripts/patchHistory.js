@@ -472,7 +472,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 case 'getGestureData':
 
-
                     const minVal = Math.min(...event.data.data.values);
                     const maxVal = Math.max(...event.data.data.values);
                     gestureData.range = maxVal - minVal
@@ -485,6 +484,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     gestureData.values = event.data.data.values
                     gestureData.timestamps = event.data.data.timestamps
+                    
                     // map the gesture values and timestamps to a new array of objects
                     const gestureArray = event.data.data.values.map((value, i) => ({
                         value: value,
@@ -495,6 +495,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         historyID: gestureData.historyID,
                         branch: gestureData.branch
                     }));
+
 
                     gestureData.gesturePoints = gestureArray
           
@@ -574,6 +575,9 @@ document.addEventListener("DOMContentLoaded", function () {
                             data: { hash: selectedNode.id, branch: selectedNode.branch },
                         }
                     ); 
+
+                    gestureData.branch = selectedNode.branch
+                    gestureData.historyID = selectedNode.id
 
                 }
             break
@@ -1474,27 +1478,36 @@ document.addEventListener("DOMContentLoaded", function () {
     const cloneGestureButton = document.getElementById("cloneGestureButton");
 
     cloneGestureButton.addEventListener("click", async () => {
-        // Call playback with a callback to handle each scheduled node in the gesture
         // we need this parentNode to know where to create a new branch from for the cloned gesture
-        let parentNode = historyDAG_cy.getElementById(gestureData.nodes[0].data.id).incomers('node').data();
+        let sourceGestureNode = historyDAG_cy.getElementById(gestureData.historyID)
+        let parentNode = sourceGestureNode.incomers('node').data();
         
+        console.log('gesture data', gestureData)
         let scaledValues = []
         
         let targetParam = gestureData.assign
-        gestureData.nodes.forEach((node)=>{
-            let storedParam = meta.synthFile.audioGraph.modules[node.data.parents].moduleSpec.parameters[node.data.param]
-            let value = node.data.value
-            scaledValues.push(convertParams(storedParam, targetParam, value))
+        // get the updated param value (user may have made edits to gesture)
+        // scale it to the range of the newly assigned param
+        gestureData.gesturePoints.forEach((point)=>{
+            let storedParam = meta.synthFile.audioGraph.modules[point.parent].moduleSpec.parameters[point.param]
+            let value = point.value
+            scaledValues.push(convertParams(storedParam, targetParam, value).value)
         })
+
+        let data = { 
+            parentNode: parentNode, 
+            // gesture: gestureData.nodes, 
+            assignTo: gestureData.assign,
+            scaledValues: scaledValues,
+            timestamps: gestureData.timestamps
+        }
+
+        console.log(data)
+
         sendToMainApp(
             {
                 cmd: "cloneGesture",
-                data: { 
-                    parentNode: parentNode, 
-                    gesture: gestureData.nodes, 
-                    assignTo: gestureData.assign,
-                    scaledValues: scaledValues
-                },
+                data: data
             }
         );
     })
@@ -1802,6 +1815,8 @@ document.addEventListener("DOMContentLoaded", function () {
                         data: { hash: event.target.data().id, branch: event.target.data().branch },
                     }
                 ); 
+
+                
             } else {
                 // clear the gesture player
                 // clear the gestureData.nodes
@@ -2181,6 +2196,9 @@ document.addEventListener("DOMContentLoaded", function () {
                         data: { hash: clickedItem.dataset.id, branch: clickedItem.dataset.branch },
                     }
                 ); 
+
+                gestureData.branch = clickedItem.dataset.branch
+                gestureData.historyID = clickedItem.dataset.id
             }
         }
     });
@@ -2507,6 +2525,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function convertParams(storedParam, targetParam, value){
 
+        console.log(storedParam, targetParam, value)
         let data;
 
         if(storedParam.ui === 'knob' && targetParam.kind === 'knob'){

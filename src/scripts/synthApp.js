@@ -2758,6 +2758,7 @@ document.addEventListener("DOMContentLoaded", function () {
             case 'cloneGesture':
                 let msg = event.data.data
 
+                console.log(msg)
                 // prepare to create a new branch from the position of the parentNode, which is the node just before the start of the gesture we are cloning
                 let requestedDoc = loadAutomergeDoc(msg.parentNode.branch)
 
@@ -2773,9 +2774,24 @@ document.addEventListener("DOMContentLoaded", function () {
                 automergeDocuments.newClone = true
 
                 // now loop through the scaledValues and apply each one as a new change
-                msg.scaledValues.forEach((change)=>{
-                    paramChange(change.parent, change.param, change.value)
-                })
+
+                console.log('TODO: get the applyChange for gestures, and create a new gesture here with the newly scaled values array and the timestamps array')
+                // msg.scaledValues.forEach((change)=>{
+                //     paramChange(change.parent, change.param, change.value)
+                // })
+
+                amDoc = applyChange(amDoc, (amDoc) => {
+                    amDoc.synth.graph.modules[msg.assignTo.parent].params[msg.assignTo.param] = msg.scaledValues;
+                    audioGraphDirty = true;
+                    // set the change type
+                    amDoc.changeType = {
+                        msg: 'gesture',
+                        param: msg.assignTo.param,
+                        parent: msg.assignTo.parent,
+                        values: msg.scaledValues,
+                        timestamps: msg.timestamps
+                    }
+                }, onChange, `gesture ${msg.assignTo.param}$PARENT ${msg.assignTo.parent}`);
             break
             default: console.warn('switch case doesnt exist for:', event.data.cmd)
         }
