@@ -6,7 +6,6 @@ import { uuidv7 } from "uuidv7";
 // Use the correct protocol based on your site's URL
 const VITE_WS_URL = import.meta.env.VITE_WS_URL
 // const VITE_WS_URL = "wss://historygraphrenderer.onrender.com/10000"
-console.log("ws url:", VITE_WS_URL)
 const ws = new WebSocket(VITE_WS_URL);
 
 // const ws = new WebSocket('ws://localhost:3001');
@@ -71,6 +70,10 @@ let synthParamRanges = {
 
 let historyCyRectangle;
 let gestureCyRectangle;
+
+let gestureHighlightedNode = null
+
+
 let selectedNode= null
 let storedSequencerTable = null
 // * History Graph
@@ -190,7 +193,7 @@ document.addEventListener("DOMContentLoaded", function () {
         //     zoom: parseFloat(localStorage.getItem('docHistoryCy_Zoom')) || 1.
         // },
         boxSelectionEnabled: true,
-        selectionType: "additive",
+        selectionType: "single",
         zoomingEnabled: false,
 
         panningEnabled: true,
@@ -301,6 +304,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
         elements: [ ],
 
+        boxSelectionEnabled: true,
+        // Optionally, set `autounselectify` to false so that selections can be cleared by clicking on the background.
+        autounselectify: false,
+        selectable: true,
+        selectionType: "single",
         style: [
             // Style for nodes
             {
@@ -315,8 +323,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     'width': 10,
                     'height': 10,
                     'font-size': 12,
-                    'text-rotation': '-90deg', // Rotates the label 45 degrees counter-clockwise
-                    'text-halign': 'right',  // Optional: Align text horizontally (default is 'center')
+                    // 'text-rotation': '-90deg', // Rotates the label 45 degrees counter-clockwise
+                    'text-halign': 'left',  // Optional: Align text horizontally (default is 'center')
                     'text-valign': 'right',  // Optional: Align text vertically (default is 'center')
                 }
             },
@@ -383,7 +391,7 @@ document.addEventListener("DOMContentLoaded", function () {
             horizontal: true, // Makes the layout left-to-right
 
             // padding: 10,
-            spacingFactor: 1, // Adjust spacing between nodes
+            spacingFactor: 2, // Adjust spacing between nodes
             nodeDimensionsIncludeLabels: true,
         }
     });
@@ -552,7 +560,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 historyDAG_cy.panBy({x: 25, y: 25 })
 
                 const latestNode = historyDAG_cy.nodes().last()
-                highlightNode(latestNode)
+                highlightGesturetNode(latestNode)
 
                 selectedNode = latestNode.data()
 
@@ -1156,7 +1164,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const viewportHeight = gestureCy.height(); // Get the height of the Cytoscape container
 
         timestampRange = nodes[nodes.length - 1].timestamp - nodes[0].timestamp;
-        console.log(gestureData)
+        
         // Create nodes and edges dynamically
         for (let i = 0; i < nodes.length; i++) {
             let node = nodes[i]
@@ -1211,31 +1219,40 @@ document.addEventListener("DOMContentLoaded", function () {
         } else {
             timestampRange = `${timestampRange}ms`
         }
+
+        // get the y position of the first node
+        let firstNodePosition = (nodes[0].value - gestureData.min) / gestureData.range;
+        const nodeOneY = viewportHeight - (firstNodePosition * viewportHeight); // Inverted y-coordinate
+        
+        // get the y position of the last node
+        let lastNodePosition = (nodes[nodes.length - 1].value - gestureData.min) / gestureData.range;
+        const lastNodeY = viewportHeight - (lastNodePosition * viewportHeight); // Inverted y-coordinate
+        
         // Add  fixed nodes at the bottom corners of the viewport for displaying the time and value ranges.
         elements.push(
             {
                 group: 'nodes',
                 classes: 'timestamp',
                 data: { id: 'bottom-left', label: '0ms' },
-                position: { x: 0, y: viewportHeight - 50 } // 50px padding from bottom
+                position: { x: -30, y: nodeOneY } // 50px padding from bottom
             },
             {
                 group: 'nodes',
                 classes: 'timestamp',
                 data: { id: 'bottom-right', label: timestampRange },
-                position: { x: viewportWidth, y: viewportHeight - 50 } // 50px padding from bottom
+                position: { x: viewportWidth + 40, y: lastNodeY } // 50px padding from bottom
             },
             {
                 group: 'nodes',
                 classes: 'valueStamp',
                 data: { id: 'bottom-left2', label: gestureData.min },
-                position: { x: -10, y: viewportHeight - 5} // 50px padding from bottom
+                position: { x: -30, y: viewportHeight - 5} // 50px padding from bottom
             },
             {
                 group: 'nodes',
                 classes: 'valueStamp',
                 data: { id: 'top-left', label: gestureData.max },
-                position: { x: -10, y: 10 } // 50px padding from bottom
+                position: { x: -30, y: 15 } // 50px padding from bottom
             }
         );
         
@@ -1452,6 +1469,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // *
     
 
+      
 
     const cloneGestureButton = document.getElementById("cloneGestureButton");
 
@@ -1491,7 +1509,8 @@ document.addEventListener("DOMContentLoaded", function () {
             // reset
             gestureData.assign.range = null
             // disable the gesture clone button
-            document.getElementById("cloneGestureButton").disabled = true;
+            setGestureCloneButtonState(true)
+            
         }
         if(selected.dataset.values){
 
@@ -1500,7 +1519,7 @@ document.addEventListener("DOMContentLoaded", function () {
             gestureData.assign.range = selected.dataset.values
 
             // enable the gesture clone button
-            document.getElementById("cloneGestureButton").disabled = false;
+            setGestureCloneButtonState(false)
         } else if (selected.dataset.min){
             // param is a knob
             gestureData.assign.kind = 'knob'
@@ -1510,7 +1529,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             // enable the gesture clone button
-            document.getElementById("cloneGestureButton").disabled = false;
+            setGestureCloneButtonState(false)
 
         }
     })
@@ -1564,7 +1583,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const displayValue = document.getElementById('displayPointValue');
         displayValue.textContent = `${node.param}: ${node.value}`;
 
-        highlightNode(event.target)
+        highlightGesturetNode(event.target)
 
     })
     gestureCy.on('tap', 'node', (event) => {
@@ -1572,7 +1591,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // add node to sequencer
 
         } else {
-            highlightNode(event.target)
+            highlightGesturetNode(event.target)
             selectedNode = event.target.data()
             console.log(selectedNode)
 
@@ -1646,8 +1665,12 @@ document.addEventListener("DOMContentLoaded", function () {
             kind: 'n/a'
         })
 
-
+        if(document.getElementById("cloneGestureButton").disabled){
+            // enable the gesture clone button
+            setGestureCloneButtonState(false)
+        }
     });
+
 
 
 
@@ -2242,6 +2265,19 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    function highlightGesturetNode(target){
+
+        if(gestureHighlightedNode){
+            gestureHighlightedNode.removeClass('highlighted');
+            gestureHighlightedNode = target
+            target.addClass('highlighted');
+        }
+        else {
+            gestureHighlightedNode = target;
+            target.addClass('highlighted');
+        }
+    }
+
     // Highlight function
     function highlightIntersectedNode(node) {
         node.addClass('intersected'); // Add a class for styling
@@ -2557,7 +2593,12 @@ document.addEventListener("DOMContentLoaded", function () {
         const newValue = (value + gestureRange * (1 - newY / viewportHeight));
         
         return newValue;
-      }
+    }
+
+    function setGestureCloneButtonState(state){
+        // enable the gesture clone button
+        document.getElementById("cloneGestureButton").disabled = state;
+    }
 })
 
 
