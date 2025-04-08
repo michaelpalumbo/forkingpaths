@@ -1621,8 +1621,6 @@ document.addEventListener("DOMContentLoaded", function () {
     
         // Update the node value based on its new y position.
         const updatedValue = updateNodeValueFromY(newY, node, gestureData.gesturePoints[0].value, gestureData.range, gestureCy.height());
-        console.log('Updated node value:', updatedValue);
-
         gestureData.gesturePoints[index].value = updatedValue
         node.data().value = updatedValue
 
