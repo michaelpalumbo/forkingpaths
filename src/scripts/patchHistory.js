@@ -2,6 +2,7 @@ import dagre from 'cytoscape-dagre';
 import { min } from 'lodash';
 import * as Tone from "tone";
 import { uuidv7 } from "uuidv7";
+import { WebMidi } from "webmidi"; // skip this line if you're using a script tag
 
 // Use the correct protocol based on your site's URL
 const VITE_WS_URL = import.meta.env.VITE_WS_URL
@@ -159,6 +160,61 @@ let hid = {
     }
 }
 
+let midiInput
+let historyGraphNodesArray
+let midiValues = {
+    controllers: {
+
+    }
+}
+
+
+window.addEventListener("load", () => {
+    WebMidi.enable()
+    .then(() => {
+        midiInput = WebMidi.inputs[0]; // select your MIDI device
+  
+      if (!midiInput) {
+        console.log("No MIDI input devices found.");
+        return;
+      }
+  
+      // Log available controls
+      console.log("Listening to MIDI device:", midiInput.name);
+  
+      // Listen to control change (knobs/faders usually send these)
+      midiInput.addListener("controlchange", (e) => {
+        console.log(`Control Change on CC#${e.controller.number}: ${e.value}`);
+        // cycle through graph
+        if (e.controller.number === 8) {
+            
+            if(!midiValues.controllers[e.controller.number]){
+                midiValues.controllers[e.controller.number] = {value: null}
+            }
+
+            const scaled = scaleMidiValue(e.rawValue, 0, 127, 0, historyGraphNodesArray.length - 1);
+            if(midiValues.controllers[e.controller.number].value != scaled){
+
+                console.log( historyGraphNodesArray[scaled])
+                // console.log(historyGraphNodesArray[scaled]); // ~251.97
+
+                midiValues.controllers[e.controller.number].value = scaled
+
+
+            }
+
+        }
+      });
+    })
+    .catch((err) => console.error("WebMidi could not be enabled:", err));
+
+    function scaleMidiValue(input, inMin, inMax, outMin, outMax) {
+        return Math.round(((input - inMin) / (inMax - inMin)) * (outMax - outMin) + outMin);
+    }
+
+});
+
+
 
 document.addEventListener("DOMContentLoaded", function () {
 
@@ -168,6 +224,10 @@ document.addEventListener("DOMContentLoaded", function () {
     const sequenceOrderSelect = document.getElementById("sequenceOrder");
     // todo: send a message to main app to request the latest automerge doc
     // todo: note that it might be necessary to only request this later on in the script...
+
+
+    
+
 
     //*
     //*
@@ -556,7 +616,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const msg = JSON.parse(event.data)
         switch(msg.cmd){
             case 'historyGraphRenderUpdate':
-                // console.log(msg)
+                historyGraphNodesArray = msg.data.elements.nodes
                 historyDAG_cy.json(msg.data)
                 historyDAG_cy.panBy({x: 25, y: 25 })
 
@@ -566,7 +626,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 selectedNode = latestNode.data()
 
                 panToBranch(latestNode)
-
                 if(selectedNode.label.split(' ')[0] === 'gesture'){
                     // load the gesture into the gesture viewer
                     sendToMainApp(
@@ -580,6 +639,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     gestureData.historyID = selectedNode.id
 
                 }
+
+                
             break
         }
 
@@ -2639,6 +2700,10 @@ document.addEventListener("DOMContentLoaded", function () {
         // enable the gesture clone button
         document.getElementById("cloneGestureButton").disabled = state;
     }
+
+      
+
+
 })
 
 

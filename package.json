@@ -47,14 +47,17 @@
     "jquery-knob": "^1.2.11",
     "lodash": "^4.17.21",
     "lodash.throttle": "^4.1.1",
+    "map-range": "^0.1.2",
     "marked": "^15.0.2",
     "nanotimer": "^0.3.15",
     "pako": "^2.1.0",
     "randomcolor": "^0.6.2",
+    "scale-number-range": "^1.0.3",
     "tippy": "^0.0.0",
     "tippy.js": "^6.3.7",
     "tone": "^15.0.4",
     "uuidv7": "^1.0.2",
+    "webmidi": "^3.1.12",
     "ws": "^8.18.0"
   }
 }

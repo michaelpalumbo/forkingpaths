@@ -146,8 +146,8 @@ let temporaryCables = {
         // example peer pseudocode
         /*'peerID-645': {
             source: null,
-            ghostNode: 'cy.add({create ghost node here})',
-            ghostEdge: 'cy.add...',
+            ghostNode: 'synthGraphCytoscape.add({create ghost node here})',
+            ghostEdge: 'synthGraphCytoscape.add...',
         }*/
     }
 }
@@ -303,7 +303,7 @@ document.addEventListener("DOMContentLoaded", function () {
     //* 
     //*
     
-    const cy = cytoscape({
+    const synthGraphCytoscape = cytoscape({
         container: document.getElementById('cy'),
 
         elements: [ ], // Start with no elements; add them dynamically
@@ -528,7 +528,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
  
-    //* NEW AUTOMERGE IMPLEMENTATION
+    //* AUTOMERGE IMPLEMENTATION
     (async () => {
         // Load Automerge asynchronously and assign it to the global variable
         Automerge = await import('@automerge/automerge');
@@ -681,7 +681,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 // document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
                 // addSpeaker()
         
-                // currentZoom = cy.zoom()
+                // currentZoom = synthGraphCytoscape.zoom()
 
             }, 1000);
 
@@ -868,7 +868,7 @@ document.addEventListener("DOMContentLoaded", function () {
             groupChange.values = [value],
             groupChange.timestamps = [new Date().getTime()]
 
-            //! important: see the 'mouseup' event listener in this script (not the cy. one, the one for the entire DOM) for how paramChanges are handled by automerge. 
+            //! important: see the 'mouseup' event listener in this script (not the synthGraphCytoscape. one, the one for the entire DOM) for how paramChanges are handled by automerge. 
         }
        
         
@@ -883,7 +883,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // let audioGraphConnections = amDoc.synth.graph.connections
         // updateSynthWorklet('removeCable', { source: cableSource, target: cableTarget})
         
-        // // let cycle = isEdgeInCycle(cy.$(`#${edgeId}`))
+        // // let cycle = isEdgeInCycle(synthGraphCytoscape.$(`#${edgeId}`))
 
         // // console.warn('todo: check if this cable was part of a cycle, if it is, ensure that its associated feedbackDelayNode is also removed from the synth.graph along with its 2 edges')
 
@@ -913,7 +913,7 @@ document.addEventListener("DOMContentLoaded", function () {
         //     }
         // }, onChange, `disconnect ${cableTarget.split('.')[1]} from ${cableSource.split('.')[1]}$PARENTS ${cableSource.split('.')[0]} ${cableTarget.split('.')[0]}`);
 
-        // cy.remove(highlightedEdge)
+        // synthGraphCytoscape.remove(highlightedEdge)
         // highlightedEdge = null; // Clear the reference after deletion
         /*
         let indexes = []
@@ -939,7 +939,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         }, onChange, `clear cables`);
         console.log(amDoc.elements)
-        cy.edges().remove();
+        synthGraphCytoscape.edges().remove();
         */
     }
     function createNewPatchHistory(synthFile){
@@ -961,7 +961,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }))
 
         // Clear existing elements from Cytoscape instance
-        cy.elements().remove();
+        synthGraphCytoscape.elements().remove();
         
         // remove all dynamicly generated UI overlays (knobs, umenus, etc)
         removeUIOverlay('allNodes')
@@ -1038,7 +1038,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             })
             // load synth graph from file into cytoscape
-            cy.json(synthFile.visualGraph)
+            synthGraphCytoscape.json(synthFile.visualGraph)
 
             setTimeout(() => {
                 updateKnobPositionAndScale('all');
@@ -1125,7 +1125,7 @@ document.addEventListener("DOMContentLoaded", function () {
         URL.revokeObjectURL(url); // Release memory
     }
 
-    // save meta to user's computer as .forkingpaths
+    // save meta to user's computer as .patchhistory
     async function saveFile(suggestedFilename) {
         // Show the file save dialog
         const fileName = await window.showSaveFilePicker({
@@ -1133,7 +1133,7 @@ document.addEventListener("DOMContentLoaded", function () {
             types: [
                 {
                     description: "Forking Paths CRDT Files",
-                    accept: { "application/x-fpsynth": [".fpsynth"] }
+                    accept: { "application/x-fpsynth": [".patchhistory"] }
                 },
             ],
         });
@@ -1197,7 +1197,7 @@ document.addEventListener("DOMContentLoaded", function () {
         let elements = graphJSON.elements.nodes
 
         // Clear existing elements from Cytoscape instance
-        cy.elements().remove();
+        synthGraphCytoscape.elements().remove();
 
         // remove all dynamicly generated UI overlays (knobs, umenus, etc)
         removeUIOverlay('allNodes')
@@ -1205,11 +1205,11 @@ document.addEventListener("DOMContentLoaded", function () {
         // ensure their container divs are removed too
         clearparamContainerDivs()
 
-        cy.json(graphJSON);
-        // cy.add(elements)
+        synthGraphCytoscape.json(graphJSON);
+        // synthGraphCytoscape.add(elements)
 
         parentNodePositions.forEach(parentNode => {
-            const node = cy.getElementById(parentNode.id);
+            const node = synthGraphCytoscape.getElementById(parentNode.id);
 
             if (node) {
                 // test
@@ -1260,7 +1260,7 @@ document.addEventListener("DOMContentLoaded", function () {
             })
             
             // Clear existing elements from Cytoscape instance
-            cy.elements().remove();
+            synthGraphCytoscape.elements().remove();
 
             // remove all dynamicly generated UI overlays (knobs, umenus, etc)
             removeUIOverlay('allNodes')
@@ -1268,7 +1268,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // ensure their container divs are removed too
             clearparamContainerDivs()
             
-            // cy.reset()
+            // synthGraphCytoscape.reset()
             // pull modules from synthfile and populate cytoscape with parentNodes:
             
             // if this is the user's first time accessing the site (or from a private browser, etc), load the basic synth
@@ -1277,13 +1277,13 @@ document.addEventListener("DOMContentLoaded", function () {
                 
                 
             // I do this from the synthFile because the parentNodes' dimensions respond to their childs' positioning
-            cy.json(synthFile.visualGraph)
+            synthGraphCytoscape.json(synthFile.visualGraph)
             // Sync the positions in `elements`
             const syncedElements = syncPositions(forkedDoc);
             // add all cables back in
             syncedElements.forEach((el)=>{
                 if(el.type === 'edge'){
-                    cy.add(el)
+                    synthGraphCytoscape.add(el)
                 }
             })
             
@@ -1310,10 +1310,10 @@ document.addEventListener("DOMContentLoaded", function () {
             // Sync the positions in `elements`
             const syncedElements = syncPositions(forkedDoc);
             // clear 
-            cy.elements().remove();
+            synthGraphCytoscape.elements().remove();
 
             // 3. Add new elements to Cytoscape
-            cy.add(syncedElements)
+            synthGraphCytoscape.add(syncedElements)
 
             // loop through UI, update each param
             const synthModules = forkedDoc.synth.graph.modules
@@ -1352,10 +1352,10 @@ document.addEventListener("DOMContentLoaded", function () {
             // Sync the positions in `elements`
             const syncedElements = syncPositions(forkedDoc);
             // clear 
-            cy.elements().remove();
+            synthGraphCytoscape.elements().remove();
 
             // 3. Add new elements to Cytoscape
-            cy.add(syncedElements)
+            synthGraphCytoscape.add(syncedElements)
 
             // loop through UI, update each param
             const synthModules = forkedDoc.synth.graph.modules
@@ -1536,69 +1536,46 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // get the head from this branch
         let head = meta.branches[branch].head
-
+        // get the automerge doc associated with the requested hash
         let requestedDoc = loadAutomergeDoc(branch)
 
         // Use `Automerge.view()` to view the state at this specific point in history
         const historicalView = Automerge.view(requestedDoc, [targetHash]);
          
         // Check if we're on the head; reset clone if true (so we don't trigger opening a new branch with changes made to head)
-        // compare the point in history we want (Automerge.getHeads(historicalView)[0]) against the head of its associated branch (Automerge.getHeads(requestedDoc)[0])
-        // if (Automerge.getHeads(historicalView)[0] === Automerge.getHeads(requestedDoc)[0]){
+        // compare the point in history we want (targetHash) against the head of its associated branch (head)
         if (head === targetHash){
+            // no need to create a new branch if the user makes changes after this operation
             automergeDocuments.newClone = false
-
+            // send the synth graph from this point in the history to the DSP worklet first
             updateSynthWorklet('loadVersion', historicalView.synth.graph)
-
+            // send the visual graph from this point in the history to the synth cytoscape
             updateCytoscapeFromDocument(historicalView);
-
+            // update meta to set the current head and change hash
             meta = Automerge.change(meta, (meta) => {
                 // store the HEAD info (the most recent HEAD and branch that were viewed or operated on)
                 meta.head.hash = targetHash
                 meta.head.branch = branch
             });
-
+            // set global var for easy checking
             automergeDocuments.current = {
                 doc: requestedDoc
             }
 
             return
         } 
-        
-        // ? 
-        // ! seems this one and the one above are the same conditionals. this one should be a little faster, but we'll see 
-        // if the head of a branch was clicked, we need to load that branch's full history (which traces all the way back to the blank_patch node (root))
-        // else if (targetHash === head){
-        //     console.log('is this ever triggered')
-        //     // retrieve the document from the binary store
-        //     let branchDoc = loadAutomergeDoc(branch)    
-        //     let clonedDoc = Automerge.clone(branchDoc)
 
-        //     automergeDocuments.current = {
-        //         doc: clonedDoc,
-        //         hash: [targetHash],
-        //         history: getHistoryProps(clonedDoc)
-
-                
-        //     }
-
-        //     meta = Automerge.change(meta, (meta) => {
-        //         // store the HEAD info (the most recent HEAD and branch that were viewed or operated on)
-        //         meta.head.hash = targetHash
-        //         meta.head.branch = branch
-        //     });
-
-        //     updateSynthWorklet('loadVersion', historicalView.synth.graph, null, historicalView.changeType)
-
-        //     updateCytoscapeFromDocument(branchDoc);
-        // } 
         // this is necessary for loading a hash on another branch that ISN'T the head
         else if (branch != meta.head.branch) {
-
+            // send the synth graph from this point in the history to the DSP worklet first
+            updateSynthWorklet('loadVersion', historicalView.synth.graph, null, historicalView.changeType)
+            // send the visual graph from this point in the history to the synth cytoscape
+            updateCytoscapeFromDocument(historicalView);
+            // set global var for easy checking
             automergeDocuments.current = {
                 doc: requestedDoc
             }
-
+            // update meta to set the current head and change hash
             meta = Automerge.change(meta, (meta) => {
                 // store the HEAD info (the most recent HEAD and branch that were viewed or operated on)
                 meta.head.hash = targetHash
@@ -1607,27 +1584,24 @@ document.addEventListener("DOMContentLoaded", function () {
             // set newClone to true
             automergeDocuments.newClone = true
     
-            updateSynthWorklet('loadVersion', historicalView.synth.graph, null, historicalView.changeType)
 
-            updateCytoscapeFromDocument(historicalView);
 
         }
         // the selected hash belongs to the current branch
         else {
+            // send the synth graph from this point in the history to the DSP worklet first
+            updateSynthWorklet('loadVersion', historicalView.synth.graph, null, historicalView.changeType)
+            // send the visual graph from this point in the history to the synth cytoscape
+            updateCytoscapeFromDocument(historicalView);
+            // create a clone of the branch in case the player begins making changes
             let clonedDoc = Automerge.clone(historicalView)
-
+            // store it
             automergeDocuments.current = {
                 doc: clonedDoc
             }
             // set newClone to true
             automergeDocuments.newClone = true
-
-            updateSynthWorklet('loadVersion', historicalView.synth.graph, null, historicalView.changeType)
-
-            updateCytoscapeFromDocument(historicalView);
         }
-
-  
     }
 
     //TODO OLD AUTOMERGE-REPO IMPLEMENTATION, PHASE IT OUT EVENTUALLY
@@ -1694,12 +1668,12 @@ document.addEventListener("DOMContentLoaded", function () {
     //     if (handle.docSync().elements && handle.docSync().elements.length > 0) {
     //         let currentGraph = handle.docSync().elements
     //         for(let i = 0; i< currentGraph.length; i++){
-    //             cy.add(currentGraph[i]);
+    //             synthGraphCytoscape.add(currentGraph[i]);
     //         }
             
-    //         cy.layout({ name: 'preset' }).run(); // Run the layout to position the elements
+    //         synthGraphCytoscape.layout({ name: 'preset' }).run(); // Run the layout to position the elements
     //     }
-    //     cy.layout({ name: 'preset' }).run();
+    //     synthGraphCytoscape.layout({ name: 'preset' }).run();
 
     //     handle.on('change', (newDoc) => {
     //         // Compare `newDoc.elements` with current `cy` state and update `cy` accordingly
@@ -1707,17 +1681,17 @@ document.addEventListener("DOMContentLoaded", function () {
             
     //         // Add or update elements
     //         newElements.forEach((newEl) => {
-    //             if (!cy.getElementById(newEl.data.id).length) {
+    //             if (!synthGraphCytoscape.getElementById(newEl.data.id).length) {
     //                 // Add new element if it doesn't exist
-    //                 cy.add(newEl);
+    //                 synthGraphCytoscape.add(newEl);
     //             }
     //         });
             
     //         // Remove elements that are no longer in `newDoc`
-    //         cy.elements().forEach((currentEl) => {
+    //         synthGraphCytoscape.elements().forEach((currentEl) => {
     //             if (!newElements.find(el => el.data.id === currentEl.id())) {
                     
-    //                 cy.remove(currentEl);
+    //                 synthGraphCytoscape.remove(currentEl);
     //             }
     //         });
 
@@ -1887,10 +1861,10 @@ document.addEventListener("DOMContentLoaded", function () {
         //     switch (msg.msg){
 
         //         case 'moveModule':
-        //             cy.getElementById(msg.module).position(msg.position);
+        //             synthGraphCytoscape.getElementById(msg.module).position(msg.position);
 
         //             // also update the module internal boundaries for params
-        //             updateSliderBoundaries(cy.getElementById(msg.module))
+        //             updateSliderBoundaries(synthGraphCytoscape.getElementById(msg.module))
         //         break
 
         //         case 'startRemoteGhostCable':
@@ -2278,15 +2252,15 @@ document.addEventListener("DOMContentLoaded", function () {
         // Create a virtual element for Floating UI
         let virtualElement = {
             getBoundingClientRect: () => {
-                const childNode = cy.getElementById(param.data.id);
-                const parentNode = cy.getElementById(parentNodeID)
+                const childNode = synthGraphCytoscape.getElementById(param.data.id);
+                const parentNode = synthGraphCytoscape.getElementById(parentNodeID)
                 const parentData = parentNode.data();
 
                 const parentParams = parentData?.moduleSpec?.paramNames || [];
                 if (childNode && parentParams.length > 0) {
-                    const containerRect = cy.container().getBoundingClientRect();
-                    const zoom = cy.zoom();
-                    const pan = cy.pan();
+                    const containerRect = synthGraphCytoscape.container().getBoundingClientRect();
+                    const zoom = synthGraphCytoscape.zoom();
+                    const pan = synthGraphCytoscape.pan();
                     const parentNodeHeight = parentNode.renderedBoundingBox().h; // Get height from style
                     
                     // Get parent node's position (base for calculations)
@@ -2334,7 +2308,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         // Update position dynamically on pan/zoom
-        // cy.on('pan zoom position', updateKnobPositionAndScale);
+        // synthGraphCytoscape.on('pan zoom position', updateKnobPositionAndScale);
 
         return { containerDiv, removeKnob } ;
     }
@@ -2342,7 +2316,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // dynamically update all floating ui elements' position and scale 
     function updateKnobPositionAndScale(cmd, node) {
-        const zoom = cy.zoom();
+        const zoom = synthGraphCytoscape.zoom();
         switch(cmd){
             case 'all':
                 // get all virtual elements in the DOM
@@ -2395,7 +2369,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const childNodes = node.children();
 
         // Create a collection to store all connected edges
-        let connectedEdges = cy.collection();
+        let connectedEdges = synthGraphCytoscape.collection();
 
 
 
@@ -2426,7 +2400,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // do this once:
 
     function updateCableControlPointDistances(x, y){
-        cy.style()
+        synthGraphCytoscape.style()
         .selector(`edge`)
         .style({
             'control-point-distances': [y, x, y]
@@ -2922,11 +2896,11 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     // use this to update UI overlay positions
-    cy.on('pan zoom', function (){
+    synthGraphCytoscape.on('pan zoom', function (){
         updateKnobPositionAndScale('all')
     } );
 
-    cy.on('position', 'node', function (event) {
+    synthGraphCytoscape.on('position', 'node', function (event) {
         const node = event.target.data().parent;
         // ignore modules that don't have UI overlays
         if(!virtualElements[node]){
@@ -2936,7 +2910,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 
-    cy.off('add');
+    synthGraphCytoscape.off('add');
 
     document.getElementById('openSynthDesigner').addEventListener('click', () => {
         window.open('synthDesigner.html')
@@ -2951,7 +2925,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
-    cy.on('mouseover', 'node', (event) => {
+    synthGraphCytoscape.on('mouseover', 'node', (event) => {
         const node = event.target;
         // Add hover behavior, e.g., change style or show tooltip
         // node.style('background-color', 'red');
@@ -2968,7 +2942,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     });
     
-    cy.on('mouseout', 'node', (event) => {
+    synthGraphCytoscape.on('mouseout', 'node', (event) => {
         // clear the tooltip
         setSynthToolTip('')
 
@@ -3187,7 +3161,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     // get mousedown events from cytoscape
-    cy.on('mousedown', (event) => {
+    synthGraphCytoscape.on('mousedown', (event) => {
         hid.cyMouse.left = true
         // handle slider events
         if(event.target.data().kind && event.target.data().kind === 'slider'){
@@ -3237,8 +3211,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 const mousePos = event.position
 
                 // Get the source and target nodes of the edge
-                const sourceNode = cy.getElementById(edge.data('source'));
-                const targetNode = cy.getElementById(edge.data('target'));
+                const sourceNode = synthGraphCytoscape.getElementById(edge.data('source'));
+                const targetNode = synthGraphCytoscape.getElementById(edge.data('target'));
 
                 if (sourceNode && targetNode) {
                     // Extract positions to simple variables to avoid potential issues
@@ -3254,7 +3228,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         let audioGraphConnections = amDoc.synth.graph.connections
 
                         // delete the cable
-                        cy.remove(edge);
+                        synthGraphCytoscape.remove(edge);
                         // also remove the cable from automerge!
                         updateSynthWorklet('removeCable', { source: edge.data().source, target: edge.data().target})
                         
@@ -3322,7 +3296,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         let audioGraphConnections = amDoc.synth.graph.connections
 
                         // delete the cable
-                        cy.remove(edge);
+                        synthGraphCytoscape.remove(edge);
                         updateSynthWorklet('removeCable', { source: edge.data().source, target: edge.data().target})
                         // also remove the cable from automerge!
                         console.warn('todo: check if this cable was part of a cycle, if it is, ensure that whichever edge in the cycle that has the feedback:true prop set in the audio graph is now set to false')
@@ -3402,7 +3376,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
    
-    cy.on('mousemove', (event) => {
+    synthGraphCytoscape.on('mousemove', (event) => {
         
         // this is for local Ghost cables only
         // Step 2: Update ghost node position to follow the mouse and track collisons
@@ -3454,7 +3428,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             // Remove highlight from all other nodes
-            cy.nodes().forEach((node) => {
+            synthGraphCytoscape.nodes().forEach((node) => {
                 if (node !== temporaryCables.local.targetNode) {
                     node.removeClass('highlighted');
                 }
@@ -3486,7 +3460,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     // Step 3: Finalize edge on mouseup
-    cy.on('mouseup', (event) => {
+    synthGraphCytoscape.on('mouseup', (event) => {
         hid.cyMouse.left = false
 
         if(isSliderDragging){
@@ -3509,10 +3483,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 // tempEdge.data('target', targ); // Update the edge target
                 
                 // tempEdge.removeClass('tempEdge'); // Remove temporary class if needed
-                cy.remove(temporaryCables.local.tempEdge)
+                synthGraphCytoscape.remove(temporaryCables.local.tempEdge)
                 const edgeId = uuidv7()
 
-                cy.add({
+                synthGraphCytoscape.add({
                     group: 'edges',
                     data: { id: edgeId, source: src, target: targ, kind: 'cable' },
                     classes: 'edge'
@@ -3520,7 +3494,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 const parentSourceID = temporaryCables.local.source.parent().data().id
                 const parentTargetID = temporaryCables.local.targetNode.parent().data().id
                 
-                let cycle = isEdgeInCycle(cy.$(`#${edgeId}`))
+                let cycle = isEdgeInCycle(synthGraphCytoscape.$(`#${edgeId}`))
 
                 // todo: inserting a blockSize delay in the worklet is clunky...
                 if(cycle){
@@ -3603,7 +3577,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 // });
             } else {
                 // If no target node, remove the temporary edge
-                cy.remove(temporaryCables.local.tempEdge);
+                synthGraphCytoscape.remove(temporaryCables.local.tempEdge);
             }
 
             // update the remote peers:
@@ -3618,8 +3592,8 @@ document.addEventListener("DOMContentLoaded", function () {
             // })
 
             // Clean up by removing ghost node and highlights
-            cy.remove(temporaryCables.local.ghostNode);
-            cy.nodes().removeClass('highlighted');
+            synthGraphCytoscape.remove(temporaryCables.local.ghostNode);
+            synthGraphCytoscape.nodes().removeClass('highlighted');
 
 
             temporaryCables.local.tempEdge = null;
@@ -3657,13 +3631,13 @@ document.addEventListener("DOMContentLoaded", function () {
             // heldModule = null
         }
         // update pan after dragging viewport
-        // currentPan = cy.pan()
+        // currentPan = synthGraphCytoscape.pan()
 
 
     });
 
     // Listen for drag events on nodes
-    cy.on('grab', (event)=> {
+    synthGraphCytoscape.on('grab', (event)=> {
         const node = event.target
         // for child nodes
         if(node.data('kind') && node.data('kind') != 'module'){
@@ -3683,7 +3657,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // removing modules
     // Click event to highlight a parent node
-    cy.on('click', 'node:parent', (event) => {
+    synthGraphCytoscape.on('click', 'node:parent', (event) => {
 
 
         // Remove highlight class from any previously highlighted node
@@ -3785,7 +3759,7 @@ document.addEventListener("DOMContentLoaded", function () {
             let audioGraphConnections = amDoc.synth.graph.connections
             updateSynthWorklet('removeCable', { source: cableSource, target: cableTarget})
             
-            // let cycle = isEdgeInCycle(cy.$(`#${edgeId}`))
+            // let cycle = isEdgeInCycle(synthGraphCytoscape.$(`#${edgeId}`))
 
             // console.warn('todo: check if this cable was part of a cycle, if it is, ensure that its associated feedbackDelayNode is also removed from the synth.graph along with its 2 edges')
 
@@ -3815,7 +3789,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             }, onChange, `disconnect ${cableTarget.split('.')[1]} from ${cableSource.split('.')[1]}$PARENTS ${cableSource.split('.')[0]} ${cableTarget.split('.')[0]}`);
 
-            cy.remove(highlightedEdge)
+            synthGraphCytoscape.remove(highlightedEdge)
             highlightedEdge = null; // Clear the reference after deletion
         } else if (highlightedNode && (event.key === 'Backspace' || event.key === 'Delete')){
             /*
@@ -3867,7 +3841,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     }
                 }, onChange, `remove ${nodeId}`);
 
-                cy.remove(highlightedNode); // Remove the node from the Cytoscape instance
+                synthGraphCytoscape.remove(highlightedNode); // Remove the node from the Cytoscape instance
                 highlightedNode = null; // Clear the reference after deletion
 
                 removeUIOverlay('singleNode', nodeId)
@@ -3983,7 +3957,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const ghostColour =  temporaryCables.local.source.data('ghostCableColour') || '#5C9AE3';
 
         // Create a ghost node at the mouse position to act as the moving endpoint
-        temporaryCables.local.ghostNode = cy.add({
+        temporaryCables.local.ghostNode = synthGraphCytoscape.add({
             group: 'nodes',
             data: { id: 'localGhostNode' },
             position: mousePos,
@@ -3997,7 +3971,7 @@ document.addEventListener("DOMContentLoaded", function () {
             'background-color': ghostColour
         });
         // Create a temporary edge from ghostNodes.local.source to temporaryCables.local.ghostNode
-        temporaryCables.local.tempEdge = cy.add({
+        temporaryCables.local.tempEdge = synthGraphCytoscape.add({
             group: 'edges',
             data: { id: 'localTempEdge', source: temporaryCables.local.source.id(), target: 'localGhostNode' },
             classes: 'tempEdge'
@@ -4016,9 +3990,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 let tempEdgeID = `tempEdge-${peerID}`
                 
                 temporaryCables.peers[peerID] = {
-                    source: cy.getElementById(sourceID),
+                    source: synthGraphCytoscape.getElementById(sourceID),
                     // Create a ghost node at the mouse position to act as the moving endpoint
-                    ghostNode: cy.add({
+                    ghostNode: synthGraphCytoscape.add({
                         group: 'nodes',
                         data: { id: ghostId },
                         position: position,
@@ -4026,7 +4000,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         classes: 'ghostNode'
                     }),
                     // Create a temporary edge from temporaryCables.local.source to ghostNode
-                    tempEdge: cy.add({
+                    tempEdge: synthGraphCytoscape.add({
                         group: 'edges',
                         data: { id: tempEdgeID, source: sourceID, target: ghostId },
                         classes: 'tempEdge'
@@ -4052,10 +4026,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
             case 'finishRemoteGhostCable':
                 // remove the tempEdge
-                cy.remove(temporaryCables.peers[peerID].tempEdge)
+                synthGraphCytoscape.remove(temporaryCables.peers[peerID].tempEdge)
                 // remove remote ghostnode
-                cy.remove(temporaryCables.peers[peerID].ghostNode);
-                cy.nodes().removeClass('highlighted');
+                synthGraphCytoscape.remove(temporaryCables.peers[peerID].ghostNode);
+                synthGraphCytoscape.nodes().removeClass('highlighted');
 
                 // remove remote peer's temporary cable from object
                 delete temporaryCables.peers[peerID]
@@ -4076,8 +4050,8 @@ document.addEventListener("DOMContentLoaded", function () {
     //     // parentNode.getModule('oscillator')
     //     const { parentNode: parentNodeData, childrenNodes, audioGraph, paramOverlays } = parentNode.getNodeStructure();
     //     // Add nodes to Cytoscape
-    //     cy.add(parentNodeData);
-    //     cy.add(childrenNodes);
+    //     synthGraphCytoscape.add(parentNodeData);
+    //     synthGraphCytoscape.add(childrenNodes);
         
         
     //     debugVar = parentNodeData.data.id
@@ -4146,7 +4120,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function displayPeerPointers(peer, position){
         if(!peers.remote[peer]){
             peers.remote[peer] = {
-                mousePointer: cy.add({
+                mousePointer: synthGraphCytoscape.add({
                     group: 'nodes',
                     data: { id: peer, label: peer, colour: randomColor()}, // Add a default color if needed },
                     position: position,
@@ -4164,7 +4138,7 @@ document.addEventListener("DOMContentLoaded", function () {
         //! this version is for multiple peers and worked in the earliest forking paths version:
         // if(!peers.remote[peer]){
         //     peers.remote[peer] = {
-        //         mousePointer: cy.add({
+        //         mousePointer: synthGraphCytoscape.add({
         //             group: 'nodes',
         //             data: { id: peer, label: peer, colour: randomColor()}, // Add a default color if needed },
         //             position: position,
@@ -4275,7 +4249,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Helper function to find elements at a specific point
     function getElementsAtPoint(cy, x, y) {
-        return cy.elements().filter((ele) => {
+        return synthGraphCytoscape.elements().filter((ele) => {
             const bb = ele.boundingBox();
             return (
                 x >= bb.x1 &&
@@ -4491,11 +4465,11 @@ document.addEventListener("DOMContentLoaded", function () {
     
     //     // Update the position of the overlay div
     //     function updatePosition() {
-    //         const node = cy.getElementById(nodeId);
-    //         const childNode = cy.getElementById(param.data.id);
+    //         const node = synthGraphCytoscape.getElementById(nodeId);
+    //         const childNode = synthGraphCytoscape.getElementById(param.data.id);
             
     //         if (childNode) {
-    //             const container = cy.container(); // Cytoscape container
+    //             const container = synthGraphCytoscape.container(); // Cytoscape container
     //             const containerRect = container.getBoundingClientRect();
 
     //             // Get the graph model position of the child node
@@ -4505,8 +4479,8 @@ document.addEventListener("DOMContentLoaded", function () {
     //                         const nodeHeight = childNode.renderedBoundingBox().h;
 
     //             // Cytoscape's zoom and pan
-    //             const zoom = cy.zoom();
-    //             const pan = cy.pan();
+    //             const zoom = synthGraphCytoscape.zoom();
+    //             const pan = synthGraphCytoscape.pan();
 
     //             // Map model position to screen position using zoom and pan
     //             const screenX = containerRect.left + pan.x + nodePos.x * zoom;
@@ -4526,11 +4500,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     //         //     const nodePos = childNode.position();
                 
-    //         //     const zoom = cy.zoom(); // Current zoom level
-    //         //     const pan = cy.pan(); // Current pan offset
+    //         //     const zoom = synthGraphCytoscape.zoom(); // Current zoom level
+    //         //     const pan = synthGraphCytoscape.pan(); // Current pan offset
     //         //     console.log(zoom, pan)
     //         //     let paramPos = param.position
-    //         //     const containerRect = cy.container().getBoundingClientRect();
+    //         //     const containerRect = synthGraphCytoscape.container().getBoundingClientRect();
 
     //         //     // Adjust position to account for zoom and pan
     //         //     const adjustedX = containerRect.left + (nodePos.x * zoom) + pan.x;
@@ -4544,7 +4518,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     //     // Update position initially and when the graph changes
     //     updatePosition();
-    //     cy.on('pan zoom position', updatePosition);
+    //     synthGraphCytoscape.on('pan zoom position', updatePosition);
 
     //     // Return the div for further customization
     //     return overlayDiv;
@@ -4571,7 +4545,7 @@ document.addEventListener("DOMContentLoaded", function () {
         let elements = graphJSON.elements.nodes
 
         // Clear existing elements from Cytoscape instance
-        cy.elements().remove();
+        synthGraphCytoscape.elements().remove();
 
         // remove all dynamicly generated UI overlays (knobs, umenus, etc)
         removeUIOverlay('allNodes')
@@ -4579,11 +4553,11 @@ document.addEventListener("DOMContentLoaded", function () {
         // ensure their container divs are removed too
         clearparamContainerDivs()
 
-        cy.json(graphJSON);
-        // cy.add(elements)
+        synthGraphCytoscape.json(graphJSON);
+        // synthGraphCytoscape.add(elements)
 
         parentNodePositions.forEach(parentNode => {
-            const node = cy.getElementById(parentNode.id);
+            const node = synthGraphCytoscape.getElementById(parentNode.id);
 
             if (node) {
                 // test
@@ -4632,7 +4606,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const selfLoopEdges = []; // Store self-loop edges for same parent connections
     
         // Step 1: Build a directed graph of parent nodes with child information
-        cy.edges().forEach((edge) => {
+        synthGraphCytoscape.edges().forEach((edge) => {
             const sourceParent = edge.data().source.split('.')[0]; // Parent of the source node
             const targetParent = edge.data().target.split('.')[0]; // Parent of the target node
             const sourceChild = edge.data().source.split('.')[1]; // Source child
