@@ -1180,64 +1180,64 @@ document.addEventListener("DOMContentLoaded", function () {
         // Add this to your Cytoscape initialization or script
 
 
-    function loadSynthGraphFromFile(graphJSON) {
-        parentNodePositions = []; // Array to store positions of all parent nodes
+    // function loadSynthGraphFromFile(graphJSON) {
+    //     parentNodePositions = []; // Array to store positions of all parent nodes
 
-        // Extract all parent nodes from the given document
-        const parentNodes = graphJSON.elements.nodes.filter(el => el.classes === ':parent');
-        parentNodes.forEach(parentNode => {
-            if (parentNode.position) {
-                parentNodePositions.push({
-                    id: parentNode.data.id,
-                    position: parentNode.position
-                });
-            }
-        });
+    //     // Extract all parent nodes from the given document
+    //     const parentNodes = graphJSON.elements.nodes.filter(el => el.classes === ':parent');
+    //     parentNodes.forEach(parentNode => {
+    //         if (parentNode.position) {
+    //             parentNodePositions.push({
+    //                 id: parentNode.data.id,
+    //                 position: parentNode.position
+    //             });
+    //         }
+    //     });
     
-        let elements = graphJSON.elements.nodes
+    //     let elements = graphJSON.elements.nodes
 
-        // Clear existing elements from Cytoscape instance
-        synthGraphCytoscape.elements().remove();
+    //     // Clear existing elements from Cytoscape instance
+    //     synthGraphCytoscape.elements().remove();
 
-        // remove all dynamicly generated UI overlays (knobs, umenus, etc)
-        removeUIOverlay('allNodes')
+    //     // remove all dynamicly generated UI overlays (knobs, umenus, etc)
+    //     removeUIOverlay('allNodes')
         
-        // ensure their container divs are removed too
-        clearparamContainerDivs()
+    //     // ensure their container divs are removed too
+    //     clearparamContainerDivs()
 
-        synthGraphCytoscape.json(graphJSON);
-        // synthGraphCytoscape.add(elements)
+    //     synthGraphCytoscape.json(graphJSON);
+    //     // synthGraphCytoscape.add(elements)
 
-        parentNodePositions.forEach(parentNode => {
-            const node = synthGraphCytoscape.getElementById(parentNode.id);
+    //     parentNodePositions.forEach(parentNode => {
+    //         const node = synthGraphCytoscape.getElementById(parentNode.id);
 
-            if (node) {
-                // test
-                let pos = {x: parseFloat(parentNode.position.x), y: parseFloat(parentNode.position.y)}
+    //         if (node) {
+    //             // test
+    //             let pos = {x: parseFloat(parentNode.position.x), y: parseFloat(parentNode.position.y)}
                 
-                // pos = {x: Math.random() * 100 + 200, y: Math.random() * 100 + 200};
-                // pos = {x: 273.3788826175895, y: 434.9628649535062};
-                // let clonedPos = {...pos}
-                node.position(pos); // Set the position manually  
-            }
-        });
+    //             // pos = {x: Math.random() * 100 + 200, y: Math.random() * 100 + 200};
+    //             // pos = {x: 273.3788826175895, y: 434.9628649535062};
+    //             // let clonedPos = {...pos}
+    //             node.position(pos); // Set the position manually  
+    //         }
+    //     });
         
-        // add overlay UI elements
-        let index = 0
-        elements.forEach((node)=>{
+    //     // add overlay UI elements
+    //     let index = 0
+    //     elements.forEach((node)=>{
             
-            if(node.classes === 'paramAnchorNode'){
-                // let value = graphJSON.synth.graph.modules[node.data.parent].params[node.data.label]
-                createFloatingOverlay(node.data.parent, node, index)
+    //         if(node.classes === 'paramAnchorNode'){
+    //             // let value = graphJSON.synth.graph.modules[node.data.parent].params[node.data.label]
+    //             createFloatingOverlay(node.data.parent, node, index)
         
-                index++
-            }
-        })
-        // Initial position and scale update. delay it to wait for cytoscape rendering to complete. 
-        setTimeout(() => {
-            updateKnobPositionAndScale('all');
-        }, 10); // Wait for the current rendering cycle to complete
-    } 
+    //             index++
+    //         }
+    //     })
+    //     // Initial position and scale update. delay it to wait for cytoscape rendering to complete. 
+    //     setTimeout(() => {
+    //         updateKnobPositionAndScale('all');
+    //     }, 10); // Wait for the current rendering cycle to complete
+    // } 
     
         // Function to update Cytoscape with the state from forkedDoc
     function updateCytoscapeFromDocument(forkedDoc, cmd) {
@@ -4260,25 +4260,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    function getCytoscapeTextWidth(text, node) {
-        // Create a temporary element
-        const tempDiv = document.createElement('div');
-        tempDiv.style.position = 'absolute';
-        tempDiv.style.visibility = 'hidden';
-        tempDiv.style.whiteSpace = 'nowrap'; // Prevents text wrapping
-        tempDiv.style.fontSize = node.style('font-size'); // Retrieve font size from Cytoscape style
-        tempDiv.style.fontFamily = node.style('font-family') // Retrieve font family
-    
-        // Set the text
-        tempDiv.innerText = text;
-    
-        // Append to the body to get dimensions
-        document.body.appendChild(tempDiv);
-        const width = tempDiv.offsetWidth; // Measure width in pixels
-        document.body.removeChild(tempDiv); // Clean up
-    
-        return width;
-    }
 
     function makeChangeMessage(branchName, msg){
         let amMsg = JSON.stringify({
@@ -4286,25 +4267,6 @@ document.addEventListener("DOMContentLoaded", function () {
             msg: msg
         })
         return amMsg
-    }
-
-    function getChangeMessage(msg){
-        return [ JSON.parse(msg).branch, JSON.parse(msg).msg ] 
-    }
-
-    function getHistoryProps(doc){
-        const historyProps = Automerge.getHistory(doc).map(entry => {
-            return {
-              actor: entry.change.actor,
-              hash: entry.change.hash,
-              seq: entry.change.seq,
-              startOp: entry.change.startOp,
-              time: entry.change.time,
-              message: entry.change.message,
-              deps: entry.change.deps
-            };
-        });
-        return historyProps
     }
 
     function loadAutomergeDoc(branch){
@@ -4359,59 +4321,6 @@ document.addEventListener("DOMContentLoaded", function () {
     
         return syncedElements;
     }
-
-
-    // // Function to update the position of the floating div
-    // const updateFloatingDivPosition = (node) => {
-    //     const nodeRenderedPosition = node.renderedPosition();
-
-    //     // Compute the floating position using Floating UI
-    //     computePosition(
-    //         {
-    //             getBoundingClientRect: () => ({
-    //                 width: 0,
-    //                 height: 0,
-    //                 top: nodeRenderedPosition.y,
-    //                 left: nodeRenderedPosition.x,
-    //                 right: nodeRenderedPosition.x,
-    //                 bottom: nodeRenderedPosition.y,
-    //             }),
-    //         },
-    //         floatingDiv,
-    //         {
-    //             middleware: [offset(10), flip(), shift()],
-    //             placement: 'top', // Placement relative to the node
-    //         }
-    //     ).then(({ x, y }) => {
-    //         floatingDiv.style.left = `${x}px`;
-    //         floatingDiv.style.top = `${y}px`;
-    //     });
-    // };
-    function popperFactory(ref, content, opts) {
-        // see https://floating-ui.com/docs/computePosition#options
-        const popperOptions = {
-            // matching the default behaviour from Popper@2
-            // https://floating-ui.com/docs/migration#configure-middleware
-            middleware: [
-                flip(),
-                shift({limiter: limitShift()})
-            ],
-            ...opts,
-        }
-     
-        function update() {
-            computePosition(ref, content, popperOptions).then(({x, y}) => {
-                Object.assign(content.style, {
-                    left: `${x}px`,
-                    top: `${y}px`,
-                });
-            });
-        }
-        update();
-        return { update };
-    }
-    
-
     
     function determineStepSize(min, max, method = 'linear', divisions = 100) {
         if (min >= max) {
@@ -4449,149 +4358,74 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     
     
-    // // this helps to ensure that detached elements are removed
-    // const observer = new MutationObserver((mutations) => {
-    //     mutations.forEach((mutation) => {
-    //         mutation.removedNodes.forEach((node) => {
-    //             if (node instanceof HTMLElement) {
-    //                 // Perform cleanup for detached elements
-    //                 node.removeEventListener('click', handleClick); // Example
-    //             }
-    //         });
-    //     });
-    // });
-    
-    // observer.observe(document.body, { childList: true, subtree: true });
-    
-    //     // Update the position of the overlay div
-    //     function updatePosition() {
-    //         const node = synthGraphCytoscape.getElementById(nodeId);
-    //         const childNode = synthGraphCytoscape.getElementById(param.data.id);
-            
-    //         if (childNode) {
-    //             const container = synthGraphCytoscape.container(); // Cytoscape container
-    //             const containerRect = container.getBoundingClientRect();
+   
 
-    //             // Get the graph model position of the child node
-    //             const nodePos = childNode.position();
 
-    //                         // Get the size of the node
-    //                         const nodeHeight = childNode.renderedBoundingBox().h;
+    // // cytoscape.use(cytoscapePopper(popperFactory));
+    // function loadSynthGraphFromFile(graphJSON) {
+    //     parentNodePositions = []; // Array to store positions of all parent nodes
 
-    //             // Cytoscape's zoom and pan
-    //             const zoom = synthGraphCytoscape.zoom();
-    //             const pan = synthGraphCytoscape.pan();
-
-    //             // Map model position to screen position using zoom and pan
-    //             const screenX = containerRect.left + pan.x + nodePos.x * zoom;
-    //             const screenY = containerRect.top + pan.y + nodePos.y * zoom;
-
-    //             // Push the overlay down by half the node's height
-    //             const adjustedY = screenY - nodeHeight ;
-                
-    //             // Set the overlay position
-    //             overlayDiv.style.left = `${screenX}px`;
-    //             overlayDiv.style.top = `${adjustedY}px`;
+    //     // Step 1: Extract all parent nodes from the given document
+    //     const parentNodes = graphJSON.elements.nodes.filter(el => el.classes === ':parent'); // Adjust based on your schema
+    //     parentNodes.forEach(parentNode => {
+    //         if (parentNode.position) {
+    //             parentNodePositions.push({
+    //                 id: parentNode.data.id,
+    //                 position: parentNode.position
+    //             });
     //         }
-        
-    //         // if (node && childNode) {
-    //         //     const pos = node.renderedPosition();
-    //         //     const childPos = childNode.renderedPosition();
-
-    //         //     const nodePos = childNode.position();
-                
-    //         //     const zoom = synthGraphCytoscape.zoom(); // Current zoom level
-    //         //     const pan = synthGraphCytoscape.pan(); // Current pan offset
-    //         //     console.log(zoom, pan)
-    //         //     let paramPos = param.position
-    //         //     const containerRect = synthGraphCytoscape.container().getBoundingClientRect();
-
-    //         //     // Adjust position to account for zoom and pan
-    //         //     const adjustedX = containerRect.left + (nodePos.x * zoom) + pan.x;
-    //         //     const adjustedY = containerRect.top + (nodePos.y * zoom) + pan.y;
-
-    //         //     // Adjust position relative to the Cytoscape container
-    //         //     overlayDiv.style.left = `${adjustedX}px`;
-    //         //     overlayDiv.style.top = `${adjustedY}px`;
-    //         // }
-    //     }
-
-    //     // Update position initially and when the graph changes
-    //     updatePosition();
-    //     synthGraphCytoscape.on('pan zoom position', updatePosition);
-
-    //     // Return the div for further customization
-    //     return overlayDiv;
-    // }
-
-    // Example: Attach overlay to a node
-
-
-    // cytoscape.use(cytoscapePopper(popperFactory));
-    function loadSynthGraphFromFile(graphJSON) {
-        parentNodePositions = []; // Array to store positions of all parent nodes
-
-        // Step 1: Extract all parent nodes from the given document
-        const parentNodes = graphJSON.elements.nodes.filter(el => el.classes === ':parent'); // Adjust based on your schema
-        parentNodes.forEach(parentNode => {
-            if (parentNode.position) {
-                parentNodePositions.push({
-                    id: parentNode.data.id,
-                    position: parentNode.position
-                });
-            }
-        });
+    //     });
     
-        let elements = graphJSON.elements.nodes
+    //     let elements = graphJSON.elements.nodes
 
-        // Clear existing elements from Cytoscape instance
-        synthGraphCytoscape.elements().remove();
+    //     // Clear existing elements from Cytoscape instance
+    //     synthGraphCytoscape.elements().remove();
 
-        // remove all dynamicly generated UI overlays (knobs, umenus, etc)
-        removeUIOverlay('allNodes')
+    //     // remove all dynamicly generated UI overlays (knobs, umenus, etc)
+    //     removeUIOverlay('allNodes')
         
-        // ensure their container divs are removed too
-        clearparamContainerDivs()
+    //     // ensure their container divs are removed too
+    //     clearparamContainerDivs()
 
-        synthGraphCytoscape.json(graphJSON);
-        // synthGraphCytoscape.add(elements)
+    //     synthGraphCytoscape.json(graphJSON);
+    //     // synthGraphCytoscape.add(elements)
 
-        parentNodePositions.forEach(parentNode => {
-            const node = synthGraphCytoscape.getElementById(parentNode.id);
+    //     parentNodePositions.forEach(parentNode => {
+    //         const node = synthGraphCytoscape.getElementById(parentNode.id);
 
-            if (node) {
-                // test
-                let pos = {x: parseFloat(parentNode.position.x), y: parseFloat(parentNode.position.y)}
+    //         if (node) {
+    //             // test
+    //             let pos = {x: parseFloat(parentNode.position.x), y: parseFloat(parentNode.position.y)}
                 
-                // pos = {x: Math.random() * 100 + 200, y: Math.random() * 100 + 200};
-                    // console.log(`Random`, typeof pos.x, typeof pos.y);
-                // pos = {x: 273.3788826175895, y: 434.9628649535062};
-                // let clonedPos = {...pos}
-                node.position(pos); // Set the position manually  
-            }
-        });
+    //             // pos = {x: Math.random() * 100 + 200, y: Math.random() * 100 + 200};
+    //                 // console.log(`Random`, typeof pos.x, typeof pos.y);
+    //             // pos = {x: 273.3788826175895, y: 434.9628649535062};
+    //             // let clonedPos = {...pos}
+    //             node.position(pos); // Set the position manually  
+    //         }
+    //     });
         
-        // add overlay UI elements
-        let index = 0
-        elements.forEach((node)=>{
+    //     // add overlay UI elements
+    //     let index = 0
+    //     elements.forEach((node)=>{
             
-            if(node.classes === 'paramAnchorNode'){
-                // let value = graphJSON.synth.graph.modules[node.data.parent].params[node.data.label]
-                createFloatingOverlay(node.data.parent, node, index)
+    //         if(node.classes === 'paramAnchorNode'){
+    //             // let value = graphJSON.synth.graph.modules[node.data.parent].params[node.data.label]
+    //             createFloatingOverlay(node.data.parent, node, index)
         
-                index++
-            }
-        })
-        // Initial position and scale update. delay it to wait for cytoscape rendering to complete. 
-        setTimeout(() => {
-            updateKnobPositionAndScale('all');
-        }, 10); // Wait for the current rendering cycle to complete
-    }  
+    //             index++
+    //         }
+    //     })
+    //     // Initial position and scale update. delay it to wait for cytoscape rendering to complete. 
+    //     setTimeout(() => {
+    //         updateKnobPositionAndScale('all');
+    //     }, 10); // Wait for the current rendering cycle to complete
+    // }  
 
-    function filterAutomergeArray(doc, arrayKey, condition) {
-        const filtered = doc[arrayKey].filter(condition);
-        doc[arrayKey] = filtered; // Replace the array
-    }
+    // function filterAutomergeArray(doc, arrayKey, condition) {
+    //     const filtered = doc[arrayKey].filter(condition);
+    //     doc[arrayKey] = filtered; // Replace the array
+    // }
     
 
     // Define the knobSet method (Extend jquery-knob)
