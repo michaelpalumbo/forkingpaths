@@ -62,7 +62,8 @@ let gestureData = {
     min: null,
     max: null,
     branch: null,
-    historyID: null
+    historyID: null,
+    easeFunction: 'linear'
 }
 // ease functions for applying easing on gestures in the editor
 const easeFunctions = {
@@ -1324,8 +1325,14 @@ document.addEventListener("DOMContentLoaded", function () {
                             param: 'default',
                             range: null
                         }
-                        // disable the gesture clone button
-                        setGestureSaveButtonState(true)
+                        if(gestureData.easeFunction === 'linear'){
+                            // disable the gesture clone button
+                            setGestureSaveButtonState(true)
+                        } else {
+                            // enable it so that player can save the eased gesture!
+                            setGestureSaveButtonState(false)
+                        }
+
                       break;
                     }
                 }
@@ -2020,18 +2027,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     document.getElementById("gestureEasing").addEventListener("change", (event) => { 
-        console.log(event.target)
 
-        let selectedEaseFn = event.target.value
-        console.log(selectedEaseFn)
-        if(selectedEaseFn === 'linear'){
+
+        gestureData.easeFunction = event.target.value
+        
+        if(gestureData.easeFunction === 'linear'){
             // return the gesture to its original mapping
+            // set gestureSaveStateFlag
+            
             createGestureGraph(gestureData.linearGesturePoints)
-        } else {
 
-            console.log(easeFunctions[selectedEaseFn])
+        } else {
             // apply the selected easing function based on the easeFunctions object
-            let result = applyEasing(gestureData.min, gestureData.max, gestureData.range, gestureData.linearGesturePoints, easeFunctions[selectedEaseFn]);
+            let result = applyEasing(gestureData.min, gestureData.max, gestureData.range, gestureData.linearGesturePoints, easeFunctions[gestureData.easeFunction]);
+            // replot the gesture using the easing function
             createGestureGraph(result)
         }
         
