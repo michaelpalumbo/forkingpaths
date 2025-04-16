@@ -21,9 +21,6 @@ class DSP extends AudioWorkletProcessor {
         // signal analysis
         this.analyze = false
 
-
-  
-  
     }
 
     getSampleRate(){
