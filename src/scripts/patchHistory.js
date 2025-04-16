@@ -1919,7 +1919,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const node = event.target.data()
 
         const displayValue = document.getElementById('displayPointValue');
-        displayValue.textContent = `${node.param}: ${node.value}`;
+        displayValue.textContent = `${node.param}: ${node.value.toFixed(2)}`;
 
         highlightGestureNode(event.target)
 
@@ -1982,7 +1982,6 @@ document.addEventListener("DOMContentLoaded", function () {
         const newY = node.position('y');
         node.position({ x: lockedX, y: newY });
 
-        console.log(node.data())
         // get the web audio node's spec
         let parentWebAudioNode = modules.webAudioNodes[node.data().parents.split('_')[0]]
         
@@ -1997,7 +1996,6 @@ document.addEventListener("DOMContentLoaded", function () {
             let menuIndex = Math.floor(invert01(clamp01((newY / gestureCy.height()))) * (menuOptions.length -1))
  
             updatedValue = menuOptions[menuIndex]
-            console.log(updatedValue, menuIndex)
         }
         else {
             // param is a knob
@@ -2023,6 +2021,10 @@ document.addEventListener("DOMContentLoaded", function () {
             data: data,
             kind: 'n/a'
         })
+
+        // set displayPointValue in gesture editor toolbar
+        const displayValue = document.getElementById('displayPointValue');
+        displayValue.textContent = `${gestureNode.param}: ${updatedValue.toFixed(2)}`;
 
         if(document.getElementById("saveGestureButton").disabled){
             // enable the gesture clone button
