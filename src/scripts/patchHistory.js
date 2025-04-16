@@ -3,6 +3,7 @@ import { min } from 'lodash';
 import * as Tone from "tone";
 import { uuidv7 } from "uuidv7";
 import { WebMidi } from "webmidi"; // skip this line if you're using a script tag
+import modules from '../modules/modules.json' assert { type: 'json'}
 
 // Use the correct protocol based on your site's URL
 const VITE_WS_URL = import.meta.env.VITE_WS_URL
@@ -1269,9 +1270,32 @@ document.addEventListener("DOMContentLoaded", function () {
             
             const x = timePosition * viewportWidth; // Interpolate to x-coordinate
 
+
+            console.log('node', node)
+            // get the web audio node's spec
+            let parentWebAudioNode = modules.webAudioNodes[node.parent.split('_')[0]]
+            
             // determine the y position of the node
-            let valuePosition = (node.value - gestureData.min) / gestureData.range;
-            const y = viewportHeight - (valuePosition * viewportHeight); // Inverted y-coordinate
+            let valuePosition
+            let y
+            // check if param is a knob or a menu
+            if(parentWebAudioNode.parameters[node.param].values){
+                // param is a menu
+                let menuOptions = parentWebAudioNode.parameters[node.param].values
+                console.log('menu', menuOptions)
+
+                let menuIndex = menuOptions.indexOf(node.value)
+
+                valuePosition = menuIndex / (menuOptions.length - 1);
+                y = viewportHeight - (valuePosition * viewportHeight); // Inverted y-coordinate
+            } else {
+
+                //  param is a knob, this is easier
+                valuePosition = (node.value - gestureData.min) / gestureData.range;
+                y = viewportHeight - (valuePosition * viewportHeight); // Inverted y-coordinate
+            }
+            
+            
             
             const nodeColor = docHistoryGraphStyling.nodeColours['paramUpdate']
             // const index = node.data().label.indexOf(' ');
@@ -1605,20 +1629,35 @@ document.addEventListener("DOMContentLoaded", function () {
             // we are cloning the gesture onto a different param, so we now we need to map the values
             targetParam = gestureData.assign
 
-            // get the updated param value (user may have made edits to gesture)
-            // scale it to the range of the newly assigned param
-            gestureData.gesturePoints.forEach((point)=>{
-                let storedParam = meta.synthFile.audioGraph.modules[point.parent].moduleSpec.parameters[point.param]
-                let value = point.value
-                scaledValues.push(convertParams(storedParam, targetParam, value).value)
-            })
-    
-            data = { 
-                parentNode: parentNode, 
-                assignTo: gestureData.assign,
-                scaledValues: scaledValues,
-                timestamps: gestureData.timestamps
-            }
+            // if(gestureData.assign.kind === 'menu') {
+            //     // we need to handle menu param conversion differently
+            //     gestureData.gesturePoints.forEach((point)=>{
+            //         let storedParam = meta.synthFile.audioGraph.modules[point.parent].moduleSpec.parameters[point.param]
+            //         let value = point.value
+            //         convertParams(storedParam, targetParam, value).value
+            //     })
+
+
+            // } else {
+                // dealing with a knob
+                // get the updated param value (user may have made edits to gesture)
+                // scale it to the range of the newly assigned param
+                gestureData.gesturePoints.forEach((point)=>{
+                    let storedParam = meta.synthFile.audioGraph.modules[point.parent].moduleSpec.parameters[point.param]
+                    let value = point.value
+                    scaledValues.push(convertParams(storedParam, targetParam, value).value)
+                })
+
+                console.log('scaledValues', scaledValues)
+        
+                data = { 
+                    parentNode: parentNode, 
+                    assignTo: gestureData.assign,
+                    scaledValues: scaledValues,
+                    timestamps: gestureData.timestamps
+                }
+            // }
+            
         }
 
         sendToMainApp(
@@ -1636,7 +1675,7 @@ document.addEventListener("DOMContentLoaded", function () {
         gestureData.assign.parent = selected.dataset.parent || null
         gestureData.assign.param = selected.text
 
- 
+        // if player hasn't chosen a different param to assign to, don't allow them to save it
         if(selected.text === gestureData.nodes[0].param && selected.dataset.parent === gestureData.nodes[0].parent){
             
             gestureData.assign.range = null
@@ -1650,6 +1689,7 @@ document.addEventListener("DOMContentLoaded", function () {
             gestureData.assign.kind = 'menu'
             gestureData.assign.range = selected.dataset.values
 
+            console.log(gestureData.assign)
             // enable the gesture clone button
             setGestureSaveButtonState(false)
         } else if (selected.dataset.min){
@@ -2644,9 +2684,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function convertParams(storedParam, targetParam, value){
 
-        console.log(storedParam, targetParam, value)
         let data;
 
+        // map knob onto a knob
         if(storedParam.ui === 'knob' && targetParam.kind === 'knob'){
             // source and destination params are both knobs
             let inputMin = storedParam.min
@@ -2664,7 +2704,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 value: scaledValue
             }
 
-        } else if(storedParam.ui === 'knob' && targetParam.kind === 'menu'){
+        }
+        // map knob onto a menu 
+        else if(storedParam.ui === 'knob' && targetParam.kind === 'menu'){
             // source is a knob
             let inputMin = storedParam.min
             let inputMax = storedParam.max
@@ -2682,7 +2724,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 value: options[optionIndex]
             }
             
-        } else if(storedParam.ui === 'menu' && targetParam.kind === 'menu'){
+        } 
+        // map menu onto a menu
+        else if(storedParam.ui === 'menu' && targetParam.kind === 'menu'){
 
             let sourceOptions = storedParam.values
             
@@ -2702,7 +2746,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 value: options[optionIndex]
             }
 
-        } else if(storedParam.ui === 'menu' && targetParam.kind === 'knob'){
+        } 
+        // map menu onto a knob
+        else if(storedParam.ui === 'menu' && targetParam.kind === 'knob'){
             
             let sourceOptions = storedParam.values
             let menuIndex = sourceOptions.indexOf(value)
