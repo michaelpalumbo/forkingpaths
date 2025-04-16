@@ -1759,6 +1759,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const saveGestureButton = document.getElementById("saveGestureButton");
 
     saveGestureButton.addEventListener("click", async () => {
+        // re-disable the save button
+        setGestureSaveButtonState(true)
         // we need this parentNode to know where to create a new branch from for the cloned gesture
         let sourceGestureNode = historyDAG_cy.getElementById(gestureData.historyID)
         let parentNode = sourceGestureNode.incomers('node').data();
@@ -1767,6 +1769,8 @@ document.addEventListener("DOMContentLoaded", function () {
         let targetParam 
         let data
 
+        
+        
         if(gestureData.assign.param === 'default'){
             // in this case, we have simply modified the gesture and want to save it in the history graph
             // so just grab all the values as they are currently
@@ -1786,6 +1790,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 timestamps: gestureData.timestamps
             }
        
+        
         } else {
             // we are cloning the gesture onto a different param, so we now we need to map the values
             targetParam = gestureData.assign
@@ -1809,7 +1814,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     scaledValues.push(convertParams(storedParam, targetParam, value).value)
                 })
 
-                console.log('scaledValues', scaledValues)
+            
         
                 data = { 
                     parentNode: parentNode, 
@@ -2028,20 +2033,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
     document.getElementById("gestureEasing").addEventListener("change", (event) => { 
 
-
+        // set easeFunction
         gestureData.easeFunction = event.target.value
         
         if(gestureData.easeFunction === 'linear'){
             // return the gesture to its original mapping
-            // set gestureSaveStateFlag
-            
+            gestureData.gesturePoints = gestureData.linearGesturePoints
             createGestureGraph(gestureData.linearGesturePoints)
 
         } else {
             // apply the selected easing function based on the easeFunctions object
-            let result = applyEasing(gestureData.min, gestureData.max, gestureData.range, gestureData.linearGesturePoints, easeFunctions[gestureData.easeFunction]);
+            gestureData.gesturePoints = applyEasing(gestureData.min, gestureData.max, gestureData.range, gestureData.linearGesturePoints, easeFunctions[gestureData.easeFunction]);
+            
             // replot the gesture using the easing function
-            createGestureGraph(result)
+            createGestureGraph(gestureData.gesturePoints)
         }
         
         // switch(event.target.value){
@@ -2348,7 +2353,6 @@ document.addEventListener("DOMContentLoaded", function () {
         const row = event.target.closest('tr');
         // Ensure the row is within the dynamicTableBody
         if (row && document.getElementById('dynamicTableBody').contains(row) && hid.key.cmd) {
-            console.log('Hovered row:', row, hid.key.cmd);
             // You can perform your desired actions here
 
             // Highlight the current step in the table
@@ -3032,69 +3036,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const invert01 = (value) => 1 - value;
 
     // EASING FUNCTIONS FOR GESTURE EDITOR
-    function easeInValuesInRange(min, max, range, data) {
-        return data.map(entry => {
-            const normalized = (entry.value - min) / range;
-            const eased = normalized * normalized; // Ease-in quadratic
-            const remapped = min + eased * range;
-        
-            return {
-                ...entry,
-                value: remapped
-            };
-        });
-    }
-
-    function easeOutValuesInRange(min, max, range, data) {
-        return data.map(entry => {
-          const normalized = (entry.value - min) / range;
-      
-          // Ease-out quadratic: 1 - (1 - x)²
-          const eased = 1 - Math.pow(1 - normalized, 2);
-      
-          const remapped = min + eased * range;
-      
-          return {
-            ...entry,
-            value: remapped
-          };
-        });
-      }
-
-    function easeInOutValuesInRange(min, max, range, data) {
-        return data.map(entry => {
-          const normalized = (entry.value - min) / range;
-      
-          // Ease-in-out cubic
-          const eased = normalized < 0.5
-            ? 4 * Math.pow(normalized, 3)
-            : 1 - Math.pow(-2 * normalized + 2, 3) / 2;
-      
-          const remapped = min + eased * range;
-      
-          return {
-            ...entry,
-            value: remapped
-          };
-        });
-    }
-      
-    function invertLinearValuesInRange(min, max, range, data) {
-        return data.map(entry => {
-          const normalized = (entry.value - min) / range;
-      
-          // Linear inversion
-          const inverted = 1 - normalized;
-      
-          const remapped = min + inverted * range;
-      
-          return {
-            ...entry,
-            value: remapped
-          };
-        });
-    }
-
     function applyEasing(min, max, range, data, easingFn) {
         return data.map(entry => {
           const normalized = (entry.value - min) / range;

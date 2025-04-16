@@ -8,10 +8,12 @@ query tool: filtering by time range, recency, or collaborator (i.e. peer name) (
 
 query tool: highlight all results in the history graph
 
-gesture assign: instead of selecting default on load, it should select the current param that this gesture is associated with. this will make it a lot clearer
-
-gesture assign: allow player to define how the assign is scaled (linear, log, maybe 2 or 3 kinds of curves)
 
 gesture editor: gestures can be trimmed, extended, or otherwise shaped before reassignment? E.g., clipping to first 2 seconds, or looping the first N values?
 
-gesture editor: when mapping continuous control onto a selectmenu, the gesture will not display correctly (we get NaN)
+
+sequencer: when playing a gesture as a step, load that gesture into the editor
+
+legibility: after saving a gesture, its node is highlighted. but if you click another node, the first node remains highlighted (should unhighlight)
+
+**PRIORITY: history graph gesture node: when player clicks on a gesture node, that gesture should begin playing back in the editor just once.**
