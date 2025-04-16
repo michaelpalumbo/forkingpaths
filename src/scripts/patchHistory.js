@@ -64,6 +64,71 @@ let gestureData = {
     branch: null,
     historyID: null
 }
+// ease functions for applying easing on gestures in the editor
+const easeFunctions = {
+    inverted: x => 1 - x,
+
+    // Stepped
+    stepped: (x, steps = 5) => Math.floor(x * steps) / (steps - 1),
+  
+    // Quadratic
+    easeIn: x => x * x,
+    easeOut: x => 1 - (1 - x) * (1 - x),
+    easeInOut: x => x < 0.5
+      ? 4 * x * x * x
+      : 1 - Math.pow(-2 * x + 2, 3) / 2,
+  
+    // Exponential
+    easeInExpo: x => x === 0 ? 0 : Math.pow(2, 10 * (x - 1)),
+    easeOutExpo: x => x === 1 ? 1 : 1 - Math.pow(2, -10 * x),
+  
+    // Logarithmic
+    log: x => Math.log10(9 * x + 1), // mapped to [0,1]
+  
+    // Sine
+    easeInOutSine: x => -(Math.cos(Math.PI * x) - 1) / 2,
+  
+    // Back
+    easeOutBack: x => {
+      const c1 = 1.70158;
+      const c3 = c1 + 1;
+      return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2);
+    },
+  
+    // Bounce
+    easeOutBounce: x => {
+      const n1 = 7.5625, d1 = 2.75;
+      if (x < 1 / d1) return n1 * x * x;
+      else if (x < 2 / d1) return n1 * (x -= 1.5 / d1) * x + 0.75;
+      else if (x < 2.5 / d1) return n1 * (x -= 2.25 / d1) * x + 0.9375;
+      else return n1 * (x -= 2.625 / d1) * x + 0.984375;
+    },
+  
+    // Elastic
+    easeOutElastic: x => {
+      const c4 = (2 * Math.PI) / 3;
+      return x === 0 || x === 1
+        ? x
+        : Math.pow(2, -10 * x) * Math.sin((x * 10 - 0.75) * c4) + 1;
+    },
+  
+    // Triangle
+    triangle: x => x < 0.5 ? x * 2 : 2 - x * 2,
+  
+    // Sawtooth
+    saw: x => x % 1,
+  
+    // Power (adjustable)
+    power: (x, p = 2) => Math.pow(x, p),
+  
+    // Bezier ease (defaults to cubic-ish)
+    bezierEase: (x, p1 = 0.42, p2 = 0.58) => {
+      const u = 1 - x;
+      return 3 * u * u * x * p1 + 3 * u * x * x * p2 + x * x * x;
+    }
+};
+
+
 let timestampRange
 
 let synthParamRanges = {
@@ -1956,31 +2021,54 @@ document.addEventListener("DOMContentLoaded", function () {
 
     document.getElementById("gestureEasing").addEventListener("change", (event) => { 
         console.log(event.target)
-        switch(event.target.value){
-            case "Linear":
-                // return the gesture to its original mapping
-                console.log(gestureData.gesturePoints)
-                createGestureGraph(gestureData.linearGesturePoints)
-                // console.log(gestureData.gesturePoints, gestureData.min, gestureData.max, gestureData.range)
-            break
 
-            case "easeIn":
-                // apply an ease-in function on the data
-                const easedIn = easeInValuesInRange(gestureData.min, gestureData.max, gestureData.range, gestureData.linearGesturePoints);
-                createGestureGraph(easedIn)
-            break
+        let selectedEaseFn = event.target.value
+        console.log(selectedEaseFn)
+        if(selectedEaseFn === 'linear'){
+            // return the gesture to its original mapping
+            createGestureGraph(gestureData.linearGesturePoints)
+        } else {
 
-            case "easeOut":
-                // apply an ease-out function on the data
-                const easedOut = easeOutValuesInRange(gestureData.min, gestureData.max, gestureData.range, gestureData.linearGesturePoints);
-
-                createGestureGraph(easedOut)
-            break
-
-            case "easeInOut":
-                // return the gesture to its original mapping
-            break
+            console.log(easeFunctions[selectedEaseFn])
+            // apply the selected easing function based on the easeFunctions object
+            let result = applyEasing(gestureData.min, gestureData.max, gestureData.range, gestureData.linearGesturePoints, easeFunctions[selectedEaseFn]);
+            createGestureGraph(result)
         }
+        
+        // switch(event.target.value){
+        //     case "linear":
+        //         // return the gesture to its original mapping
+        //         createGestureGraph(gestureData.linearGesturePoints)
+        //         // console.log(gestureData.gesturePoints, gestureData.min, gestureData.max, gestureData.range)
+        //     break
+
+        //     case "inverted":
+        //         // invert the gesture
+        //         const inverted = invertLinearValuesInRange(gestureData.min, gestureData.max, gestureData.range, gestureData.linearGesturePoints);
+        //         createGestureGraph(inverted)
+        //     break
+
+        //     case "easeIn":
+        //         // apply an ease-in function on the data
+        //         const easedIn = easeInValuesInRange(gestureData.min, gestureData.max, gestureData.range, gestureData.linearGesturePoints);
+        //         createGestureGraph(easedIn)
+        //     break
+
+        //     case "easeOut":
+        //         // apply an ease-out function on the data
+        //         const easedOut = easeOutValuesInRange(gestureData.min, gestureData.max, gestureData.range, gestureData.linearGesturePoints);
+
+        //         createGestureGraph(easedOut)
+        //     break
+
+        //     case "easeInOut":
+        //         // apply an ease-in-out function on the data
+        //         const easedInOut = easeInOutValuesInRange(gestureData.min, gestureData.max, gestureData.range, gestureData.linearGesturePoints);
+
+        //         createGestureGraph(easedInOut)
+
+        //     break
+        // }
     })
 
 
@@ -2961,6 +3049,50 @@ document.addEventListener("DOMContentLoaded", function () {
             ...entry,
             value: remapped
           };
+        });
+      }
+
+    function easeInOutValuesInRange(min, max, range, data) {
+        return data.map(entry => {
+          const normalized = (entry.value - min) / range;
+      
+          // Ease-in-out cubic
+          const eased = normalized < 0.5
+            ? 4 * Math.pow(normalized, 3)
+            : 1 - Math.pow(-2 * normalized + 2, 3) / 2;
+      
+          const remapped = min + eased * range;
+      
+          return {
+            ...entry,
+            value: remapped
+          };
+        });
+    }
+      
+    function invertLinearValuesInRange(min, max, range, data) {
+        return data.map(entry => {
+          const normalized = (entry.value - min) / range;
+      
+          // Linear inversion
+          const inverted = 1 - normalized;
+      
+          const remapped = min + inverted * range;
+      
+          return {
+            ...entry,
+            value: remapped
+          };
+        });
+    }
+
+    function applyEasing(min, max, range, data, easingFn) {
+        return data.map(entry => {
+          const normalized = (entry.value - min) / range;
+          const eased = easingFn(normalized);
+          const remapped = min + eased * range;
+      
+          return { ...entry, value: remapped };
         });
       }
 
