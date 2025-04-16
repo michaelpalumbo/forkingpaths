@@ -1229,6 +1229,12 @@ document.addEventListener("DOMContentLoaded", function () {
         if(!nodes){
             return
         }
+
+
+        // get the web audio node's spec
+        let parentWebAudioNode = modules.webAudioNodes[nodes[0].parent.split('_')[0]]
+
+        
         const elements = [];
         const viewportWidth = gestureCy.width(); // Get the width of the Cytoscape container
         const viewportHeight = gestureCy.height(); // Get the height of the Cytoscape container
@@ -1271,9 +1277,6 @@ document.addEventListener("DOMContentLoaded", function () {
             const x = timePosition * viewportWidth; // Interpolate to x-coordinate
 
 
-            console.log('node', node)
-            // get the web audio node's spec
-            let parentWebAudioNode = modules.webAudioNodes[node.parent.split('_')[0]]
             
             // determine the y position of the node
             let valuePosition
@@ -1282,7 +1285,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if(parentWebAudioNode.parameters[node.param].values){
                 // param is a menu
                 let menuOptions = parentWebAudioNode.parameters[node.param].values
-                console.log('menu', menuOptions)
+            
 
                 let menuIndex = menuOptions.indexOf(node.value)
 
@@ -1334,41 +1337,125 @@ document.addEventListener("DOMContentLoaded", function () {
             timestampRange = `${timestampRange}ms`
         }
 
-        // get the y position of the first node
-        let firstNodePosition = (nodes[0].value - gestureData.min) / gestureData.range;
-        const nodeOneY = viewportHeight - (firstNodePosition * viewportHeight); // Inverted y-coordinate
+        let firstNodePosition
+        let lastNodePosition
+
+        if(parentWebAudioNode.parameters[nodes[0].param].values){
+            // param is a menu
+            let menuOptions = parentWebAudioNode.parameters[nodes[0].param].values
         
-        // get the y position of the last node
-        let lastNodePosition = (nodes[nodes.length - 1].value - gestureData.min) / gestureData.range;
-        const lastNodeY = viewportHeight - (lastNodePosition * viewportHeight); // Inverted y-coordinate
+
+            let menuIndex = menuOptions.indexOf(nodes[0].value)
+
+            // get the y position of the first node
+            firstNodePosition = menuIndex / (menuOptions.length - 1);
+            // y = viewportHeight - (valuePosition * viewportHeight); // Inverted y-coordinate
+
+            // get the y position of the last node
+            lastNodePosition = menuOptions.length - 1
+            // (nodes[nodes.length - 1].value - gestureData.min) / gestureData.range;
+
+            // Add fixed nodes in the viewport for displaying the time and value ranges.
+            elements.push(
+                // {
+                //     group: 'nodes',
+                //     classes: 'timestamp',
+                //     data: { id: 'bottom-left', label: '0ms' },
+                //     position: { x: -30, y: nodeOneY } // 50px padding from bottom
+                // },
+                {
+                    group: 'nodes',
+                    classes: 'timestamp',
+                    data: { id: 'bottom-right', label: timestampRange },
+                    position: { x: viewportWidth + 40, y: lastNodePosition } // 50px padding from bottom
+                },
+                // {
+                //     group: 'nodes',
+                //     classes: 'valueStamp',
+                //     data: { id: 'bottom-left2', label: gestureData.min },
+                //     position: { x: -30, y: viewportHeight - 5} // 50px padding from bottom
+                // },
+                // {
+                //     group: 'nodes',
+                //     classes: 'valueStamp',
+                //     data: { id: 'top-left', label: gestureData.max },
+                //     position: { x: -30, y: 15 } // 50px padding from bottom
+                // }
+            );
+
+            parentWebAudioNode.parameters[nodes[0].param].values.forEach((option, index)=>{
+
+                // let menuOptions = parentWebAudioNode.parameters[node.param].values
+            
+
+                // let menuIndex = menuOptions.indexOf(node.value)
+
+                let valuePosition = index / (parentWebAudioNode.parameters[nodes[0].param].values.length - 1);
+                let y = viewportHeight - (valuePosition * viewportHeight); // Inverted y-coordinate
+
+
+                console.log({
+                    group: 'nodes',
+                    classes: 'valueStamp',
+                    data: { id: 'valueStamp' + index, label: option },
+                    position: { x: 10, y: y } // 50px padding from bottom
+                })
+                elements.push(                {
+                    group: 'nodes',
+                    classes: 'valueStamp',
+                    data: { id: 'valueStamp' + index, label: option },
+                    position: { x: 10, y: y } // 50px padding from bottom
+                })
+            })
+            
+            
+        }
+
+        else {
+
+            // param is a knob
+            // get the y position of the first node
+            firstNodePosition = (nodes[0].value - gestureData.min) / gestureData.range;
+
+            // get the y position of the last node
+            lastNodePosition = (nodes[nodes.length - 1].value - gestureData.min) / gestureData.range;
+
+            const nodeOneY = viewportHeight - (firstNodePosition * viewportHeight); // Inverted y-coordinate
         
-        // Add  fixed nodes at the bottom corners of the viewport for displaying the time and value ranges.
-        elements.push(
-            // {
-            //     group: 'nodes',
-            //     classes: 'timestamp',
-            //     data: { id: 'bottom-left', label: '0ms' },
-            //     position: { x: -30, y: nodeOneY } // 50px padding from bottom
-            // },
-            {
-                group: 'nodes',
-                classes: 'timestamp',
-                data: { id: 'bottom-right', label: timestampRange },
-                position: { x: viewportWidth + 40, y: lastNodeY } // 50px padding from bottom
-            },
-            {
-                group: 'nodes',
-                classes: 'valueStamp',
-                data: { id: 'bottom-left2', label: gestureData.min },
-                position: { x: -30, y: viewportHeight - 5} // 50px padding from bottom
-            },
-            {
-                group: 'nodes',
-                classes: 'valueStamp',
-                data: { id: 'top-left', label: gestureData.max },
-                position: { x: -30, y: 15 } // 50px padding from bottom
-            }
-        );
+
+            const lastNodeY = viewportHeight - (lastNodePosition * viewportHeight); // Inverted y-coordinate
+            
+            // Add  fixed nodes at the bottom corners of the viewport for displaying the time and value ranges.
+            elements.push(
+                // {
+                //     group: 'nodes',
+                //     classes: 'timestamp',
+                //     data: { id: 'bottom-left', label: '0ms' },
+                //     position: { x: -30, y: nodeOneY } // 50px padding from bottom
+                // },
+                {
+                    group: 'nodes',
+                    classes: 'timestamp',
+                    data: { id: 'bottom-right', label: timestampRange },
+                    position: { x: viewportWidth + 40, y: lastNodeY } // 50px padding from bottom
+                },
+                {
+                    group: 'nodes',
+                    classes: 'valueStamp',
+                    data: { id: 'bottom-left2', label: gestureData.min },
+                    position: { x: -30, y: viewportHeight - 5} // 50px padding from bottom
+                },
+                {
+                    group: 'nodes',
+                    classes: 'valueStamp',
+                    data: { id: 'top-left', label: gestureData.max },
+                    position: { x: -30, y: 15 } // 50px padding from bottom
+                }
+            );
+            
+        }
+
+        
         
         // Add elements to the graph
         gestureCy.add(elements);

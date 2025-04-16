@@ -194,8 +194,7 @@
             "sine",
             "square",
             "sawtooth",
-            "triangle",
-            "custom"
+            "triangle"
           ],
           "default": "sine",
           "description": "The waveform shape of the oscillator."
@@ -462,8 +461,7 @@
             "sine",
             "square",
             "sawtooth",
-            "triangle",
-            "custom"
+            "triangle"
           ],
           "default": "sine",
           "description": "The waveform shape of the oscillator."

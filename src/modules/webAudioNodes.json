@@ -156,7 +156,7 @@
         "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects."
       },
       "type": {
-        "values": ["sine", "square", "sawtooth", "triangle", "custom"],
+        "values": ["sine", "square", "sawtooth", "triangle"],
         "default": "sine",
         "description": "The waveform shape of the oscillator."
       },
@@ -383,7 +383,7 @@
         "modulationDescription": "Audio-rate modulation of the frequency to create vibrato or FM synthesis effects."
       },
       "type": {
-        "values": ["sine", "square", "sawtooth", "triangle", "custom"],
+        "values": ["sine", "square", "sawtooth", "triangle"],
         "default": "sine",
         "description": "The waveform shape of the oscillator."
       },
