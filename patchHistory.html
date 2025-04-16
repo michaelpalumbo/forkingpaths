@@ -111,8 +111,11 @@
                     <div class="row h-50 border">
                         <div class="d-flex flex-column p-3">
                             <div class="row">
-                                <div class="col-3">
+                                <div class="col-2">
                                     <h4 class="mb-2">Gesture Editor</h4> <!-- Header with minimal margin -->
+                                </div>
+                                <div class="col-1">
+                                    <button id="playGestureButton" class="btn btn-primary">Play</button>
                                 </div>
                                 <div class="col-2">
                                     
@@ -122,19 +125,26 @@
                                     
                                     <b><div id="displayPointValue"></div></b>
                                 </div>
+
                                 <div class="col-1">
-                                    <button id="playGestureButton" class="btn btn-primary">Play</button>
-                                </div>
-                                <div class="col-2">
                                     <div class="form-check form-switch">
                                         <input class="form-check-input" type="checkbox" id="loopGesturesButton">
                                         <label class="form-check-label" for="flexSwitchCheckDefault">Loop</label>
                                       </div>
                                 </div>
+                                <div class="col-2">
+                                    <label for="gestureEasing">Ease Function</label>
+                                    <select id="gestureEasing" class="form-select mb-0">
+                                        <option value="Linear" selected>Linear</option>
+                                        <option value="easeIn">Ease In</option>
+                                        <option value="easeOut">Ease Out</option>
+                                        <option value="easeInOut">Ease In-Out</option>
+                                    </select>
+                                </div>
 
                                 <div class="col-2">
-                                    
-                                    <select id="assignGestureToParam" class="form-select mb-0">
+                                    <label for="assignGestureToParam">Assign to Param</label>
+                                    <select id="assignGestureToParam" class="form-select mb-0" >
                                         <option value="none" disabled selected>Assign...</option>
                                     </select>
                                 </div>

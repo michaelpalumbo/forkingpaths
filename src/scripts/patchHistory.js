@@ -55,6 +55,7 @@ let gestureData = {
         range: null
     },
     gesturePoints: [],
+    linearGesturePoints: [], // at times this will be a duplicate of gesturePoints, but we need it for when we want to switch from an ease function back to linear mapping
     values: [],
     timestamps: [], 
     range: null,
@@ -565,7 +566,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
                     gestureData.gesturePoints = gestureArray
-          
+                    gestureData.linearGesturePoints = gestureArray
                     createGestureGraph(gestureArray, gestureRange, minVal, maxVal)
                 break
                 // commented out because this is now handled by the main app
@@ -1213,6 +1214,7 @@ document.addEventListener("DOMContentLoaded", function () {
     */
 
     let previousNodeID
+    
     // Function to dynamically generate the graph
     function createGestureGraph(nodes) {
         // store nodes in case window is resized
@@ -1951,6 +1953,35 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
+
+    document.getElementById("gestureEasing").addEventListener("change", (event) => { 
+        console.log(event.target)
+        switch(event.target.value){
+            case "Linear":
+                // return the gesture to its original mapping
+                console.log(gestureData.gesturePoints)
+                createGestureGraph(gestureData.linearGesturePoints)
+                // console.log(gestureData.gesturePoints, gestureData.min, gestureData.max, gestureData.range)
+            break
+
+            case "easeIn":
+                // apply an ease-in function on the data
+                const easedIn = easeInValuesInRange(gestureData.min, gestureData.max, gestureData.range, gestureData.linearGesturePoints);
+                createGestureGraph(easedIn)
+            break
+
+            case "easeOut":
+                // apply an ease-out function on the data
+                const easedOut = easeOutValuesInRange(gestureData.min, gestureData.max, gestureData.range, gestureData.linearGesturePoints);
+
+                createGestureGraph(easedOut)
+            break
+
+            case "easeInOut":
+                // return the gesture to its original mapping
+            break
+        }
+    })
 
 
 
@@ -2880,6 +2911,14 @@ document.addEventListener("DOMContentLoaded", function () {
         return data
     }
 
+
+    
+    // *
+    // *
+    // * SCALING / INTERPOLATION / EASING
+    // * 
+    // *
+
     function updateNodeValueFromY(newY, value, gestureRange, viewportHeight) {
         // Calculate the new value based on the new y position
         const newValue = (value + gestureRange * (1 - newY / viewportHeight));
@@ -2894,6 +2933,38 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const clamp01 = (value) => Math.max(0, Math.min(1, value));
     const invert01 = (value) => 1 - value;
+
+    // EASING FUNCTIONS FOR GESTURE EDITOR
+    function easeInValuesInRange(min, max, range, data) {
+        return data.map(entry => {
+            const normalized = (entry.value - min) / range;
+            const eased = normalized * normalized; // Ease-in quadratic
+            const remapped = min + eased * range;
+        
+            return {
+                ...entry,
+                value: remapped
+            };
+        });
+    }
+
+    function easeOutValuesInRange(min, max, range, data) {
+        return data.map(entry => {
+          const normalized = (entry.value - min) / range;
+      
+          // Ease-out quadratic: 1 - (1 - x)²
+          const eased = 1 - Math.pow(1 - normalized, 2);
+      
+          const remapped = min + eased * range;
+      
+          return {
+            ...entry,
+            value: remapped
+          };
+        });
+      }
+
+      
 
 })
 
