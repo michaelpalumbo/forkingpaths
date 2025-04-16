@@ -197,6 +197,12 @@ window.addEventListener("load", () => {
 
                 console.log( historyGraphNodesArray[scaled])
                 // console.log(historyGraphNodesArray[scaled]); // ~251.97
+                let n = historyGraphNodesArray[scaled].data
+                loadVersion(n.id, n.branch)
+
+                let historyNode = historyDAG_cy.getElementById(n.id)
+                highlightNode(historyNode)
+
 
                 midiValues.controllers[e.controller.number].value = scaled
 
@@ -621,7 +627,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 historyDAG_cy.panBy({x: 25, y: 25 })
 
                 const latestNode = historyDAG_cy.nodes().last()
-                highlightGesturetNode(latestNode)
+                highlightGestureNode(latestNode)
 
                 selectedNode = latestNode.data()
 
@@ -1536,9 +1542,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
       
 
-    const cloneGestureButton = document.getElementById("cloneGestureButton");
+    const saveGestureButton = document.getElementById("saveGestureButton");
 
-    cloneGestureButton.addEventListener("click", async () => {
+    saveGestureButton.addEventListener("click", async () => {
         // we need this parentNode to know where to create a new branch from for the cloned gesture
         let sourceGestureNode = historyDAG_cy.getElementById(gestureData.historyID)
         let parentNode = sourceGestureNode.incomers('node').data();
@@ -1604,7 +1610,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // reset
             gestureData.assign.range = null
             // disable the gesture clone button
-            setGestureCloneButtonState(true)
+            setGestureSaveButtonState(true)
             
         }
         if(selected.dataset.values){
@@ -1614,7 +1620,7 @@ document.addEventListener("DOMContentLoaded", function () {
             gestureData.assign.range = selected.dataset.values
 
             // enable the gesture clone button
-            setGestureCloneButtonState(false)
+            setGestureSaveButtonState(false)
         } else if (selected.dataset.min){
             // param is a knob
             gestureData.assign.kind = 'knob'
@@ -1624,7 +1630,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             // enable the gesture clone button
-            setGestureCloneButtonState(false)
+            setGestureSaveButtonState(false)
 
         }
     })
@@ -1678,7 +1684,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const displayValue = document.getElementById('displayPointValue');
         displayValue.textContent = `${node.param}: ${node.value}`;
 
-        highlightGesturetNode(event.target)
+        highlightGestureNode(event.target)
 
     })
     gestureCy.on('tap', 'node', (event) => {
@@ -1686,7 +1692,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // add node to sequencer
 
         } else {
-            highlightGesturetNode(event.target)
+            highlightGestureNode(event.target)
             selectedNode = event.target.data()
             console.log(selectedNode)
 
@@ -1760,9 +1766,9 @@ document.addEventListener("DOMContentLoaded", function () {
             kind: 'n/a'
         })
 
-        if(document.getElementById("cloneGestureButton").disabled){
+        if(document.getElementById("saveGestureButton").disabled){
             // enable the gesture clone button
-            setGestureCloneButtonState(false)
+            setGestureSaveButtonState(false)
         }
     });
 
@@ -2365,7 +2371,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    function highlightGesturetNode(target){
+    function highlightGestureNode(target){
 
         if(gestureHighlightedNode){
             gestureHighlightedNode.removeClass('highlighted');
@@ -2696,9 +2702,9 @@ document.addEventListener("DOMContentLoaded", function () {
         return newValue;
     }
 
-    function setGestureCloneButtonState(state){
+    function setGestureSaveButtonState(state){
         // enable the gesture clone button
-        document.getElementById("cloneGestureButton").disabled = state;
+        document.getElementById("saveGestureButton").disabled = state;
     }
 
       
