@@ -1903,12 +1903,31 @@ document.addEventListener("DOMContentLoaded", function () {
         const newY = node.position('y');
         node.position({ x: lockedX, y: newY });
 
+        console.log(node.data())
+        // get the web audio node's spec
+        let parentWebAudioNode = modules.webAudioNodes[node.data().parents.split('_')[0]]
+        
+
         const index = gestureCy.nodes().indexOf(node);
         // console.log(gestureData.gesturePoints[index])
         // console.log(currentY, gestureData.min, gestureData.max, gestureData.range, index, gestureData.gesturePoints[index].value)
-    
-        // Update the node value based on its new y position.
-        const updatedValue = updateNodeValueFromY(newY, node, gestureData.gesturePoints[0].value, gestureData.range, gestureCy.height());
+        let updatedValue
+        // check if param is a menu
+        if(parentWebAudioNode.parameters[node.data().param].values){
+            let menuOptions = parentWebAudioNode.parameters[node.data().param].values
+            let menuIndex = Math.floor(invert01(clamp01((newY / gestureCy.height()))) * (menuOptions.length -1))
+ 
+            updatedValue = menuOptions[menuIndex]
+            console.log(updatedValue, menuIndex)
+        }
+        else {
+            // param is a knob
+            // Update the node value based on its new y position.
+            updatedValue = updateNodeValueFromY(newY, gestureData.gesturePoints[0].value, gestureData.range, gestureCy.height());
+
+            
+        }        
+        
         gestureData.gesturePoints[index].value = updatedValue
         node.data().value = updatedValue
 
@@ -1918,6 +1937,8 @@ document.addEventListener("DOMContentLoaded", function () {
             param: gestureNode.param,
             value: updatedValue
         }
+
+        // console.log(data)
         sendToMainApp({
             cmd: 'playGesture',
             data: data,
@@ -2859,7 +2880,7 @@ document.addEventListener("DOMContentLoaded", function () {
         return data
     }
 
-    function updateNodeValueFromY(newY, node, value, gestureRange, viewportHeight) {
+    function updateNodeValueFromY(newY, value, gestureRange, viewportHeight) {
         // Calculate the new value based on the new y position
         const newValue = (value + gestureRange * (1 - newY / viewportHeight));
         
@@ -2871,8 +2892,8 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("saveGestureButton").disabled = state;
     }
 
-      
-
+    const clamp01 = (value) => Math.max(0, Math.min(1, value));
+    const invert01 = (value) => 1 - value;
 
 })
 
