@@ -1222,9 +1222,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // Clear the current graph
         gestureCy.elements().remove();
 
-        // set the gesture assign value back to default
-        assignGestureToParam.selectedIndex = 1; // Set to the second option (index is zero-based)
-        assignGestureToParam.dispatchEvent(new Event('change')); // Manually trigger the change event
+
 
         // in this case, we're just using this function to clear the gestureCy
         if(!nodes){
@@ -1238,6 +1236,27 @@ document.addEventListener("DOMContentLoaded", function () {
         
         // Create nodes and edges dynamically
         for (let i = 0; i < nodes.length; i++) {
+            // set the gestureAssign menu to this param
+            if(i===0){
+                // assignGestureToParam.selectedIndex = 1; // Set to the second option (index is zero-based)
+                // assignGestureToParam.dispatchEvent(new Event('change')); // Manually trigger the change event
+
+                for (let i = 0; i < assignGestureToParam.options.length; i++) {
+                    if (assignGestureToParam.options[i].text === nodes[0].param && assignGestureToParam.options[i].dataset.parent === nodes[0].parent) {
+                        assignGestureToParam.selectedIndex = i;
+
+                        gestureData.assign = {
+                            parent: null,
+                            param: 'default',
+                            range: null
+                        }
+                        // disable the gesture clone button
+                        setGestureSaveButtonState(true)
+                      break;
+                    }
+                }
+            }
+
             let node = nodes[i]
             const nodeId = uuidv7()
             // determine the x position of the node
@@ -1393,6 +1412,8 @@ document.addEventListener("DOMContentLoaded", function () {
                         data: data,
                         kind: 'n/a'
                     })
+
+                    console.log('default', data)
                 } else {
                     // process it using the gesturedata assign range data for scaling
 
@@ -1407,6 +1428,13 @@ document.addEventListener("DOMContentLoaded", function () {
                     let targetParam = gestureData.assign
                     
                     sendToMainApp({
+                        cmd: 'playGesture',
+                        data: convertParams(storedParam, targetParam, value),
+                        kind: targetParam.kind
+
+                    })
+
+                    console.log('assign', {
                         cmd: 'playGesture',
                         data: convertParams(storedParam, targetParam, value),
                         kind: targetParam.kind
@@ -1459,18 +1487,19 @@ document.addEventListener("DOMContentLoaded", function () {
         // Set the text and value of the new option
         newOption.text = 'Assign...'
         newOption.disabled = true
+        newOption.selected = true
         assignGestureToParam.add(newOption);
 
         // add option default assignment
-        newOption = document.createElement('option');
-        // Set the text and value of the new option
-        newOption.text = 'default'
-        // newOption.value = "getSelectedModule";
-        // newOption.id = 'selectedModuleOption'
-        // newOption.disabled = true;
+        // newOption = document.createElement('option');
+        // // Set the text and value of the new option
+        // newOption.text = 'default'
+        // // newOption.value = "getSelectedModule";
+        // // newOption.id = 'selectedModuleOption'
+        // // newOption.disabled = true;
 
-        // Add the new option to the select menu
-        assignGestureToParam.add(newOption);
+        // // Add the new option to the select menu
+        // assignGestureToParam.add(newOption);
         
         synthParamRanges = {
 
@@ -1565,7 +1594,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 parentNode: parentNode, 
                 assignTo: {
                     parent: gestureData.gesturePoints[0].parent,
-                    param: gestureData.gesturePoints[0].parent,
+                    param: gestureData.gesturePoints[0].param,
                     // range: null // not needed for this operation
                 },
                 scaledValues: scaledValues,
@@ -1606,8 +1635,10 @@ document.addEventListener("DOMContentLoaded", function () {
         const selected = event.target.options[event.target.selectedIndex]; // Get the selected <option>
         gestureData.assign.parent = selected.dataset.parent || null
         gestureData.assign.param = selected.text
-        if(selected.text === 'default'){
-            // reset
+
+ 
+        if(selected.text === gestureData.nodes[0].param && selected.dataset.parent === gestureData.nodes[0].parent){
+            
             gestureData.assign.range = null
             // disable the gesture clone button
             setGestureSaveButtonState(true)
