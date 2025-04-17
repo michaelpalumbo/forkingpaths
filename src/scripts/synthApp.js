@@ -2696,11 +2696,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 // Use `Automerge.view()` to view the state at this specific point in history
                 const gestureView = Automerge.view(gestureDoc, [event.data.data.hash]);
+                console.log(event.data.data.cmd)
+
+                let recallGesture = false
+                if(event.data.data.cmd === 'recallGesture'){
+                    recallGesture = true
+                }
 
                 sendMsgToHistoryApp({
                     appID: 'forkingPathsMain',
                     cmd: 'getGestureData',
-                    data: gestureView.changeType
+                    data: gestureView.changeType,
+                    recallGesture: recallGesture
                         
                 })
             break

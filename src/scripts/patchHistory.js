@@ -540,6 +540,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // *
 
     function sendToMainApp(msg){
+        console.log(msg)
         window.opener?.postMessage(msg, '*');
     }
     
@@ -636,7 +637,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     gestureData.gesturePoints = gestureArray
                     gestureData.linearGesturePoints = gestureArray
-                    createGestureGraph(gestureArray, gestureRange, minVal, maxVal)
+                    console.log(event.data)
+                    console.log(event.data.recallGesture)
+                    let playback = event.data.recallGesture
+                    createGestureGraph(gestureArray, playback)
                 break
                 // commented out because this is now handled by the main app
                 // case 'clearHistoryGraph':
@@ -695,6 +699,8 @@ document.addEventListener("DOMContentLoaded", function () {
             case 'historyGraphRenderUpdate':
                 historyGraphNodesArray = msg.data.elements.nodes
                 historyDAG_cy.json(msg.data)
+                // disable automatic layout so your manual position values are respected
+                // historyDAG_cy.layout({ name: 'preset' }).run();
                 historyDAG_cy.panBy({x: 25, y: 25 })
 
                 const latestNode = historyDAG_cy.nodes().last()
@@ -704,6 +710,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 panToBranch(latestNode)
                 if(selectedNode.label.split(' ')[0] === 'gesture'){
+                    console.log('line 710')
+
                     // load the gesture into the gesture viewer
                     sendToMainApp(
                         {
@@ -1285,7 +1293,9 @@ document.addEventListener("DOMContentLoaded", function () {
     let previousNodeID
     
     // Function to dynamically generate the graph
-    function createGestureGraph(nodes) {
+    function createGestureGraph(nodes, playback) {
+
+        console.log('playback', playback)
         // store nodes in case window is resized
         gestureNodes = nodes
         // clear the gestureData.nodes
@@ -1542,7 +1552,16 @@ document.addEventListener("DOMContentLoaded", function () {
         
         gestureCy.fit();
 
-        
+        if(playback === true){
+            // play that gesture
+            // stop sequencer
+            transport.stop();
+            loop.stop()
+            startStopButton.textContent = "Start Sequencer";
+            // Call playback with a callback to handle each scheduled node in the gesture
+            playGesture();
+        }
+
     }
 
     // function playbackObjectsInRealTime(objects, onPlayback) {
@@ -1761,7 +1780,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Show and move the overlay
     historyDAG_cy.on('mouseover', 'node', function(evt) {
         const data = evt.target.data();
-        // console.log(data)
+        console.log(data)
         let overlayString
         let labelArray = data.label.split(' ')
         switch(data.label.split(' ')[0]){
@@ -2092,11 +2111,11 @@ document.addEventListener("DOMContentLoaded", function () {
             // console.log(data)
             
             //! uncomment this when in patcHistory Script
-            sendToMainApp({
-                cmd: 'playGesture',
-                data: data,
-                kind: 'n/a'
-            })
+            // sendToMainApp({
+            //     cmd: 'playGesture',
+            //     data: data,
+            //     kind: 'n/a'
+            // })
             //!
             // // loadVersion(event.target.data().id, event.target.data().branch)
             // loadVersion(event.target.data().id, event.target.data().branch)
@@ -2354,6 +2373,7 @@ document.addEventListener("DOMContentLoaded", function () {
            
             // we want to handle gesture nodes differently than the others
             if(event.target.data().label.split(' ')[0] === 'gesture'){
+                console.log('line 2368')
                 // node is a gesture
                 // store history info
                 gestureData.branch = event.target.data().branch
@@ -2362,7 +2382,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 sendToMainApp(
                     {
                         cmd: "getGestureData",
-                        data: { hash: event.target.data().id, branch: event.target.data().branch },
+                        data: { hash: event.target.data().id, branch: event.target.data().branch, cmd: 'recallGesture' },
                     }
                 ); 
 
@@ -2739,10 +2759,12 @@ document.addEventListener("DOMContentLoaded", function () {
             loadVersion(clickedItem.dataset.id, clickedItem.dataset.branch)
             // if we requested a gesture, push it to the gesture player as well
             if(selectedNode.label.split(' ')[0] === 'gesture'){
+                console.log('line 2754')
+
                 sendToMainApp(
                     {
                         cmd: "getGestureData",
-                        data: { hash: clickedItem.dataset.id, branch: clickedItem.dataset.branch },
+                        data: { hash: clickedItem.dataset.id, branch: clickedItem.dataset.branch, cmd: 'recallGesture' },
                     }
                 ); 
 
