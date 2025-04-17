@@ -1931,7 +1931,6 @@ document.addEventListener("DOMContentLoaded", function () {
         } else {
             highlightGestureNode(event.target)
             selectedNode = event.target.data()
-            console.log(selectedNode)
 
             let data = {
                 parent: event.target.data().parents,
