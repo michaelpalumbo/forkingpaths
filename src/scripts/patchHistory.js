@@ -320,7 +320,7 @@ document.addEventListener("DOMContentLoaded", function () {
         pixelRatio: 1,
         textureOnViewport: true,
 
-
+        spacingFactor: 2, // Adjust spacing between nodes
         elements: [],
         zoom: parseFloat(localStorage.getItem('docHistoryCy_Zoom')) || 1., 
         // viewport: {
@@ -346,6 +346,9 @@ document.addEventListener("DOMContentLoaded", function () {
                     'text-valign': 'center',    // Vertically center the label
                     'text-halign': 'right',      // Horizontally align label to the left of the node
                     'text-margin-x': 15, // 
+                    'color': 'transparent',   // This hides the text, NOT the node
+                    'text-opacity': 0,        // Double confirm it's invisible
+                    'text-outline-width': 0   // No outline either
                     // 'text-margin-y': 15, // move the label down a little to make space for branch edges
                     // 'shape': 'data(shape)' // set this for accessibility (colour blindness)
                 }
@@ -1753,7 +1756,167 @@ document.addEventListener("DOMContentLoaded", function () {
     // * 
     // *
     
+    const overlay = document.getElementById('historyNodeOverlay');
 
+    // Show and move the overlay
+    historyDAG_cy.on('mouseover', 'node', function(evt) {
+        const data = evt.target.data();
+        console.log(data)
+        let overlayString
+        let labelArray = data.label.split(' ')
+        switch(data.label.split(' ')[0]){
+            case 'loaded':
+                overlayString = `
+                    <strong>Change Node: File Load</strong><br>    
+                    <strong>File:</strong> ${labelArray[1]}<br><br>
+                    <strong>Branch:</strong> ${data.branch}<br>
+                `;
+            break
+
+            case 'paramUpdate':
+                overlayString = `
+                    <strong>Change Node: Param</strong><br>
+                    <strong>Module:</strong> ${labelArray[4]}<br>
+                    <strong>Parameter:</strong> ${labelArray[1]}<br>
+                    <strong>Value:</strong> ${labelArray[3]}<br><br>
+                    <strong>Branch:</strong> ${data.branch}<br>
+                `;
+            break
+
+            case 'gesture':
+                overlayString = `
+                    <strong>Change Node: Gesture</strong><br>
+                    <strong>Module:</strong> ${labelArray[2]}<br>
+                    <strong>Parameter:</strong> ${labelArray[1]}<br><br>
+                    <strong>Branch:</strong> ${data.branch}<br>
+                `;
+
+            break
+            
+            case 'connect':
+                let parents = data.parents.split(' ')
+
+                if(labelArray[1] === 'OUT'){
+                    // cable started at an out
+                    overlayString = `
+                        <strong>Change Node: Connect</strong><br><br>
+                        <strong>Output Module:</strong> ${parents[0].split('_')[0]}_${parents[0].split('_')[1]}<br>
+                        <strong>Output Jack:</strong> ${labelArray[1]}<br><br>
+
+                        <strong>Input Module:</strong> ${parents[1].split('_')[0]}_${parents[1].split('_')[1]}<br>
+                        <strong>Input Jack:</strong> ${labelArray[3]}<br><br>
+
+                        <strong>Branch:</strong> ${data.branch}<br>
+                    `;
+                } else {
+                    // cable started at an IN, notice that the array indeces are all inverted from the way they are above
+                    overlayString = `
+                        <strong>Change Node: Connect</strong><br><br>
+            
+                        <strong>Output Module:</strong> ${parents[1].split('_')[0]}_${parents[1].split('_')[1]}<br>
+                        <strong>Output Jack:</strong> ${labelArray[3]}<br><br>
+
+                        <strong>Input Module:</strong> ${parents[0].split('_')[0]}_${parents[0].split('_')[1]}<br>
+                        <strong>Input Jack:</strong> ${labelArray[1]}<br><br>
+
+                        <strong>Branch:</strong> ${data.branch}<br>
+                    `;
+                }
+
+
+            break
+
+            case 'disconnect':
+                let parentss = data.parents.split(' ')
+                
+
+                if(labelArray[1] != 'OUT'){
+
+                    if(labelArray[1].split('.').length === 1){
+  
+                        // cable started at an out
+                        overlayString = `
+                            <strong>Change Node: Disconnect</strong><br><br>
+                            <strong>Output Module:</strong> ${parentss[0].split('_')[0]}_${parentss[0].split('_')[1]}<br>
+                            <strong>Output Jack:</strong> ${labelArray[3]}<br><br>
+    
+                            <strong>Input Module:</strong> ${parentss[1].split('_')[0]}_${parentss[1].split('_')[1]}<br>
+                            <strong>Input Jack:</strong> ${labelArray[1]}<br><br>
+    
+                            <strong>Branch:</strong> ${data.branch}<br>
+                        `;
+                    } else {
+                        // deal with jack disconnections 
+                        let jack1 = labelArray[1].split('.')[1]
+                        if(jack1 === 'OUT'){
+                            console.log('1', 'jack1', jack1, 'label', labelArray)
+
+                            overlayString = `
+                                <strong>Change Node: Disconnect</strong><br><br>
+
+                                <strong>Output Module:</strong> ${parentss[0].split('_')[0]}_${parentss[0].split('_')[1]}<br>
+                                <strong>Output Jack:</strong> ${jack1}<br><br>
+
+                                <strong>Input Module:</strong> ${parentss[1].split('_')[0]}_${parentss[1].split('_')[1]}<br>
+                                <strong>Input Jack:</strong> ${labelArray[3].split('.')[1]}<br><br>
+
+                                <strong>Branch:</strong> ${data.branch}<br>
+                            `;
+                        } else {
+                            console.log('2', 'jack1', jack1, 'label', labelArray)
+                            overlayString = `
+                                <strong>Change Node: Disconnect</strong><br><br>
+
+                                <strong>Output Module:</strong> ${parentss[0].split('_')[0]}_${parentss[0].split('_')[1]}<br>
+                                <strong>Output Jack:</strong> ${labelArray[3].split('.')[1]}<br><br>
+
+                                <strong>Input Module:</strong> ${parentss[1].split('_')[0]}_${parentss[1].split('_')[1]}<br>
+                                <strong>Input Jack:</strong> ${jack1}<br><br>
+
+                                <strong>Branch:</strong> ${data.branch}<br>
+                            `;                       
+                        }
+                    }
+
+                } else 
+                // if(labelArray[1] === 'IN'){
+                //     // normal cable deletion (player selected + deleted cable)
+                //     overlayString = `
+                //         <strong>Change Node: Disconnect</strong><br><br>
+
+                //         <strong>Output Module:</strong> ${parentss[1].split('_')[0]}_${parentss[1].split('_')[1]}<br>
+                //         <strong>Output Jack:</strong> ${labelArray[3]}<br><br>
+
+                //         <strong>Input Module:</strong> ${parentss[0].split('_')[0]}_${parentss[0].split('_')[1]}<br>
+                //         <strong>Input Jack:</strong> ${labelArray[1]}<br><br>
+
+                //         <strong>Branch:</strong> ${data.branch}<br>
+                //     `;
+                // } else 
+                {
+                    // the following logic is annoying as hell. i don't know why i programmed the cable-jack removal logic in synthApp.js this way but oh well its done
+                    
+                }
+            break
+
+            case "merge":
+                console.warn('need to set up merge case for historyNodeOverlay')
+            break
+        }
+
+        
+        overlay.innerHTML = overlayString
+        overlay.style.display = 'block';
+    });
+
+    historyDAG_cy.on('mousemove', 'node', function(evt) {
+        overlay.style.left = `${evt.originalEvent.pageX + 15}px`;
+        overlay.style.top = `${evt.originalEvent.pageY + 10}px`;
+    });
+
+    historyDAG_cy.on('mouseout', 'node', function() {
+        overlay.style.display = 'none';
+    });
       
 
     const saveGestureButton = document.getElementById("saveGestureButton");
