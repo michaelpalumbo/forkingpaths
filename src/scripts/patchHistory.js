@@ -1761,31 +1761,32 @@ document.addEventListener("DOMContentLoaded", function () {
     // Show and move the overlay
     historyDAG_cy.on('mouseover', 'node', function(evt) {
         const data = evt.target.data();
-        console.log(data)
+        // console.log(data)
         let overlayString
         let labelArray = data.label.split(' ')
         switch(data.label.split(' ')[0]){
             case 'loaded':
                 overlayString = `
-                    <strong>Change Node: File Load</strong><br>    
+                    <strong>Change Node:</strong> File Load<br>    
                     <strong>File:</strong> ${labelArray[1]}<br><br>
                     <strong>Branch:</strong> ${data.branch}<br>
                 `;
             break
 
             case 'paramUpdate':
+                // console.log(parseParamUpdate(labelArray))
                 overlayString = `
-                    <strong>Change Node: Param</strong><br>
-                    <strong>Module:</strong> ${labelArray[4]}<br>
-                    <strong>Parameter:</strong> ${labelArray[1]}<br>
-                    <strong>Value:</strong> ${labelArray[3]}<br><br>
+                    <strong>Change Node:</strong> Param<br>
+                    <strong>Module:</strong> ${parseParamUpdate(data.label)[2]}<br>
+                    <strong>Parameter:</strong> ${parseParamUpdate(data.label)[0]}<br>
+                    <strong>Value:</strong> ${parseParamUpdate(data.label)[1]}<br><br>
                     <strong>Branch:</strong> ${data.branch}<br>
                 `;
             break
 
             case 'gesture':
                 overlayString = `
-                    <strong>Change Node: Gesture</strong><br>
+                    <strong>Change Node:</strong> Gesture<br>
                     <strong>Module:</strong> ${labelArray[2]}<br>
                     <strong>Parameter:</strong> ${labelArray[1]}<br><br>
                     <strong>Branch:</strong> ${data.branch}<br>
@@ -1799,7 +1800,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 if(labelArray[1] === 'OUT'){
                     // cable started at an out
                     overlayString = `
-                        <strong>Change Node: Connect</strong><br><br>
+                        <strong>Change Node:</strong> Connect<br><br>
                         <strong>Output Module:</strong> ${parents[0].split('_')[0]}_${parents[0].split('_')[1]}<br>
                         <strong>Output Jack:</strong> ${labelArray[1]}<br><br>
 
@@ -1811,7 +1812,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 } else {
                     // cable started at an IN, notice that the array indeces are all inverted from the way they are above
                     overlayString = `
-                        <strong>Change Node: Connect</strong><br><br>
+                        <strong>Change Node:</strong> Connect<br><br>
             
                         <strong>Output Module:</strong> ${parents[1].split('_')[0]}_${parents[1].split('_')[1]}<br>
                         <strong>Output Jack:</strong> ${labelArray[3]}<br><br>
@@ -1836,7 +1837,7 @@ document.addEventListener("DOMContentLoaded", function () {
   
                         // cable started at an out
                         overlayString = `
-                            <strong>Change Node: Disconnect</strong><br><br>
+                            <strong>Change Node:</strong> Disconnect<br><br>
                             <strong>Output Module:</strong> ${parentss[0].split('_')[0]}_${parentss[0].split('_')[1]}<br>
                             <strong>Output Jack:</strong> ${labelArray[3]}<br><br>
     
@@ -1847,12 +1848,14 @@ document.addEventListener("DOMContentLoaded", function () {
                         `;
                     } else {
                         // deal with jack disconnections 
+                        // the following logic is annoying as hell. i don't know why i programmed the cable-jack removal logic in synthApp.js this way but oh well its done
+
                         let jack1 = labelArray[1].split('.')[1]
                         if(jack1 === 'OUT'){
-                            console.log('1', 'jack1', jack1, 'label', labelArray)
+                  
 
                             overlayString = `
-                                <strong>Change Node: Disconnect</strong><br><br>
+                                <strong>Change Node:</strong> Disconnect<br><br>
 
                                 <strong>Output Module:</strong> ${parentss[0].split('_')[0]}_${parentss[0].split('_')[1]}<br>
                                 <strong>Output Jack:</strong> ${jack1}<br><br>
@@ -1863,9 +1866,9 @@ document.addEventListener("DOMContentLoaded", function () {
                                 <strong>Branch:</strong> ${data.branch}<br>
                             `;
                         } else {
-                            console.log('2', 'jack1', jack1, 'label', labelArray)
+    
                             overlayString = `
-                                <strong>Change Node: Disconnect</strong><br><br>
+                                <strong>Change Node:</strong> Disconnect<br><br>
 
                                 <strong>Output Module:</strong> ${parentss[0].split('_')[0]}_${parentss[0].split('_')[1]}<br>
                                 <strong>Output Jack:</strong> ${labelArray[3].split('.')[1]}<br><br>
@@ -1878,25 +1881,8 @@ document.addEventListener("DOMContentLoaded", function () {
                         }
                     }
 
-                } else 
-                // if(labelArray[1] === 'IN'){
-                //     // normal cable deletion (player selected + deleted cable)
-                //     overlayString = `
-                //         <strong>Change Node: Disconnect</strong><br><br>
+                } 
 
-                //         <strong>Output Module:</strong> ${parentss[1].split('_')[0]}_${parentss[1].split('_')[1]}<br>
-                //         <strong>Output Jack:</strong> ${labelArray[3]}<br><br>
-
-                //         <strong>Input Module:</strong> ${parentss[0].split('_')[0]}_${parentss[0].split('_')[1]}<br>
-                //         <strong>Input Jack:</strong> ${labelArray[1]}<br><br>
-
-                //         <strong>Branch:</strong> ${data.branch}<br>
-                //     `;
-                // } else 
-                {
-                    // the following logic is annoying as hell. i don't know why i programmed the cable-jack removal logic in synthApp.js this way but oh well its done
-                    
-                }
             break
 
             case "merge":
@@ -3086,7 +3072,56 @@ document.addEventListener("DOMContentLoaded", function () {
         return pairCount > 0 ? totalDistance / pairCount : 0; // Avoid division by zero
     }
 
-    function convertParams(storedParam, targetParam, value){
+   
+
+    function parseParamUpdate(str) {
+        const firstSpace = str.indexOf(' ');
+        const equalsSign = str.indexOf('=');
+        const lastSpace = str.lastIndexOf(' ');
+      
+        if (firstSpace === -1 || equalsSign === -1 || lastSpace === -1) return null;
+      
+        const paramName = str.slice(firstSpace + 1, equalsSign).trim();
+        const paramValue = parseFloat(str.slice(equalsSign + 1, lastSpace).trim());
+        const moduleName = str.slice(lastSpace + 1).trim();
+      
+        return [paramName, paramValue, moduleName];
+      }
+      
+    
+    // *
+    // *
+    // * SCALING / INTERPOLATION / EASING
+    // * 
+    // *
+
+    function updateNodeValueFromY(newY, value, gestureRange, viewportHeight) {
+        // Calculate the new value based on the new y position
+        const newValue = (value + gestureRange * (1 - newY / viewportHeight));
+        
+        return newValue;
+    }
+
+    function setGestureSaveButtonState(state){
+        // enable the gesture clone button
+        document.getElementById("saveGestureButton").disabled = state;
+    }
+
+    const clamp01 = (value) => Math.max(0, Math.min(1, value));
+    const invert01 = (value) => 1 - value;
+
+    // EASING FUNCTIONS FOR GESTURE EDITOR
+    function applyEasing(min, max, range, data, easingFn) {
+        return data.map(entry => {
+          const normalized = (entry.value - min) / range;
+          const eased = easingFn(normalized);
+          const remapped = min + eased * range;
+      
+          return { ...entry, value: remapped };
+        });
+      }
+
+      function convertParams(storedParam, targetParam, value){
 
         let data;
 
@@ -3175,42 +3210,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         return data
     }
-
-
-    
-    // *
-    // *
-    // * SCALING / INTERPOLATION / EASING
-    // * 
-    // *
-
-    function updateNodeValueFromY(newY, value, gestureRange, viewportHeight) {
-        // Calculate the new value based on the new y position
-        const newValue = (value + gestureRange * (1 - newY / viewportHeight));
-        
-        return newValue;
-    }
-
-    function setGestureSaveButtonState(state){
-        // enable the gesture clone button
-        document.getElementById("saveGestureButton").disabled = state;
-    }
-
-    const clamp01 = (value) => Math.max(0, Math.min(1, value));
-    const invert01 = (value) => 1 - value;
-
-    // EASING FUNCTIONS FOR GESTURE EDITOR
-    function applyEasing(min, max, range, data, easingFn) {
-        return data.map(entry => {
-          const normalized = (entry.value - min) / range;
-          const eased = easingFn(normalized);
-          const remapped = min + eased * range;
-      
-          return { ...entry, value: remapped };
-        });
-      }
-
-      
 
 })
 
