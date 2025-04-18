@@ -819,15 +819,6 @@ document.addEventListener("DOMContentLoaded", function () {
             console.log(`Selected burst value: ${currentValue}`);
         }
 
-        // // set next step's interval based on step length
-        // let nextStepIndex = (currentStepIndex + 1) % storedSequencerTable.length;
-        // loop.interval = storedSequencerTable[nextStepIndex].stepLength
-        // // also update it for the initial loop
-   
-        // console.log('next index', currentStepIndex)
-
-        // console.log('next step length', stepLength)
-        // update step index
         currentStepIndex = (currentStepIndex + 1) % storedSequencerTable.length;
 
     }, stepLength)
@@ -853,10 +844,18 @@ document.addEventListener("DOMContentLoaded", function () {
         const tableBody = document.getElementById("dynamicTableBody");
         tableBody.innerHTML = ""; // Clear any existing rows
 
+        
         for (let i = 0; i < numberOfRows; i++) {
+
             const row = document.createElement("tr");
             row.classList.add("is-size-6"); // Apply text size to the entire row
             const node = selectedNodes[i].data()
+
+            // Step (Change) cell
+            const changeNodeCell = document.createElement("td");
+    
+            row.appendChild(changeNodeCell);
+
             // Step (Change) cell
             const stepCell = document.createElement("td");
             stepCell.textContent = node.label; // Placeholder for step name
@@ -984,6 +983,11 @@ document.addEventListener("DOMContentLoaded", function () {
             savedData.forEach((rowData, index) => {
                 const row = document.createElement("tr");
                 row.classList.add("is-size-6"); // Apply text size to the entire row
+
+                // change node cell indicator (set this to the colour of the change node)
+                const changeNodeCell = document.createElement("td");
+                row.appendChild(changeNodeCell);
+                
                 // Step (Change) cell
                 const stepCell = document.createElement("td");
                 stepCell.textContent = rowData.stepChange || `(Empty)`; // Fallback for empty rows
@@ -1052,6 +1056,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 // Re-add click event listener to the step cell
                 stepCell.addEventListener("click", () => {
                     if(hid.key.cmd){
+
+                        changeNodeCell.style.backgroundColor = docHistoryGraphStyling.nodeColours[selectedNode.label.split(' ')[0]]
                         stepCell.textContent = selectedNode.label;
                         // stepLengthCell.textContent = "4n"; // Example modification
                         row.dataset.id = selectedNode.id
@@ -1093,6 +1099,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 const row = document.createElement("tr");
                 row.classList.add("is-size-6"); // Apply text size to the entire row
 
+                // change node cell indicator (set this to the colour of the change node)
+                const changeNodeCell = document.createElement("td");
+                row.appendChild(changeNodeCell);
+                
                 // Step (Change) cell
                 const stepCell = document.createElement("td");
                 stepCell.textContent = `(Empty)`; // Placeholder for step name
@@ -1163,6 +1173,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 // Add click event listener to the step cell
                 stepCell.addEventListener("click", () => {
                     if(selectedNode && hid.key.cmd){
+                        changeNodeCell.style.backgroundColor = docHistoryGraphStyling.nodeColours[selectedNode.label.split(' ')[0]]
                         // Update row values with data from selectedNode
                         stepCell.textContent = selectedNode.label;
                         // stepLengthCell.textContent = '4n' //! need to update this value from the dropdown. 
@@ -1214,9 +1225,9 @@ document.addEventListener("DOMContentLoaded", function () {
             const cells = row.querySelectorAll("td");
             if(row.dataset.id){
                 return {
-                    stepChange: cells[0].textContent, // Step (Change) cell content
-                    stepLength: cells[1].querySelector('select').value, // Step Length selectmenu content
-                    stepBurst: cells[2].querySelector('select').value, // burst value
+                    stepChange: cells[1].textContent, // Step (Change) cell content
+                    stepLength: cells[2].querySelector('select').value, // Step Length selectmenu content
+                    stepBurst: cells[3].querySelector('select').value, // burst value
                     status: 'Active',
                     node: {
                         id: row.dataset.id,
@@ -1227,9 +1238,9 @@ document.addEventListener("DOMContentLoaded", function () {
             } else {
                 // row doesn't have an assigned history node
                 return {
-                    stepChange: cells[0].textContent, // Step (Change) cell content
-                    stepLength: cells[1].querySelector('select').value, // Step Length selectmenu content
-                    stepBurst: cells[2].querySelector('select').value, // burst value
+                    stepChange: cells[1].textContent, // Step (Change) cell content
+                    stepLength: cells[2].querySelector('select').value, // Step Length selectmenu content
+                    stepBurst: cells[3].querySelector('select').value, // burst value
                     status: 'Inactive',
                 }
             }
