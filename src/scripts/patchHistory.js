@@ -4,6 +4,7 @@ import * as Tone from "tone";
 import { uuidv7 } from "uuidv7";
 import { WebMidi } from "webmidi"; // skip this line if you're using a script tag
 import modules from '../modules/modules.json' assert { type: 'json'}
+import { marked } from 'marked'
 
 // Use the correct protocol based on your site's URL
 const VITE_WS_URL = import.meta.env.VITE_WS_URL
@@ -241,6 +242,27 @@ let midiValues = {
     }
 }
 
+const helpTexts = {};
+const helpKeys = ['gestureEditor', 'historyGraph', 'historySequencer', 'queryTool'];
+
+helpKeys.forEach(key => {
+  fetch(`/help/${key}.md`)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`Failed to fetch ${key}.md — status ${response.status}`);
+      }
+      return response.text();
+    })
+    .then(markdownText => {
+      helpTexts[key] = marked(markdownText);
+  
+    })
+    .catch(error => {
+      helpTexts[key] = '<em>Help not available.</em>';
+      console.error(`Error loading ${key}.md:`, error);
+    });
+});
+
 
 window.addEventListener("load", () => {
    
@@ -298,7 +320,11 @@ window.addEventListener("load", () => {
 
 
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", async () => {
+
+
+
+
     // setup sequencer table
     function generateSequencerTable() {
         const tableBody = document.getElementById("dynamicTableBody2");
@@ -916,8 +942,80 @@ document.addEventListener("DOMContentLoaded", function () {
     // * 
     // *
 
-    // *
-    // * HISTORY GRAPH
+
+    // * HELP OVERLAYS
+    let activeHelpKey = null;
+
+    function toggleHelpOverlay(key, columnSide = "left") {
+        const overlay = document.getElementById("helpOverlay");
+        const content = document.getElementById("helpOverlayContent");
+        
+        if (activeHelpKey === key && !overlay.classList.contains("hidden")) {
+            overlay.classList.add("hidden");
+            
+            activeHelpKey = null;
+            return;
+        }
+        // console.log(key, columnSide, helpTexts[key])
+        content.innerHTML = helpTexts[key] || "<em>Help not available.</em>";
+        // document.getElementById('helpOverlayContent').innerHTML = "<h3>Hello</h3><p>This is a test.</p>";
+
+
+        overlay.style.left = columnSide === "left" ? "50%" : "0%";
+        overlay.classList.remove("hidden");
+        activeHelpKey = key;
+    }
+    
+
+
+    
+    // const helpOverlay = document.getElementById("helpOverlay");
+    // const helpOverlayContent = document.getElementById("helpOverlayContent");
+    // const closeHelpButton = document.getElementById("closeHelpOverlay");
+    
+    // let activeHelpKey = null; // Tracks which help section is open
+    
+    // document.querySelectorAll(".help-button").forEach(button => {
+    //     button.addEventListener("click", () => {
+    //         const helpKey = button.dataset.help; // e.g., "gestureEditor"
+    //         const mdPath = `/help/${helpKey}.md`; // markdown file path
+    //         const sectionEl = button.closest(".column"); // which side the button is on
+        
+    //         // Case 1: Opening new help or switching help content
+    //         if (helpOverlay.classList.contains("hidden") || activeHelpKey !== helpKey) {
+    //             fetch(mdPath)
+    //                 .then(res => {
+    //                     if (!res.ok) throw new Error(`Missing help file: ${mdPath}`);
+    //                     return res.text();
+    //                 })
+    //                 .then(md => {
+    //                     helpOverlayContent.innerHTML = marked.parse(md);
+    //                     helpOverlay.classList.remove("hidden");
+    //                     helpOverlay.style.left = sectionEl.classList.contains("left") ? "50%" : "0%";
+    //                     activeHelpKey = helpKey;
+    //                 })
+    //                 .catch(err => {
+    //                     helpOverlayContent.innerHTML = `<p><em>Help not available.</em></p>`;
+    //                     console.warn(`Could not load help overlay: ${mdPath}`, err);
+    //                     helpOverlay.classList.remove("hidden");
+    //                 });
+            
+    //             // Case 2: Clicking the same help button again → close overlay
+    //             } else {
+    //                 helpOverlay.classList.add("hidden");
+    //                 activeHelpKey = null;
+    //             }
+    //         });
+    //     });
+    
+    //     closeHelpButton.addEventListener("click", () => {
+    //     helpOverlay.classList.add("hidden");
+    //     activeHelpKey = null;
+    // });
+    
+
+
+
 
     // do this once:
     historyDAG_cy.panBy({x: 25, y: 0 })
@@ -1482,10 +1580,7 @@ document.addEventListener("DOMContentLoaded", function () {
         return tableData; // Return the table data
     }
 
-    // Populate the table with 8 rows on page load
-    console.log('create the table on load')
 
-    // createSequencerTable();
 
 
     function randomSequencerStepOrder(){
@@ -2172,6 +2267,30 @@ document.addEventListener("DOMContentLoaded", function () {
     // * EVENT HANDLERS
     // * 
     // *
+
+    // Assumes helpTexts[] is already populated via fetch + marked
+
+    document.getElementById("historyGraphHelp").addEventListener("click", () => {
+        toggleHelpOverlay("historyGraph", "left");
+    });
+    
+    document.getElementById("queryToolHelp").addEventListener("click", () => {
+        toggleHelpOverlay("queryTool", "right");
+    });
+    
+    document.getElementById("historySequencerHelp").addEventListener("click", () => {
+        toggleHelpOverlay("historySequencer", "right");
+    });
+    
+    document.getElementById("gestureEditorHelp").addEventListener("click", () => {
+        toggleHelpOverlay("gestureEditor", "right");
+    });
+    
+    document.getElementById("closeHelpOverlay").addEventListener("click", () => {
+        document.getElementById("helpOverlay").classList.add("hidden");
+        activeHelpKey = null;
+    });
+    
     // for switching between polyphonic and monophonic sequencing modes
     const modeSelector = document.getElementById("sequencerMode");
     modeSelector.addEventListener("change", (e) => {
@@ -2616,8 +2735,23 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
+    let gestureBoxSelect
     gestureCy.on("boxselect", "node", () => {
+        if(gestureBoxSelect){
+            gestureBoxSelect = false // do this because otherwise this keeps firing like crazy
 
+            // first remove the highlighting of any earlier selected nodes:
+            const selectedGestureNodes = gestureCy.nodes('.node');
+            if(selectedGestureNodes.length > 0){
+                selectedGestureNodes.forEach((node) => {
+                    node.removeClass("sequencerNode");
+                });
+            }
+
+            let selected = gestureCy.$("node:selected"); // Get all selected nodes
+
+            console.log(selected)
+        }
     })
 
 
@@ -2861,7 +2995,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // }
             if (event.key === 'Meta' || event.key === 'Control') {
                 allowMultiSelect = false
-                // historyBoxSelect = true
+                gestureBoxSelect = true
                 historyDAG_cy.userZoomingEnabled(true)
                 hid.key.cmd = false
                 // Hide a node by setting display to none

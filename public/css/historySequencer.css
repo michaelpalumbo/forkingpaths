@@ -49,6 +49,79 @@ html, body {
   background-color: #f8f8f8;
 }
 
+#helpOverlay {
+  position: absolute; /* or fixed, depending on your layout */
+  top: 0;
+  left: 0;
+  width: 50%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.95);
+  color: #111;
+  z-index: 9999;
+  padding: 1rem;
+  overflow-y: auto;
+  box-shadow: 0 0 20px rgba(0,0,0,0.2);
+  transition: opacity 0.5s ease;
+  opacity: 1;
+}
+
+#helpOverlay.hidden {
+  display: none;
+}
+
+#helpOverlayContent {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 100px;
+  color: #111;
+  font-size: 1.8rem;        /* base size — approx 2× normal text */
+  line-height: 1.9;
+  padding: 2rem;
+}
+
+#helpOverlayContent h2,
+#helpOverlayContent h3 {
+  font-size: 2.2rem;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+#helpOverlayContent ul {
+  padding-left: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+#helpOverlayContent p {
+  margin-bottom: 1.2rem;
+}
+
+
+
+
+
+.help-button {
+  font-size: 1.2rem;
+  padding: 0.2rem 0.5rem;
+  background: #eee;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+
+
+#closeHelpOverlay {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 3rem;
+  cursor: pointer;
+}
+
+
 #bpmSlider {
   width: 40%;
 }
