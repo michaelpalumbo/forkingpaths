@@ -73,7 +73,7 @@
                                     <button id="startStopButton" class="btn btn-primary">Start Sequencer</button>
                                     <button id="clearSequencerButton" class="btn btn-info">Clear Sequencer</button>
                                 </div>
-                                <div class="col-6">
+                                <div class="col-3">
                                     <label class="form-label">Step Length Function</label>
                                     <select id="stepLengthFunction" class="form-select mb-3">
                                         <option value="fixed">Fixed</option>
@@ -87,6 +87,15 @@
                                         <option value="topologicalSort">Topological Sort</option>
                                         <option value="random">Random</option>
                                     </select>
+                                </div>
+                                <div class="col-3">
+                                    <label class="form-label">Step Length Function</label>
+
+                                    <select id="sequencerMode" class="form-select">
+                                        <option value="mono" selected>Monophonic</option>
+                                        <option value="poly">Polyphonic</option>
+                                    </select>
+                                      
                                 </div>
                             </div>
                             <table class="table table-bordered table-hover mt-3">
