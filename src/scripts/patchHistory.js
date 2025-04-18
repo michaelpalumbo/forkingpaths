@@ -299,6 +299,166 @@ window.addEventListener("load", () => {
 
 
 document.addEventListener("DOMContentLoaded", function () {
+    // setup sequencer table
+    function generateSequencerTable() {
+        const tableBody = document.getElementById("dynamicTableBody2");
+        tableBody.innerHTML = ""; // Just in case it already exists
+    
+        const lengthOptions = ['32n', '16n', '8n', '4n', '2n'];
+        const burstOptions = [0, 1, 2, 3, 4, 5];
+    
+        for (let i = 0; i < 8; i++) {
+        const row = document.createElement("tr");
+        row.classList.add("is-size-6");
+    
+        // Change node indicator cell (background colored)
+        const changeCell = document.createElement("td");
+        changeCell.classList.add("change-cell");
+        row.appendChild(changeCell);
+    
+        // Step label cell
+        const stepLabel = document.createElement("td");
+        stepLabel.classList.add("step-label");
+        stepLabel.textContent = "(Empty)";
+        row.appendChild(stepLabel);
+    
+        // Step length select
+        const lengthCell = document.createElement("td");
+        const lengthSelect = document.createElement("select");
+        lengthSelect.classList.add("step-length");
+        lengthOptions.forEach((opt, index) => {
+            const option = document.createElement("option");
+            option.value = opt;
+            option.textContent = opt;
+            if (index === 3) option.selected = true; // default to "4n"
+            lengthSelect.appendChild(option);
+        });
+        lengthCell.appendChild(lengthSelect);
+        row.appendChild(lengthCell);
+    
+        // Burst select
+        const burstCell = document.createElement("td");
+        const burstSelect = document.createElement("select");
+        burstSelect.classList.add("burst-select");
+        burstOptions.forEach((opt, index) => {
+            const option = document.createElement("option");
+            option.value = opt;
+            option.textContent = opt;
+            if (index === 0) option.selected = true;
+            burstSelect.appendChild(option);
+        });
+        burstCell.appendChild(burstSelect);
+        row.appendChild(burstCell);
+    
+        // Append the row
+        tableBody.appendChild(row);
+        }
+    }
+    // create the sequencer table
+    generateSequencerTable();
+
+    // function to dynamically attach event listeners to the sequencer table
+    function attachSequencerListeners() {
+        document.querySelectorAll(".step-length").forEach((select, i) => {
+          select.addEventListener("change", () => {
+            console.log(`Step ${i} length changed to:`, select.value);
+            saveSequencerTable();
+          });
+        });
+      
+        document.querySelectorAll(".burst-select").forEach((select, i) => {
+          select.addEventListener("change", () => {
+            console.log(`Step ${i} burst changed to:`, select.value);
+            saveSequencerTable();
+          });
+        });
+      
+        document.querySelectorAll("#dynamicTableBody2 tr").forEach((row, i) => {
+          row.cells[1].addEventListener("click", () => {
+            if (selectedNode && hid.key.cmd) {
+                console.log(i, selectedNode, gestureData)
+              updateStepRow(i, selectedNode, gestureData);
+            }
+          });
+        });
+      }
+
+    // attach the event listeners for the sequencer
+    attachSequencerListeners();
+
+    function updateStepRow(index, nodeData, gestureData = null) {
+        const row = document.querySelectorAll("#dynamicTableBody2 tr")[index];
+        if (!row) return;
+      
+        const changeCell = row.cells[0];
+        const stepLabelCell = row.cells[1];
+      
+        // Set background color based on change node label
+        const labelKey = nodeData.label.split(" ")[0];
+        changeCell.style.backgroundColor = docHistoryGraphStyling.nodeColours[labelKey] || "#888";
+      
+        // Set label text and dataset info
+        const label = nodeData.label;
+        stepLabelCell.textContent = label;
+      
+        row.dataset.id = nodeData.id;
+        row.dataset.label = label;
+        row.dataset.branch = nodeData.branch;
+      
+        // Handle gesture metadata
+        if (label.startsWith("gesture")) {
+          row.dataset.gesture = true;
+          row.dataset.gestureData = JSON.stringify(gestureData);
+        }
+      
+        if (nodeData.gestureDataPoint) {
+          const abrv = `${nodeData.parents.split('_')[0]}_${nodeData.parents.split('_')[1]}`;
+          const gestureLabel = `gesturePoint: ${abrv}:${nodeData.param}:${nodeData.value}`;
+          stepLabelCell.textContent = gestureLabel;
+      
+          row.dataset.label = gestureLabel;
+          row.dataset.isGestureDataPoint = true;
+          row.dataset.gestureDataPointValue = nodeData.value;
+          row.dataset.param = nodeData.param;
+          row.dataset.parent = nodeData.parents;
+          row.dataset.id = nodeData.historyID; // override with gesture node ID
+        }
+      
+        saveSequencerTable(); // Save the new state immediately
+    }
+    // use this to clear the sequencer
+    function resetSequencerTable() {
+        const tableRows = document.querySelectorAll("#dynamicTableBody2 tr");
+      
+        tableRows.forEach(row => {
+          const changeCell = row.cells[0]; // color cell
+          const stepLabelCell = row.cells[1]; // label cell
+          const stepLengthSelect = row.cells[2].querySelector("select"); // length dropdown
+          const burstSelect = row.cells[3].querySelector("select"); // burst dropdown
+      
+          // Reset visual and text content
+          changeCell.style.backgroundColor = "";
+          stepLabelCell.textContent = "(Empty)";
+      
+          // Reset dropdowns
+          if (stepLengthSelect) stepLengthSelect.value = "4n";
+          if (burstSelect) burstSelect.value = "0";
+      
+          // Clear any attached dataset info
+          row.removeAttribute("data-id");
+          row.removeAttribute("data-label");
+          row.removeAttribute("data-branch");
+          row.removeAttribute("data-gesture");
+          row.removeAttribute("data-gestureData");
+          row.removeAttribute("data-isGestureDataPoint");
+          row.removeAttribute("data-gestureDataPointValue");
+          row.removeAttribute("data-param");
+          row.removeAttribute("data-parent");
+        });
+      
+        saveSequencerTable(); // optional: refresh internal state
+      }
+
     const assignGestureToParam = document.getElementById("assignGestureToParam")
     // UI
     // Get the select element by its ID
@@ -782,7 +942,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
         // Highlight the current step in the table
-        const tableRows = document.querySelectorAll("#dynamicTableBody tr");
+        const tableRows = document.querySelectorAll("#dynamicTableBody2 tr");
         tableRows.forEach((row) => row.classList.remove("table-active"));
         const targetRow = tableRows[currentStepIndex];
 
@@ -835,7 +995,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function startPolyphonicSequencer() {
         stopPolyphonicSequencer(); // clear any previous ones
     
-        const tableRows = document.querySelectorAll("#dynamicTableBody tr");
+        const tableRows = document.querySelectorAll("#dynamicTableBody2 tr");
     
         tableRows.forEach((row, index) => {
             const step = storedSequencerTable[index];
@@ -888,389 +1048,389 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    function replaceStepSequencerTable(selectedNodes){
-        const numberOfRows = selectedNodes.length
-        const tableBody = document.getElementById("dynamicTableBody");
-        tableBody.innerHTML = ""; // Clear any existing rows
+    // function replaceStepSequencerTable(selectedNodes){
+    //     const numberOfRows = selectedNodes.length
+    //     const tableBody = document.getElementById("dynamicTableBody");
+    //     tableBody.innerHTML = ""; // Clear any existing rows
 
         
-        for (let i = 0; i < numberOfRows; i++) {
+    //     for (let i = 0; i < numberOfRows; i++) {
 
-            const row = document.createElement("tr");
-            row.classList.add("is-size-6"); // Apply text size to the entire row
-            const node = selectedNodes[i].data()
+    //         const row = document.createElement("tr");
+    //         row.classList.add("is-size-6"); // Apply text size to the entire row
+    //         const node = selectedNodes[i].data()
 
-            // Step (Change) cell
-            const changeNodeCell = document.createElement("td");
-            row.appendChild(changeNodeCell);
+    //         // Step (Change) cell
+    //         const changeNodeCell = document.createElement("td");
+    //         row.appendChild(changeNodeCell);
 
-            // Step (Change) cell
-            const stepCell = document.createElement("td");
-            stepCell.textContent = node.label; // Placeholder for step name
-            row.appendChild(stepCell);
+    //         // Step (Change) cell
+    //         const stepCell = document.createElement("td");
+    //         stepCell.textContent = node.label; // Placeholder for step name
+    //         row.appendChild(stepCell);
 
-            // Step Length cell
-            const stepLengthTd = document.createElement("td");
-            const stepLengthSelect = document.createElement("select");
+    //         // Step Length cell
+    //         const stepLengthTd = document.createElement("td");
+    //         const stepLengthSelect = document.createElement("select");
 
-            // calculate step length based on step length function
+    //         // calculate step length based on step length function
 
-            const lengthOptions = ['32n', '16n', '8n', '4n', '2n'];
-            lengthOptions.forEach((optionText, index) => {
-                const option = document.createElement('option');
+    //         const lengthOptions = ['32n', '16n', '8n', '4n', '2n'];
+    //         lengthOptions.forEach((optionText, index) => {
+    //             const option = document.createElement('option');
 
-                option.value = optionText;
-                option.textContent = optionText;
+    //             option.value = optionText;
+    //             option.textContent = optionText;
 
-                if(index === 3){
-                    option.selected = true
-                }
+    //             if(index === 3){
+    //                 option.selected = true
+    //             }
 
-                stepLengthSelect.appendChild(option);
-            });
+    //             stepLengthSelect.appendChild(option);
+    //         });
 
-            // 🔊 Add event listener for when user selects an option
-            stepLengthSelect.addEventListener('change', (e) => {
-                const selectedValue = e.target.value;
-                console.log(`Burst value changed to: ${selectedValue}`);
-                saveSequencerTable(); // Save updated values
-            });
+    //         // 🔊 Add event listener for when user selects an option
+    //         stepLengthSelect.addEventListener('change', (e) => {
+    //             const selectedValue = e.target.value;
+    //             console.log(`Burst value changed to: ${selectedValue}`);
+    //             saveSequencerTable(); // Save updated values
+    //         });
 
-            // now that the select is built, add it to the td
-            stepLengthTd.appendChild(stepLengthSelect);
-            // now add it to the row
-            row.appendChild(stepLengthTd);
+    //         // now that the select is built, add it to the td
+    //         stepLengthTd.appendChild(stepLengthSelect);
+    //         // now add it to the row
+    //         row.appendChild(stepLengthTd);
 
-            // create burst cell
-            const burstTd = document.createElement("td");
-            const burstSelect = document.createElement("select");
-            const burstOptions = [0, 1, 2, 3, 4, 5];
-            burstOptions.forEach((optionText, index) => {
-                const option = document.createElement('option');
+    //         // create burst cell
+    //         const burstTd = document.createElement("td");
+    //         const burstSelect = document.createElement("select");
+    //         const burstOptions = [0, 1, 2, 3, 4, 5];
+    //         burstOptions.forEach((optionText, index) => {
+    //             const option = document.createElement('option');
 
-                option.value = optionText;
-                option.textContent = optionText;
+    //             option.value = optionText;
+    //             option.textContent = optionText;
 
-                if(index === 0){
-                    option.selected = true
-                }
+    //             if(index === 0){
+    //                 option.selected = true
+    //             }
 
-                burstSelect.appendChild(option);
-            });
+    //             burstSelect.appendChild(option);
+    //         });
 
-            // 🔊 Add event listener for when user selects an option
-            burstSelect.addEventListener('change', (e) => {
-                const selectedValue = e.target.value;
-                console.log(`Burst value changed to: ${selectedValue}`);
-                saveSequencerTable(); // Save updated values
-            });
+    //         // 🔊 Add event listener for when user selects an option
+    //         burstSelect.addEventListener('change', (e) => {
+    //             const selectedValue = e.target.value;
+    //             console.log(`Burst value changed to: ${selectedValue}`);
+    //             saveSequencerTable(); // Save updated values
+    //         });
 
             
-            burstTd.appendChild(burstSelect);
-            row.appendChild(burstTd);
+    //         burstTd.appendChild(burstSelect);
+    //         row.appendChild(burstTd);
 
-            row.dataset.id = node.id
-            row.dataset.label = node.label
-            row.dataset.branch = node.branch
+    //         row.dataset.id = node.id
+    //         row.dataset.label = node.label
+    //         row.dataset.branch = node.branch
 
-            // Add click event listener to the row
-            // this will make it so that each row can be updated by clicks
-            stepCell.addEventListener("click", () => {
-                if(selectedNode && hid.key.cmd){
-                    changeNodeCell.style.backgroundColor = docHistoryGraphStyling.nodeColours[selectedNode.label.split(' ')[0]]
+    //         // Add click event listener to the row
+    //         // this will make it so that each row can be updated by clicks
+    //         stepCell.addEventListener("click", () => {
+    //             if(selectedNode && hid.key.cmd){
+    //                 changeNodeCell.style.backgroundColor = docHistoryGraphStyling.nodeColours[selectedNode.label.split(' ')[0]]
 
-                    // Update row values with data from selectedNode
-                    stepCell.textContent = selectedNode.label;
-                    // stepLengthCell.textContent = '4n'
-                    row.dataset.id = selectedNode.id
-                    row.dataset.label = selectedNode.label
-                    row.dataset.branch = selectedNode.branch
-                    // check if the node is a gesture, because we have additional data to add
-                    if(selectedNode.label.split(' ')[0] === 'gesture'){
-                        row.dataset.gesture = true
-                        row.dataset.gestureData = JSON.stringify(gestureData)
-                    }
+    //                 // Update row values with data from selectedNode
+    //                 stepCell.textContent = selectedNode.label;
+    //                 // stepLengthCell.textContent = '4n'
+    //                 row.dataset.id = selectedNode.id
+    //                 row.dataset.label = selectedNode.label
+    //                 row.dataset.branch = selectedNode.branch
+    //                 // check if the node is a gesture, because we have additional data to add
+    //                 if(selectedNode.label.split(' ')[0] === 'gesture'){
+    //                     row.dataset.gesture = true
+    //                     row.dataset.gestureData = JSON.stringify(gestureData)
+    //                 }
 
-                    if(selectedNode.gestureDataPoint){
-                        // set the label
-                        let parentNameAbrv = `${selectedNode.parents.split('_')[0]}_${selectedNode.parents.split('_')[1]}`
-                        row.dataset.label = `gesturePoint: ${parentNameAbrv}:${selectedNode.param}:${selectedNode.value}`
-                        stepCell.textContent = row.dataset.label
+    //                 if(selectedNode.gestureDataPoint){
+    //                     // set the label
+    //                     let parentNameAbrv = `${selectedNode.parents.split('_')[0]}_${selectedNode.parents.split('_')[1]}`
+    //                     row.dataset.label = `gesturePoint: ${parentNameAbrv}:${selectedNode.param}:${selectedNode.value}`
+    //                     stepCell.textContent = row.dataset.label
                         
-                        // for logic in the main app
-                        row.dataset.isGestureDataPoint = true
-                        // since this data is coming from a the gesture graph, we need to pull the history ID from the history graph
-                        row.dataset.id = selectedNode.historyID
-                        // we also need to pull the value
-                        row.dataset.gestureDataPointValue = selectedNode.value
-                        // and the param
-                        row.dataset.param = selectedNode.param
-                        // and the parent
-                        row.dataset.parent = selectedNode.parents
-                    }
-                    statusCell.textContent = 'Active'
-                    saveSequencerTable()
+    //                     // for logic in the main app
+    //                     row.dataset.isGestureDataPoint = true
+    //                     // since this data is coming from a the gesture graph, we need to pull the history ID from the history graph
+    //                     row.dataset.id = selectedNode.historyID
+    //                     // we also need to pull the value
+    //                     row.dataset.gestureDataPointValue = selectedNode.value
+    //                     // and the param
+    //                     row.dataset.param = selectedNode.param
+    //                     // and the parent
+    //                     row.dataset.parent = selectedNode.parents
+    //                 }
+    //                 statusCell.textContent = 'Active'
+    //                 saveSequencerTable()
 
 
-                }
+    //             }
 
-            });
-            tableBody.appendChild(row);
-            saveSequencerTable()
-        }
+    //         });
+    //         tableBody.appendChild(row);
+    //         // saveSequencerTable()
+    //     }
 
-    }
+    // }
 
 
     // Function to populate the table with a fixed number of rows (8)
-    function createSequencerTable(storedTable) {
-        const tableBody = document.getElementById("dynamicTableBody");
-        tableBody.innerHTML = ""; // Clear any existing rows
+    // function createSequencerTable(storedTable) {
+    //     const tableBody = document.getElementById("dynamicTableBody");
+    //     tableBody.innerHTML = ""; // Clear any existing rows
 
-        const numberOfRows = 8; // Fixed number of rows
+    //     const numberOfRows = 8; // Fixed number of rows
 
-        if(storedTable){
-            savedData.forEach((rowData, index) => {
-                const row = document.createElement("tr");
-                row.classList.add("is-size-6"); // Apply text size to the entire row
+    //     if(storedTable){
+    //         savedData.forEach((rowData, index) => {
+    //             const row = document.createElement("tr");
+    //             row.classList.add("is-size-6"); // Apply text size to the entire row
 
-                // change node cell indicator (set this to the colour of the change node)
-                const changeNodeCell = document.createElement("td");
-                row.appendChild(changeNodeCell);
+    //             // change node cell indicator (set this to the colour of the change node)
+    //             const changeNodeCell = document.createElement("td");
+    //             row.appendChild(changeNodeCell);
                 
-                // Step (Change) cell
-                const stepCell = document.createElement("td");
-                stepCell.textContent = rowData.stepChange || `(Empty)`; // Fallback for empty rows
-                row.appendChild(stepCell);
+    //             // Step (Change) cell
+    //             const stepCell = document.createElement("td");
+    //             stepCell.textContent = rowData.stepChange || `(Empty)`; // Fallback for empty rows
+    //             row.appendChild(stepCell);
         
-                // Step Length cell
-                const stepLengthTd = document.createElement("td");
-                const stepLengthSelect = document.createElement("select");
+    //             // Step Length cell
+    //             const stepLengthTd = document.createElement("td");
+    //             const stepLengthSelect = document.createElement("select");
 
-                // calculate step length based on step length function
+    //             // calculate step length based on step length function
 
-                const lengthOptions = ['32n', '16n', '8n', '4n', '2n'];
-                lengthOptions.forEach((optionText, index) => {
-                    const option = document.createElement('option');
+    //             const lengthOptions = ['32n', '16n', '8n', '4n', '2n'];
+    //             lengthOptions.forEach((optionText, index) => {
+    //                 const option = document.createElement('option');
 
-                    option.value = optionText;
-                    option.textContent = optionText;
+    //                 option.value = optionText;
+    //                 option.textContent = optionText;
 
-                    if(index === 3){
-                        option.selected = true
-                    }
+    //                 if(index === 3){
+    //                     option.selected = true
+    //                 }
 
-                    stepLengthSelect.appendChild(option);
-                });
+    //                 stepLengthSelect.appendChild(option);
+    //             });
 
-                // 🔊 Add event listener for when user selects an option
-                stepLengthSelect.addEventListener('change', (e) => {
-                    const selectedValue = e.target.value;
-                    console.log(`Burst value changed to: ${selectedValue}`);
-                    saveSequencerTable(); // Save updated values
-                });
+    //             // 🔊 Add event listener for when user selects an option
+    //             stepLengthSelect.addEventListener('change', (e) => {
+    //                 const selectedValue = e.target.value;
+    //                 console.log(`Burst value changed to: ${selectedValue}`);
+    //                 saveSequencerTable(); // Save updated values
+    //             });
 
-                // now that the select is built, add it to the td
-                stepLengthTd.appendChild(stepLengthSelect);
-                // now add it to the row
-                row.appendChild(stepLengthTd);
+    //             // now that the select is built, add it to the td
+    //             stepLengthTd.appendChild(stepLengthSelect);
+    //             // now add it to the row
+    //             row.appendChild(stepLengthTd);
 
-                // create burst cell
-                const burstTd = document.createElement("td");
-                const burstSelect = document.createElement("select");
-                const burstOptions = [0, 1, 2, 3, 4, 5];
-                burstOptions.forEach((optionText, index) => {
-                    const option = document.createElement('option');
+    //             // create burst cell
+    //             const burstTd = document.createElement("td");
+    //             const burstSelect = document.createElement("select");
+    //             const burstOptions = [0, 1, 2, 3, 4, 5];
+    //             burstOptions.forEach((optionText, index) => {
+    //                 const option = document.createElement('option');
 
-                    option.value = optionText;
-                    option.textContent = optionText;
+    //                 option.value = optionText;
+    //                 option.textContent = optionText;
 
-                    if(index === 0){
-                        option.selected = true
-                    }
+    //                 if(index === 0){
+    //                     option.selected = true
+    //                 }
 
-                    burstSelect.appendChild(option);
-                });
+    //                 burstSelect.appendChild(option);
+    //             });
 
-                // 🔊 Add event listener for when user selects an option
-                burstSelect.addEventListener('change', (e) => {
-                    const selectedValue = e.target.value;
-                    console.log(`Burst value changed to: ${selectedValue}`);
-                    saveSequencerTable(); // Save updated values
-                });
+    //             // 🔊 Add event listener for when user selects an option
+    //             burstSelect.addEventListener('change', (e) => {
+    //                 const selectedValue = e.target.value;
+    //                 console.log(`Burst value changed to: ${selectedValue}`);
+    //                 saveSequencerTable(); // Save updated values
+    //             });
 
                 
-                burstTd.appendChild(burstSelect);
-                row.appendChild(burstTd);
+    //             burstTd.appendChild(burstSelect);
+    //             row.appendChild(burstTd);
         
-                // Re-add click event listener to the step cell
-                stepCell.addEventListener("click", () => {
-                    if(hid.key.cmd){
+    //             // Re-add click event listener to the step cell
+    //             stepCell.addEventListener("click", () => {
+    //                 if(hid.key.cmd){
 
-                        changeNodeCell.style.backgroundColor = docHistoryGraphStyling.nodeColours[selectedNode.label.split(' ')[0]]
-                        stepCell.textContent = selectedNode.label;
-                        // stepLengthCell.textContent = "4n"; // Example modification
-                        row.dataset.id = selectedNode.id
-                        row.dataset.label = selectedNode.label
-                        row.dataset.branch = selectedNode.branch
+    //                     changeNodeCell.style.backgroundColor = docHistoryGraphStyling.nodeColours[selectedNode.label.split(' ')[0]]
+    //                     stepCell.textContent = selectedNode.label;
+    //                     // stepLengthCell.textContent = "4n"; // Example modification
+    //                     row.dataset.id = selectedNode.id
+    //                     row.dataset.label = selectedNode.label
+    //                     row.dataset.branch = selectedNode.branch
 
-                        if(selectedNode.label.split(' ')[0] === 'gesture'){
-                            row.dataset.gesture = true
-                            row.dataset.gestureData = JSON.stringify(gestureData)
-                        }
+    //                     if(selectedNode.label.split(' ')[0] === 'gesture'){
+    //                         row.dataset.gesture = true
+    //                         row.dataset.gestureData = JSON.stringify(gestureData)
+    //                     }
 
-                        if(selectedNode.gestureDataPoint){
-                            // set the label
-                            let parentNameAbrv = `${selectedNode.parents.split('_')[0]}_${selectedNode.parents.split('_')[1]}`
-                            row.dataset.label = `gesturePoint: ${parentNameAbrv}:${selectedNode.param}:${selectedNode.value}`
-                            stepCell.textContent = row.dataset.label
-                            // for logic in the main app
-                            row.dataset.isGestureDataPoint = true
-                            // since this data is coming from a the gesture graph, we need to pull the history ID from the history graph
-                            row.dataset.id = selectedNode.historyID
-                            // we also need to pull the value
-                            row.dataset.gestureDataPointValue = selectedNode.value
-                            // and the param
-                            row.dataset.param = selectedNode.param
-                            // and the parent
-                            row.dataset.parent = selectedNode.parents
-                        }
+    //                     if(selectedNode.gestureDataPoint){
+    //                         // set the label
+    //                         let parentNameAbrv = `${selectedNode.parents.split('_')[0]}_${selectedNode.parents.split('_')[1]}`
+    //                         row.dataset.label = `gesturePoint: ${parentNameAbrv}:${selectedNode.param}:${selectedNode.value}`
+    //                         stepCell.textContent = row.dataset.label
+    //                         // for logic in the main app
+    //                         row.dataset.isGestureDataPoint = true
+    //                         // since this data is coming from a the gesture graph, we need to pull the history ID from the history graph
+    //                         row.dataset.id = selectedNode.historyID
+    //                         // we also need to pull the value
+    //                         row.dataset.gestureDataPointValue = selectedNode.value
+    //                         // and the param
+    //                         row.dataset.param = selectedNode.param
+    //                         // and the parent
+    //                         row.dataset.parent = selectedNode.parents
+    //                     }
 
-                    }
+    //                 }
 
         
 
-                });
+    //             });
         
-                tableBody.appendChild(row);
-            });
-        } else {
-            for (let i = 0; i < numberOfRows; i++) {
-                const row = document.createElement("tr");
-                row.classList.add("is-size-6"); // Apply text size to the entire row
+    //             tableBody.appendChild(row);
+    //         });
+    //     } else {
+    //         for (let i = 0; i < numberOfRows; i++) {
+    //             const row = document.createElement("tr");
+    //             row.classList.add("is-size-6"); // Apply text size to the entire row
 
-                // change node cell indicator (set this to the colour of the change node)
-                const changeNodeCell = document.createElement("td");
-                row.appendChild(changeNodeCell);
+    //             // change node cell indicator (set this to the colour of the change node)
+    //             const changeNodeCell = document.createElement("td");
+    //             row.appendChild(changeNodeCell);
                 
-                // Step (Change) cell
-                const stepCell = document.createElement("td");
-                stepCell.textContent = `(Empty)`; // Placeholder for step name
-                row.appendChild(stepCell);
+    //             // Step (Change) cell
+    //             const stepCell = document.createElement("td");
+    //             stepCell.textContent = `(Empty)`; // Placeholder for step name
+    //             row.appendChild(stepCell);
 
-                // Step Length cell
-                const stepLengthTd = document.createElement("td");
-                const stepLengthSelect = document.createElement("select");
+    //             // Step Length cell
+    //             const stepLengthTd = document.createElement("td");
+    //             const stepLengthSelect = document.createElement("select");
 
-                // calculate step length based on step length function
+    //             // calculate step length based on step length function
 
-                const lengthOptions = ['32n', '16n', '8n', '4n', '2n'];
-                lengthOptions.forEach((optionText, index) => {
-                    const option = document.createElement('option');
+    //             const lengthOptions = ['32n', '16n', '8n', '4n', '2n'];
+    //             lengthOptions.forEach((optionText, index) => {
+    //                 const option = document.createElement('option');
 
-                    option.value = optionText;
-                    option.textContent = optionText;
+    //                 option.value = optionText;
+    //                 option.textContent = optionText;
 
-                    if(index === 3){
-                        option.selected = true
-                    }
+    //                 if(index === 3){
+    //                     option.selected = true
+    //                 }
 
-                    stepLengthSelect.appendChild(option);
-                });
+    //                 stepLengthSelect.appendChild(option);
+    //             });
 
-                // 🔊 Add event listener for when user selects an option
-                stepLengthSelect.addEventListener('change', (e) => {
-                    const selectedValue = e.target.value;
-                    console.log(`Burst value changed to: ${selectedValue}`);
-                    saveSequencerTable(); // Save updated values
-                });
+    //             // 🔊 Add event listener for when user selects an option
+    //             stepLengthSelect.addEventListener('change', (e) => {
+    //                 const selectedValue = e.target.value;
+    //                 console.log(`Burst value changed to: ${selectedValue}`);
+    //                 saveSequencerTable(); // Save updated values
+    //             });
 
-                // now that the select is built, add it to the td
-                stepLengthTd.appendChild(stepLengthSelect);
-                // now add it to the row
-                row.appendChild(stepLengthTd);
+    //             // now that the select is built, add it to the td
+    //             stepLengthTd.appendChild(stepLengthSelect);
+    //             // now add it to the row
+    //             row.appendChild(stepLengthTd);
 
-                // create burst cell
-                const burstTd = document.createElement("td");
-                const burstSelect = document.createElement("select");
-                const burstOptions = [0, 1, 2, 3, 4, 5];
-                burstOptions.forEach((optionText, index) => {
-                    const option = document.createElement('option');
+    //             // create burst cell
+    //             const burstTd = document.createElement("td");
+    //             const burstSelect = document.createElement("select");
+    //             const burstOptions = [0, 1, 2, 3, 4, 5];
+    //             burstOptions.forEach((optionText, index) => {
+    //                 const option = document.createElement('option');
 
-                    option.value = optionText;
-                    option.textContent = optionText;
+    //                 option.value = optionText;
+    //                 option.textContent = optionText;
 
-                    if(index === 0){
-                        option.selected = true
-                    }
+    //                 if(index === 0){
+    //                     option.selected = true
+    //                 }
 
-                    burstSelect.appendChild(option);
-                });
+    //                 burstSelect.appendChild(option);
+    //             });
 
-                // 🔊 Add event listener for when user selects an option
-                burstSelect.addEventListener('change', (e) => {
-                    const selectedValue = e.target.value;
-                    console.log(`Burst value changed to: ${selectedValue}`);
+    //             // 🔊 Add event listener for when user selects an option
+    //             burstSelect.addEventListener('change', (e) => {
+    //                 const selectedValue = e.target.value;
+    //                 console.log(`Burst value changed to: ${selectedValue}`);
 
-                    saveSequencerTable(); // Save updated values
+    //                 saveSequencerTable(); // Save updated values
 
-                });
+    //             });
 
                 
-                burstTd.appendChild(burstSelect);
-                row.appendChild(burstTd);
+    //             burstTd.appendChild(burstSelect);
+    //             row.appendChild(burstTd);
                 
-                // Add click event listener to the step cell
-                stepCell.addEventListener("click", () => {
-                    if(selectedNode && hid.key.cmd){
-                        changeNodeCell.style.backgroundColor = docHistoryGraphStyling.nodeColours[selectedNode.label.split(' ')[0]]
-                        // Update row values with data from selectedNode
-                        stepCell.textContent = selectedNode.label;
-                        // stepLengthCell.textContent = '4n' //! need to update this value from the dropdown. 
+    //             // Add click event listener to the step cell
+    //             stepCell.addEventListener("click", () => {
+    //                 if(selectedNode && hid.key.cmd){
+    //                     changeNodeCell.style.backgroundColor = docHistoryGraphStyling.nodeColours[selectedNode.label.split(' ')[0]]
+    //                     // Update row values with data from selectedNode
+    //                     stepCell.textContent = selectedNode.label;
+    //                     // stepLengthCell.textContent = '4n' //! need to update this value from the dropdown. 
 
-                        row.dataset.branch = selectedNode.branch
-                        row.dataset.id = selectedNode.id
-                        row.dataset.label = selectedNode.label
-                        if(selectedNode.label.split(' ')[0] === 'gesture'){
-                            row.dataset.gesture = true
-                            row.dataset.gestureData = JSON.stringify(gestureData)
-                        }
+    //                     row.dataset.branch = selectedNode.branch
+    //                     row.dataset.id = selectedNode.id
+    //                     row.dataset.label = selectedNode.label
+    //                     if(selectedNode.label.split(' ')[0] === 'gesture'){
+    //                         row.dataset.gesture = true
+    //                         row.dataset.gestureData = JSON.stringify(gestureData)
+    //                     }
 
-                        if(selectedNode.gestureDataPoint){
-                            // set the label
-                            let parentNameAbrv = `${selectedNode.parents.split('_')[0]}_${selectedNode.parents.split('_')[1]}`
-                            row.dataset.label = `gesturePoint: ${parentNameAbrv}:${selectedNode.param}:${selectedNode.value}`
-                            stepCell.textContent = row.dataset.label
-                            // for logic in the main app
-                            row.dataset.isGestureDataPoint = true
-                            // since this data is coming from a the gesture graph, we need to pull the history ID from the history graph
-                            row.dataset.id = selectedNode.historyID
-                            // we also need to pull the value
-                            row.dataset.gestureDataPointValue = selectedNode.value
-                            // and the param
-                            row.dataset.param = selectedNode.param
-                            // and the parent
-                            row.dataset.parent = selectedNode.parents
-                        } 
+    //                     if(selectedNode.gestureDataPoint){
+    //                         // set the label
+    //                         let parentNameAbrv = `${selectedNode.parents.split('_')[0]}_${selectedNode.parents.split('_')[1]}`
+    //                         row.dataset.label = `gesturePoint: ${parentNameAbrv}:${selectedNode.param}:${selectedNode.value}`
+    //                         stepCell.textContent = row.dataset.label
+    //                         // for logic in the main app
+    //                         row.dataset.isGestureDataPoint = true
+    //                         // since this data is coming from a the gesture graph, we need to pull the history ID from the history graph
+    //                         row.dataset.id = selectedNode.historyID
+    //                         // we also need to pull the value
+    //                         row.dataset.gestureDataPointValue = selectedNode.value
+    //                         // and the param
+    //                         row.dataset.param = selectedNode.param
+    //                         // and the parent
+    //                         row.dataset.parent = selectedNode.parents
+    //                     } 
         
       
-                        // statusCell.textContent = 'Active'
-                        saveSequencerTable()
-                    }
+    //                     // statusCell.textContent = 'Active'
+    //                     saveSequencerTable() // <<< line 1258
+    //                 }
 
-                });
+    //             });
 
-                tableBody.appendChild(row);
-            }
-        }
-    }
+    //             tableBody.appendChild(row);
+    //         }
+    //     }
+    // }
 
     // Function to save the table's contents as a JS object
     function saveSequencerTable() {
-        console.warn("🧠 saveSequencerTable triggered!");
+        console.warn("saveSequencerTable triggered!");
         console.trace();
 
-        const tableBody = document.getElementById("dynamicTableBody");
+        const tableBody = document.getElementById("dynamicTableBody2");
         const rows = tableBody.querySelectorAll("tr");
 
         // Extract the contents of each row into an array of objects
@@ -1319,11 +1479,11 @@ document.addEventListener("DOMContentLoaded", function () {
     // Populate the table with 8 rows on page load
     console.log('create the table on load')
 
-    createSequencerTable();
+    // createSequencerTable();
 
 
     function randomSequencerStepOrder(){
-        const tableBody = document.getElementById("dynamicTableBody");
+        const tableBody = document.getElementById("dynamicTableBody2");
         const rows = Array.from(tableBody.querySelectorAll("tr")); // Convert NodeList to Array
 
         // Shuffle rows using Fisher-Yates algorithm
@@ -1341,19 +1501,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
     }
     function setFixedLengths(){
-        const tableBody = document.getElementById("dynamicTableBody");
-        const rows = tableBody.querySelectorAll("tr");
+    //     const tableBody = document.getElementById("dynamicTableBody");
+    //     const rows = tableBody.querySelectorAll("tr");
 
-        if(storedSequencerTable){
-            for (let i = 0; i < storedSequencerTable.length - 1; i++) { 
-                // Update the 2nd column (Step Length) of the current row
-                const stepLengthCell = rows[i].children[1]; // 2nd cell of the current row
-                // console.log('stepLengthCell', stepLengthCell)
-                stepLengthCell.textContent = "4n"
-                storedSequencerTable[i].stepLength = "4n"
-            }
-            saveSequencerTable()
-        }
+    //     if(storedSequencerTable){
+    //         for (let i = 0; i < storedSequencerTable.length - 1; i++) { 
+    //             // Update the 2nd column (Step Length) of the current row
+    //             const stepLengthCell = rows[i].children[1]; // 2nd cell of the current row
+    //             // console.log('stepLengthCell', stepLengthCell)
+    //             stepLengthCell.textContent = "4n"
+    //             storedSequencerTable[i].stepLength = "4n"
+    //         }
+    //         saveSequencerTable()
+    //     }
     }
     function calculateEuclideanDistances(){
         if(!storedSequencerTable){
@@ -1362,7 +1522,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const maxDistance = calculateMaxEuclideanDistance()
 
         
-        const tableBody = document.getElementById("dynamicTableBody");
+        const tableBody = document.getElementById("dynamicTableBody2");
         const rows = tableBody.querySelectorAll("tr");
 
 
@@ -1402,7 +1562,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if(!storedSequencerTable){
             return
         }
-        const tableBody = document.getElementById("dynamicTableBody");
+        const tableBody = document.getElementById("dynamicTableBody2");
         const rows = tableBody.querySelectorAll("tr");
         
         for (let i = 0; i < storedSequencerTable.length - 1; i++) {
@@ -1443,7 +1603,7 @@ document.addEventListener("DOMContentLoaded", function () {
         switch(order){
             case 'entry':
                 console.log('setSequenceOrder')
-                createSequencerTable(storedSequencerTable)
+                // createSequencerTable(storedSequencerTable)
             break
             case 'topologicalSort':
 
@@ -2798,24 +2958,24 @@ document.addEventListener("DOMContentLoaded", function () {
         }      
         console.log('clearSequencerButton')
  
-        createSequencerTable() 
+        resetSequencerTable()
     });
 
-    document.getElementById('dynamicTableBody').addEventListener('mouseover', (event) => {
-        // Find the closest table row from the event target
-        const row = event.target.closest('tr');
-        // Ensure the row is within the dynamicTableBody
-        if (row && document.getElementById('dynamicTableBody').contains(row) && hid.key.cmd) {
-            // You can perform your desired actions here
+    // document.getElementById('dynamicTableBody').addEventListener('mouseover', (event) => {
+    //     // Find the closest table row from the event target
+    //     const row = event.target.closest('tr');
+    //     // Ensure the row is within the dynamicTableBody
+    //     if (row && document.getElementById('dynamicTableBody').contains(row) && hid.key.cmd) {
+    //         // You can perform your desired actions here
 
-            // Highlight the current step in the table
-            const tableRows = document.querySelectorAll("#dynamicTableBody tr");
-            tableRows.forEach((row) => row.classList.remove("table-set-step"));
+    //         // Highlight the current step in the table
+    //         const tableRows = document.querySelectorAll("#dynamicTableBody tr");
+    //         tableRows.forEach((row) => row.classList.remove("table-set-step"));
          
-            row.classList.add("table-set-step");
+    //         row.classList.add("table-set-step");
             
-        }
-    });
+    //     }
+    // });
 
 
 
