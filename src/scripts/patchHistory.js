@@ -587,6 +587,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 break
 
                 case 'newSession':
+                    console.log('newSession')
+
                     createSequencerTable()
                     createGestureGraph()
                 break
@@ -764,7 +766,7 @@ document.addEventListener("DOMContentLoaded", function () {
     transport.bpm.value = 120;
     let currentNode = null
 
-
+    // MONOPHONIC SEQUENCER (Lock Step Operation through steps 1-8 linearly)
     let currentStepIndex = 0; // Tracks the current step in the table
 
     const loop = new Tone.Loop(function(time){
@@ -828,6 +830,49 @@ document.addEventListener("DOMContentLoaded", function () {
     }, stepLength)
 
 
+    //* POLYPHONIC SEQUENCER
+
+    function startPolyphonicSequencer() {
+        stopPolyphonicSequencer(); // clear any previous ones
+    
+        const tableRows = document.querySelectorAll("#dynamicTableBody tr");
+    
+        tableRows.forEach((row, index) => {
+            const step = storedSequencerTable[index];
+            const loop = new Tone.Loop((time) => {
+                if (step.status === "Active") {
+                const targetRow = tableRows[index];
+                targetRow.classList.add("table-active");
+                setTimeout(() => targetRow.classList.remove("table-active"), 100);
+        
+                if (targetRow.dataset.isGestureDataPoint) {
+                    const dataPoint = {
+                    parent: targetRow.dataset.parent,
+                    param: targetRow.dataset.param,
+                    value: targetRow.dataset.gestureDataPointValue
+                    };
+                    loadVersionWithGestureDataPoint(step.node.id, step.node.branch, dataPoint);
+                } else {
+                    loadVersion(step.node.id, step.node.branch);
+                    if (targetRow.dataset.gesture) {
+                    playGestureFromSequencerStep(JSON.parse(targetRow.dataset.gestureData), step.stepLength);
+                    }
+                }
+                }
+            }, step.stepLength);
+        
+            loop.start(0);
+            polyphonicLoops.push(loop);
+        });
+    }
+    
+    function stopPolyphonicSequencer() {
+        polyphonicLoops.forEach((loop) => loop.dispose());
+        polyphonicLoops = [];
+        loop.stop(); // also stop mono loop, just in case
+    }
+
+
     function setStepLengthFunction(func){
             // Perform actions based on the selected value
         if (func === "fixed") {
@@ -857,7 +902,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // Step (Change) cell
             const changeNodeCell = document.createElement("td");
-    
             row.appendChild(changeNodeCell);
 
             // Step (Change) cell
@@ -933,6 +977,8 @@ document.addEventListener("DOMContentLoaded", function () {
             // this will make it so that each row can be updated by clicks
             stepCell.addEventListener("click", () => {
                 if(selectedNode && hid.key.cmd){
+                    changeNodeCell.style.backgroundColor = docHistoryGraphStyling.nodeColours[selectedNode.label.split(' ')[0]]
+
                     // Update row values with data from selectedNode
                     stepCell.textContent = selectedNode.label;
                     // stepLengthCell.textContent = '4n'
@@ -1221,12 +1267,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Function to save the table's contents as a JS object
     function saveSequencerTable() {
+        console.warn("🧠 saveSequencerTable triggered!");
+        console.trace();
+
         const tableBody = document.getElementById("dynamicTableBody");
         const rows = tableBody.querySelectorAll("tr");
 
         // Extract the contents of each row into an array of objects
         const tableData = Array.from(rows).map(row => {
             const cells = row.querySelectorAll("td");
+
             if(row.dataset.id){
                 return {
                     stepChange: cells[1].textContent, // Step (Change) cell content
@@ -1251,6 +1301,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         });
 
+        console.log('yeah its here')
         console.log('tableData after saving:', tableData)
         const update = {
             cmd: 'updateSequencer',
@@ -1266,6 +1317,8 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // Populate the table with 8 rows on page load
+    console.log('create the table on load')
+
     createSequencerTable();
 
 
@@ -1389,6 +1442,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function setSequenceOrder(order){
         switch(order){
             case 'entry':
+                console.log('setSequenceOrder')
                 createSequencerTable(storedSequencerTable)
             break
             case 'topologicalSort':
@@ -2651,14 +2705,14 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
 
-        // right-click tap
-    historyDAG_cy.on('cxttap', 'node', (event) => {
-        const node = event.target; // The node that was right-clicked
-        if(hid.key.shift){
+    //     // right-click tap
+    // historyDAG_cy.on('cxttap', 'node', (event) => {
+    //     const node = event.target; // The node that was right-clicked
+    //     if(hid.key.shift){
 
-        }
+    //     }
         
-    });
+    // });
 
     // BPM Slider Control
     const bpmSlider = document.getElementById("bpmSlider");
@@ -2686,7 +2740,12 @@ document.addEventListener("DOMContentLoaded", function () {
     let isPlaying = false;
 
     startStopButton.addEventListener("click", async () => {
+        // we have this here to prevent both modes running simultaneously (which can happen if anything glitches out)
+        transport.stop();
+        loop.stop();
+        stopPolyphonicSequencer();
 
+        // start either the monophonic or polyphonic sequencer
         switch (sequencerMode){
             case 'mono':
                 if (isPlaying) {
@@ -2709,7 +2768,18 @@ document.addEventListener("DOMContentLoaded", function () {
             break
 
             case 'poly':
-
+                if (isPlaying) {
+                    transport.stop();
+                    stopPolyphonicSequencer(); // kill all row loops
+                    startStopButton.textContent = "Start Sequencer";
+                } else {
+                    await Tone.start();
+            
+                    transport.start();
+                    startPolyphonicSequencer(); // each row starts looping
+                    startStopButton.textContent = "Stop Sequencer";
+                }
+                isPlaying = !isPlaying;
             break
         }
         
@@ -2725,7 +2795,9 @@ document.addEventListener("DOMContentLoaded", function () {
             transport.stop();
             startStopButton.textContent = "Start Sequencer";
             isPlaying = !isPlaying;
-        }       
+        }      
+        console.log('clearSequencerButton')
+ 
         createSequencerTable() 
     });
 
