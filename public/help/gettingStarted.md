@@ -7,14 +7,12 @@ ELI5: Think of it as getting *really* creative with the undo/redo history of a s
 
 ## Quick Start
 
-1. Click **Join** on a room in the Lobby (left column). The **Synth App** will open. 
-2. In the Synth App, choose **File > Load Demo Synth**.
-3. Start patching. After the first patch edit, you’ll see the **Patch History** window open automatically.
-4. Click any **Help** button (`?`) to learn how to use the unique controls of teh **Patch History** window:
-   - Patch History Graph
-   - Query Tool
-   - History Sequencer
-   - Gesture Editor
+1. This app operates across several tabs. Some will open automatically.
+
+2. The first tab that will open has a **HELP button in the top-right corner.** Use that to get started making sounds!
+
+3. **Join** a room in the Forking Paths Lobby (left column of this page). The **Synth App** will open. 
+
 
 ## User Testing
 Please *please* contribute your thoughts about the app here: 
