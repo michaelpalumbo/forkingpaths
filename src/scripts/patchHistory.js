@@ -746,10 +746,10 @@ document.addEventListener("DOMContentLoaded", function () {
                     panToBranch(event.data.data)
                 break
 
-                case 'newSession':
+                case 'newPatchHistory':
                     console.log('newSession')
 
-                    createSequencerTable()
+                    resetSequencerTable() 
                     createGestureGraph()
                 break
 
@@ -2610,6 +2610,10 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
+    gestureCy.on("boxselect", "node", () => {
+
+    })
+
 
     document.getElementById("gestureEasing").addEventListener("change", (event) => { 
 
@@ -2851,7 +2855,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // }
             if (event.key === 'Meta' || event.key === 'Control') {
                 allowMultiSelect = false
-                historyBoxSelect = true
+                // historyBoxSelect = true
                 historyDAG_cy.userZoomingEnabled(true)
                 hid.key.cmd = false
                 // Hide a node by setting display to none
@@ -2980,49 +2984,49 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     // Listen for the select event on nodes
-    let historyBoxSelect = true // this is necessary because this event listener fires many times otherwise
-    historyDAG_cy.on("boxselect", "node", () => {
-        if(historyBoxSelect){
+    // let historyBoxSelect = true // this is necessary because this event listener fires many times otherwise
+    // historyDAG_cy.on("boxselect", "node", () => {
+    //     if(historyBoxSelect){
 
-            historyBoxSelect = false
-
-
-            // first remove the highlighting of any earlier selected nodes:
-            const sequencerNodes = historyDAG_cy.nodes('.sequencerNode');
-            if(sequencerNodes.length > 0){
-                sequencerNodes.forEach((node) => {
-                    node.removeClass("sequencerNode");
-                });
-            }
+    //         historyBoxSelect = false
 
 
-            let selected = historyDAG_cy.$("node:selected"); // Get all selected nodes
+    //         // first remove the highlighting of any earlier selected nodes:
+    //         const sequencerNodes = historyDAG_cy.nodes('.sequencerNode');
+    //         if(sequencerNodes.length > 0){
+    //             sequencerNodes.forEach((node) => {
+    //                 node.removeClass("sequencerNode");
+    //             });
+    //         }
+
+
+    //         let selected = historyDAG_cy.$("node:selected"); // Get all selected nodes
             
             
-            historyDAG_cy.edges().removeClass("sequencerEdge");
+    //         historyDAG_cy.edges().removeClass("sequencerEdge");
 
-            if (selected.length > 1) {
-                selected.addClass("sequencerNode");
+    //         if (selected.length > 1) {
+    //             selected.addClass("sequencerNode");
 
-                if(hid.key.cmd){
-                    // if the cmd key was held during selection, set these nodes as a gesture
-                    // createGestureGraph(selected)
-                }else {
-                    // if just shift was held down, update the sequencer table
-                    // update sequencer table
-                    replaceStepSequencerTable(selected)
-                }
+    //             if(hid.key.cmd){
+    //                 // if the cmd key was held during selection, set these nodes as a gesture
+    //                 // createGestureGraph(selected)
+    //             }else {
+    //                 // if just shift was held down, update the sequencer table
+    //                 // update sequencer table
+    //                 // replaceStepSequencerTable(selected)
+    //             }
 
 
-            }
+    //         }
 
-            // Reset the historyBoxSelect flag after a short delay
-            setTimeout(() => {
-                historyDAG_cy.$('node:selected').unselect();
-                historyBoxSelect = true;
-            }, 50); // Adjust the delay as needed to debounce the event
-        }
-    });
+    //         // Reset the historyBoxSelect flag after a short delay
+    //         setTimeout(() => {
+    //             historyDAG_cy.$('node:selected').unselect();
+    //             historyBoxSelect = true;
+    //         }, 50); // Adjust the delay as needed to debounce the event
+    //     }
+    // });
 
 
 
