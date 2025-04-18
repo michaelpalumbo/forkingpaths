@@ -18,6 +18,8 @@ You can:
 - ▶️ Press the play button to hear the full gesture  
 - 🔁 Loop gestures during playback  
 - ✏️ Drag points vertically to adjust their value (horizontal editing is not yet supported)
+- Zoom in using your mouse scrollwheel
+- Pan using click+drag anywhere within the whitespace
 
 No edits are committed to history until you click **Save** — allowing for free experimentation.
 
