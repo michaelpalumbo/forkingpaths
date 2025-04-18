@@ -1,73 +1,67 @@
-### History Graph
+### History Sequencer
 
-This graph shows every change you've made to the patch — like a branching version control system for synthesis.
+The sequencer lets you turn historical patch states and gestures into playable musical material. By arranging past changes into timed steps, you can transform nonlinear patch histories into structured compositions.
 
 ---
 
 ### Interface Overview
 
-Each **circle** in the graph represents a change  (e.g. parameter tweak, cable movement, or gesture) that you made to the synth.
+The History Sequencer is an 8-step table. Each row can be assigned to a change node from the graph or query tool. 
 
-- The **bottom-most node** is your starting point — usually a loaded synth file or a blank patch.
-- Arrows pointing **upward** indicate newer changes that build on earlier ones.
-- Some changes split into multiple paths (branches), or come back together (merges).
+1. Select a node in either the History Graph or Query Tool. 
+2. Next Hover over a sequencer row, specifically under the "Step" column. 
+3. While holding **Cmd (Mac)** or **Ctrl (PC)**, click that row to assign the change node to a step. The step’s background color updates to match the node type, and its metadata is stored for playback.
 
-The layout is organized to help you follow the flow of ideas from past to present.
+Each step can also be assigned a duration (note length) and loop behavior, depending on the current mode.
 
-### Actions
-
-You can:
-- 🖱 **Click a node** to instantly load that version into the synth, which you will immediately see in the synth and hear in audio. 
-- 🧩 **Click + drag one node onto another** to **merge** them  
-- 🖍 **Hover** to view tooltips showing timestamps, branch names, and module info  
-- 🖼 Zoom and pan freely with your mouse to explore the full patch history  
+When a step contains a gesture, it's length is automatically quantized to the step's length. 
 
 ---
 
-### Node Colors
+### Sequencer Modes
 
-Each node is styled by its change type.  
-Here’s what the colors represent:
+There are two modes:
 
-- <span style="color:#004cb8">●</span> `connect`: cable connected  
-- <span style="color:#b85c00">●</span> `disconnect`: cable disconnected  
-- <span style="color:#6b00b8">●</span> `paramUpdate`: knob or slider changed  
-- <span style="color:#00ffff">●</span> `gesture`: a modulation gesture was recorded  
-- <span style="color:#000000">●</span> `clear`: patch cleared  
-- <span style="color:#ccc">●</span> `blank_patch`: a new patch was started from scratch  
+#### Monophonic  
+- Plays one step at a time, in order  
+- Each step plays for its assigned duration (`4n`, `16n`, etc.)
 
----
+#### Polyphonic  
+- Each step loops independently at its own rate  
+- Faster steps (e.g., `16n`) loop more often than slower ones (e.g., `2n`)  
+- Steps overlap and interfere with each other, creating rich, glitchy textures  
 
-### Forking: A Non-Destructive Undo
-
-Most software gives you **undo/redo**, but it’s linear — if you go back, make a change, and continue, everything that came after is lost.
-
-**Forking** solves that.
-
-In *Forking Paths*, every time you go back to a previous node and make a new change in the synth, you **create a fork** — a new branch of patch history. Nothing is erased. All directions are preserved and visible.
-
-This means:
-- You can explore "what if?" moments without fear
-- You don’t lose past ideas when trying something new
-- You can compare, combine, or merge paths at any time
-
-**To create a fork:**
-1. Click on any earlier node in the graph
-2. Make a change to the patch (e.g. move a knob, add a module)
-3. A new node appears — this is your **forked path**
-
-Now you’ve started a new timeline of changes, without erasing the others.
+If a gesture and another change node both target the same parameter, they compete — modulating against each other in potentially interesting or unpredictable ways as the system keeps recontextualizing modulation over dynamically recalled values.
 
 ---
 
-### Merges
+### Step Order Modes
 
-Merging lets you combine two changes into a new hybrid change. 
-To create one:
-1. **Click + drag** one node onto another  
-2. A new merged node will appear with both parents  
-3. The synth will reflect the merged patch state
+You can choose how the sequencer advances through steps:
 
-Use merges to experiment, remix, or reconcile different directions in your creative process.
+- **Manual**: Fixed order from step 1 to 8 — like a classic step sequencer  
+- **Topological Sort**: Steps are ordered based on their position in the patch history graph (Coming soon!)
+- **Random**: Each step is chosen randomly on every beat (Coming soon!)
 
+---
+
+### Step Length Functions
+
+Each step’s duration can be set manually or algorithmically:
+
+- **User-Defined**: Choose a note length from a dropdown menu for each step  
+- **Closeness Centrality**: Duration is based on how connected the node is in the graph (Coming soon!)
+- **Euclidean Distance**: Each step and its next step are located in the history graph, and their spatial distance — scaled relative to the overall graph size — is mapped to a note length.
+
+These mappings let you embed aspects of the structure of your patch history directly into the rhythm of your sequence.
+
+---
+
+### Gesture Playback and Reuse
+
+When a gesture is assigned to a step:
+
+- It is **automatically quantized** to match the step’s duration  
+- Its shape is **preserved**, even if stretched or compressed  
+- Playback is synced to the current BPM and step timing  
 

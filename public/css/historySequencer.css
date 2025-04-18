@@ -103,10 +103,14 @@ html, body {
 .help-button {
   font-size: 1.2rem;
   padding: 0.2rem 0.5rem;
-  background: #eee;
+  /* background: #eee; */
   border: 1px solid #ccc;
   border-radius: 4px;
   cursor: pointer;
+  background-color: #e0f2ff;
+  color: #003049;
+  
+
 }
 
 
