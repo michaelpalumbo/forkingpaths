@@ -1,6 +1,6 @@
 import { marked } from 'marked'
 
-fetch('/README.md')
+fetch('/help/gettingStarted.md')
   .then(response => {
     if (!response.ok) {
       throw new Error(`Attempted to fetch README.md HTTP error! Status: ${response.status}`);
