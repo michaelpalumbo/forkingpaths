@@ -33,7 +33,11 @@ if(!localStorage.appSettings){
     appSettings = localStorage.getItem('appSettings')
 
 }
+
+
 let stepLength = '4n'
+let sequencerMode = "mono";
+let polyphonicLoops = []; // Will hold individual loops for each row
 
 let selectedModule = null
 // meta doc
@@ -1948,7 +1952,20 @@ document.addEventListener("DOMContentLoaded", function () {
     // * EVENT HANDLERS
     // * 
     // *
-    
+    // for switching between polyphonic and monophonic sequencing modes
+    const modeSelector = document.getElementById("sequencerMode");
+    modeSelector.addEventListener("change", (e) => {
+    sequencerMode = e.target.value;
+    if (sequencerMode === "poly") {
+            startPolyphonicSequencer();
+        } else {
+            stopPolyphonicSequencer();
+            currentStepIndex = 0;
+            loop.start(0); // your global mono loop
+        }
+    });
+
+
     const overlay = document.getElementById('historyNodeOverlay');
 
     // Show and move the overlay

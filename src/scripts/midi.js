@@ -31,16 +31,12 @@ let historyGraphNodesArray = [1,2,3,4,5,6,7,8,9]
 
         // cycle through graph
         if (e.controller.number == 8) {
-            // console.log(historyGraphNodesArray.length)
-            // const normalized = e.value / 127; // Convert to 0.0 – 1.0
-            if (e.controller.number === 8) {
+
                 if(!midiValues.controllers[e.controller.number]){
                     midiValues.controllers[e.controller.number] = {value: null}
                 }
 
                 const scaled = scaleMidiValue(e.rawValue, 0, 127, 0, historyGraphNodesArray.length - 1);
-
-                // console.log(midiValues.controllers[e.controller.number], e.rawValue)
                 if(midiValues.controllers[e.controller.number].value != scaled){
 
                  
@@ -55,11 +51,10 @@ let historyGraphNodesArray = [1,2,3,4,5,6,7,8,9]
 
                 }
 
-                // midiValues.controllers[e.controller.number] = e.rawValue
 
 
 
-            }
+            
 
         }
       });
@@ -67,6 +62,3 @@ let historyGraphNodesArray = [1,2,3,4,5,6,7,8,9]
     .catch((err) => console.error("WebMidi could not be enabled:", err));
 
 
-    function scaleMidiValue(input, inMin, inMax, outMin, outMax) {
-        return Math.round(((input - inMin) / (inMax - inMin)) * (outMax - outMin) + outMin);
-      }
