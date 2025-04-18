@@ -398,7 +398,14 @@ document.addEventListener("DOMContentLoaded", async () => {
             saveSequencerTable();
           });
         });
-      
+
+        // prevent right-click context menu popup on sequencer
+        const table = document.getElementById("dynamicTableBody2");
+        table.addEventListener("contextmenu", (e) => {
+            e.preventDefault();
+        });
+
+
         document.querySelectorAll("#dynamicTableBody2 tr").forEach((row, i) => {
             // if player clicks the 2nd cell, assign the change node to that row
             row.cells[1].addEventListener("click", () => {
@@ -411,6 +418,16 @@ document.addEventListener("DOMContentLoaded", async () => {
                 if (selectedNode && hid.key.cmd) {
                 updateStepRow(i, selectedNode, gestureData);
                 }
+            });
+
+            // to delete a step by clicking the node colour cell
+            row.cells[1].addEventListener("contextmenu", (e) => {
+                clearStepRow(i);
+
+            });
+            // to delete a step by clicking the node change cell
+            row.cells[0].addEventListener("contextmenu", (e) => {
+                clearStepRow(i);
             });
         });
       }
@@ -458,6 +475,39 @@ document.addEventListener("DOMContentLoaded", async () => {
       
         saveSequencerTable(); // Save the new state immediately
     }
+
+    function clearStepRow(index) {
+        const row = document.querySelectorAll("#dynamicTableBody2 tr")[index];
+        if (!row) return;
+      
+        const changeCell = row.cells[0];
+        const stepLabelCell = row.cells[1];
+        const stepLengthSelect = row.cells[2].querySelector("select");
+        const burstSelect = row.cells[3].querySelector("select");
+      
+        // Reset visuals
+        changeCell.style.backgroundColor = "";
+        stepLabelCell.textContent = "(Empty)";
+      
+        // Reset dropdowns
+        if (stepLengthSelect) stepLengthSelect.value = "4n";
+        if (burstSelect) burstSelect.value = "0";
+      
+        // Remove all data attributes
+        row.removeAttribute("data-id");
+        row.removeAttribute("data-label");
+        row.removeAttribute("data-branch");
+        row.removeAttribute("data-gesture");
+        row.removeAttribute("data-gestureData");
+        row.removeAttribute("data-isGestureDataPoint");
+        row.removeAttribute("data-gestureDataPointValue");
+        row.removeAttribute("data-param");
+        row.removeAttribute("data-parent");
+      
+        saveSequencerTable();
+    }
+
+      
     // use this to clear the sequencer
     function resetSequencerTable() {
         const tableRows = document.querySelectorAll("#dynamicTableBody2 tr");
@@ -489,7 +539,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
       
         saveSequencerTable(); // optional: refresh internal state
-      }
+    }
 
     const assignGestureToParam = document.getElementById("assignGestureToParam")
     // UI

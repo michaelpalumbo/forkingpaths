@@ -11,8 +11,9 @@ The History Sequencer is an 8-step table. Each row can be assigned to a change n
 1. Select a node in either the History Graph or Query Tool. 
 2. Next Hover over a sequencer row, specifically under the "Step" column. 
 3. While holding **Cmd (Mac)** or **Ctrl (PC)**, click that row to assign the change node to a step. The step’s background color updates to match the node type, and its metadata is stored for playback.
+4. To **clear** a step, right-click its row
 
-Each step can also be assigned a duration (note length) and loop behavior, depending on the current mode.
+Each step can also be assigned a duration (note length) and -- coming soon! -- loop behavior, depending on the current mode.
 
 When a step contains a gesture, it's length is automatically quantized to the step's length. 
 
