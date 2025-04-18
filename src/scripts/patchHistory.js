@@ -1955,13 +1955,19 @@ document.addEventListener("DOMContentLoaded", function () {
     // for switching between polyphonic and monophonic sequencing modes
     const modeSelector = document.getElementById("sequencerMode");
     modeSelector.addEventListener("change", (e) => {
-    sequencerMode = e.target.value;
-    if (sequencerMode === "poly") {
-            startPolyphonicSequencer();
+        sequencerMode = e.target.value;
+        console.warn('see this line in the code for next todo, thanks')
+        if (sequencerMode === "poly") {
+            // todo: if sequencer playback is active, stop whichever mode is currently running and start the selected mode
+            // i.e. comment out these 2 lines:
+            // loop.stop()
+            // startPolyphonicSequencer();
         } else {
-            stopPolyphonicSequencer();
-            currentStepIndex = 0;
-            loop.start(0); // your global mono loop
+            // todo: if sequencer playback is active, stop whichever mode is currently running and start the selected mode
+            // i.e. comment out these 3 lines:
+            // stopPolyphonicSequencer();
+            // currentStepIndex = 0;
+            // loop.start(0); // your global mono loop
         }
     });
 
@@ -2680,23 +2686,33 @@ document.addEventListener("DOMContentLoaded", function () {
     let isPlaying = false;
 
     startStopButton.addEventListener("click", async () => {
-        if (isPlaying) {
-            transport.stop();
-            // sequence.stop(0);
-            loop.stop()
-            startStopButton.textContent = "Start Sequencer";
-        } else {
-            await Tone.start(); // Required to start audio in modern browsers
 
-            // set the interval length based on this step's note length
-            loop.interval = storedSequencerTable[0].stepLength
-            stepLength = loop.interval
-            transport.start();
-            // sequence.start(0);
-            loop.start(0)
-            startStopButton.textContent = "Stop Sequencer";
+        switch (sequencerMode){
+            case 'mono':
+                if (isPlaying) {
+                    transport.stop();
+                    // sequence.stop(0);
+                    loop.stop()
+                    startStopButton.textContent = "Start Sequencer";
+                } else {
+                    await Tone.start(); // Required to start audio in modern browsers
+        
+                    // set the interval length based on this step's note length
+                    loop.interval = storedSequencerTable[0].stepLength
+                    stepLength = loop.interval
+                    transport.start();
+                    // sequence.start(0);
+                    loop.start(0)
+                    startStopButton.textContent = "Stop Sequencer";
+                }
+                isPlaying = !isPlaying;
+            break
+
+            case 'poly':
+
+            break
         }
-        isPlaying = !isPlaying;
+        
     });
 
     // Clear sequencer button
