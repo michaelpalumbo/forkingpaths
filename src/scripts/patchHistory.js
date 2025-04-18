@@ -33,6 +33,7 @@ if(!localStorage.appSettings){
     appSettings = localStorage.getItem('appSettings')
 
 }
+let stepLength = '4n'
 
 let selectedModule = null
 // meta doc
@@ -238,6 +239,9 @@ let midiValues = {
 
 
 window.addEventListener("load", () => {
+   
+
+
     WebMidi.enable()
     .then(() => {
         midiInput = WebMidi.inputs[0]; // select your MIDI device
@@ -291,7 +295,7 @@ window.addEventListener("load", () => {
 
 
 document.addEventListener("DOMContentLoaded", function () {
-
+    const assignGestureToParam = document.getElementById("assignGestureToParam")
     // UI
     // Get the select element by its ID
     const stepLengthFunctionSelect = document.getElementById("stepLengthFunction");
@@ -540,7 +544,6 @@ document.addEventListener("DOMContentLoaded", function () {
     // *
 
     function sendToMainApp(msg){
-        console.log(msg)
         window.opener?.postMessage(msg, '*');
     }
     
@@ -637,8 +640,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     gestureData.gesturePoints = gestureArray
                     gestureData.linearGesturePoints = gestureArray
-                    console.log(event.data)
-                    console.log(event.data.recallGesture)
+            
                     let playback = event.data.recallGesture
                     createGestureGraph(gestureArray, playback)
                 break
@@ -710,7 +712,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 panToBranch(latestNode)
                 if(selectedNode.label.split(' ')[0] === 'gesture'){
-                    console.log('line 710')
 
                     // load the gesture into the gesture viewer
                     sendToMainApp(
@@ -758,24 +759,32 @@ document.addEventListener("DOMContentLoaded", function () {
     // Set the initial BPM
     transport.bpm.value = 120;
     let currentNode = null
-    let stepLength = '4n'
+
 
     let currentStepIndex = 0; // Tracks the current step in the table
 
-    currentStepIndex = 0
     const loop = new Tone.Loop(function(time){
+        // ✅ Set current step's duration immediately
+        stepLength = storedSequencerTable[currentStepIndex].stepLength;
+        loop.interval = stepLength;
+        
+        console.log('index', currentStepIndex)
+        console.log('current step length:', stepLength)
+
         // Get the current step
         const currentStep = storedSequencerTable[currentStepIndex];
-        // set interval based on step length
-        loop.interval  = currentStep.stepLength
+
 
         // Highlight the current step in the table
         const tableRows = document.querySelectorAll("#dynamicTableBody tr");
         tableRows.forEach((row) => row.classList.remove("table-active"));
         const targetRow = tableRows[currentStepIndex];
+
         if (targetRow) targetRow.classList.add("table-active");
 
-        currentStepIndex = (currentStepIndex + 1) % storedSequencerTable.length;
+        
+        
+
         // if step is active, send request to load the version
         if (currentStep.status == "Active"){
 
@@ -803,8 +812,25 @@ document.addEventListener("DOMContentLoaded", function () {
 
             let historyNode = historyDAG_cy.getElementById(currentStep.node.id)
             highlightNode(historyNode)
+
+            // get the step length of the next row:
+            const burstSelect = targetRow.cells[2].querySelector('select'); // adjust index as needed
+            const currentValue = burstSelect.value;
+            console.log(`Selected burst value: ${currentValue}`);
         }
-    }, "4n")
+
+        // // set next step's interval based on step length
+        // let nextStepIndex = (currentStepIndex + 1) % storedSequencerTable.length;
+        // loop.interval = storedSequencerTable[nextStepIndex].stepLength
+        // // also update it for the initial loop
+   
+        // console.log('next index', currentStepIndex)
+
+        // console.log('next step length', stepLength)
+        // update step index
+        currentStepIndex = (currentStepIndex + 1) % storedSequencerTable.length;
+
+    }, stepLength)
 
 
     function setStepLengthFunction(func){
@@ -837,18 +863,64 @@ document.addEventListener("DOMContentLoaded", function () {
             row.appendChild(stepCell);
 
             // Step Length cell
-            const stepLengthCell = document.createElement("td");
+            const stepLengthTd = document.createElement("td");
+            const stepLengthSelect = document.createElement("select");
 
             // calculate step length based on step length function
 
-            stepLengthCell.textContent = "4n"; // Placeholder for step length
-            row.appendChild(stepLengthCell);
+            const lengthOptions = ['32n', '16n', '8n', '4n', '2n'];
+            lengthOptions.forEach((optionText, index) => {
+                const option = document.createElement('option');
 
-            // create status cell
-            const statusCell = document.createElement("td");
-            statusCell.textContent = `Active`; // Placeholder for step name
+                option.value = optionText;
+                option.textContent = optionText;
 
-            row.appendChild(statusCell);
+                if(index === 3){
+                    option.selected = true
+                }
+
+                stepLengthSelect.appendChild(option);
+            });
+
+            // 🔊 Add event listener for when user selects an option
+            stepLengthSelect.addEventListener('change', (e) => {
+                const selectedValue = e.target.value;
+                console.log(`Burst value changed to: ${selectedValue}`);
+                saveSequencerTable(); // Save updated values
+            });
+
+            // now that the select is built, add it to the td
+            stepLengthTd.appendChild(stepLengthSelect);
+            // now add it to the row
+            row.appendChild(stepLengthTd);
+
+            // create burst cell
+            const burstTd = document.createElement("td");
+            const burstSelect = document.createElement("select");
+            const burstOptions = [0, 1, 2, 3, 4, 5];
+            burstOptions.forEach((optionText, index) => {
+                const option = document.createElement('option');
+
+                option.value = optionText;
+                option.textContent = optionText;
+
+                if(index === 0){
+                    option.selected = true
+                }
+
+                burstSelect.appendChild(option);
+            });
+
+            // 🔊 Add event listener for when user selects an option
+            burstSelect.addEventListener('change', (e) => {
+                const selectedValue = e.target.value;
+                console.log(`Burst value changed to: ${selectedValue}`);
+                saveSequencerTable(); // Save updated values
+            });
+
+            
+            burstTd.appendChild(burstSelect);
+            row.appendChild(burstTd);
 
             row.dataset.id = node.id
             row.dataset.label = node.label
@@ -856,11 +928,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // Add click event listener to the row
             // this will make it so that each row can be updated by clicks
-            row.addEventListener("click", () => {
+            stepCell.addEventListener("click", () => {
                 if(selectedNode && hid.key.cmd){
                     // Update row values with data from selectedNode
                     stepCell.textContent = selectedNode.label;
-                    stepLengthCell.textContent = '4n'
+                    // stepLengthCell.textContent = '4n'
                     row.dataset.id = selectedNode.id
                     row.dataset.label = selectedNode.label
                     row.dataset.branch = selectedNode.branch
@@ -918,15 +990,70 @@ document.addEventListener("DOMContentLoaded", function () {
                 row.appendChild(stepCell);
         
                 // Step Length cell
-                const stepLengthCell = document.createElement("td");
-                stepLengthCell.textContent = rowData.stepLength || "4n"; // Fallback for default step length
-                row.appendChild(stepLengthCell);
+                const stepLengthTd = document.createElement("td");
+                const stepLengthSelect = document.createElement("select");
+
+                // calculate step length based on step length function
+
+                const lengthOptions = ['32n', '16n', '8n', '4n', '2n'];
+                lengthOptions.forEach((optionText, index) => {
+                    const option = document.createElement('option');
+
+                    option.value = optionText;
+                    option.textContent = optionText;
+
+                    if(index === 3){
+                        option.selected = true
+                    }
+
+                    stepLengthSelect.appendChild(option);
+                });
+
+                // 🔊 Add event listener for when user selects an option
+                stepLengthSelect.addEventListener('change', (e) => {
+                    const selectedValue = e.target.value;
+                    console.log(`Burst value changed to: ${selectedValue}`);
+                    saveSequencerTable(); // Save updated values
+                });
+
+                // now that the select is built, add it to the td
+                stepLengthTd.appendChild(stepLengthSelect);
+                // now add it to the row
+                row.appendChild(stepLengthTd);
+
+                // create burst cell
+                const burstTd = document.createElement("td");
+                const burstSelect = document.createElement("select");
+                const burstOptions = [0, 1, 2, 3, 4, 5];
+                burstOptions.forEach((optionText, index) => {
+                    const option = document.createElement('option');
+
+                    option.value = optionText;
+                    option.textContent = optionText;
+
+                    if(index === 0){
+                        option.selected = true
+                    }
+
+                    burstSelect.appendChild(option);
+                });
+
+                // 🔊 Add event listener for when user selects an option
+                burstSelect.addEventListener('change', (e) => {
+                    const selectedValue = e.target.value;
+                    console.log(`Burst value changed to: ${selectedValue}`);
+                    saveSequencerTable(); // Save updated values
+                });
+
+                
+                burstTd.appendChild(burstSelect);
+                row.appendChild(burstTd);
         
-                // Re-add click event listener to the row
-                row.addEventListener("click", () => {
+                // Re-add click event listener to the step cell
+                stepCell.addEventListener("click", () => {
                     if(hid.key.cmd){
                         stepCell.textContent = selectedNode.label;
-                        stepLengthCell.textContent = "4n"; // Example modification
+                        // stepLengthCell.textContent = "4n"; // Example modification
                         row.dataset.id = selectedNode.id
                         row.dataset.label = selectedNode.label
                         row.dataset.branch = selectedNode.branch
@@ -972,24 +1099,73 @@ document.addEventListener("DOMContentLoaded", function () {
                 row.appendChild(stepCell);
 
                 // Step Length cell
-                const stepLengthCell = document.createElement("td");
+                const stepLengthTd = document.createElement("td");
+                const stepLengthSelect = document.createElement("select");
 
                 // calculate step length based on step length function
 
-                stepLengthCell.textContent = "4n"; // Placeholder for step length
-                row.appendChild(stepLengthCell);
+                const lengthOptions = ['32n', '16n', '8n', '4n', '2n'];
+                lengthOptions.forEach((optionText, index) => {
+                    const option = document.createElement('option');
 
-                // create status cell
-                const statusCell = document.createElement("td");
-                statusCell.textContent = `Inactive`; // Placeholder for step name
-                row.appendChild(statusCell);
+                    option.value = optionText;
+                    option.textContent = optionText;
+
+                    if(index === 3){
+                        option.selected = true
+                    }
+
+                    stepLengthSelect.appendChild(option);
+                });
+
+                // 🔊 Add event listener for when user selects an option
+                stepLengthSelect.addEventListener('change', (e) => {
+                    const selectedValue = e.target.value;
+                    console.log(`Burst value changed to: ${selectedValue}`);
+                    saveSequencerTable(); // Save updated values
+                });
+
+                // now that the select is built, add it to the td
+                stepLengthTd.appendChild(stepLengthSelect);
+                // now add it to the row
+                row.appendChild(stepLengthTd);
+
+                // create burst cell
+                const burstTd = document.createElement("td");
+                const burstSelect = document.createElement("select");
+                const burstOptions = [0, 1, 2, 3, 4, 5];
+                burstOptions.forEach((optionText, index) => {
+                    const option = document.createElement('option');
+
+                    option.value = optionText;
+                    option.textContent = optionText;
+
+                    if(index === 0){
+                        option.selected = true
+                    }
+
+                    burstSelect.appendChild(option);
+                });
+
+                // 🔊 Add event listener for when user selects an option
+                burstSelect.addEventListener('change', (e) => {
+                    const selectedValue = e.target.value;
+                    console.log(`Burst value changed to: ${selectedValue}`);
+
+                    saveSequencerTable(); // Save updated values
+
+                });
+
                 
-                        // Add click event listener to the row
-                row.addEventListener("click", () => {
+                burstTd.appendChild(burstSelect);
+                row.appendChild(burstTd);
+                
+                // Add click event listener to the step cell
+                stepCell.addEventListener("click", () => {
                     if(selectedNode && hid.key.cmd){
                         // Update row values with data from selectedNode
                         stepCell.textContent = selectedNode.label;
-                        stepLengthCell.textContent = '4n'
+                        // stepLengthCell.textContent = '4n' //! need to update this value from the dropdown. 
 
                         row.dataset.branch = selectedNode.branch
                         row.dataset.id = selectedNode.id
@@ -1017,7 +1193,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         } 
         
       
-                        statusCell.textContent = 'Active'
+                        // statusCell.textContent = 'Active'
                         saveSequencerTable()
                     }
 
@@ -1039,7 +1215,8 @@ document.addEventListener("DOMContentLoaded", function () {
             if(row.dataset.id){
                 return {
                     stepChange: cells[0].textContent, // Step (Change) cell content
-                    stepLength: cells[1].textContent, // Step Length cell content
+                    stepLength: cells[1].querySelector('select').value, // Step Length selectmenu content
+                    stepBurst: cells[2].querySelector('select').value, // burst value
                     status: 'Active',
                     node: {
                         id: row.dataset.id,
@@ -1051,13 +1228,15 @@ document.addEventListener("DOMContentLoaded", function () {
                 // row doesn't have an assigned history node
                 return {
                     stepChange: cells[0].textContent, // Step (Change) cell content
-                    stepLength: cells[1].textContent, // Step Length cell content
+                    stepLength: cells[1].querySelector('select').value, // Step Length selectmenu content
+                    stepBurst: cells[2].querySelector('select').value, // burst value
                     status: 'Inactive',
                 }
             }
 
         });
 
+        console.log('tableData after saving:', tableData)
         const update = {
             cmd: 'updateSequencer',
             setting: 'tableData',
@@ -1101,6 +1280,7 @@ document.addEventListener("DOMContentLoaded", function () {
             for (let i = 0; i < storedSequencerTable.length - 1; i++) { 
                 // Update the 2nd column (Step Length) of the current row
                 const stepLengthCell = rows[i].children[1]; // 2nd cell of the current row
+                // console.log('stepLengthCell', stepLengthCell)
                 stepLengthCell.textContent = "4n"
                 storedSequencerTable[i].stepLength = "4n"
             }
@@ -1218,8 +1398,6 @@ document.addEventListener("DOMContentLoaded", function () {
             
             // Use setTimeout to schedule the callback
             const timeoutID = setTimeout(() => {
-                console.log(stepLength, delay)
-
                 if(gesture.assign.param === 'default'){
                     
                     let data = {
@@ -1295,7 +1473,6 @@ document.addEventListener("DOMContentLoaded", function () {
     // Function to dynamically generate the graph
     function createGestureGraph(nodes, playback) {
 
-        console.log('playback', playback)
         // store nodes in case window is resized
         gestureNodes = nodes
         // clear the gestureData.nodes
@@ -1480,13 +1657,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 let valuePosition = index / (parentWebAudioNode.parameters[nodes[0].param].values.length - 1);
                 let y = viewportHeight - (valuePosition * viewportHeight); // Inverted y-coordinate
 
-
-                console.log({
-                    group: 'nodes',
-                    classes: 'valueStamp',
-                    data: { id: 'valueStamp' + index, label: option },
-                    position: { x: 10, y: y } // 50px padding from bottom
-                })
                 elements.push(                {
                     group: 'nodes',
                     classes: 'valueStamp',
@@ -1620,7 +1790,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         kind: 'n/a'
                     })
 
-                    console.log('default', data)
+            
                 } else {
                     // process it using the gesturedata assign range data for scaling
 
@@ -1635,13 +1805,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     let targetParam = gestureData.assign
                     
                     sendToMainApp({
-                        cmd: 'playGesture',
-                        data: convertParams(storedParam, targetParam, value),
-                        kind: targetParam.kind
-
-                    })
-
-                    console.log('assign', {
                         cmd: 'playGesture',
                         data: convertParams(storedParam, targetParam, value),
                         kind: targetParam.kind
@@ -1684,7 +1847,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // }
 
 
-    const assignGestureToParam = document.getElementById("assignGestureToParam")
+    
     // function to modify selectmenu
     function modifyGestureParamAssign(cmd, data){
         assignGestureToParam.innerHTML = '';
@@ -1780,7 +1943,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Show and move the overlay
     historyDAG_cy.on('mouseover', 'node', function(evt) {
         const data = evt.target.data();
-        console.log(data)
+       
         let overlayString
         let labelArray = data.label.split(' ')
         switch(data.label.split(' ')[0]){
@@ -2023,7 +2186,7 @@ document.addEventListener("DOMContentLoaded", function () {
             gestureData.assign.kind = 'menu'
             gestureData.assign.range = selected.dataset.values
 
-            console.log(gestureData.assign)
+
             // enable the gesture clone button
             setGestureSaveButtonState(false)
         } else if (selected.dataset.min){
@@ -2373,7 +2536,7 @@ document.addEventListener("DOMContentLoaded", function () {
            
             // we want to handle gesture nodes differently than the others
             if(event.target.data().label.split(' ')[0] === 'gesture'){
-                console.log('line 2368')
+          
                 // node is a gesture
                 // store history info
                 gestureData.branch = event.target.data().branch
@@ -2496,6 +2659,10 @@ document.addEventListener("DOMContentLoaded", function () {
             startStopButton.textContent = "Start Sequencer";
         } else {
             await Tone.start(); // Required to start audio in modern browsers
+
+            // set the interval length based on this step's note length
+            loop.interval = storedSequencerTable[0].stepLength
+            stepLength = loop.interval
             transport.start();
             // sequence.start(0);
             loop.start(0)
@@ -2591,7 +2758,6 @@ document.addEventListener("DOMContentLoaded", function () {
     // *
     // Add an event listener for the 'change' event
     document.getElementById("getHistoryAnalysisMenu").addEventListener("change", (event) => {
-        // console.log(localStorage.getItem(appSettings.sequencer.stepLengthFunction)
         const selected = event.target.value; // Get the selected option's value
 
         switch(selected){
@@ -2678,35 +2844,29 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // document.getElementById("dijkstraBtn").addEventListener("click", () => {
     //     const sourceNodeID = topologicalSort(historyDAG_cy)[0].data().id
-    //     console.log(sourceNodeID)
     //     const dijkstra = historyDAG_cy.elements().dijkstra({
     //         root: historyDAG_cy.$(`#${sourceNodeID}`),
     //         directed: true
     //     });
-    //     console.log("Dijkstra's Algorithm Results:", dijkstra);
     // });
 
     // document.getElementById("topologicalSortBtn").addEventListener("click", () => {
 
     //     const sortedNodes = topologicalSort(historyDAG_cy);
-    //     console.log("Topologically Sorted Nodes:", sortedNodes);
     // });
 
     // document.getElementById("dependenciesBtn").addEventListener("click", () => {
     //     const selectedNode = historyDAG_cy.$("node:selected");
     //     const dependencies = selectedNode.outgoers("node");
-    //     console.log("Dependencies:", dependencies);
     // });
 
     // document.getElementById("prerequisitesBtn").addEventListener("click", () => {
     //     const selectedNode = historyDAG_cy.$("node:selected");
     //     const prerequisites = selectedNode.incomers("node");
-    //     console.log("Prerequisites:", prerequisites);
     // });
 
     // document.getElementById("connectedComponentsBtn").addEventListener("click", () => {
     //     const components = historyDAG_cy.elements().connectedComponents();
-    //     console.log("Connected Components:", components);
     // });
 
     // document.getElementById("bfsBtn").addEventListener("click", () => {
@@ -2714,7 +2874,6 @@ document.addEventListener("DOMContentLoaded", function () {
     //         roots: historyDAG_cy.$("#sourceNodeID"),
     //         directed: true
     //     });
-    //     console.log("Breadth-First Search Path:", bfs.path);
     // });
 
     // document.getElementById("dfsBtn").addEventListener("click", () => {
@@ -2722,20 +2881,17 @@ document.addEventListener("DOMContentLoaded", function () {
     //         roots: historyDAG_cy.$("#sourceNodeID"),
     //         directed: true
     //     });
-    //     console.log("Depth-First Search Path:", dfs.path);
     // });
 
     // document.getElementById("pageRankBtn").addEventListener("click", () => {
     //     const pageRank = historyDAG_cy.elements().pageRank();
     //     historyDAG_cy.nodes().forEach(node => {
-    //         console.log(`PageRank for ${node.id()}:`, pageRank.rank(node));
     //     });
     // });
 
     // document.getElementById("closenessCentralityBtn").addEventListener("click", () => {
     //     const closeness = historyDAG_cy.elements().closenessCentralityNormalized();
     //     historyDAG_cy.nodes().forEach(node => {
-    //         console.log(`Closeness Centrality for ${node.id()}:`, closeness.closeness(node));
     //     });
     // });
 
@@ -2759,7 +2915,6 @@ document.addEventListener("DOMContentLoaded", function () {
             loadVersion(clickedItem.dataset.id, clickedItem.dataset.branch)
             // if we requested a gesture, push it to the gesture player as well
             if(selectedNode.label.split(' ')[0] === 'gesture'){
-                console.log('line 2754')
 
                 sendToMainApp(
                     {
@@ -2801,7 +2956,6 @@ document.addEventListener("DOMContentLoaded", function () {
     
     // Add an event listener for the 'change' event
     sequenceOrderSelect.addEventListener("change", (event) => {
-        // console.log(localStorage.getItem(appSettings.sequencer.stepLengthFunction)
         const selectedValue = event.target.value; // Get the selected option's value
         setSequenceOrder(selectedValue)
         const update = {
@@ -2819,7 +2973,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Add an event listener for the 'change' event
     stepLengthFunctionSelect.addEventListener("change", (event) => {
-        // console.log(localStorage.getItem(appSettings.sequencer.stepLengthFunction)
         const selectedValue = event.target.value; // Get the selected option's value
         setStepLengthFunction(selectedValue)
         const update = {
