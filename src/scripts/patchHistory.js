@@ -374,12 +374,18 @@ document.addEventListener("DOMContentLoaded", function () {
         });
       
         document.querySelectorAll("#dynamicTableBody2 tr").forEach((row, i) => {
-          row.cells[1].addEventListener("click", () => {
-            if (selectedNode && hid.key.cmd) {
-                console.log(i, selectedNode, gestureData)
-              updateStepRow(i, selectedNode, gestureData);
-            }
-          });
+            // if player clicks the 2nd cell, assign the change node to that row
+            row.cells[1].addEventListener("click", () => {
+                if (selectedNode && hid.key.cmd) {
+                updateStepRow(i, selectedNode, gestureData);
+                }
+            });
+            // same as above, if player clicks the 1st cell, assign the change node to that row
+            row.cells[0].addEventListener("click", () => {
+                if (selectedNode && hid.key.cmd) {
+                updateStepRow(i, selectedNode, gestureData);
+                }
+            });
         });
       }
 
