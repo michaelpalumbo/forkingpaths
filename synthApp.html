@@ -52,10 +52,17 @@
                 </div>
             </div>
 
+            
             <div class="menu-item">
-                Help
+                Testing
                 <div class="dropdown">
-                    <button class="action-button" id="viewReadme">Instructions</button>
+                    <a href="https://forms.gle/aerpRUgBR7bH1xpB9" target="_blank" rel="noopener noreferrer">
+                        <button class="action-button">Give Feedback</button>
+                      </a>
+                    <!-- <button class="action-button" id="synthAppHelp">Instructions</button> -->
+                   
+                    <!-- <button class="action-button" id="viewReadme">Instructions</button> -->
+                    
                     <!-- <button class="action-button" id="">About</button> -->
                     <hr>
                     <button class="action-button" id="createGithubIssue">Bug Report</button>
@@ -66,7 +73,8 @@
             </div>
             
             <div class="menu-buttons">
-                <!-- <button class="action-button" id="audioToggleButton">Resume Audio</button> -->
+                <button class="help-button" id="synthAppHelp">Help</button>
+
                 <button class="action-button" id="clearGraph">Clear Cables</button>
                 <button class="action-button" id="audioToggleButton">Resume Audio</button>
                 
@@ -154,6 +162,12 @@
         </div>
 
     </div>
+
+    <!-- Hidden overlay container -->
+    <div id="helpOverlay" class="hidden">
+        <button id="closeHelpOverlay">×</button>
+        <div id="helpOverlayContent"></div>
+        </div>
 
     <script type="module" src="src/scripts/synthApp.js"></script>
 </body>

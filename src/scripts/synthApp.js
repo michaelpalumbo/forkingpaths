@@ -153,6 +153,25 @@ let temporaryCables = {
 }
 
 
+let synthAppHelpOverlay
+
+fetch(`/help/synthApp.md`)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`Failed to fetch ${key}.md — status ${response.status}`);
+      }
+      return response.text();
+    })
+    .then(markdownText => {
+        synthAppHelpOverlay = marked(markdownText);
+  
+    })
+    .catch(error => {
+        synthAppHelpOverlay = '<em>Help not available.</em>';
+        console.error(`Error loading ${key}.md:`, error);
+    });
+
+
 // *
 // *
 // *    APP
@@ -160,6 +179,10 @@ let temporaryCables = {
 // *
 
 document.addEventListener("DOMContentLoaded", function () {
+    // fetch the help overlay md for synthApp
+
+
+
     // first make sure that the mouseTracker div is positioned directly over the cytoscape div
     const divA = document.getElementById('cy');
     const divB = document.getElementById('mouseTracker');
@@ -264,37 +287,37 @@ document.addEventListener("DOMContentLoaded", function () {
         // console.warn('remember to uncomment the line above this warning')
 
     });
-    document.getElementById('viewReadme').addEventListener('click', () => {
-        fetch('./README.md') // Fetch the README file
-            .then(response => response.text())
-            .then(markdown => {
-                const html = marked(markdown); // Convert Markdown to HTML
-                const newTab = window.open(); // Open a new tab
-                newTab.document.write(`
-                    <!DOCTYPE html>
-                    <html lang="en">
-                    <head>
-                        <meta charset="UTF-8">
-                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                        <title>README</title>
-                        <style>
-                            body { font-family: Arial, sans-serif; line-height: 1.6; margin: 20px; }
-                            pre { background: #f4f4f4; padding: 10px; border-radius: 5px; overflow: auto; }
-                            code { background: #f4f4f4; padding: 2px 4px; border-radius: 3px; }
-                            h1, h2, h3, h4, h5, h6 { margin-top: 1.5em; }
-                            a { color: #0366d6; text-decoration: none; }
-                            a:hover { text-decoration: underline; }
-                        </style>
-                    </head>
-                    <body>
-                        ${html}
-                    </body>
-                    </html>
-                `);
-                newTab.document.close();
-            })
-            .catch(err => console.error('Error fetching README:', err));
-    });
+    // document.getElementById('viewReadme').addEventListener('click', () => {
+    //     fetch('./README.md') // Fetch the README file
+    //         .then(response => response.text())
+    //         .then(markdown => {
+    //             const html = marked(markdown); // Convert Markdown to HTML
+    //             const newTab = window.open(); // Open a new tab
+    //             newTab.document.write(`
+    //                 <!DOCTYPE html>
+    //                 <html lang="en">
+    //                 <head>
+    //                     <meta charset="UTF-8">
+    //                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    //                     <title>README</title>
+    //                     <style>
+    //                         body { font-family: Arial, sans-serif; line-height: 1.6; margin: 20px; }
+    //                         pre { background: #f4f4f4; padding: 10px; border-radius: 5px; overflow: auto; }
+    //                         code { background: #f4f4f4; padding: 2px 4px; border-radius: 3px; }
+    //                         h1, h2, h3, h4, h5, h6 { margin-top: 1.5em; }
+    //                         a { color: #0366d6; text-decoration: none; }
+    //                         a:hover { text-decoration: underline; }
+    //                     </style>
+    //                 </head>
+    //                 <body>
+    //                     ${html}
+    //                 </body>
+    //                 </html>
+    //             `);
+    //             newTab.document.close();
+    //         })
+    //         .catch(err => console.error('Error fetching README:', err));
+    // });
 
 
     //*
@@ -1970,7 +1993,31 @@ document.addEventListener("DOMContentLoaded", function () {
 //* UI UPDATES
 //* Functions that directly handle updating DOM elements & cytoscape
 //*
-    // centralize the overlay removal logic
+    
+    // * HELP OVERLAYS
+    let activeHelpKey = null;
+
+    function toggleHelpOverlay(key, columnSide = "left") {
+        const overlay = document.getElementById("helpOverlay");
+        const content = document.getElementById("helpOverlayContent");
+        
+        if (activeHelpKey === key && !overlay.classList.contains("hidden")) {
+            overlay.classList.add("hidden");
+            
+            activeHelpKey = null;
+            return;
+        }
+        // console.log(key, columnSide, helpTexts[key])
+        content.innerHTML = synthAppHelpOverlay || "<em>Help not available.</em>";
+        // document.getElementById('helpOverlayContent').innerHTML = "<h3>Hello</h3><p>This is a test.</p>";
+
+
+        overlay.style.left = columnSide === "left" ? "50%" : "0%";
+        overlay.classList.remove("hidden");
+        activeHelpKey = key;
+    }
+
+// centralize the overlay removal logic
     function removeUIOverlay(cmd, data){
 
         switch(cmd){
@@ -2788,6 +2835,16 @@ document.addEventListener("DOMContentLoaded", function () {
         window.open("https://github.com/michaelpalumbo/forkingpaths/issues/new", "_blank");
     });
         
+
+    document.getElementById("synthAppHelp").addEventListener("click", () => {
+        toggleHelpOverlay("synthAppHelp", "left");
+    });
+    
+    document.getElementById("closeHelpOverlay").addEventListener("click", () => {
+        document.getElementById("helpOverlay").classList.add("hidden");
+        activeHelpKey = null;
+    });
+
 
     // });
 
