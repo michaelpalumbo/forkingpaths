@@ -476,6 +476,47 @@ document.addEventListener("DOMContentLoaded", async () => {
         saveSequencerTable(); // Save the new state immediately
     }
 
+    function updateStepLength(index, nodeData, gestureData = null) {
+        const row = document.querySelectorAll("#dynamicTableBody2 tr")[index];
+        if (!row) return;
+      
+        const changeCell = row.cells[0];
+        const stepLabelCell = row.cells[1];
+      
+        // Set background color based on change node label
+        const labelKey = nodeData.label.split(" ")[0];
+        changeCell.style.backgroundColor = docHistoryGraphStyling.nodeColours[labelKey] || "#888";
+      
+        // Set label text and dataset info
+        const label = nodeData.label;
+        stepLabelCell.textContent = label;
+      
+        row.dataset.id = nodeData.id;
+        row.dataset.label = label;
+        row.dataset.branch = nodeData.branch;
+      
+        // Handle gesture metadata
+        if (label.startsWith("gesture")) {
+          row.dataset.gesture = true;
+          row.dataset.gestureData = JSON.stringify(gestureData);
+        }
+      
+        if (nodeData.gestureDataPoint) {
+          const abrv = `${nodeData.parents.split('_')[0]}_${nodeData.parents.split('_')[1]}`;
+          const gestureLabel = `gesturePoint: ${abrv}:${nodeData.param}:${nodeData.value}`;
+          stepLabelCell.textContent = gestureLabel;
+      
+          row.dataset.label = gestureLabel;
+          row.dataset.isGestureDataPoint = true;
+          row.dataset.gestureDataPointValue = nodeData.value;
+          row.dataset.param = nodeData.param;
+          row.dataset.parent = nodeData.parents;
+          row.dataset.id = nodeData.historyID; // override with gesture node ID
+        }
+      
+        saveSequencerTable(); // Save the new state immediately
+    }
+
     function clearStepRow(index) {
         const row = document.querySelectorAll("#dynamicTableBody2 tr")[index];
         if (!row) return;
@@ -1671,14 +1712,12 @@ document.addEventListener("DOMContentLoaded", async () => {
             return
         }
         const maxDistance = calculateMaxEuclideanDistance()
-
-        
         const tableBody = document.getElementById("dynamicTableBody2");
         const rows = tableBody.querySelectorAll("tr");
 
 
         for (let i = 0; i < storedSequencerTable.length - 1; i++) {
-            if(!storedSequencerTable[i].node){
+            if(!storedSequencerTable[i].node || !storedSequencerTable[i + 1].node){
                 continue
             }
             const currentNodeID = storedSequencerTable[i].node.id;
@@ -1700,10 +1739,11 @@ document.addEventListener("DOMContentLoaded", async () => {
             
 
             // Update the 2nd column (Step Length) of the current row
-            const stepLengthCell = rows[i].children[1]; // 2nd cell of the current row
+            const stepLengthCell = rows[i].cells[2].querySelector("select");; // stepLength selectmenu
             // Map a distance value to a corresponding musical note length in Tone.js based on a defined range.
-            stepLengthCell.textContent = mapDistanceToNoteLength(distance.toFixed(2), maxDistance)
+            stepLengthCell.value = mapDistanceToNoteLength(distance.toFixed(2), maxDistance)
             storedSequencerTable[i].stepLength = stepLengthCell.textContent
+            console.log(stepLengthCell.value)
 
         }
         saveSequencerTable()
