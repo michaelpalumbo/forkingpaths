@@ -2567,8 +2567,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         setGestureSaveButtonState(true)
         // we need this parentNode to know where to create a new branch from for the cloned gesture
         let sourceGestureNode = historyDAG_cy.getElementById(gestureData.historyID)
-        let parentNode = sourceGestureNode.incomers('node').data();
-        
+        // this previous mode set the saved gesture to have the same parent as its source gesture, but that is misleading. 
+        // let parentNode = sourceGestureNode.incomers('node').data();
+        let parentNode = sourceGestureNode.data()
+
         let scaledValues = []        
         let targetParam 
         let data
