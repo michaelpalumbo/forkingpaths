@@ -1000,6 +1000,12 @@ document.addEventListener("DOMContentLoaded", async () => {
                 selectedNode = latestNode.data()
 
                 panToBranch(latestNode)
+
+                if(!selectedNode.label){
+                    // dealing with a node that doesn't have the info we need yet
+                    console.warn('node does not have the info needed to display they hover tooltip', selectedNode)
+                    return
+                }
                 if(selectedNode.label.split(' ')[0] === 'gesture'){
 
                     // load the gesture into the gesture viewer
@@ -2406,8 +2412,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Show and move the overlay
     historyDAG_cy.on('mouseover', 'node', function(evt) {
         const data = evt.target.data();
-       
         let overlayString
+        if(!data.label){
+            // dealing with a node that doesn't have the info we need yet
+            console.warn('node does not have the info needed to display they hover tooltip', data)
+            return
+        }
         let labelArray = data.label.split(' ')
         switch(data.label.split(' ')[0]){
             case 'loaded':
@@ -3295,7 +3305,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             break
 
             case 'getMerges':
-                console.warn('getMerges not setup yet')
+                populateAnalysisNodeList(historyDAG_cy.nodes(`[label *= "merge"]`).map((node) => node.data()), 'All Merges')
             break
 
             case 'getSelectedModule':
