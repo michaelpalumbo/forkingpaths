@@ -364,16 +364,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     
         // Burst select
         const burstCell = document.createElement("td");
-        const burstSelect = document.createElement("select");
-        burstSelect.classList.add("burst-select");
-        burstOptions.forEach((opt, index) => {
-            const option = document.createElement("option");
-            option.value = opt;
-            option.textContent = opt;
-            if (index === 0) option.selected = true;
-            burstSelect.appendChild(option);
-        });
-        burstCell.appendChild(burstSelect);
+        // const burstSelect = document.createElement("select");
+        // burstSelect.classList.add("burst-select");
+        // burstOptions.forEach((opt, index) => {
+        //     const option = document.createElement("option");
+        //     option.value = opt;
+        //     option.textContent = opt;
+        //     if (index === 0) option.selected = true;
+        //     burstSelect.appendChild(option);
+        // });
+        // burstCell.appendChild(burstSelect);
         row.appendChild(burstCell);
     
         // Append the row
@@ -524,7 +524,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const changeCell = row.cells[0];
         const stepLabelCell = row.cells[1];
         const stepLengthSelect = row.cells[2].querySelector("select");
-        const burstSelect = row.cells[3].querySelector("select");
+        // const burstSelect = row.cells[3].querySelector("select"); //! removed this
       
         // Reset visuals
         changeCell.style.backgroundColor = "";
@@ -557,7 +557,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           const changeCell = row.cells[0]; // color cell
           const stepLabelCell = row.cells[1]; // label cell
           const stepLengthSelect = row.cells[2].querySelector("select"); // length dropdown
-          const burstSelect = row.cells[3].querySelector("select"); // burst dropdown
+        //   const burstSelect = row.cells[3].querySelector("select"); //! removed this
       
           // Reset visual and text content
           changeCell.style.backgroundColor = "";
@@ -1642,7 +1642,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 return {
                     stepChange: cells[1].textContent, // Step (Change) cell content
                     stepLength: cells[2].querySelector('select').value, // Step Length selectmenu content
-                    stepBurst: cells[3].querySelector('select').value, // burst value
+                    // stepBurst: cells[3].querySelector('select').value, //! removed this
                     status: 'Active',
                     node: {
                         id: row.dataset.id,
@@ -1655,7 +1655,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 return {
                     stepChange: cells[1].textContent, // Step (Change) cell content
                     stepLength: cells[2].querySelector('select').value, // Step Length selectmenu content
-                    stepBurst: cells[3].querySelector('select').value, // burst value
+                    // stepBurst: cells[3].querySelector('select').value, //! removed this 
                     status: 'Inactive',
                 }
             }
@@ -2415,7 +2415,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         let overlayString
         if(!data.label){
             // dealing with a node that doesn't have the info we need yet
-            console.warn('node does not have the info needed to display they hover tooltip', data)
+            console.warn('node does not have the info needed to display the hover tooltip', data)
             return
         }
         let labelArray = data.label.split(' ')
@@ -2440,10 +2440,14 @@ document.addEventListener("DOMContentLoaded", async () => {
             break
 
             case 'gesture':
+                const module = labelArray[labelArray.length - 1];
+                const param = labelArray.slice(1, -1).join(" ");
+
+                console.log(module, param)
                 overlayString = `
                     <strong>Change Node:</strong> Gesture<br>
-                    <strong>Module:</strong> ${labelArray[2]}<br>
-                    <strong>Parameter:</strong> ${labelArray[1]}<br><br>
+                    <strong>Module:</strong> ${module}<br>
+                    <strong>Parameter:</strong> ${param}<br><br>
                     <strong>Branch:</strong> ${data.branch}<br>
                 `;
 
