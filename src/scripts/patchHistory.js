@@ -2442,8 +2442,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             case 'gesture':
                 const module = labelArray[labelArray.length - 1];
                 const param = labelArray.slice(1, -1).join(" ");
-
-                console.log(module, param)
                 overlayString = `
                     <strong>Change Node:</strong> Gesture<br>
                     <strong>Module:</strong> ${module}<br>
