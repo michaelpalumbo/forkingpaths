@@ -410,15 +410,24 @@ document.addEventListener("DOMContentLoaded", async () => {
             // if player clicks the 2nd cell, assign the change node to that row
             row.cells[1].addEventListener("click", () => {
                 if (selectedNode && hid.key.cmd) {
-                updateStepRow(i, selectedNode, gestureData);
-                setSequencerSaveButtonState(false)
+                    if(selectedNode.label.split(' ')[0] === 'sequence'){
+                        alert('adding sequence changeNodes to a sequencer step not yet supported (coming soon!)')
+                    } else {
+                        updateStepRow(i, selectedNode, gestureData);
+                        setSequencerSaveButtonState(false)
+                    }
+  
                 }
             });
             // same as above, if player clicks the 1st cell, assign the change node to that row
             row.cells[0].addEventListener("click", () => {
                 if (selectedNode && hid.key.cmd) {
-                updateStepRow(i, selectedNode, gestureData);
-                setSequencerSaveButtonState(false)
+                    if(selectedNode.label.split(' ')[0] === 'sequence'){
+                        alert('adding sequence changeNodes to a sequencer step not yet supported (coming soon!)')
+                    } else {
+                        updateStepRow(i, selectedNode, gestureData);
+                        setSequencerSaveButtonState(false)
+                    }
                 }
             });
 
