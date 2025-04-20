@@ -22,15 +22,6 @@
             <h2>Forking Paths: Synth View</h2>
             <button class="help-button" id="synthAppHelp">Help</button>
           </div>
-        
-        <!-- <div id="leftColumn">
-            <h3> Modules Library </h3>
-            <div id="modulesLibraryContainer">
-                <ul id="moduleList"></ul>
-            </div>
-            
-            
-        </div> -->
 
         <div id="synthAndHistoryController">
             <div id="cy"></div>
@@ -90,28 +81,23 @@
                   </div>
                 </div>
               </div>
-              
+            <!-- ! todo: figure out where to place this -->
+            <!-- <button class="action-button" id="clearGraph">Clear Cables</button> -->
             
-            <h5 class="mb-3">Collaboration</h5>
-          
-            <button class="action-button" id="clearGraph">Clear Cables</button>
+            <h1 class="mb-3">Collaboration Tools</h1>
 
             <div class="mb-4">
-              <h6>Patch Tools</h6>
-              <button class="btn btn-primary btn-sm me-1 mb-1" onclick="saveCurrentPatch()">Save</button>
+              <h2>Patch Tools</h2>
+              <!-- <button class="btn btn-primary btn-sm me-1 mb-1" onclick="saveCurrentPatch()">Save</button> -->
               <button class="btn btn-outline-secondary btn-sm mb-1" onclick="loadPrivatePatch()">Load Private</button>
               <button class="btn btn-success btn-sm me-1 mb-1" onclick="proposeMerge()">Propose Merge</button>
               <button class="btn btn-danger btn-sm mb-1" onclick="proposeReplace()">Propose Replace</button>
             </div>
           
-            <div class="mb-4">
-              <h6>Chat</h6>
-              <div class="border p-2 mb-2 bg-white" id="chatMessages" style="height: 100px; overflow-y: auto;"></div>
-              <input type="text" id="chatInput" class="form-control form-control-sm" placeholder="Type message..." onkeydown="if(event.key==='Enter'){sendChat()}">
-            </div>
+
           
             <div class="mb-4">
-              <h6>Game Mode</h6>
+              <h2>Patching Modes</h2>
               <div class="form-check">
                 <input class="form-check-input" type="checkbox" id="editLimitToggle" onchange="toggleEditLimit()">
                 <label class="form-check-label" for="editLimitToggle">5 Edits Per Turn</label>
@@ -120,13 +106,18 @@
             </div>
           
             <div>
-              <h6>Status</h6>
-              <ul class="list-unstyled mb-0">
-                <li><strong>You</strong> (host)</li>
-                <li>Zack</li>
-              </ul>
-              <small class="text-muted" id="lastUpdateTime">Last update: just now</small><br>
-              <small class="text-muted" id="roomInfo">Room: abc123</small>
+                <h2>Status</h2>
+                <ul class="list-unstyled mb-0">
+                    <li><strong>You</strong> (host)</li>
+                    <li>Zack</li>
+                </ul>
+                <small class="text-muted" id="lastUpdateTime">Last update: just now</small><br>
+                <small class="text-muted" id="roomInfo">Room: abc123</small>
+            </div>
+            <div class="mb-4">
+                <h2>Chat</h2>
+                <div class="border p-2 mb-2 bg-white" id="chatMessages" style="height: 100px; overflow-y: auto;"></div>
+                <input type="text" id="chatInput" class="form-control form-control-sm" placeholder="Type message..." onkeydown="if(event.key==='Enter'){sendChat()}">
             </div>
         </div>
           
