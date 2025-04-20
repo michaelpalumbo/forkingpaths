@@ -36,6 +36,7 @@ if(!localStorage.appSettings){
 }
 
 
+
 let stepLength = '4n'
 let sequencerMode = "mono";
 let polyphonicLoops = []; // Will hold individual loops for each row
@@ -323,7 +324,8 @@ window.addEventListener("load", () => {
 document.addEventListener("DOMContentLoaded", async () => {
 
 
-
+    // disable the sequencer save button
+    setGestureSaveButtonState(true)
 
     // setup sequencer table
     function generateSequencerTable() {
@@ -407,27 +409,32 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
         document.querySelectorAll("#dynamicTableBody2 tr").forEach((row, i) => {
+            
             // if player clicks the 2nd cell, assign the change node to that row
             row.cells[1].addEventListener("click", () => {
                 if (selectedNode && hid.key.cmd) {
                 updateStepRow(i, selectedNode, gestureData);
+                setSequencerSaveButtonState(false)
                 }
             });
             // same as above, if player clicks the 1st cell, assign the change node to that row
             row.cells[0].addEventListener("click", () => {
                 if (selectedNode && hid.key.cmd) {
                 updateStepRow(i, selectedNode, gestureData);
+                setSequencerSaveButtonState(false)
                 }
             });
 
             // to delete a step by clicking the node colour cell
             row.cells[1].addEventListener("contextmenu", (e) => {
                 clearStepRow(i);
+                setSequencerSaveButtonState(false)
 
             });
             // to delete a step by clicking the node change cell
             row.cells[0].addEventListener("contextmenu", (e) => {
                 clearStepRow(i);
+                setSequencerSaveButtonState(false)
             });
         });
       }
@@ -474,47 +481,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
       
         saveSequencerTable(); // Save the new state immediately
-    }
-
-    function updateStepLength(index, nodeData, gestureData = null) {
-        const row = document.querySelectorAll("#dynamicTableBody2 tr")[index];
-        if (!row) return;
-      
-        const changeCell = row.cells[0];
-        const stepLabelCell = row.cells[1];
-      
-        // Set background color based on change node label
-        const labelKey = nodeData.label.split(" ")[0];
-        changeCell.style.backgroundColor = docHistoryGraphStyling.nodeColours[labelKey] || "#888";
-      
-        // Set label text and dataset info
-        const label = nodeData.label;
-        stepLabelCell.textContent = label;
-      
-        row.dataset.id = nodeData.id;
-        row.dataset.label = label;
-        row.dataset.branch = nodeData.branch;
-      
-        // Handle gesture metadata
-        if (label.startsWith("gesture")) {
-          row.dataset.gesture = true;
-          row.dataset.gestureData = JSON.stringify(gestureData);
-        }
-      
-        if (nodeData.gestureDataPoint) {
-          const abrv = `${nodeData.parents.split('_')[0]}_${nodeData.parents.split('_')[1]}`;
-          const gestureLabel = `gesturePoint: ${abrv}:${nodeData.param}:${nodeData.value}`;
-          stepLabelCell.textContent = gestureLabel;
-      
-          row.dataset.label = gestureLabel;
-          row.dataset.isGestureDataPoint = true;
-          row.dataset.gestureDataPointValue = nodeData.value;
-          row.dataset.param = nodeData.param;
-          row.dataset.parent = nodeData.parents;
-          row.dataset.id = nodeData.historyID; // override with gesture node ID
-        }
-      
-        saveSequencerTable(); // Save the new state immediately
+        setGestureSaveButtonState(false)
     }
 
     function clearStepRow(index) {
@@ -3473,8 +3440,91 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
     // SEQUENCER
+    
+    function setSequencerSaveButtonState(state){
+        // enable the gesture clone button
+        document.getElementById("saveSequenceButton").disabled = state;
+    }
+
+    const saveSequenceButton = document.getElementById("saveSequenceButton");
+
+    saveSequenceButton.addEventListener("click", async () => {
+        // re-disable the save button
+        setSequencerSaveButtonState(true)
+        let data = 'test'
+        sendToMainApp(
+            {
+                cmd: "saveSequence",
+                data: data
+            }
+        );
+        // we need this parentNode to know where to create a new branch from for the cloned gesture
+        // let sourceGestureNode = historyDAG_cy.getElementById(gestureData.historyID)
+        // let parentNode = sourceGestureNode.incomers('node').data();
+        
+        // let scaledValues = []        
+        // let targetParam 
+        // let data
+
+        
+        
+        // if(gestureData.assign.param === 'default'){
+        //     // in this case, we have simply modified the gesture and want to save it in the history graph
+        //     // so just grab all the values as they are currently
+        //     gestureData.gesturePoints.forEach((point)=>{
+        //         let value = point.value
+        //         scaledValues.push(value)
+        //     })
+        //     // load into obj
+        //     data = { 
+        //         parentNode: parentNode, 
+        //         assignTo: {
+        //             parent: gestureData.gesturePoints[0].parent,
+        //             param: gestureData.gesturePoints[0].param,
+        //             // range: null // not needed for this operation
+        //         },
+        //         scaledValues: scaledValues,
+        //         timestamps: gestureData.timestamps
+        //     }
+       
+        
+        // } else {
+        //     // we are cloning the gesture onto a different param, so we now we need to map the values
+        //     targetParam = gestureData.assign
+
+        //     // if(gestureData.assign.kind === 'menu') {
+        //     //     // we need to handle menu param conversion differently
+        //     //     gestureData.gesturePoints.forEach((point)=>{
+        //     //         let storedParam = meta.synthFile.audioGraph.modules[point.parent].moduleSpec.parameters[point.param]
+        //     //         let value = point.value
+        //     //         convertParams(storedParam, targetParam, value).value
+        //     //     })
 
 
+        //     // } else {
+        //         // dealing with a knob
+        //         // get the updated param value (user may have made edits to gesture)
+        //         // scale it to the range of the newly assigned param
+        //         gestureData.gesturePoints.forEach((point)=>{
+        //             let storedParam = meta.synthFile.audioGraph.modules[point.parent].moduleSpec.parameters[point.param]
+        //             let value = point.value
+        //             scaledValues.push(convertParams(storedParam, targetParam, value).value)
+        //         })
+
+            
+        
+        //         data = { 
+        //             parentNode: parentNode, 
+        //             assignTo: gestureData.assign,
+        //             scaledValues: scaledValues,
+        //             timestamps: gestureData.timestamps
+        //         }
+        //     // }
+            
+        // }
+
+
+    })
     
     // Add an event listener for the 'change' event
     sequenceOrderSelect.addEventListener("change", (event) => {
