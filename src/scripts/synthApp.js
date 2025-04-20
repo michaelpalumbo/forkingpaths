@@ -649,6 +649,9 @@ document.addEventListener("DOMContentLoaded", function () {
                         },
                         connections: []
                     }
+                },
+                amDoc.sequencer = {
+                    tableData: []
                 }
                 // paramUIOverlays = {
 
@@ -2721,15 +2724,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 console.log('received sequence for saving:', event.data)
                 amDoc = applyChange(amDoc, (amDoc) => {
-                    // amDoc.synth.graph.modules[msg.assignTo.parent].params[msg.assignTo.param] = msg.scaledValues;
-                    // audioGraphDirty = true;
+                    // set the sequencer table data
+                    if(!amDoc.sequencer){
+                        amDoc.sequencer = {
+                            tableData: []
+                        }
+                    }
+                    amDoc.sequencer.tableData = event.data.data
                     // set the change type
                     amDoc.changeType = {
                         msg: 'sequence',
-                        tableData: null,
+                        tableData: event.data.data,
                         timestamp: new Date().getTime()
                     }
-                }, onChange, `sequence todo:sequenceNaming`);
+                }, onChange, `sequence todo:sequenceNaming tableData:${JSON.stringify(event.data.data)}`);
 
             break
             case 'updateSequencer':

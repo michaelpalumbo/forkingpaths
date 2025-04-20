@@ -2379,6 +2379,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Show and move the overlay
     historyDAG_cy.on('mouseover', 'node', function(evt) {
         const data = evt.target.data();
+        console.log(data)
         let overlayString
         if(!data.label){
             // dealing with a node that doesn't have the info we need yet
@@ -2507,6 +2508,23 @@ document.addEventListener("DOMContentLoaded", async () => {
 
                 } 
 
+            break
+
+            case 'sequence':
+                overlayString = `
+                <strong>Change Node:</strong> Sequence<br>    
+                <strong>Name</strong> ${labelArray[1]}<br><br>
+
+                `
+                // add seq steps to the string
+                data.database.forEach((step, index) => {
+                    if(step.stepChange != '(Empty)'){
+                        
+                        overlayString += `<strong>Step ${index}:</strong> ${step.stepChange}<br>\n<strong>Length:</strong> ${step.stepLength}<br>\n`
+                    }
+                })
+                overlayString += `\n<strong>Branch:</strong> ${data.branch}<br>
+            `;
             break
 
             case "merge":
@@ -3456,7 +3474,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         sendToMainApp(
             {
                 cmd: "saveSequence",
-                data: data
+                data: storedSequencerTable
             }
         );
         // we need this parentNode to know where to create a new branch from for the cloned gesture
