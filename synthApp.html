@@ -107,26 +107,47 @@
                 <div class="menubar">
                   <div class="menu-item">File
                     <div class="dropdown">
-                      <button id="loadDemoSynthButton">Load Demo Synth</button>
-                      <!-- ... -->
+                        <button id="loadDemoSynthButton">Load Demo Synth</button>
+                        <input type="file" id="loadSynthButton" accept=".fpsynth" />
+                        <label for="loadSynthButton" class="custom-file-button">Load Synth From Disk...</label>     
+    
+                        <hr>
+                        <button disabled id="newPatchHistory">New Patch History</button> 
+                        <!-- <input type="file" id="loadPatchHistoryButton" accept=".forkingpaths" /> -->
+                        <button id="loadPatchHistory">Load Patch History...</button> 
+                        <button id="saveButton">Save Patch History</button>
+                       
                     </div>
                   </div>
                   <div class="menu-item">View
                     <div class="dropdown">
-                      <button id="openHistoryWindow">Open Patch History</button>
-                      <!-- ... -->
+                        <!-- <div id="documentName"></div> -->
+                        <button id="openHistoryWindow">Open Patch History</button>
+                        <button id="openSynthDesigner">Open Synth Designer</button>
                     </div>
                   </div>
                   <div class="menu-item">System
                     <div class="dropdown">
-                      <button id="settingsButton">Settings</button>
-                      <!-- ... -->
+                        <button class="action-button" id="settingsButton">Settings</button>
+                        <hr>
+                        <!-- <button class="action-button" id="audioToggleButton">Resume Audio</button> -->
                     </div>
                   </div>
-                  <div class="menu-item">Testing
+                  <div class="menu-item flip-left">Testing
                     <div class="dropdown">
-                      <button id="createGithubIssue">Bug Report</button>
-                      <!-- ... -->
+                        <a href="https://forms.gle/aerpRUgBR7bH1xpB9" target="_blank" rel="noopener noreferrer">
+                            <button class="action-button">Give Feedback</button>
+                          </a>
+                        <!-- <button class="action-button" id="synthAppHelp">Instructions</button> -->
+                       
+                        <!-- <button class="action-button" id="viewReadme">Instructions</button> -->
+                        
+                        <!-- <button class="action-button" id="">About</button> -->
+                        <hr>
+                        <button class="action-button" id="createGithubIssue">Bug Report</button>
+                        
+                        <!-- <button>Undo</button>
+                        <button>Redo</button> -->
                     </div>
                   </div>
                 </div>
