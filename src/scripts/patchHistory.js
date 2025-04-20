@@ -294,7 +294,6 @@ window.addEventListener("load", () => {
             const scaled = scaleMidiValue(e.rawValue, 0, 127, 0, historyGraphNodesArray.length - 1);
             if(midiValues.controllers[e.controller.number].value != scaled){
 
-                console.log( historyGraphNodesArray[scaled])
                 // console.log(historyGraphNodesArray[scaled]); // ~251.97
                 let n = historyGraphNodesArray[scaled].data
                 loadVersion(n.id, n.branch)
@@ -389,14 +388,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     function attachSequencerListeners() {
         document.querySelectorAll(".step-length").forEach((select, i) => {
           select.addEventListener("change", () => {
-            console.log(`Step ${i} length changed to:`, select.value);
             saveSequencerTable();
           });
         });
       
         document.querySelectorAll(".burst-select").forEach((select, i) => {
           select.addEventListener("change", () => {
-            console.log(`Step ${i} burst changed to:`, select.value);
             saveSequencerTable();
           });
         });
@@ -837,7 +834,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                 break
 
                 case 'newPatchHistory':
-                    console.log('newSession')
 
                     resetSequencerTable() 
                     createGestureGraph()
@@ -1101,9 +1097,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         // ✅ Set current step's duration immediately
         stepLength = storedSequencerTable[currentStepIndex].stepLength;
         loop.interval = stepLength;
-        
-        console.log('index', currentStepIndex)
-        console.log('current step length:', stepLength)
+    
 
         // Get the current step
         const currentStep = storedSequencerTable[currentStepIndex];
@@ -1629,7 +1623,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         });
 
-        console.log('yeah its here')
         console.log('tableData after saving:', tableData)
         const update = {
             cmd: 'updateSequencer',
@@ -1716,7 +1709,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             // Map a distance value to a corresponding musical note length in Tone.js based on a defined range.
             stepLengthCell.value = mapDistanceToNoteLength(distance.toFixed(2), maxDistance)
             storedSequencerTable[i].stepLength = stepLengthCell.textContent
-            console.log(stepLengthCell.value)
 
         }
         saveSequencerTable()
@@ -2379,7 +2371,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Show and move the overlay
     historyDAG_cy.on('mouseover', 'node', function(evt) {
         const data = evt.target.data();
-        console.log(data)
+   
         let overlayString
         if(!data.label){
             // dealing with a node that doesn't have the info we need yet
@@ -2836,7 +2828,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             let selected = gestureCy.$("node:selected"); // Get all selected nodes
 
-            console.log(selected)
         }
     })
 
@@ -2994,7 +2985,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             hid.mouse.x <= gestureCyRectangle.right &&
             hid.mouse.y >= gestureCyRectangle.top &&
             hid.mouse.y <= gestureCyRectangle.bottom){
-                console.log('pan gesture player')
             }
 
         
@@ -3006,8 +2996,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         } else {
             highlightNode(event.target)
-
-            console.log(event.target.data())
 
             // loadVersion(event.target.data().id, event.target.data().branch)
             loadVersion(event.target.data().id, event.target.data().branch)
@@ -3207,7 +3195,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             startStopButton.textContent = "Start Sequencer";
             isPlaying = !isPlaying;
         }      
-        console.log('clearSequencerButton')
  
         resetSequencerTable()
     });
@@ -3490,7 +3477,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         // re-disable the save button
         setSequencerSaveButtonState(true)
         let data = 'test'
-        console.log('sending sequence to main app for saving')
         sendToMainApp(
             {
                 cmd: "saveSequence",
