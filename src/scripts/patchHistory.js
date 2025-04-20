@@ -3619,7 +3619,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         //         },
         //         scaledValues: scaledValues,
         //         timestamps: gestureData.timestamps
-        //     }
+        //     } 
        
         
         // } else {
