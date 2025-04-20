@@ -2716,7 +2716,22 @@ document.addEventListener("DOMContentLoaded", function () {
             case 'loadVersionWithGestureDataPoint':
                 loadVersionWithGestureDataPoint(event.data.data.hash, event.data.data.branch, event.data.data.gestureDataPoint)
             break
+            
+            case 'saveSequence':
 
+                console.log('received sequence for saving:', event.data)
+                amDoc = applyChange(amDoc, (amDoc) => {
+                    // amDoc.synth.graph.modules[msg.assignTo.parent].params[msg.assignTo.param] = msg.scaledValues;
+                    // audioGraphDirty = true;
+                    // set the change type
+                    amDoc.changeType = {
+                        msg: 'sequence',
+                        tableData: null,
+                        timestamp: new Date().getTime()
+                    }
+                }, onChange, `sequence todo:sequenceNaming`);
+
+            break
             case 'updateSequencer':
                 meta = Automerge.change(meta, (meta) => {
                     meta.sequencer[event.data.setting] = event.data.data

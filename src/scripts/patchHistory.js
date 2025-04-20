@@ -3452,6 +3452,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         // re-disable the save button
         setSequencerSaveButtonState(true)
         let data = 'test'
+        console.log('sending sequence to main app for saving')
         sendToMainApp(
             {
                 cmd: "saveSequence",
