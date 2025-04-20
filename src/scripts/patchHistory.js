@@ -476,6 +476,11 @@ document.addEventListener("DOMContentLoaded", async () => {
           row.dataset.parent = nodeData.parents;
           row.dataset.id = nodeData.historyID; // override with gesture node ID
         }
+
+        // handle sequence change nodes (where we set a previous sequence into the sequencer step)
+        if(nodeData.sequencerTable){
+            row.dataset.sequencerTable = JSON.stringify(nodeData.sequencerTable)
+        }
       
         saveSequencerTable(); // Save the new state immediately
         setGestureSaveButtonState(false)
@@ -1127,7 +1132,111 @@ document.addEventListener("DOMContentLoaded", async () => {
                 // it's a special form of loadVersion, where we want to load the version, but ensure that the associated gesture point value is loaded 
                 loadVersionWithGestureDataPoint(currentStep.node.id, currentStep.node.branch, dataPoint)
             
-            } else {
+            } 
+            else if (targetRow.dataset.sequencerTable) {
+                console.log('snared')
+
+                const embeddedSeq = JSON.parse(targetRow.dataset.sequencerTable);
+                const totalSubsteps = embeddedSeq.length;
+                const outerStepDuration = Tone.Time(loop.interval).toSeconds(); // duration of current step
+                const subStepDuration = outerStepDuration / totalSubsteps;
+            
+                const embeddedEvents = embeddedSeq.map((row, i) => {
+                    return [i * subStepDuration, () => {
+                      if (row.status === "Active") {
+                        if (row.isGestureDataPoint) {
+                          const dataPoint = {
+                            parent: row.parent,
+                            param: row.param,
+                            value: row.value
+                          };
+                          loadVersionWithGestureDataPoint(row.node.id, row.node.branch, dataPoint);
+                        } else {
+                          loadVersion(row.node.id, row.node.branch);
+                  
+                          if (row.stepChange?.startsWith("gesture") && row.gestureData) {
+                            playGestureFromSequencerStep(row.gestureData, `${subStepDuration}s`);
+                          }
+                        }
+                      }
+                    }];
+                });
+            
+                const embeddedPart = new Tone.Part((t, eventCallback) => {
+                    console.log('test')
+                    eventCallback(t);
+                }, embeddedEvents);
+            
+                embeddedPart.start(time); // starts at the same moment the outer step begins
+            
+                // Optional cleanup
+                transport.scheduleOnce(() => {
+                    embeddedPart.dispose(); // or .stop() if you want to reuse
+                }, time + outerStepDuration);
+
+                // const part = new Tone.Part((time) => {
+                //     console.log('Embedded step triggered at time:', time);
+                // }, [
+                //     [0, () => console.log('Step 1')],
+                //     [0.5, () => console.log('Step 2')],
+                //     [1, () => console.log('Step 3')]
+                // ]);
+                
+                // part.start("+0.1");
+                // Tone.Transport.start();
+
+                // const embeddedSeq = JSON.parse(targetRow.dataset.sequencerTable);
+                // const outerStepDuration = Tone.Time(loop.interval).toSeconds();
+                // const subStepDuration = outerStepDuration / embeddedSeq.length;
+            
+                // const embeddedEvents = embeddedSeq.map((row, i) => {
+                //     return [i * subStepDuration, () => {
+                //         if (row.status === "Active") {
+                //             const fakeRow = document.createElement("tr");
+                //             fakeRow.dataset = {};
+            
+                //             if (row.node) {
+                //                 fakeRow.dataset.id = row.node.id;
+                //                 fakeRow.dataset.label = row.node.label;
+                //                 fakeRow.dataset.branch = row.node.branch;
+                //             }
+            
+                //             if (row.stepChange?.startsWith("gesture")) {
+                //                 fakeRow.dataset.gesture = true;
+                //                 fakeRow.dataset.gestureData = JSON.stringify(row.gestureData || {});
+                //             }
+            
+                //             if (fakeRow.dataset.isGestureDataPoint) {
+                //                 const dataPoint = {
+                //                     parent: fakeRow.dataset.parent,
+                //                     param: fakeRow.dataset.param,
+                //                     value: fakeRow.dataset.gestureDataPointValue
+                //                 };
+                //                 loadVersionWithGestureDataPoint(row.node.id, row.node.branch, dataPoint);
+                //             } else {
+                //                 loadVersion(row.node.id, row.node.branch);
+                //                 if (fakeRow.dataset.gesture) {
+                //                     playGestureFromSequencerStep(JSON.parse(fakeRow.dataset.gestureData), `${subStepDuration}s`);
+                //                 }
+                //             }
+                //         }
+                //     }];
+                // });
+            
+                // const embeddedPart = new Tone.Part((time, callback) => {
+                //     console.log('time', time)
+                //     callback(time);
+                // }, embeddedEvents);
+            
+                // embeddedPart.start(time); // ✅ start relative to outer step's scheduled time
+                // // No need to push to polyphonicLoops unless you want to manage it later
+            }
+            
+            
+            
+            
+            
+            else {
                 // load the version
                 loadVersion(currentStep.node.id, currentStep.node.branch)
                 
@@ -2509,7 +2618,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
                 `
                 // add seq steps to the string
-                data.database.forEach((step, index) => {
+                data.sequencerTable.forEach((step, index) => {
                     if(step.stepChange != '(Empty)'){
                         
                         overlayString += `<strong>Step ${index}:</strong> ${step.stepChange}<br>\n<strong>Length:</strong> ${step.stepLength}<br>\n`
@@ -3025,7 +3134,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 if(event.target.data().label.split(' ')[0] === 'sequence'){
                     if(hid.key.cmd){
                         // load the sequence change node into the sequencer (i.e. replace the current sequence with this sequence)
-                        event.target.data().database.forEach((step, index) => {
+                        event.target.data().sequencerTable.forEach((step, index) => {
                             if (step.node) {
                               updateStepRow(index, step.node);
                             } else {
