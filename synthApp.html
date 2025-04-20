@@ -17,8 +17,11 @@
 </head>
 <body>
     <div id="container">
-
-
+        
+        <div id="appHeader">
+            <h2>Forking Paths: Synth View</h2>
+            <button class="help-button" id="synthAppHelp">Help</button>
+          </div>
         
         <!-- <div id="leftColumn">
             <h3> Modules Library </h3>
@@ -40,7 +43,7 @@
         <div id="collabPanel">
             <div class="mb-4">
                 <div class="row">
-                    <button class="help-button" id="synthAppHelp">Help</button>
+                    <button class="help-button" id="workspaceAndCollabPannelHelp">Help</button>
 
                 </div>
                 <h1>My Workspace</h1>
@@ -195,6 +198,14 @@
         <button id="closeHelpOverlay">×</button>
         <div id="helpOverlayContent"></div>
     </div>
+
+    <div id="collabHelpOverlay" class="hidden">
+        <button id="closeCollabHelpOverlay">×</button>
+        <div id="collabHelpOverlayContent"></div>
+    </div>
+
+      
+
     <div id="firstTimeOverlay" style="
             position: fixed;
             top: 20%;
