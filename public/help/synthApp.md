@@ -4,21 +4,6 @@ This is the modular synthesizer interface. Use it to create patches and play sou
 
 ---
 
-### Getting Started
-
-To begin using the synth:
-
-1. Go to **File > Load Demo Synth**  
-   This loads a prebuilt patch and opens the **Patch History** window in a new tab or window.
-
-2. **Don’t close the History window** — you’ll use it for sequencing, editing gestures, and navigating your patch history. If you do close it, you can reopen it via **View > Open Patch History**.
-
-3. For best results, plan to view both windows -- Synth App & Path History-- while playing. So either:
-- **resize this window and the Patch History window** so you can view them side-by-side. 
-- Use ``Cmd + ` `` (on Mac) or `Alt + Tab` (on PC) to switch between them quickly  
-
----
-
 ### Modules
 
 The demo synth includes:

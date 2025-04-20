@@ -153,6 +153,8 @@ let temporaryCables = {
 }
 
 
+// fetch the overlay markdown files
+
 let synthAppHelpOverlay
 
 fetch(`/help/synthApp.md`)
@@ -170,6 +172,24 @@ fetch(`/help/synthApp.md`)
         synthAppHelpOverlay = '<em>Help not available.</em>';
         console.error(`Error loading ${key}.md:`, error);
     });
+
+let workspaceAndCollabPanelHelpOverlay;
+
+fetch(`/help/myWorkspaceAndCollabPanel.md`)
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(`Failed to fetch myWorkspaceAndCollabPanel.md — status ${response.status}`);
+    }
+    return response.text();
+  })
+  .then(markdownText => {
+    workspaceAndCollabPanelHelpOverlay = marked(markdownText);
+  })
+  .catch(error => {
+    workspaceAndCollabPanelHelpOverlay = '<em>Help not available.</em>';
+    console.error(`Error loading myWorkspaceAndCollabPanel.md:`, error);
+  });
+
 
 
 // *
@@ -2008,6 +2028,8 @@ document.addEventListener("DOMContentLoaded", function () {
 //*
     
     // * HELP OVERLAYS
+
+    // synth pathcing interface help overlay
     let activeHelpKey = null;
 
     function toggleHelpOverlay(key, columnSide = "left") {
@@ -2029,6 +2051,27 @@ document.addEventListener("DOMContentLoaded", function () {
         overlay.classList.remove("hidden");
         activeHelpKey = key;
     }
+
+    // My Workspace & Collab Panel Help Overlay
+    let activeWorkspaceHelp = false;
+
+    function toggleWorkspaceAndCollabPanelHelp() {
+    const overlay = document.getElementById("workspaceAndCollabPanelHelpOverlay");
+    const content = document.getElementById("workspaceAndCollabPanelHelpContent");
+
+    if (activeWorkspaceHelp && !overlay.classList.contains("hidden")) {
+        overlay.classList.add("hidden");
+        activeWorkspaceHelp = false;
+        return;
+    }
+
+    content.innerHTML = workspaceAndCollabPanelHelpOverlay || "<em>Help not available.</em>";
+    overlay.classList.remove("hidden");
+    activeWorkspaceHelp = true;
+    }
+
+
+    
 
 // centralize the overlay removal logic
     function removeUIOverlay(cmd, data){
@@ -2876,7 +2919,7 @@ document.addEventListener("DOMContentLoaded", function () {
         window.open("https://github.com/michaelpalumbo/forkingpaths/issues/new", "_blank");
     });
         
-
+    // synth patching help overlay
     document.getElementById("synthAppHelp").addEventListener("click", () => {
         toggleHelpOverlay("synthAppHelp", "left");
     });
@@ -2886,6 +2929,16 @@ document.addEventListener("DOMContentLoaded", function () {
         activeHelpKey = null;
     });
 
+    // My Workspace and Collab Panel Help Overlay
+    document.getElementById("workspaceAndCollabPanelHelp").addEventListener("click", () => {
+        toggleWorkspaceAndCollabPanelHelp();
+    });
+      
+      document.getElementById("closeWorkspaceAndCollabPanelHelpOverlay").addEventListener("click", () => {
+        document.getElementById("workspaceAndCollabPanelHelpOverlay").classList.add("hidden");
+        activeWorkspaceHelp = false;
+    });
+      
 
     // });
 

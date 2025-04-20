@@ -1,22 +1,4 @@
 # Getting Started with Forking Paths Synth
-----------------------------------------
-
-To begin using the synth:
-
-1.  Go to **File > Load Demo Synth**\
-    This will load a prebuilt patch and automatically open the **Patch History** window in a new tab or window.
-
-2.  **Keep the Patch History window open.**\
-    You'll use it for sequencing, editing gestures, and navigating your patch history. If you accidentally close it, reopen it via **View > Open Patch History**.
-
-3.  For the best experience, try one of the following:
-
-    -   **Resize this window and the Patch History window** so they sit side-by-side.
-
-    -   Or use keyboard shortcuts to switch quickly between them:\
-        `Cmd + \`` (Mac) or` Alt + Tab` (PC)
-
--------
 
 ## Workspace & Collaboration Panel
 -------
@@ -26,6 +8,20 @@ On the right side of the screen, you'll find the **Workspace & Collaboration Pan
 -   **Local tools** for managing your own patches and preferences (under the **My Workspace** section)
 
 -   **Collaborative tools** for connecting and interacting with other players
+
+
+## To begin using the synth:
+
+1.  Go to **File > Load Demo Synth**\
+    This will load a prebuilt patch and automatically open the **Patch History** window in a new tab or window.
+
+2.  **Keep the Patch History window open.**\
+    You'll use it for sequencing, editing gestures, and navigating your patch history. If you accidentally close it, reopen it via **View > Open Patch History**.
+
+3.  For the best experience, use keyboard shortcuts to switch quickly between them:
+        `Cmd + \`` (Mac) or` Alt + Tab` (PC)
+
+4. You can close this Help window, and open the *Help* button at the top-left of the app to get started with sound!
 
 -------
 
