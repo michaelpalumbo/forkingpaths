@@ -345,6 +345,21 @@ html, body {
   height: 100%; /* Adjust this if needed */
 }
 
+#collabPanel {
+  position: fixed; /* or absolute, depending on your layout */
+  top: 0;
+  right: 0;
+  width: 20vw;
+  height: 100vh;
+  background: #f8f9fa; /* Bootstrap's light background */
+  border-left: 1px solid #ccc;
+  padding: 16px;
+  overflow-y: auto;
+  z-index: 8888;
+}
+
+
+
 
 
 /* file input button */
@@ -372,7 +387,7 @@ button:disabled {
   pointer-events: none;
   /* Optionally, you can set a background color with transparency for debugging: */
   background-color: rgba(255, 255, 255, 0.0);
-  z-index: 9999; /* ensure it's above other content */
+  z-index: 7777; /* ensure it's above other content */
 }
 
 .bottom-button {
