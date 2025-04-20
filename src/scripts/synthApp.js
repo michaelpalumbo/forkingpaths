@@ -207,6 +207,16 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         thisPeerID = username + '-' + uuidv7().split('-')[3]
         localStorage.setItem('username', thisPeerID)
+
+        // Show the first-time overlay
+        const overlay = document.getElementById('firstTimeOverlay');
+        overlay.style.display = 'block';
+
+        // Close button
+        document.getElementById('closeFirstTimeOverlay').onclick = () => {
+            overlay.style.display = 'none';
+        };
+        
     } else {
         thisPeerID = localStorage.getItem('username')
     }

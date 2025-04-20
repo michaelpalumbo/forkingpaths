@@ -167,7 +167,39 @@
     <div id="helpOverlay" class="hidden">
         <button id="closeHelpOverlay">×</button>
         <div id="helpOverlayContent"></div>
-        </div>
+    </div>
+    <div id="firstTimeOverlay" style="
+            position: fixed;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.85);
+            color: white;
+            padding: 20px 28px;
+            border-radius: 10px;
+            font-size: 30px;
+            line-height: 1.5;
+            z-index: 9999;
+            display: none;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            
+        ">
+        Welcome!<br>To get started, look for <button class="help-button">Help</button>
+        buttons located throughout the app.
+        <button id="closeFirstTimeOverlay" style="
+            margin-left: 16px;
+            background: none;
+            border: none;
+            color: #fff;
+            font-weight: bold;
+            font-size: 30px;
+            cursor: pointer;
+            position: relative;
+        ">[✕] Close</button>
+    </div>
+
 
     <script type="module" src="src/scripts/synthApp.js"></script>
 </body>

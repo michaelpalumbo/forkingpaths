@@ -33,6 +33,8 @@ Here’s what the colors represent:
 - <span style="color:#b85c00">●</span> `disconnect`: cable disconnected  
 - <span style="color:#6b00b8">●</span> `paramUpdate`: knob or slider changed  
 - <span style="color:#00ffff">●</span> `gesture`: a modulation gesture was recorded  
+- <span style="color:#b89000">●</span> `merge`: a merge between two other changeNodes was recorded  
+- <span style="color:#00806b">●</span> `sequence`: a sequence was saved  
 - <span style="color:#000000">●</span> `clear`: patch cleared  
 - <span style="color:#ccc">●</span> `blank_patch`: a new patch was started from scratch  
 

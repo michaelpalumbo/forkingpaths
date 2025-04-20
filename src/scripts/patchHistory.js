@@ -204,11 +204,11 @@ let docHistoryGraphStyling = {
         disconnect: "#b85c00",
         // add: "#00b806",
         // remove: "#b8000f",
-        merge: "#b89000",
+        merge: "#e0ad1a",
         paramUpdate: "#6b00b8",
         gesture: "#00ffff",
         clear: "#000000",
-        sequence: "#00806b", 
+        sequence: "#00b39b", 
         blank_patch: "#ccc"
     }
 }
