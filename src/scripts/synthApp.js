@@ -2110,10 +2110,12 @@ document.addEventListener("DOMContentLoaded", function () {
         if (audioContext && audioContext.state === 'running') {
             audioContext.suspend();
             audioToggleButton.style.backgroundColor = 'red'
+            systemDropdown.style.backgroundColor = 'red'
             updateButtonText();
         } else if (audioContext && audioContext.state === 'suspended'){
             audioContext.resume();
             audioToggleButton.style.backgroundColor = '#444'
+            systemDropdown.style.backgroundColor = '#444'
             updateButtonText();
 
         }
@@ -2133,10 +2135,16 @@ document.addEventListener("DOMContentLoaded", function () {
             currentAudioStatusCheckIndex = (currentAudioStatusCheckIndex + 1) % colors.length;
             audioToggleButton.style.backgroundColor = colors[currentAudioStatusCheckIndex];
             audioToggleButtonUpdate = 1
+
+            // set it's dropdwon menu title (System) to the same colour to help the player
+            systemDropdown.style.backgroundColor = colors[currentAudioStatusCheckIndex];
         } else {
             if(audioToggleButtonUpdate === 1){
                 audioToggleButton.style.backgroundColor = '#444'
                 audioToggleButtonUpdate = 0
+
+                // set it's dropdwon menu title (System) to the same colour to help the player
+                systemDropdown.style.backgroundColor = '#444'
             }
             
             
