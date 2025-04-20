@@ -499,7 +499,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       
         // Reset dropdowns
         if (stepLengthSelect) stepLengthSelect.value = "4n";
-        if (burstSelect) burstSelect.value = "0";
+        // if (burstSelect) burstSelect.value = "0";
       
         // Remove all data attributes
         row.removeAttribute("data-id");
@@ -532,7 +532,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       
           // Reset dropdowns
           if (stepLengthSelect) stepLengthSelect.value = "4n";
-          if (burstSelect) burstSelect.value = "0";
+        //   if (burstSelect) burstSelect.value = "0";
       
           // Clear any attached dataset info
           row.removeAttribute("data-id");
@@ -1148,9 +1148,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             highlightNode(historyNode)
 
             // get the step length of the next row:
-            const burstSelect = targetRow.cells[2].querySelector('select'); // adjust index as needed
-            const currentValue = burstSelect.value;
-            console.log(`Selected burst value: ${currentValue}`);
+            // const burstSelect = targetRow.cells[2].querySelector('select'); // adjust index as needed
+            // const currentValue = burstSelect.value;
+            // console.log(`Selected burst value: ${currentValue}`);
         }
 
         currentStepIndex = (currentStepIndex + 1) % storedSequencerTable.length;
@@ -2523,8 +2523,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                         overlayString += `<strong>Step ${index}:</strong> ${step.stepChange}<br>\n<strong>Length:</strong> ${step.stepLength}<br>\n`
                     }
                 })
-                overlayString += `\n<strong>Branch:</strong> ${data.branch}<br>
-            `;
+                overlayString += `\n<strong>Branch:</strong> ${data.branch}<br>`;
             break
 
             case "merge":
@@ -3008,6 +3007,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         } else {
             highlightNode(event.target)
 
+            console.log(event.target.data())
+
             // loadVersion(event.target.data().id, event.target.data().branch)
             loadVersion(event.target.data().id, event.target.data().branch)
 
@@ -3030,6 +3031,25 @@ document.addEventListener("DOMContentLoaded", async () => {
 
                 
             } else {
+
+
+                // we want to handle sequence nodes differently than the others (but still clear the gesture editor below)
+                if(event.target.data().label.split(' ')[0] === 'sequence'){
+                    if(hid.key.cmd){
+                        // load the sequence change node into the sequencer (i.e. replace the current sequence with this sequence)
+                        event.target.data().database.forEach((step, index) => {
+                            if (step.node) {
+                              updateStepRow(index, step.node);
+                            } else {
+                              clearStepRow(index); // you'd need to define this if it doesn't already exist
+                            }
+                          });
+                    } else {
+                        // prepare the sequence to be loaded as a step in the sequencer
+                    }
+                }
+
+
                 // clear the gesture player
                 // clear the gestureData.nodes
                 gestureData.nodes = []
