@@ -17,71 +17,7 @@
 </head>
 <body>
     <div id="container">
-        <!-- Menubar at the top -->
-        <div class="menubar">
-            <div class="menu-item">
-                File
-                <div class="dropdown">
-                    <button id="loadDemoSynthButton">Load Demo Synth</button>
-                    <input type="file" id="loadSynthButton" accept=".fpsynth" />
-                    <label for="loadSynthButton" class="custom-file-button">Load Synth From Disk...</label>     
 
-                    <hr>
-                    <button disabled id="newPatchHistory">New Patch History</button> 
-                    <!-- <input type="file" id="loadPatchHistoryButton" accept=".forkingpaths" /> -->
-                    <button id="loadPatchHistory">Load Patch History...</button> 
-                    <button id="saveButton">Save Patch History</button>
-                   
-                </div>
-            </div>
-            <div class="menu-item">
-                View
-                <div class="dropdown">
-                    <!-- <div id="documentName"></div> -->
-                    <button id="openHistoryWindow">Open Patch History</button>
-                    <button id="openSynthDesigner">Open Synth Designer</button>
-                </div>
-            </div>
-
-            <div class="menu-item">
-                System
-                <div class="dropdown">
-                    <button class="action-button" id="settingsButton">Settings</button>
-                    <hr>
-                    <!-- <button class="action-button" id="audioToggleButton">Resume Audio</button> -->
-                </div>
-            </div>
-
-            
-            <div class="menu-item">
-                Testing
-                <div class="dropdown">
-                    <a href="https://forms.gle/aerpRUgBR7bH1xpB9" target="_blank" rel="noopener noreferrer">
-                        <button class="action-button">Give Feedback</button>
-                      </a>
-                    <!-- <button class="action-button" id="synthAppHelp">Instructions</button> -->
-                   
-                    <!-- <button class="action-button" id="viewReadme">Instructions</button> -->
-                    
-                    <!-- <button class="action-button" id="">About</button> -->
-                    <hr>
-                    <button class="action-button" id="createGithubIssue">Bug Report</button>
-                    
-                    <!-- <button>Undo</button>
-                    <button>Redo</button> -->
-                </div>
-            </div>
-            
-            <div class="menu-buttons">
-                <button class="help-button" id="synthAppHelp">Help</button>
-
-                <button class="action-button" id="clearGraph">Clear Cables</button>
-                <button class="action-button" id="audioToggleButton">Resume Audio</button>
-                
-                
-                
-            </div>
-        </div>
 
         
         <!-- <div id="leftColumn">
@@ -97,13 +33,17 @@
             <div id="cy"></div>
             <div id="mouseTracker"></div>
             <div id="cytoscapeTooltipContainer">
-                <p id="cytoscapeTooltipText"></p>
+                <p><h1 id="cytoscapeTooltipText"></h1></p>
                 <p id="signalAnalysisDisplay"></p>
         </div>
 
         <div id="collabPanel">
             <div class="mb-4">
-                <h5>My Workspace</h5>
+                <div class="row">
+                    <button class="help-button" id="synthAppHelp">Help</button>
+
+                </div>
+                <h1>My Workspace</h1>
                 <div class="menubar">
                   <div class="menu-item">File
                     <div class="dropdown">
@@ -130,6 +70,9 @@
                     <div class="dropdown">
                         <button class="action-button" id="settingsButton">Settings</button>
                         <hr>
+
+                    
+                    <button class="action-button" id="audioToggleButton">Resume Audio</button>
                         <!-- <button class="action-button" id="audioToggleButton">Resume Audio</button> -->
                     </div>
                   </div>
@@ -138,16 +81,8 @@
                         <a href="https://forms.gle/aerpRUgBR7bH1xpB9" target="_blank" rel="noopener noreferrer">
                             <button class="action-button">Give Feedback</button>
                           </a>
-                        <!-- <button class="action-button" id="synthAppHelp">Instructions</button> -->
-                       
-                        <!-- <button class="action-button" id="viewReadme">Instructions</button> -->
-                        
-                        <!-- <button class="action-button" id="">About</button> -->
                         <hr>
                         <button class="action-button" id="createGithubIssue">Bug Report</button>
-                        
-                        <!-- <button>Undo</button>
-                        <button>Redo</button> -->
                     </div>
                   </div>
                 </div>
@@ -156,6 +91,8 @@
             
             <h5 class="mb-3">Collaboration</h5>
           
+            <button class="action-button" id="clearGraph">Clear Cables</button>
+
             <div class="mb-4">
               <h6>Patch Tools</h6>
               <button class="btn btn-primary btn-sm me-1 mb-1" onclick="saveCurrentPatch()">Save</button>

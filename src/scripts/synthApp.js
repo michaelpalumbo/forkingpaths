@@ -3101,7 +3101,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     document.getElementById('loadDemoSynthButton').addEventListener('click', async (event) => {
         try {
-          // Fetch the JSON file (with a custom extension)
+          console.log('fired')
+            // Fetch the JSON file (with a custom extension)
           const response = await fetch(`/assets/synths/${import.meta.env.VITE_FIRST_SYNTH}.fpsynth`);
           
           if (!response.ok) {
