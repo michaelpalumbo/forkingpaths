@@ -728,8 +728,8 @@ document.addEventListener("DOMContentLoaded", function () {
     
     // Set an interval to periodically save meta to IndexedDB
     setInterval(async () => {
-        if(meta && syncMessageDataChannel && syncMessageDataChannel.readyState === 'closed'){
-            
+        // if(meta && syncMessageDataChannel && syncMessageDataChannel.readyState === 'closed'){
+        if(meta && docUpdated){
             // await saveDocument(docID, Automerge.save(amDoc));
             await saveDocument('meta', Automerge.save(meta));
             docUpdated = false
