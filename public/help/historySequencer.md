@@ -17,6 +17,11 @@ Each step can also be assigned a duration (note length) and -- coming soon! -- l
 
 When a step contains a gesture, it's length is automatically quantized to the step's length. 
 
+Recap:
+
+- Add step: Click node in history Graph. Cmd/Ctrl-Click a step in sequencer
+- Remove step: Right-Click a step in the sequencer
+
 ---
 
 ### Saving and Recalling Sequences
