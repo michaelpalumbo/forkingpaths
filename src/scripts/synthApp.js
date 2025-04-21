@@ -604,6 +604,7 @@ document.addEventListener("DOMContentLoaded", function () {
             return
         } else {
             const saved = await loadDocument(metaKey);
+            
             if (saved) {
                 meta = Automerge.load(saved);
                 console.log("Loaded local meta from IndexedDB:", metaKey);
@@ -655,7 +656,7 @@ document.addEventListener("DOMContentLoaded", function () {
             let synthFile = JSON.parse(localStorage.getItem('synthFile'))
             console.log('synthFile', synthFile)
             if (synthFile) {
-                console.log('synthFile found', synthFile.filename)
+
 
                 createNewPatchHistory(synthFile)
                 // const firstChangeLabel = synthFile.name
@@ -757,7 +758,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if(meta && docUpdated){
             // await saveDocument(docID, Automerge.save(amDoc));
             console.log('updating meta')
-            await saveDocument('metaKey', Automerge.save(meta));
+            await saveDocument(metaKey, Automerge.save(meta));
             docUpdated = false
         }
 
@@ -1066,7 +1067,6 @@ document.addEventListener("DOMContentLoaded", function () {
         amDoc = Automerge.init();
 
         if(synthFile){
-            console.log('synthFile')
             let amMsg = makeChangeMessage(config.patchHistory.firstBranchName, `loaded${synthFile.filename}`)
             // Apply initial changes to the new document
             amDoc = Automerge.change(amDoc, amMsg, (amDoc) => {
@@ -3168,7 +3168,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 // set the document branch (aka title)  in the editor pane
                 // document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
 
-                saveDocument('metaKey', Automerge.save(meta));
+                saveDocument(metaKey, Automerge.save(meta));
                 // enable new history button now that a synth has been loaded
                 document.getElementById('newPatchHistory').disabled = false
             } catch (err) {
