@@ -58,7 +58,7 @@ ws.onmessage = (event) => {
             if (!joinableExists) {
             const newRoomNumber = data.rooms.length + 1;
             sortedRooms.unshift({
-                room: `Room ${newRoomNumber}`,
+                room: `Room-${newRoomNumber}`,
                 peer1: null,
                 peer2: null
             });

@@ -215,7 +215,10 @@ document.addEventListener("DOMContentLoaded", function () {
     // Parse the query parameter to get the room name.
     const params = new URLSearchParams(window.location.search);
     const room = params.get('room');
-    console.log('Joining room:', room);
+    // set text in panel
+    document.getElementById("roomInfo").textContent = room;
+
+    
 
 
     // get username
@@ -227,7 +230,8 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         thisPeerID = username + '-' + uuidv7().split('-')[3]
         localStorage.setItem('username', thisPeerID)
-
+        // set peer id in status panel
+        document.getElementById("username").textContent = thisPeerID;
         // Show the first-time overlay
         const overlay = document.getElementById('firstTimeOverlay');
         overlay.style.display = 'block';
@@ -239,6 +243,8 @@ document.addEventListener("DOMContentLoaded", function () {
         
     } else {
         thisPeerID = localStorage.getItem('username')
+        // set peer id in status panel
+        document.getElementById("username").textContent = thisPeerID;
     }
 
 
@@ -2539,7 +2545,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Helper function to send signaling messages using the "newPeer" command.
     function sendSignalingMessage(message) {
         // Wrap message in an object with cmd 'newPeer'
-        const payload = JSON.stringify({ cmd: 'newPeer', msg: message });
+        const payload = JSON.stringify({ cmd: 'newPeer', msg: message, peerID: thisPeerID });
         ws.send(payload);
     }
     
@@ -2678,6 +2684,8 @@ document.addEventListener("DOMContentLoaded", function () {
         switch(msg.cmd){
             case 'newPeer':
                 const peerMessage = JSON.parse(msg.msg).msg
+                document.getElementById("remotePeerUsername").textContent = JSON.parse(msg.msg).peerID;
+
                 // Process the signaling message based on its type.
                 if (peerMessage.type === 'offer') {
                     // Received an offer: set it as the remote description.
@@ -4056,13 +4064,13 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     // Select the button element by its ID
-    const clearGraphButton = document.getElementById('clearGraph');
+    // const clearGraphButton = document.getElementById('clearGraph');
 
-    // Add an event listener to the button for the 'click' event
-    clearGraphButton.addEventListener('click', function() {
+    // // Add an event listener to the button for the 'click' event
+    // clearGraphButton.addEventListener('click', function() {
 
-        removeAllCables()
-    });
+    //     removeAllCables()
+    // });
 
     // Select the button element by its ID
     const newPatchHistory = document.getElementById('newPatchHistory');
