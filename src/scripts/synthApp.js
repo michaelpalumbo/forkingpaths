@@ -595,9 +595,13 @@ document.addEventListener("DOMContentLoaded", function () {
         // Forking Paths meta document:
         // contains all branches and branch history
         // will probably eventually contain user preferences, etc. 
+        console.log('peercount', peerCount)
         if (room && peerCount > 0) {
-            console.log("Joining active room. Starting from scratch.");
             meta = Automerge.init();
+            syncState = Automerge.initSyncState(); // ✅ this must exist here
+            console.log("Joining active room. Waiting for sync.");
+
+            return
         } else {
             const saved = await loadDocument(metaKey);
             if (saved) {
@@ -766,7 +770,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // if(meta && syncMessageDataChannel && syncMessageDataChannel.readyState === 'closed'){
         if(meta && docUpdated){
             // await saveDocument(docID, Automerge.save(amDoc));
-            await saveDocument('meta', Automerge.save(meta));
+            await saveDocument('metaKey', Automerge.save(meta));
             docUpdated = false
         }
 
@@ -2851,8 +2855,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 // Use `Automerge.view()` to view the state at this specific point in history
                 const gestureView = Automerge.view(gestureDoc, [event.data.data.hash]);
-                console.log(event.data.data.cmd)
-
+                
                 let recallGesture = false
                 if(event.data.data.cmd === 'recallGesture'){
                     recallGesture = true
@@ -3164,7 +3167,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 // set the document branch (aka title)  in the editor pane
                 // document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
 
-                saveDocument('meta', Automerge.save(meta));
+                saveDocument('metaKey', Automerge.save(meta));
                 // enable new history button now that a synth has been loaded
                 document.getElementById('newPatchHistory').disabled = false
             } catch (err) {
