@@ -36,6 +36,7 @@ if(!localStorage.appSettings){
 }
 
 
+
 let stepLength = '4n'
 let sequencerMode = "mono";
 let polyphonicLoops = []; // Will hold individual loops for each row
@@ -201,12 +202,13 @@ let docHistoryGraphStyling = {
     nodeColours: {
         connect: "#004cb8",
         disconnect: "#b85c00",
-        add: "#00b806",
-        remove: "#b8000f",
-        move: "#b89000",
+        // add: "#00b806",
+        // remove: "#b8000f",
+        merge: "#e0ad1a",
         paramUpdate: "#6b00b8",
         gesture: "#00ffff",
         clear: "#000000",
+        sequence: "#00b39b", 
         blank_patch: "#ccc"
     }
 }
@@ -293,7 +295,6 @@ window.addEventListener("load", () => {
             const scaled = scaleMidiValue(e.rawValue, 0, 127, 0, historyGraphNodesArray.length - 1);
             if(midiValues.controllers[e.controller.number].value != scaled){
 
-                console.log( historyGraphNodesArray[scaled])
                 // console.log(historyGraphNodesArray[scaled]); // ~251.97
                 let n = historyGraphNodesArray[scaled].data
                 loadVersion(n.id, n.branch)
@@ -323,7 +324,8 @@ window.addEventListener("load", () => {
 document.addEventListener("DOMContentLoaded", async () => {
 
 
-
+    // disable the sequencer save button
+    setGestureSaveButtonState(true)
 
     // setup sequencer table
     function generateSequencerTable() {
@@ -364,16 +366,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     
         // Burst select
         const burstCell = document.createElement("td");
-        const burstSelect = document.createElement("select");
-        burstSelect.classList.add("burst-select");
-        burstOptions.forEach((opt, index) => {
-            const option = document.createElement("option");
-            option.value = opt;
-            option.textContent = opt;
-            if (index === 0) option.selected = true;
-            burstSelect.appendChild(option);
-        });
-        burstCell.appendChild(burstSelect);
+        // const burstSelect = document.createElement("select");
+        // burstSelect.classList.add("burst-select");
+        // burstOptions.forEach((opt, index) => {
+        //     const option = document.createElement("option");
+        //     option.value = opt;
+        //     option.textContent = opt;
+        //     if (index === 0) option.selected = true;
+        //     burstSelect.appendChild(option);
+        // });
+        // burstCell.appendChild(burstSelect);
         row.appendChild(burstCell);
     
         // Append the row
@@ -387,14 +389,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     function attachSequencerListeners() {
         document.querySelectorAll(".step-length").forEach((select, i) => {
           select.addEventListener("change", () => {
-            console.log(`Step ${i} length changed to:`, select.value);
             saveSequencerTable();
           });
         });
       
         document.querySelectorAll(".burst-select").forEach((select, i) => {
           select.addEventListener("change", () => {
-            console.log(`Step ${i} burst changed to:`, select.value);
             saveSequencerTable();
           });
         });
@@ -407,27 +407,41 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
         document.querySelectorAll("#dynamicTableBody2 tr").forEach((row, i) => {
+            
             // if player clicks the 2nd cell, assign the change node to that row
             row.cells[1].addEventListener("click", () => {
                 if (selectedNode && hid.key.cmd) {
-                updateStepRow(i, selectedNode, gestureData);
+                    if(selectedNode.label.split(' ')[0] === 'sequence'){
+                        alert('adding sequence changeNodes to a sequencer step not yet supported (coming soon!)')
+                    } else {
+                        updateStepRow(i, selectedNode, gestureData);
+                        setSequencerSaveButtonState(false)
+                    }
+  
                 }
             });
             // same as above, if player clicks the 1st cell, assign the change node to that row
             row.cells[0].addEventListener("click", () => {
                 if (selectedNode && hid.key.cmd) {
-                updateStepRow(i, selectedNode, gestureData);
+                    if(selectedNode.label.split(' ')[0] === 'sequence'){
+                        alert('adding sequence changeNodes to a sequencer step not yet supported (coming soon!)')
+                    } else {
+                        updateStepRow(i, selectedNode, gestureData);
+                        setSequencerSaveButtonState(false)
+                    }
                 }
             });
 
             // to delete a step by clicking the node colour cell
             row.cells[1].addEventListener("contextmenu", (e) => {
                 clearStepRow(i);
+                setSequencerSaveButtonState(false)
 
             });
             // to delete a step by clicking the node change cell
             row.cells[0].addEventListener("contextmenu", (e) => {
                 clearStepRow(i);
+                setSequencerSaveButtonState(false)
             });
         });
       }
@@ -472,49 +486,14 @@ document.addEventListener("DOMContentLoaded", async () => {
           row.dataset.parent = nodeData.parents;
           row.dataset.id = nodeData.historyID; // override with gesture node ID
         }
-      
-        saveSequencerTable(); // Save the new state immediately
-    }
 
-    function updateStepLength(index, nodeData, gestureData = null) {
-        const row = document.querySelectorAll("#dynamicTableBody2 tr")[index];
-        if (!row) return;
-      
-        const changeCell = row.cells[0];
-        const stepLabelCell = row.cells[1];
-      
-        // Set background color based on change node label
-        const labelKey = nodeData.label.split(" ")[0];
-        changeCell.style.backgroundColor = docHistoryGraphStyling.nodeColours[labelKey] || "#888";
-      
-        // Set label text and dataset info
-        const label = nodeData.label;
-        stepLabelCell.textContent = label;
-      
-        row.dataset.id = nodeData.id;
-        row.dataset.label = label;
-        row.dataset.branch = nodeData.branch;
-      
-        // Handle gesture metadata
-        if (label.startsWith("gesture")) {
-          row.dataset.gesture = true;
-          row.dataset.gestureData = JSON.stringify(gestureData);
-        }
-      
-        if (nodeData.gestureDataPoint) {
-          const abrv = `${nodeData.parents.split('_')[0]}_${nodeData.parents.split('_')[1]}`;
-          const gestureLabel = `gesturePoint: ${abrv}:${nodeData.param}:${nodeData.value}`;
-          stepLabelCell.textContent = gestureLabel;
-      
-          row.dataset.label = gestureLabel;
-          row.dataset.isGestureDataPoint = true;
-          row.dataset.gestureDataPointValue = nodeData.value;
-          row.dataset.param = nodeData.param;
-          row.dataset.parent = nodeData.parents;
-          row.dataset.id = nodeData.historyID; // override with gesture node ID
+        // handle sequence change nodes (where we set a previous sequence into the sequencer step)
+        if(nodeData.sequencerTable){
+            row.dataset.sequencerTable = JSON.stringify(nodeData.sequencerTable)
         }
       
         saveSequencerTable(); // Save the new state immediately
+        setGestureSaveButtonState(false)
     }
 
     function clearStepRow(index) {
@@ -524,7 +503,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const changeCell = row.cells[0];
         const stepLabelCell = row.cells[1];
         const stepLengthSelect = row.cells[2].querySelector("select");
-        const burstSelect = row.cells[3].querySelector("select");
+        // const burstSelect = row.cells[3].querySelector("select"); //! removed this
       
         // Reset visuals
         changeCell.style.backgroundColor = "";
@@ -532,7 +511,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       
         // Reset dropdowns
         if (stepLengthSelect) stepLengthSelect.value = "4n";
-        if (burstSelect) burstSelect.value = "0";
+        // if (burstSelect) burstSelect.value = "0";
       
         // Remove all data attributes
         row.removeAttribute("data-id");
@@ -557,7 +536,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           const changeCell = row.cells[0]; // color cell
           const stepLabelCell = row.cells[1]; // label cell
           const stepLengthSelect = row.cells[2].querySelector("select"); // length dropdown
-          const burstSelect = row.cells[3].querySelector("select"); // burst dropdown
+        //   const burstSelect = row.cells[3].querySelector("select"); //! removed this
       
           // Reset visual and text content
           changeCell.style.backgroundColor = "";
@@ -565,7 +544,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       
           // Reset dropdowns
           if (stepLengthSelect) stepLengthSelect.value = "4n";
-          if (burstSelect) burstSelect.value = "0";
+        //   if (burstSelect) burstSelect.value = "0";
       
           // Clear any attached dataset info
           row.removeAttribute("data-id");
@@ -870,7 +849,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                 break
 
                 case 'newPatchHistory':
-                    console.log('newSession')
 
                     resetSequencerTable() 
                     createGestureGraph()
@@ -1134,9 +1112,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         // ✅ Set current step's duration immediately
         stepLength = storedSequencerTable[currentStepIndex].stepLength;
         loop.interval = stepLength;
-        
-        console.log('index', currentStepIndex)
-        console.log('current step length:', stepLength)
+    
 
         // Get the current step
         const currentStep = storedSequencerTable[currentStepIndex];
@@ -1166,7 +1142,111 @@ document.addEventListener("DOMContentLoaded", async () => {
                 // it's a special form of loadVersion, where we want to load the version, but ensure that the associated gesture point value is loaded 
                 loadVersionWithGestureDataPoint(currentStep.node.id, currentStep.node.branch, dataPoint)
             
-            } else {
+            } 
+            else if (targetRow.dataset.sequencerTable) {
+                console.log('snared')
+
+                const embeddedSeq = JSON.parse(targetRow.dataset.sequencerTable);
+                const totalSubsteps = embeddedSeq.length;
+                const outerStepDuration = Tone.Time(loop.interval).toSeconds(); // duration of current step
+                const subStepDuration = outerStepDuration / totalSubsteps;
+            
+                const embeddedEvents = embeddedSeq.map((row, i) => {
+                    return [i * subStepDuration, () => {
+                      if (row.status === "Active") {
+                        if (row.isGestureDataPoint) {
+                          const dataPoint = {
+                            parent: row.parent,
+                            param: row.param,
+                            value: row.value
+                          };
+                          loadVersionWithGestureDataPoint(row.node.id, row.node.branch, dataPoint);
+                        } else {
+                          loadVersion(row.node.id, row.node.branch);
+                  
+                          if (row.stepChange?.startsWith("gesture") && row.gestureData) {
+                            playGestureFromSequencerStep(row.gestureData, `${subStepDuration}s`);
+                          }
+                        }
+                      }
+                    }];
+                });
+            
+                const embeddedPart = new Tone.Part((t, eventCallback) => {
+                    console.log('test')
+                    eventCallback(t);
+                }, embeddedEvents);
+            
+                embeddedPart.start(time); // starts at the same moment the outer step begins
+            
+                // Optional cleanup
+                transport.scheduleOnce(() => {
+                    embeddedPart.dispose(); // or .stop() if you want to reuse
+                }, time + outerStepDuration);
+
+                // const part = new Tone.Part((time) => {
+                //     console.log('Embedded step triggered at time:', time);
+                // }, [
+                //     [0, () => console.log('Step 1')],
+                //     [0.5, () => console.log('Step 2')],
+                //     [1, () => console.log('Step 3')]
+                // ]);
+                
+                // part.start("+0.1");
+                // Tone.Transport.start();
+
+                // const embeddedSeq = JSON.parse(targetRow.dataset.sequencerTable);
+                // const outerStepDuration = Tone.Time(loop.interval).toSeconds();
+                // const subStepDuration = outerStepDuration / embeddedSeq.length;
+            
+                // const embeddedEvents = embeddedSeq.map((row, i) => {
+                //     return [i * subStepDuration, () => {
+                //         if (row.status === "Active") {
+                //             const fakeRow = document.createElement("tr");
+                //             fakeRow.dataset = {};
+            
+                //             if (row.node) {
+                //                 fakeRow.dataset.id = row.node.id;
+                //                 fakeRow.dataset.label = row.node.label;
+                //                 fakeRow.dataset.branch = row.node.branch;
+                //             }
+            
+                //             if (row.stepChange?.startsWith("gesture")) {
+                //                 fakeRow.dataset.gesture = true;
+                //                 fakeRow.dataset.gestureData = JSON.stringify(row.gestureData || {});
+                //             }
+            
+                //             if (fakeRow.dataset.isGestureDataPoint) {
+                //                 const dataPoint = {
+                //                     parent: fakeRow.dataset.parent,
+                //                     param: fakeRow.dataset.param,
+                //                     value: fakeRow.dataset.gestureDataPointValue
+                //                 };
+                //                 loadVersionWithGestureDataPoint(row.node.id, row.node.branch, dataPoint);
+                //             } else {
+                //                 loadVersion(row.node.id, row.node.branch);
+                //                 if (fakeRow.dataset.gesture) {
+                //                     playGestureFromSequencerStep(JSON.parse(fakeRow.dataset.gestureData), `${subStepDuration}s`);
+                //                 }
+                //             }
+                //         }
+                //     }];
+                // });
+            
+                // const embeddedPart = new Tone.Part((time, callback) => {
+                //     console.log('time', time)
+                //     callback(time);
+                // }, embeddedEvents);
+            
+                // embeddedPart.start(time); // ✅ start relative to outer step's scheduled time
+                // // No need to push to polyphonicLoops unless you want to manage it later
+            }
+            
+            
+            
+            
+            
+            else {
                 // load the version
                 loadVersion(currentStep.node.id, currentStep.node.branch)
                 
@@ -1181,9 +1261,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             highlightNode(historyNode)
 
             // get the step length of the next row:
-            const burstSelect = targetRow.cells[2].querySelector('select'); // adjust index as needed
-            const currentValue = burstSelect.value;
-            console.log(`Selected burst value: ${currentValue}`);
+            // const burstSelect = targetRow.cells[2].querySelector('select'); // adjust index as needed
+            // const currentValue = burstSelect.value;
+            // console.log(`Selected burst value: ${currentValue}`);
         }
 
         currentStepIndex = (currentStepIndex + 1) % storedSequencerTable.length;
@@ -1249,382 +1329,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     }
 
-    // function replaceStepSequencerTable(selectedNodes){
-    //     const numberOfRows = selectedNodes.length
-    //     const tableBody = document.getElementById("dynamicTableBody");
-    //     tableBody.innerHTML = ""; // Clear any existing rows
-
-        
-    //     for (let i = 0; i < numberOfRows; i++) {
-
-    //         const row = document.createElement("tr");
-    //         row.classList.add("is-size-6"); // Apply text size to the entire row
-    //         const node = selectedNodes[i].data()
-
-    //         // Step (Change) cell
-    //         const changeNodeCell = document.createElement("td");
-    //         row.appendChild(changeNodeCell);
-
-    //         // Step (Change) cell
-    //         const stepCell = document.createElement("td");
-    //         stepCell.textContent = node.label; // Placeholder for step name
-    //         row.appendChild(stepCell);
-
-    //         // Step Length cell
-    //         const stepLengthTd = document.createElement("td");
-    //         const stepLengthSelect = document.createElement("select");
-
-    //         // calculate step length based on step length function
-
-    //         const lengthOptions = ['32n', '16n', '8n', '4n', '2n'];
-    //         lengthOptions.forEach((optionText, index) => {
-    //             const option = document.createElement('option');
-
-    //             option.value = optionText;
-    //             option.textContent = optionText;
-
-    //             if(index === 3){
-    //                 option.selected = true
-    //             }
-
-    //             stepLengthSelect.appendChild(option);
-    //         });
-
-    //         // 🔊 Add event listener for when user selects an option
-    //         stepLengthSelect.addEventListener('change', (e) => {
-    //             const selectedValue = e.target.value;
-    //             console.log(`Burst value changed to: ${selectedValue}`);
-    //             saveSequencerTable(); // Save updated values
-    //         });
-
-    //         // now that the select is built, add it to the td
-    //         stepLengthTd.appendChild(stepLengthSelect);
-    //         // now add it to the row
-    //         row.appendChild(stepLengthTd);
-
-    //         // create burst cell
-    //         const burstTd = document.createElement("td");
-    //         const burstSelect = document.createElement("select");
-    //         const burstOptions = [0, 1, 2, 3, 4, 5];
-    //         burstOptions.forEach((optionText, index) => {
-    //             const option = document.createElement('option');
-
-    //             option.value = optionText;
-    //             option.textContent = optionText;
-
-    //             if(index === 0){
-    //                 option.selected = true
-    //             }
-
-    //             burstSelect.appendChild(option);
-    //         });
-
-    //         // 🔊 Add event listener for when user selects an option
-    //         burstSelect.addEventListener('change', (e) => {
-    //             const selectedValue = e.target.value;
-    //             console.log(`Burst value changed to: ${selectedValue}`);
-    //             saveSequencerTable(); // Save updated values
-    //         });
-
-            
-    //         burstTd.appendChild(burstSelect);
-    //         row.appendChild(burstTd);
-
-    //         row.dataset.id = node.id
-    //         row.dataset.label = node.label
-    //         row.dataset.branch = node.branch
-
-    //         // Add click event listener to the row
-    //         // this will make it so that each row can be updated by clicks
-    //         stepCell.addEventListener("click", () => {
-    //             if(selectedNode && hid.key.cmd){
-    //                 changeNodeCell.style.backgroundColor = docHistoryGraphStyling.nodeColours[selectedNode.label.split(' ')[0]]
-
-    //                 // Update row values with data from selectedNode
-    //                 stepCell.textContent = selectedNode.label;
-    //                 // stepLengthCell.textContent = '4n'
-    //                 row.dataset.id = selectedNode.id
-    //                 row.dataset.label = selectedNode.label
-    //                 row.dataset.branch = selectedNode.branch
-    //                 // check if the node is a gesture, because we have additional data to add
-    //                 if(selectedNode.label.split(' ')[0] === 'gesture'){
-    //                     row.dataset.gesture = true
-    //                     row.dataset.gestureData = JSON.stringify(gestureData)
-    //                 }
-
-    //                 if(selectedNode.gestureDataPoint){
-    //                     // set the label
-    //                     let parentNameAbrv = `${selectedNode.parents.split('_')[0]}_${selectedNode.parents.split('_')[1]}`
-    //                     row.dataset.label = `gesturePoint: ${parentNameAbrv}:${selectedNode.param}:${selectedNode.value}`
-    //                     stepCell.textContent = row.dataset.label
-                        
-    //                     // for logic in the main app
-    //                     row.dataset.isGestureDataPoint = true
-    //                     // since this data is coming from a the gesture graph, we need to pull the history ID from the history graph
-    //                     row.dataset.id = selectedNode.historyID
-    //                     // we also need to pull the value
-    //                     row.dataset.gestureDataPointValue = selectedNode.value
-    //                     // and the param
-    //                     row.dataset.param = selectedNode.param
-    //                     // and the parent
-    //                     row.dataset.parent = selectedNode.parents
-    //                 }
-    //                 statusCell.textContent = 'Active'
-    //                 saveSequencerTable()
-
-
-    //             }
-
-    //         });
-    //         tableBody.appendChild(row);
-    //         // saveSequencerTable()
-    //     }
-
-    // }
-
-
-    // Function to populate the table with a fixed number of rows (8)
-    // function createSequencerTable(storedTable) {
-    //     const tableBody = document.getElementById("dynamicTableBody");
-    //     tableBody.innerHTML = ""; // Clear any existing rows
-
-    //     const numberOfRows = 8; // Fixed number of rows
-
-    //     if(storedTable){
-    //         savedData.forEach((rowData, index) => {
-    //             const row = document.createElement("tr");
-    //             row.classList.add("is-size-6"); // Apply text size to the entire row
-
-    //             // change node cell indicator (set this to the colour of the change node)
-    //             const changeNodeCell = document.createElement("td");
-    //             row.appendChild(changeNodeCell);
-                
-    //             // Step (Change) cell
-    //             const stepCell = document.createElement("td");
-    //             stepCell.textContent = rowData.stepChange || `(Empty)`; // Fallback for empty rows
-    //             row.appendChild(stepCell);
-        
-    //             // Step Length cell
-    //             const stepLengthTd = document.createElement("td");
-    //             const stepLengthSelect = document.createElement("select");
-
-    //             // calculate step length based on step length function
-
-    //             const lengthOptions = ['32n', '16n', '8n', '4n', '2n'];
-    //             lengthOptions.forEach((optionText, index) => {
-    //                 const option = document.createElement('option');
-
-    //                 option.value = optionText;
-    //                 option.textContent = optionText;
-
-    //                 if(index === 3){
-    //                     option.selected = true
-    //                 }
-
-    //                 stepLengthSelect.appendChild(option);
-    //             });
-
-    //             // 🔊 Add event listener for when user selects an option
-    //             stepLengthSelect.addEventListener('change', (e) => {
-    //                 const selectedValue = e.target.value;
-    //                 console.log(`Burst value changed to: ${selectedValue}`);
-    //                 saveSequencerTable(); // Save updated values
-    //             });
-
-    //             // now that the select is built, add it to the td
-    //             stepLengthTd.appendChild(stepLengthSelect);
-    //             // now add it to the row
-    //             row.appendChild(stepLengthTd);
-
-    //             // create burst cell
-    //             const burstTd = document.createElement("td");
-    //             const burstSelect = document.createElement("select");
-    //             const burstOptions = [0, 1, 2, 3, 4, 5];
-    //             burstOptions.forEach((optionText, index) => {
-    //                 const option = document.createElement('option');
-
-    //                 option.value = optionText;
-    //                 option.textContent = optionText;
-
-    //                 if(index === 0){
-    //                     option.selected = true
-    //                 }
-
-    //                 burstSelect.appendChild(option);
-    //             });
-
-    //             // 🔊 Add event listener for when user selects an option
-    //             burstSelect.addEventListener('change', (e) => {
-    //                 const selectedValue = e.target.value;
-    //                 console.log(`Burst value changed to: ${selectedValue}`);
-    //                 saveSequencerTable(); // Save updated values
-    //             });
-
-                
-    //             burstTd.appendChild(burstSelect);
-    //             row.appendChild(burstTd);
-        
-    //             // Re-add click event listener to the step cell
-    //             stepCell.addEventListener("click", () => {
-    //                 if(hid.key.cmd){
-
-    //                     changeNodeCell.style.backgroundColor = docHistoryGraphStyling.nodeColours[selectedNode.label.split(' ')[0]]
-    //                     stepCell.textContent = selectedNode.label;
-    //                     // stepLengthCell.textContent = "4n"; // Example modification
-    //                     row.dataset.id = selectedNode.id
-    //                     row.dataset.label = selectedNode.label
-    //                     row.dataset.branch = selectedNode.branch
-
-    //                     if(selectedNode.label.split(' ')[0] === 'gesture'){
-    //                         row.dataset.gesture = true
-    //                         row.dataset.gestureData = JSON.stringify(gestureData)
-    //                     }
-
-    //                     if(selectedNode.gestureDataPoint){
-    //                         // set the label
-    //                         let parentNameAbrv = `${selectedNode.parents.split('_')[0]}_${selectedNode.parents.split('_')[1]}`
-    //                         row.dataset.label = `gesturePoint: ${parentNameAbrv}:${selectedNode.param}:${selectedNode.value}`
-    //                         stepCell.textContent = row.dataset.label
-    //                         // for logic in the main app
-    //                         row.dataset.isGestureDataPoint = true
-    //                         // since this data is coming from a the gesture graph, we need to pull the history ID from the history graph
-    //                         row.dataset.id = selectedNode.historyID
-    //                         // we also need to pull the value
-    //                         row.dataset.gestureDataPointValue = selectedNode.value
-    //                         // and the param
-    //                         row.dataset.param = selectedNode.param
-    //                         // and the parent
-    //                         row.dataset.parent = selectedNode.parents
-    //                     }
-
-    //                 }
-
-        
-
-    //             });
-        
-    //             tableBody.appendChild(row);
-    //         });
-    //     } else {
-    //         for (let i = 0; i < numberOfRows; i++) {
-    //             const row = document.createElement("tr");
-    //             row.classList.add("is-size-6"); // Apply text size to the entire row
-
-    //             // change node cell indicator (set this to the colour of the change node)
-    //             const changeNodeCell = document.createElement("td");
-    //             row.appendChild(changeNodeCell);
-                
-    //             // Step (Change) cell
-    //             const stepCell = document.createElement("td");
-    //             stepCell.textContent = `(Empty)`; // Placeholder for step name
-    //             row.appendChild(stepCell);
-
-    //             // Step Length cell
-    //             const stepLengthTd = document.createElement("td");
-    //             const stepLengthSelect = document.createElement("select");
-
-    //             // calculate step length based on step length function
-
-    //             const lengthOptions = ['32n', '16n', '8n', '4n', '2n'];
-    //             lengthOptions.forEach((optionText, index) => {
-    //                 const option = document.createElement('option');
-
-    //                 option.value = optionText;
-    //                 option.textContent = optionText;
-
-    //                 if(index === 3){
-    //                     option.selected = true
-    //                 }
-
-    //                 stepLengthSelect.appendChild(option);
-    //             });
-
-    //             // 🔊 Add event listener for when user selects an option
-    //             stepLengthSelect.addEventListener('change', (e) => {
-    //                 const selectedValue = e.target.value;
-    //                 console.log(`Burst value changed to: ${selectedValue}`);
-    //                 saveSequencerTable(); // Save updated values
-    //             });
-
-    //             // now that the select is built, add it to the td
-    //             stepLengthTd.appendChild(stepLengthSelect);
-    //             // now add it to the row
-    //             row.appendChild(stepLengthTd);
-
-    //             // create burst cell
-    //             const burstTd = document.createElement("td");
-    //             const burstSelect = document.createElement("select");
-    //             const burstOptions = [0, 1, 2, 3, 4, 5];
-    //             burstOptions.forEach((optionText, index) => {
-    //                 const option = document.createElement('option');
-
-    //                 option.value = optionText;
-    //                 option.textContent = optionText;
-
-    //                 if(index === 0){
-    //                     option.selected = true
-    //                 }
-
-    //                 burstSelect.appendChild(option);
-    //             });
-
-    //             // 🔊 Add event listener for when user selects an option
-    //             burstSelect.addEventListener('change', (e) => {
-    //                 const selectedValue = e.target.value;
-    //                 console.log(`Burst value changed to: ${selectedValue}`);
-
-    //                 saveSequencerTable(); // Save updated values
-
-    //             });
-
-                
-    //             burstTd.appendChild(burstSelect);
-    //             row.appendChild(burstTd);
-                
-    //             // Add click event listener to the step cell
-    //             stepCell.addEventListener("click", () => {
-    //                 if(selectedNode && hid.key.cmd){
-    //                     changeNodeCell.style.backgroundColor = docHistoryGraphStyling.nodeColours[selectedNode.label.split(' ')[0]]
-    //                     // Update row values with data from selectedNode
-    //                     stepCell.textContent = selectedNode.label;
-    //                     // stepLengthCell.textContent = '4n' //! need to update this value from the dropdown. 
-
-    //                     row.dataset.branch = selectedNode.branch
-    //                     row.dataset.id = selectedNode.id
-    //                     row.dataset.label = selectedNode.label
-    //                     if(selectedNode.label.split(' ')[0] === 'gesture'){
-    //                         row.dataset.gesture = true
-    //                         row.dataset.gestureData = JSON.stringify(gestureData)
-    //                     }
-
-    //                     if(selectedNode.gestureDataPoint){
-    //                         // set the label
-    //                         let parentNameAbrv = `${selectedNode.parents.split('_')[0]}_${selectedNode.parents.split('_')[1]}`
-    //                         row.dataset.label = `gesturePoint: ${parentNameAbrv}:${selectedNode.param}:${selectedNode.value}`
-    //                         stepCell.textContent = row.dataset.label
-    //                         // for logic in the main app
-    //                         row.dataset.isGestureDataPoint = true
-    //                         // since this data is coming from a the gesture graph, we need to pull the history ID from the history graph
-    //                         row.dataset.id = selectedNode.historyID
-    //                         // we also need to pull the value
-    //                         row.dataset.gestureDataPointValue = selectedNode.value
-    //                         // and the param
-    //                         row.dataset.param = selectedNode.param
-    //                         // and the parent
-    //                         row.dataset.parent = selectedNode.parents
-    //                     } 
-        
-      
-    //                     // statusCell.textContent = 'Active'
-    //                     saveSequencerTable() // <<< line 1258
-    //                 }
-
-    //             });
-
-    //             tableBody.appendChild(row);
-    //         }
-    //     }
-    // }
+   
 
     // Function to save the table's contents as a JS object
     function saveSequencerTable() {
@@ -1642,7 +1347,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 return {
                     stepChange: cells[1].textContent, // Step (Change) cell content
                     stepLength: cells[2].querySelector('select').value, // Step Length selectmenu content
-                    stepBurst: cells[3].querySelector('select').value, // burst value
+                    // stepBurst: cells[3].querySelector('select').value, //! removed this
                     status: 'Active',
                     node: {
                         id: row.dataset.id,
@@ -1655,14 +1360,13 @@ document.addEventListener("DOMContentLoaded", async () => {
                 return {
                     stepChange: cells[1].textContent, // Step (Change) cell content
                     stepLength: cells[2].querySelector('select').value, // Step Length selectmenu content
-                    stepBurst: cells[3].querySelector('select').value, // burst value
+                    // stepBurst: cells[3].querySelector('select').value, //! removed this 
                     status: 'Inactive',
                 }
             }
 
         });
 
-        console.log('yeah its here')
         console.log('tableData after saving:', tableData)
         const update = {
             cmd: 'updateSequencer',
@@ -1749,7 +1453,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             // Map a distance value to a corresponding musical note length in Tone.js based on a defined range.
             stepLengthCell.value = mapDistanceToNoteLength(distance.toFixed(2), maxDistance)
             storedSequencerTable[i].stepLength = stepLengthCell.textContent
-            console.log(stepLengthCell.value)
 
         }
         saveSequencerTable()
@@ -2412,10 +2115,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Show and move the overlay
     historyDAG_cy.on('mouseover', 'node', function(evt) {
         const data = evt.target.data();
+   
         let overlayString
         if(!data.label){
             // dealing with a node that doesn't have the info we need yet
-            console.warn('node does not have the info needed to display they hover tooltip', data)
+            console.warn('node does not have the info needed to display the hover tooltip', data)
             return
         }
         let labelArray = data.label.split(' ')
@@ -2440,10 +2144,12 @@ document.addEventListener("DOMContentLoaded", async () => {
             break
 
             case 'gesture':
+                const module = labelArray[labelArray.length - 1];
+                const param = labelArray.slice(1, -1).join(" ");
                 overlayString = `
                     <strong>Change Node:</strong> Gesture<br>
-                    <strong>Module:</strong> ${labelArray[2]}<br>
-                    <strong>Parameter:</strong> ${labelArray[1]}<br><br>
+                    <strong>Module:</strong> ${module}<br>
+                    <strong>Parameter:</strong> ${param}<br><br>
                     <strong>Branch:</strong> ${data.branch}<br>
                 `;
 
@@ -2538,6 +2244,22 @@ document.addEventListener("DOMContentLoaded", async () => {
 
                 } 
 
+            break
+
+            case 'sequence':
+                overlayString = `
+                <strong>Change Node:</strong> Sequence<br>    
+                <strong>Name</strong> ${labelArray[1]}<br><br>
+
+                `
+                // add seq steps to the string
+                data.sequencerTable.forEach((step, index) => {
+                    if(step.stepChange != '(Empty)'){
+                        
+                        overlayString += `<strong>Step ${index}:</strong> ${step.stepChange}<br>\n<strong>Length:</strong> ${step.stepLength}<br>\n`
+                    }
+                })
+                overlayString += `\n<strong>Branch:</strong> ${data.branch}<br>`;
             break
 
             case "merge":
@@ -2852,7 +2574,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             let selected = gestureCy.$("node:selected"); // Get all selected nodes
 
-            console.log(selected)
         }
     })
 
@@ -3010,7 +2731,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             hid.mouse.x <= gestureCyRectangle.right &&
             hid.mouse.y >= gestureCyRectangle.top &&
             hid.mouse.y <= gestureCyRectangle.bottom){
-                console.log('pan gesture player')
             }
 
         
@@ -3045,6 +2765,25 @@ document.addEventListener("DOMContentLoaded", async () => {
 
                 
             } else {
+
+
+                // we want to handle sequence nodes differently than the others (but still clear the gesture editor below)
+                if(event.target.data().label.split(' ')[0] === 'sequence'){
+                    if(hid.key.cmd){
+                        // load the sequence change node into the sequencer (i.e. replace the current sequence with this sequence)
+                        event.target.data().sequencerTable.forEach((step, index) => {
+                            if (step.node) {
+                              updateStepRow(index, step.node);
+                            } else {
+                              clearStepRow(index); // you'd need to define this if it doesn't already exist
+                            }
+                          });
+                    } else {
+                        // prepare the sequence to be loaded as a step in the sequencer
+                    }
+                }
+
+
                 // clear the gesture player
                 // clear the gestureData.nodes
                 gestureData.nodes = []
@@ -3202,7 +2941,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             startStopButton.textContent = "Start Sequencer";
             isPlaying = !isPlaying;
         }      
-        console.log('clearSequencerButton')
  
         resetSequencerTable()
     });
@@ -3473,8 +3211,91 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
     // SEQUENCER
+    
+    function setSequencerSaveButtonState(state){
+        // enable the gesture clone button
+        document.getElementById("saveSequenceButton").disabled = state;
+    }
+
+    const saveSequenceButton = document.getElementById("saveSequenceButton");
+
+    saveSequenceButton.addEventListener("click", async () => {
+        // re-disable the save button
+        setSequencerSaveButtonState(true)
+        let data = 'test'
+        sendToMainApp(
+            {
+                cmd: "saveSequence",
+                data: storedSequencerTable
+            }
+        );
+        // we need this parentNode to know where to create a new branch from for the cloned gesture
+        // let sourceGestureNode = historyDAG_cy.getElementById(gestureData.historyID)
+        // let parentNode = sourceGestureNode.incomers('node').data();
+        
+        // let scaledValues = []        
+        // let targetParam 
+        // let data
+
+        
+        
+        // if(gestureData.assign.param === 'default'){
+        //     // in this case, we have simply modified the gesture and want to save it in the history graph
+        //     // so just grab all the values as they are currently
+        //     gestureData.gesturePoints.forEach((point)=>{
+        //         let value = point.value
+        //         scaledValues.push(value)
+        //     })
+        //     // load into obj
+        //     data = { 
+        //         parentNode: parentNode, 
+        //         assignTo: {
+        //             parent: gestureData.gesturePoints[0].parent,
+        //             param: gestureData.gesturePoints[0].param,
+        //             // range: null // not needed for this operation
+        //         },
+        //         scaledValues: scaledValues,
+        //         timestamps: gestureData.timestamps
+        //     } 
+       
+        
+        // } else {
+        //     // we are cloning the gesture onto a different param, so we now we need to map the values
+        //     targetParam = gestureData.assign
+
+        //     // if(gestureData.assign.kind === 'menu') {
+        //     //     // we need to handle menu param conversion differently
+        //     //     gestureData.gesturePoints.forEach((point)=>{
+        //     //         let storedParam = meta.synthFile.audioGraph.modules[point.parent].moduleSpec.parameters[point.param]
+        //     //         let value = point.value
+        //     //         convertParams(storedParam, targetParam, value).value
+        //     //     })
 
 
+        //     // } else {
+        //         // dealing with a knob
+        //         // get the updated param value (user may have made edits to gesture)
+        //         // scale it to the range of the newly assigned param
+        //         gestureData.gesturePoints.forEach((point)=>{
+        //             let storedParam = meta.synthFile.audioGraph.modules[point.parent].moduleSpec.parameters[point.param]
+        //             let value = point.value
+        //             scaledValues.push(convertParams(storedParam, targetParam, value).value)
+        //         })
+
+            
+        
+        //         data = { 
+        //             parentNode: parentNode, 
+        //             assignTo: gestureData.assign,
+        //             scaledValues: scaledValues,
+        //             timestamps: gestureData.timestamps
+        //         }
+        //     // }
+            
+        // }
+
+
+    })
     
     // Add an event listener for the 'change' event
     sequenceOrderSelect.addEventListener("change", (event) => {

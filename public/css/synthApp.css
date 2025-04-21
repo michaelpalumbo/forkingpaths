@@ -20,6 +20,32 @@ html, body {
   gap: 10px; /* Optional: space between columns */
 }
 
+#appHeader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 48px;
+  width: calc(100vw - 20vw); /* adjust if your panel uses a different width */
+  background-color: #ece9e6;
+  border-bottom: 1px solid #ccc;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  z-index: 6000;
+}
+
+#appHeader h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+#appHeader .help-button {
+  margin-left: 16px;
+  padding: 6px 12px;
+  font-size: 14px;
+}
+
 #leftColumn, #synthAndHistoryController {
   margin: 0;
   padding: 0;
@@ -87,6 +113,72 @@ html, body {
   cursor: pointer;
 }
 
+#workspaceAndCollabPanelHelpOverlay {
+  position: absolute; /* or fixed if needed */
+  top: 0;
+  left: 0;            /* position it on the left side */
+  width: 50%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.95);
+  color: #111;
+  z-index: 9999;
+  padding: 1rem;
+  overflow-y: auto;
+  box-shadow: 0 0 20px rgba(0,0,0,0.2);
+  transition: opacity 0.5s ease;
+  opacity: 1;
+}
+
+#workspaceAndCollabPanelHelpOverlay.hidden {
+  display: none;
+}
+
+#workspaceAndCollabPanelHelpContent {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 100px;
+  color: #111;
+  font-size: 1.8rem;
+  line-height: 1.9;
+  padding: 2rem;
+  margin-right: 1rem;
+  overflow-wrap: break-word;
+  box-sizing: border-box;
+}
+
+#workspaceAndCollabPanelHelpContent h2,
+#workspaceAndCollabPanelHelpContent h3 {
+  font-size: 2.2rem;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+#workspaceAndCollabPanelHelpContent ul {
+  padding-left: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+#workspaceAndCollabPanelHelpContent p {
+  margin-bottom: 1.2rem;
+}
+
+#closeWorkspaceAndCollabPanelHelpOverlay {
+  margin-left: 16px;
+  background: none;
+  border: none;
+  color: #111;
+  font-weight: bold;
+  font-size: 30px;
+  cursor: pointer;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+
+
+
 
 
 /* Menubar styles */
@@ -113,6 +205,7 @@ html, body {
   position: relative;
   margin: 0; /* Remove excess margin */
   cursor: pointer;
+  
 }
 
 .menu-buttons {
@@ -167,11 +260,33 @@ html, body {
   display: block;
 }
 
+.help-button {
+  /* background-color: #444; */
+  /* color: white; */
+  border: 1px solid #555;
+  padding: 5px 10px;
+  cursor: pointer;
+
+  font-size: 1.2rem;
+  padding: 0.2rem 0.5rem;
+  /* background: #eee; */
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  /* cursor: pointer; */
+  background-color: #d4fcdc;
+  color: #1a3a1a;
+  
+  
+  
+
+}
+
 .dropdown {
   display: none;
   position: absolute;
   top: 100%;
-  width: 200px;
+  min-width: 100%; /* Grow with content */
+  white-space: nowrap; /* Prevent word wrapping */
   left: 0;
   background-color: #444;
   /* border: 1px solid #222; */
@@ -324,6 +439,25 @@ html, body {
   height: 100%; /* Adjust this if needed */
 }
 
+#collabPanel {
+  position: fixed; /* or absolute, depending on your layout */
+  top: 0;
+  right: 0;
+  width: 20vw;
+  height: 100vh;
+  background: #f8f9fa; /* Bootstrap's light background */
+  border-left: 1px solid #ccc;
+  padding: 16px;
+  overflow-y: auto;
+  z-index: 8888;
+}
+
+.menu-item.flip-left .dropdown {
+  right: 0;
+  left: auto;
+}
+
+
 
 
 /* file input button */
@@ -351,7 +485,7 @@ button:disabled {
   pointer-events: none;
   /* Optionally, you can set a background color with transparency for debugging: */
   background-color: rgba(255, 255, 255, 0.0);
-  z-index: 9999; /* ensure it's above other content */
+  z-index: 7777; /* ensure it's above other content */
 }
 
 .bottom-button {

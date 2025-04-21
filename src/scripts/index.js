@@ -43,6 +43,7 @@ ws.onmessage = (event) => {
             const roomsList = document.getElementById('sharedRooms');
             roomsList.innerHTML = ''; // Clear existing list items
             
+            
             // Copy and sort the room data so that joinable rooms (i.e. missing a peer) appear first.
             // A room is considered full if both peer1 and peer2 exist.
             const sortedRooms = data.rooms.slice().sort((a, b) => {
@@ -58,7 +59,7 @@ ws.onmessage = (event) => {
             if (!joinableExists) {
             const newRoomNumber = data.rooms.length + 1;
             sortedRooms.unshift({
-                room: `Room ${newRoomNumber}`,
+                room: `Room-${newRoomNumber}`,
                 peer1: null,
                 peer2: null
             });
@@ -66,6 +67,16 @@ ws.onmessage = (event) => {
 
             // Render each room in its own container.
             sortedRooms.forEach(room => {
+
+                // count the number of peersm so we can bundle it in the link url
+                let peerCount = 0
+                if(room.peer1){
+                    peerCount += 1
+                }
+                if(room.peer2){
+                    peerCount += 1
+                }
+
                 const roomContainer = document.createElement('li');
                 roomContainer.className = 'room-container';
                 
@@ -78,7 +89,7 @@ ws.onmessage = (event) => {
                     joinButton.textContent = 'Join';
                     joinButton.id = room.room.replace(/\s/g, '').toLowerCase(); // e.g., "room1"
                     joinButton.addEventListener('click', () => {
-                        window.open(`synthApp.html?room=${encodeURIComponent(room.room)}`, '_blank');
+                        window.open(`synthApp.html?room=${encodeURIComponent(room.room)}&peerCount=${peerCount}`, '_blank');
                     });
                     // Optionally add a click handler:
                     // joinButton.addEventListener('click', () => { ... });
@@ -100,6 +111,8 @@ ws.onmessage = (event) => {
                 
                 roomsList.appendChild(roomContainer);
             });
+
+            console.log(sortedRooms)
             
                 // data.rooms.forEach(room => {
                 //     // Create a list element for the room name

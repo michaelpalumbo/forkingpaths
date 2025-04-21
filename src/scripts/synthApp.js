@@ -153,6 +153,8 @@ let temporaryCables = {
 }
 
 
+// fetch the overlay markdown files
+
 let synthAppHelpOverlay
 
 fetch(`/help/synthApp.md`)
@@ -170,6 +172,24 @@ fetch(`/help/synthApp.md`)
         synthAppHelpOverlay = '<em>Help not available.</em>';
         console.error(`Error loading ${key}.md:`, error);
     });
+
+let workspaceAndCollabPanelHelpOverlay;
+
+fetch(`/help/myWorkspaceAndCollabPanel.md`)
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(`Failed to fetch myWorkspaceAndCollabPanel.md — status ${response.status}`);
+    }
+    return response.text();
+  })
+  .then(markdownText => {
+    workspaceAndCollabPanelHelpOverlay = marked(markdownText);
+  })
+  .catch(error => {
+    workspaceAndCollabPanelHelpOverlay = '<em>Help not available.</em>';
+    console.error(`Error loading myWorkspaceAndCollabPanel.md:`, error);
+  });
+
 
 
 // *
@@ -195,7 +215,10 @@ document.addEventListener("DOMContentLoaded", function () {
     // Parse the query parameter to get the room name.
     const params = new URLSearchParams(window.location.search);
     const room = params.get('room');
-    console.log('Joining room:', room);
+    // set text in panel
+    document.getElementById("roomInfo").textContent = room;
+    const peerCount = parseInt(params.get('peerCount') || '0');
+    let metaKey = room ? `meta-${room}` : 'meta';
 
 
     // get username
@@ -207,8 +230,21 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         thisPeerID = username + '-' + uuidv7().split('-')[3]
         localStorage.setItem('username', thisPeerID)
+        // set peer id in status panel
+        document.getElementById("username").textContent = thisPeerID;
+        // Show the first-time overlay
+        const overlay = document.getElementById('firstTimeOverlay');
+        overlay.style.display = 'block';
+
+        // Close button
+        document.getElementById('closeFirstTimeOverlay').onclick = () => {
+            overlay.style.display = 'none';
+        };
+        
     } else {
         thisPeerID = localStorage.getItem('username')
+        // set peer id in status panel
+        document.getElementById("username").textContent = thisPeerID;
     }
 
 
@@ -559,81 +595,60 @@ document.addEventListener("DOMContentLoaded", function () {
         // Forking Paths meta document:
         // contains all branches and branch history
         // will probably eventually contain user preferences, etc. 
+        console.log('peercount', peerCount)
+        if (room && peerCount > 0) {
+            meta = Automerge.init();
+            syncState = Automerge.initSyncState(); // ✅ this must exist here
+            console.log("Joining active room. Waiting for sync.");
 
-        // attempt to load meta from indexedDB store
-        meta = await loadDocument('meta');
-        if (!meta) {
-            meta = Automerge.from({
-                title: "Forking Paths Synth",
-                branches: {},
-                branchOrder: [],
-                docs: {},
-                head: {
-                    hash: null,
-                    branch: null
-                },
-                
-                userSettings: {
-                    focusNewBranch: true 
-                },
-                sequencer: {
-                    bpm: 120,
-                    ms: 500,
-                    traversalMode: 'Sequential'
-                },
-                synth: {
-                    rnboDeviceCache: null,
-                },
-                synthFile: {}
-
-
-            })
-            
-            syncState = Automerge.initSyncState()
-
-            // meta = Automerge.change(meta, (meta) => {
-            //     meta.title = "Forking Paths System";
-            //     meta.branches = {};
-            //     meta.branchOrder = []
-            //     meta.docs = {}
-            //     meta.head = {
-            //         hash: null,
-            //         branch: null
-            //     },
-                
-            //     meta.userSettings.focusNewBranch = false
-            // });
-            
-            await saveDocument('meta', Automerge.save(meta));
-
+            return
         } else {
-            // If loaded, convert saved document state back to Automerge document
-            meta = Automerge.load(meta);
+            const saved = await loadDocument(metaKey);
+            if (saved) {
+                meta = Automerge.load(saved);
+                console.log("Loaded local meta from IndexedDB:", metaKey);
 
-            syncState = Automerge.initSyncState()
-
-            if(!meta.sequencer){
-
-                meta = Automerge.change(meta, (meta) => {
-                    meta.sequencer = {
-                        bpm: 120
-                    }
+                console.log(meta.synthFile)
+            } else {
+                meta = Automerge.from({
+                    title: "Forking Paths Synth",
+                    branches: {},
+                    branchOrder: [],
+                    docs: {},
+                    head: {
+                        hash: null,
+                        branch: null
+                    } ,
+                    userSettings: {
+                        focusNewBranch: true 
+                    },
+                    sequencer: {
+                        bpm: 120,
+                        ms: 500,
+                        traversalMode: 'Sequential'
+                    },
+                    synth: {
+                        rnboDeviceCache: null,
+                    },
+                    synthFile: {}
                 });
+                console.log("No saved meta found. Starting fresh:", metaKey);
+                await saveDocument(metaKey, Automerge.save(meta));
             }
-
-  
         }
-
-        
+                
+        syncState = Automerge.initSyncState()
 
         // * synth changes document
         docID = 'forkingPathsDoc'; // Unique identifier for the document
         // Load the document from meta's store in IndexedDB or create a new one if it doesn't exist
 
-        
+        console.log(meta.head.branch)
         // amDoc = await loadDocument(docID);
         // if meta doesn't contain a document, create a new one
         if (!meta.docs[meta.head.branch]) {
+
+            console.log('starting from blank patch')
             amDoc = Automerge.init();
             let amMsg = makeChangeMessage(config.patchHistory.firstBranchName, 'blank_patch')
             // Apply initial changes to the new document
@@ -649,6 +664,9 @@ document.addEventListener("DOMContentLoaded", function () {
                         },
                         connections: []
                     }
+                },
+                amDoc.sequencer = {
+                    tableData: []
                 }
                 // paramUIOverlays = {
 
@@ -683,6 +701,7 @@ document.addEventListener("DOMContentLoaded", function () {
             reDrawHistoryGraph()
         } else {
 
+            console.log('building synth from doc')
             // meta does contain at least one document, so grab whichever is the one that was last looked at
             amDoc = Automerge.load(meta.docs[meta.head.branch]);
 
@@ -713,12 +732,15 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     })();
     
+    console.log(config.indexedDB.saveInterval)
     // Set an interval to periodically save meta to IndexedDB
     setInterval(async () => {
-        if(meta && syncMessageDataChannel && syncMessageDataChannel.readyState === 'closed'){
-            
+        console.warn('todo: saveDocument setInterval is not saving the doc when a synthfile is loaded. a new synthfile should be included as a new change, which maybe means it isnt seen as one or being added as one')
+        // if(meta && syncMessageDataChannel && syncMessageDataChannel.readyState === 'closed'){
+        if(meta && docUpdated){
             // await saveDocument(docID, Automerge.save(amDoc));
-            await saveDocument('meta', Automerge.save(meta));
+            console.log('updating meta')
+            await saveDocument('metaKey', Automerge.save(meta));
             docUpdated = false
         }
 
@@ -1110,6 +1132,7 @@ document.addEventListener("DOMContentLoaded", function () {
             meta.head.branch = config.patchHistory.firstBranchName
             meta.head.hash = hash 
             meta.branchOrder.push(meta.head.branch)
+            meta.synthFile = synthFile
             
         });
         // set the document branch (aka title) in the editor pane
@@ -1117,6 +1140,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         
             
+        docUpdated = true
         previousHash = meta.head.hash
         // send doc to history app
         reDrawHistoryGraph()
@@ -1340,6 +1364,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // loop through UI, update each param
             const synthModules = forkedDoc.synth.graph.modules
+
+            // check to see if none of the overlays were made. this is the case if peer has a blank document and is syncing to another peer's doc
+            // const overlaysExist = document.querySelectorAll(".paramUIOverlayContainer").length > 0;
+            const overlaysExist = document.querySelector('[id^="paramControl_parent:"]') !== null;
+
+            if (!overlaysExist) {
+                console.log('rebuilding synth visual graph')
+                updateCytoscapeFromDocument(forkedDoc, 'buildUI');
+                return; // skip the rest, since buildUI handles everything
+            }
+
             Object.keys(synthModules).forEach((moduleID)=>{
                 // some nodes don't have params (like the feedbackDelayNode), so ignore them (otherwise this throws an error whenever there's a feedback cable)
                 if(synthModules[moduleID].params){
@@ -1360,9 +1395,10 @@ document.addEventListener("DOMContentLoaded", function () {
     
                                 default: console.warn('NEW UI DETECTED, CREATE A SWITCH CASE FOR IT ABOVE THIS LINE')
                             }
-                          } else {
+                        } else {
                             console.warn(`param with id "${id}" not found.`);
-                          }               
+                            console.log(paramControl)
+                        }               
                     })
                 }
                 
@@ -1995,6 +2031,8 @@ document.addEventListener("DOMContentLoaded", function () {
 //*
     
     // * HELP OVERLAYS
+
+    // synth pathcing interface help overlay
     let activeHelpKey = null;
 
     function toggleHelpOverlay(key, columnSide = "left") {
@@ -2016,6 +2054,27 @@ document.addEventListener("DOMContentLoaded", function () {
         overlay.classList.remove("hidden");
         activeHelpKey = key;
     }
+
+    // My Workspace & Collab Panel Help Overlay
+    let activeWorkspaceHelp = false;
+
+    function toggleWorkspaceAndCollabPanelHelp() {
+    const overlay = document.getElementById("workspaceAndCollabPanelHelpOverlay");
+    const content = document.getElementById("workspaceAndCollabPanelHelpContent");
+
+    if (activeWorkspaceHelp && !overlay.classList.contains("hidden")) {
+        overlay.classList.add("hidden");
+        activeWorkspaceHelp = false;
+        return;
+    }
+
+    content.innerHTML = workspaceAndCollabPanelHelpOverlay || "<em>Help not available.</em>";
+    overlay.classList.remove("hidden");
+    activeWorkspaceHelp = true;
+    }
+
+
+    
 
 // centralize the overlay removal logic
     function removeUIOverlay(cmd, data){
@@ -2097,10 +2156,12 @@ document.addEventListener("DOMContentLoaded", function () {
         if (audioContext && audioContext.state === 'running') {
             audioContext.suspend();
             audioToggleButton.style.backgroundColor = 'red'
+            systemDropdown.style.backgroundColor = 'red'
             updateButtonText();
         } else if (audioContext && audioContext.state === 'suspended'){
             audioContext.resume();
             audioToggleButton.style.backgroundColor = '#444'
+            systemDropdown.style.backgroundColor = '#444'
             updateButtonText();
 
         }
@@ -2120,10 +2181,16 @@ document.addEventListener("DOMContentLoaded", function () {
             currentAudioStatusCheckIndex = (currentAudioStatusCheckIndex + 1) % colors.length;
             audioToggleButton.style.backgroundColor = colors[currentAudioStatusCheckIndex];
             audioToggleButtonUpdate = 1
+
+            // set it's dropdwon menu title (System) to the same colour to help the player
+            systemDropdown.style.backgroundColor = colors[currentAudioStatusCheckIndex];
         } else {
             if(audioToggleButtonUpdate === 1){
                 audioToggleButton.style.backgroundColor = '#444'
                 audioToggleButtonUpdate = 0
+
+                // set it's dropdwon menu title (System) to the same colour to help the player
+                systemDropdown.style.backgroundColor = '#444'
             }
             
             
@@ -2475,7 +2542,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Helper function to send signaling messages using the "newPeer" command.
     function sendSignalingMessage(message) {
         // Wrap message in an object with cmd 'newPeer'
-        const payload = JSON.stringify({ cmd: 'newPeer', msg: message });
+        const payload = JSON.stringify({ cmd: 'newPeer', msg: message, peerID: thisPeerID });
         ws.send(payload);
     }
     
@@ -2606,6 +2673,10 @@ document.addEventListener("DOMContentLoaded", function () {
             room: room
         }));
 
+        ws.send(JSON.stringify({
+            cmd: 'getRooms'
+        }))
+
         initiateConnection().catch(err => console.error("Error initiating connection:", err))
     };
     
@@ -2614,6 +2685,8 @@ document.addEventListener("DOMContentLoaded", function () {
         switch(msg.cmd){
             case 'newPeer':
                 const peerMessage = JSON.parse(msg.msg).msg
+                document.getElementById("remotePeerUsername").textContent = JSON.parse(msg.msg).peerID;
+
                 // Process the signaling message based on its type.
                 if (peerMessage.type === 'offer') {
                     // Received an offer: set it as the remote description.
@@ -2637,6 +2710,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             break
 
+            case 'roomInfo':
+                console.log('roomsInfo', msg)
+            break
             case 'roomFull':
                 alert('cannot connect to room, too many peers are active. please choose another room in the lobby')
             break
@@ -2716,7 +2792,27 @@ document.addEventListener("DOMContentLoaded", function () {
             case 'loadVersionWithGestureDataPoint':
                 loadVersionWithGestureDataPoint(event.data.data.hash, event.data.data.branch, event.data.data.gestureDataPoint)
             break
+            
+            case 'saveSequence':
 
+                console.log('received sequence for saving:', event.data)
+                amDoc = applyChange(amDoc, (amDoc) => {
+                    // set the sequencer table data
+                    if(!amDoc.sequencer){
+                        amDoc.sequencer = {
+                            tableData: []
+                        }
+                    }
+                    amDoc.sequencer.tableData = event.data.data
+                    // set the change type
+                    amDoc.changeType = {
+                        msg: 'sequence',
+                        tableData: event.data.data,
+                        timestamp: new Date().getTime()
+                    }
+                }, onChange, `sequence todo:sequenceNaming tableData:${JSON.stringify(event.data.data)}`);
+
+            break
             case 'updateSequencer':
                 meta = Automerge.change(meta, (meta) => {
                     meta.sequencer[event.data.setting] = event.data.data
@@ -2743,8 +2839,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 // Use `Automerge.view()` to view the state at this specific point in history
                 const gestureView = Automerge.view(gestureDoc, [event.data.data.hash]);
-                console.log(event.data.data.cmd)
-
+                
                 let recallGesture = false
                 if(event.data.data.cmd === 'recallGesture'){
                     recallGesture = true
@@ -2835,7 +2930,7 @@ document.addEventListener("DOMContentLoaded", function () {
         window.open("https://github.com/michaelpalumbo/forkingpaths/issues/new", "_blank");
     });
         
-
+    // synth patching help overlay
     document.getElementById("synthAppHelp").addEventListener("click", () => {
         toggleHelpOverlay("synthAppHelp", "left");
     });
@@ -2845,6 +2940,16 @@ document.addEventListener("DOMContentLoaded", function () {
         activeHelpKey = null;
     });
 
+    // My Workspace and Collab Panel Help Overlay
+    document.getElementById("workspaceAndCollabPanelHelp").addEventListener("click", () => {
+        toggleWorkspaceAndCollabPanelHelp();
+    });
+      
+      document.getElementById("closeWorkspaceAndCollabPanelHelpOverlay").addEventListener("click", () => {
+        document.getElementById("workspaceAndCollabPanelHelpOverlay").classList.add("hidden");
+        activeWorkspaceHelp = false;
+    });
+      
 
     // });
 
@@ -3046,7 +3151,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 // set the document branch (aka title)  in the editor pane
                 // document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
 
-                saveDocument('meta', Automerge.save(meta));
+                saveDocument('metaKey', Automerge.save(meta));
                 // enable new history button now that a synth has been loaded
                 document.getElementById('newPatchHistory').disabled = false
             } catch (err) {
@@ -3068,7 +3173,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     document.getElementById('loadDemoSynthButton').addEventListener('click', async (event) => {
         try {
-          // Fetch the JSON file (with a custom extension)
+          console.log('fired')
+            // Fetch the JSON file (with a custom extension)
           const response = await fetch(`/assets/synths/${import.meta.env.VITE_FIRST_SYNTH}.fpsynth`);
           
           if (!response.ok) {
@@ -3961,13 +4067,13 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     // Select the button element by its ID
-    const clearGraphButton = document.getElementById('clearGraph');
+    // const clearGraphButton = document.getElementById('clearGraph');
 
-    // Add an event listener to the button for the 'click' event
-    clearGraphButton.addEventListener('click', function() {
+    // // Add an event listener to the button for the 'click' event
+    // clearGraphButton.addEventListener('click', function() {
 
-        removeAllCables()
-    });
+    //     removeAllCables()
+    // });
 
     // Select the button element by its ID
     const newPatchHistory = document.getElementById('newPatchHistory');

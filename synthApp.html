@@ -17,89 +17,111 @@
 </head>
 <body>
     <div id="container">
-        <!-- Menubar at the top -->
-        <div class="menubar">
-            <div class="menu-item">
-                File
-                <div class="dropdown">
-                    <button id="loadDemoSynthButton">Load Demo Synth</button>
-                    <input type="file" id="loadSynthButton" accept=".fpsynth" />
-                    <label for="loadSynthButton" class="custom-file-button">Load Synth From Disk...</label>     
-
-                    <hr>
-                    <button disabled id="newPatchHistory">New Patch History</button> 
-                    <!-- <input type="file" id="loadPatchHistoryButton" accept=".forkingpaths" /> -->
-                    <button id="loadPatchHistory">Load Patch History...</button> 
-                    <button id="saveButton">Save Patch History</button>
-                   
-                </div>
-            </div>
-            <div class="menu-item">
-                View
-                <div class="dropdown">
-                    <!-- <div id="documentName"></div> -->
-                    <button id="openHistoryWindow">Open Patch History</button>
-                    <button id="openSynthDesigner">Open Synth Designer</button>
-                </div>
-            </div>
-
-            <div class="menu-item">
-                System
-                <div class="dropdown">
-                    <button class="action-button" id="settingsButton">Settings</button>
-                    <hr>
-                    <!-- <button class="action-button" id="audioToggleButton">Resume Audio</button> -->
-                </div>
-            </div>
-
-            
-            <div class="menu-item">
-                Testing
-                <div class="dropdown">
-                    <a href="https://forms.gle/aerpRUgBR7bH1xpB9" target="_blank" rel="noopener noreferrer">
-                        <button class="action-button">Give Feedback</button>
-                      </a>
-                    <!-- <button class="action-button" id="synthAppHelp">Instructions</button> -->
-                   
-                    <!-- <button class="action-button" id="viewReadme">Instructions</button> -->
-                    
-                    <!-- <button class="action-button" id="">About</button> -->
-                    <hr>
-                    <button class="action-button" id="createGithubIssue">Bug Report</button>
-                    
-                    <!-- <button>Undo</button>
-                    <button>Redo</button> -->
-                </div>
-            </div>
-            
-            <div class="menu-buttons">
-                <button class="help-button" id="synthAppHelp">Help</button>
-
-                <button class="action-button" id="clearGraph">Clear Cables</button>
-                <button class="action-button" id="audioToggleButton">Resume Audio</button>
-                
-                
-                
-            </div>
-        </div>
-
         
-        <!-- <div id="leftColumn">
-            <h3> Modules Library </h3>
-            <div id="modulesLibraryContainer">
-                <ul id="moduleList"></ul>
-            </div>
-            
-            
-        </div> -->
+        <div id="appHeader">
+            <h2>Forking Paths: Synth View</h2>
+            <button class="help-button" id="synthAppHelp">Help</button>
+          </div>
 
         <div id="synthAndHistoryController">
             <div id="cy"></div>
             <div id="mouseTracker"></div>
             <div id="cytoscapeTooltipContainer">
-                <p id="cytoscapeTooltipText"></p>
+                <p><h1 id="cytoscapeTooltipText"></h1></p>
                 <p id="signalAnalysisDisplay"></p>
         </div>
+
+        <div id="collabPanel">
+            <div class="mb-4">
+                <div class="row">
+                    <button class="help-button" id="workspaceAndCollabPanelHelp">Help</button>
+
+                </div>
+                <h1>My Workspace</h1>
+                <div class="menubar">
+                  <div class="menu-item">File
+                    <div class="dropdown">
+                        <button id="loadDemoSynthButton">Load Demo Synth</button>
+                        <input type="file" id="loadSynthButton" accept=".fpsynth" />
+                        <label for="loadSynthButton" class="custom-file-button">Load Synth From Disk...</label>     
+    
+                        <hr>
+                        <button disabled id="newPatchHistory">New Patch History</button> 
+                        <!-- <input type="file" id="loadPatchHistoryButton" accept=".forkingpaths" /> -->
+                        <button id="loadPatchHistory">Load Patch History...</button> 
+                        <button id="saveButton">Save Patch History</button>
+                       
+                    </div>
+                  </div>
+                  <div class="menu-item">View
+                    <div class="dropdown">
+                        <!-- <div id="documentName"></div> -->
+                        <button id="openHistoryWindow">Open Patch History</button>
+                        <button id="openSynthDesigner">Open Synth Designer</button>
+                    </div>
+                  </div>
+                  <div class="menu-item" id="systemDropdown">System
+                    <div class="dropdown">
+                        <button class="action-button" id="settingsButton">Settings</button>
+                        <hr>
+
+                    
+                    <button class="action-button" id="audioToggleButton">Resume Audio</button>
+                        <!-- <button class="action-button" id="audioToggleButton">Resume Audio</button> -->
+                    </div>
+                  </div>
+                  <div class="menu-item flip-left">Testing
+                    <div class="dropdown">
+                        <a href="https://forms.gle/aerpRUgBR7bH1xpB9" target="_blank" rel="noopener noreferrer">
+                            <button class="action-button">Give Feedback</button>
+                          </a>
+                        <hr>
+                        <button class="action-button" id="createGithubIssue">Bug Report</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            <!-- ! todo: figure out where to place this -->
+            <!-- <button class="action-button" id="clearGraph">Clear Cables</button> -->
+            
+            <h1 class="mb-3">Collaboration Tools</h1>
+
+            <div class="mb-4">
+              <h2>Patch Tools</h2>
+              <!-- <button class="btn btn-primary btn-sm me-1 mb-1" onclick="saveCurrentPatch()">Save</button> -->
+              <button class="btn btn-outline-secondary btn-sm mb-1" onclick="loadPrivatePatch()">Load Private</button>
+              <button class="btn btn-success btn-sm me-1 mb-1" onclick="proposeMerge()">Propose Merge</button>
+              <button class="btn btn-danger btn-sm mb-1" onclick="proposeReplace()">Propose Replace</button>
+            </div>
+          
+
+          
+            <div class="mb-4">
+              <h2>Patching Modes</h2>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="editLimitToggle" onchange="toggleEditLimit()">
+                <label class="form-check-label" for="editLimitToggle">5 Edits Per Turn</label>
+              </div>
+              <small class="text-muted" id="turnInfo">Waiting to start…</small>
+            </div>
+          
+            <div>
+                <h2>Status</h2>
+                <h3 class="text-muted" id="roomInfo">Room: abc123</h3>
+                <ul class="list-unstyled mb-0">
+                    <li><strong id="username"></strong></li>
+                    <li id="remotePeerUsername">Waiting For Peer...</li>
+                </ul>
+                <small class="text-muted" id="lastUpdateTime">Last update: just now</small><br>
+
+            </div>
+            <div class="mb-4">
+                <h2>Chat</h2>
+                <div class="border p-2 mb-2 bg-white" id="chatMessages" style="height: 100px; overflow-y: auto;"></div>
+                <input type="text" id="chatInput" class="form-control form-control-sm" placeholder="Type message..." onkeydown="if(event.key==='Enter'){sendChat()}">
+            </div>
+        </div>
+          
          
 
         <div id="settingsOverlay" class="overlay">
@@ -167,7 +189,47 @@
     <div id="helpOverlay" class="hidden">
         <button id="closeHelpOverlay">×</button>
         <div id="helpOverlayContent"></div>
-        </div>
+    </div>
+
+    <div id="workspaceAndCollabPanelHelpOverlay" class="hidden">
+        <button id="closeWorkspaceAndCollabPanelHelpOverlay">×</button>
+        <div id="workspaceAndCollabPanelHelpContent"></div>
+    </div>
+
+      
+
+    <div id="firstTimeOverlay" style="
+            position: fixed;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.85);
+            color: white;
+            padding: 20px 28px;
+            border-radius: 10px;
+            font-size: 30px;
+            line-height: 1.5;
+            z-index: 9999;
+            display: none;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            
+        ">
+        Welcome!<br>To get started, look for <button class="help-button">Help</button>
+        buttons located throughout the app.
+        <button id="closeFirstTimeOverlay" style="
+            margin-left: 16px;
+            background: none;
+            border: none;
+            color: #fff;
+            font-weight: bold;
+            font-size: 30px;
+            cursor: pointer;
+            position: relative;
+        ">[✕] Close</button>
+    </div>
+
 
     <script type="module" src="src/scripts/synthApp.js"></script>
 </body>

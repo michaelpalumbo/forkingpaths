@@ -17,6 +17,47 @@ Each step can also be assigned a duration (note length) and -- coming soon! -- l
 
 When a step contains a gesture, it's length is automatically quantized to the step's length. 
 
+Recap:
+
+- Add step: Click node in history Graph. Cmd/Ctrl-Click a step in sequencer
+- Remove step: Right-Click a step in the sequencer
+
+---
+
+### Saving and Recalling Sequences
+
+Sequences themselves can be saved and reused like change nodes. This lets you embed compositional structure into your patch history — or even nest sequences inside other sequences.
+
+#### Saving a Sequence
+
+To save a sequence:
+
+1. Add one or more steps to the sequencer.
+2. Once the sequencer contains at least one step, the **Save** button will become available.
+3. Click **Save** to commit the current 8-step sequence as a **sequence changeNode** in the History Graph.
+
+---
+
+#### Recalling a Sequence
+
+To load a previously saved sequence back into the sequencer:
+
+- Hover over a **sequence changeNode** in the History Graph  
+- Hold **Cmd (Mac)** or **Ctrl (PC)** and **click** the node  
+
+> This will **overwrite** the current sequencer contents with the saved sequence.
+
+---
+
+#### Adding a Sequence as a Step
+
+You can also assign a saved sequence as a single step in another sequence (i.e., nested sequencing):
+
+- Click a **sequence changeNode** in the History Graph  
+- Then **Cmd (Mac)** or **Ctrl (PC)** + **click** on a step in the sequencer table  
+
+> This feature is **in progress** and not yet available in the current build.
+
 ---
 
 ### Sequencer Modes

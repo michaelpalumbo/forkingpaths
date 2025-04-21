@@ -14,17 +14,21 @@ gesture editor: gestures can be trimmed, extended, or otherwise shaped before re
 
 sequencer: when playing a gesture as a step, load that gesture into the editor
 
+sequencer: be able to set the note length per step
+
 legibility: after saving a gesture, its node is highlighted. but if you click another node, the first node remains highlighted (should unhighlight)
 
 sequencer: add a burst feature to all steps. i figured out that this can work because i accidentally clicked a gesture change node twice and it played back both (and they competed with each other and it sounded awesome)
 
-
 node hover: gestures aren't displaying module names correctly when param has more than one word
 
-**PRIORITY: history graph gesture node: when player clicks on a gesture node, that gesture should begin playing back in the editor just once.**
-
-**priority: get merges working. merges on gestures too**
 
 **priority: when creating merges, the colour of the node needs to be specific, AND when you hover over it, you should have info on the 2 parent changes (what their change nodes are)**
 
+query tool: merges aren't being retrieved
+
 go through script src tags in html and download them. put in dir so that player can use the app offline?
+
+lit review:
+
+look into Mental time travel by endel tulving (u of t psychologist) (someone at freq freaks recommended him)
