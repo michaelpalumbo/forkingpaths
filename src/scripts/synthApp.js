@@ -637,44 +637,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 
         syncState = Automerge.initSyncState()
 
-
-        //         // meta = Automerge.change(meta, (meta) => {
-        //         //     meta.title = "Forking Paths System";
-        //         //     meta.branches = {};
-        //         //     meta.branchOrder = []
-        //         //     meta.docs = {}
-        //         //     meta.head = {
-        //         //         hash: null,
-        //         //         branch: null
-        //         //     },
-                    
-        //         //     meta.userSettings.focusNewBranch = false
-        //         // });
-                
-        //         await saveDocument('meta', Automerge.save(meta));
-
-        // } 
-    
-        // else {
-        //     // If loaded, convert saved document state back to Automerge document
-        //     meta = Automerge.load(meta);
-
-        //     syncState = Automerge.initSyncState()
-
-        //     if(!meta.sequencer){
-
-        //         meta = Automerge.change(meta, (meta) => {
-        //             meta.sequencer = {
-        //                 bpm: 120
-        //             }
-        //         });
-        //     }
-
-  
-        // }
-
-        
-
         // * synth changes document
         docID = 'forkingPathsDoc'; // Unique identifier for the document
         // Load the document from meta's store in IndexedDB or create a new one if it doesn't exist
@@ -1392,6 +1354,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // loop through UI, update each param
             const synthModules = forkedDoc.synth.graph.modules
+
+            // check to see if none of the overlays were made. this is the case if peer has a blank document and is syncing to another peer's doc
+            // const overlaysExist = document.querySelectorAll(".paramUIOverlayContainer").length > 0;
+            const overlaysExist = document.querySelector('[id^="paramControl_parent:"]') !== null;
+
+            if (!overlaysExist) {
+                console.log('rebuilding synth visual graph')
+                updateCytoscapeFromDocument(forkedDoc, 'buildUI');
+                return; // skip the rest, since buildUI handles everything
+            }
+
             Object.keys(synthModules).forEach((moduleID)=>{
                 // some nodes don't have params (like the feedbackDelayNode), so ignore them (otherwise this throws an error whenever there's a feedback cable)
                 if(synthModules[moduleID].params){
@@ -1412,9 +1385,10 @@ document.addEventListener("DOMContentLoaded", function () {
     
                                 default: console.warn('NEW UI DETECTED, CREATE A SWITCH CASE FOR IT ABOVE THIS LINE')
                             }
-                          } else {
+                        } else {
                             console.warn(`param with id "${id}" not found.`);
-                          }               
+                            console.log(paramControl)
+                        }               
                     })
                 }
                 
