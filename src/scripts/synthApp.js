@@ -650,55 +650,72 @@ document.addEventListener("DOMContentLoaded", function () {
 
             console.log('starting from blank patch')
             amDoc = Automerge.init();
-            let amMsg = makeChangeMessage(config.patchHistory.firstBranchName, 'blank_patch')
-            // Apply initial changes to the new document
-            amDoc = Automerge.change(amDoc, amMsg, (amDoc) => {
-                amDoc.title = config.patchHistory.firstBranchName;
-                amDoc.changeType = {
-                    msg: 'blank_patch'
-                },
-                amDoc.elements = [],
-                amDoc.synth = {
-                    graph:{
-                        modules: {
-                        },
-                        connections: []
-                    }
-                },
-                amDoc.sequencer = {
-                    tableData: []
-                }
-                // paramUIOverlays = {
 
-                // }
+            // load synthFile from indexedDB
+            let synthFile = JSON.parse(localStorage.getItem('synthFile'))
+            console.log('synthFile', synthFile)
+            if (synthFile) {
+                console.log('synthFile found', synthFile.filename)
 
-            });
+                createNewPatchHistory(synthFile)
+                // const firstChangeLabel = synthFile.name
+                // ? `load_synth:${synthFile.name}`
+                // : 'load_synth:unnamed';
             
-
-            let hash = Automerge.getHeads(amDoc)[0]
-            previousHash = hash
+                // amDoc = Automerge.change(amDoc, firstChangeLabel, (amDoc) => {
+                //     amDoc.title = config.patchHistory.firstBranchName;
+                //     amDoc.changeType = { msg: firstChangeLabel };
+                //     amDoc.elements = synthFile.visualGraph?.elements?.nodes || [];
+                //     amDoc.synth = {
+                //         graph: synthFile.audioGraph || {
+                //         modules: {},
+                //         connections: []
+                //         }
+                //     };
+                //     amDoc.sequencer = { tableData: [] };
+                // });
             
-            meta = Automerge.change(meta, (meta) => {
-                meta.branches[config.patchHistory.firstBranchName] = {
-                    head: hash,
-                    root: null,
-                    parent: null,
-                    // doc: amDoc,
-                    history: [ {hash: hash, parent: null, msg: 'blank_patch'} ] 
-                }
+                // const hash = Automerge.getHeads(amDoc)[0];
+                // previousHash = hash;
+            
+                // meta = Automerge.change(meta, (meta) => {
+                //     meta.branches[config.patchHistory.firstBranchName] = {
+                //         head: hash,
+                //         root: null,
+                //         parent: null,
+                //         history: [{ hash: hash, parent: null, msg: firstChangeLabel }]
+                //     };
                 
-                // encode the doc as a binary object for efficiency
-                meta.docs[config.patchHistory.firstBranchName] = Automerge.save(amDoc)
-                meta.head.branch = config.patchHistory.firstBranchName
-                meta.head.hash = hash 
-                meta.branchOrder.push(config.patchHistory.firstBranchName)
-                
-            });
+                //     meta.docs[config.patchHistory.firstBranchName] = Automerge.save(amDoc);
+                //     meta.head.branch = config.patchHistory.firstBranchName;
+                //     meta.head.hash = hash;
+                //     meta.branchOrder.push(config.patchHistory.firstBranchName);
+                // });
+
+                // // send doc to history app
+                // reDrawHistoryGraph()
+            
+            } else {
+                console.log("No synth file found. amDoc initialized but not changed.");
+                previousHash = null;
+            
+                meta = Automerge.change(meta, (meta) => {
+                    // Only set up empty branch metadata — no doc yet
+                    meta.branches[config.patchHistory.firstBranchName] = {
+                        head: null,
+                        root: null,
+                        parent: null,
+                        history: []
+                    };
+                    meta.head.branch = config.patchHistory.firstBranchName;
+                    meta.head.hash = null;
+                    meta.branchOrder.push(config.patchHistory.firstBranchName);
+                });
+            }
             // set the document branch (aka title) in the editor pane
             // document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
 
-            // send doc to history app
-            reDrawHistoryGraph()
+
         } else {
 
             console.log('building synth from doc')
