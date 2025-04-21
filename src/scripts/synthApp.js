@@ -607,6 +607,8 @@ document.addEventListener("DOMContentLoaded", function () {
             if (saved) {
                 meta = Automerge.load(saved);
                 console.log("Loaded local meta from IndexedDB:", metaKey);
+
+                console.log(meta.synthFile)
             } else {
                 meta = Automerge.from({
                     title: "Forking Paths Synth",
@@ -641,10 +643,12 @@ document.addEventListener("DOMContentLoaded", function () {
         docID = 'forkingPathsDoc'; // Unique identifier for the document
         // Load the document from meta's store in IndexedDB or create a new one if it doesn't exist
 
-        
+        console.log(meta.head.branch)
         // amDoc = await loadDocument(docID);
         // if meta doesn't contain a document, create a new one
         if (!meta.docs[meta.head.branch]) {
+
+            console.log('starting from blank patch')
             amDoc = Automerge.init();
             let amMsg = makeChangeMessage(config.patchHistory.firstBranchName, 'blank_patch')
             // Apply initial changes to the new document
@@ -697,6 +701,7 @@ document.addEventListener("DOMContentLoaded", function () {
             reDrawHistoryGraph()
         } else {
 
+            console.log('building synth from doc')
             // meta does contain at least one document, so grab whichever is the one that was last looked at
             amDoc = Automerge.load(meta.docs[meta.head.branch]);
 
@@ -727,11 +732,14 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     })();
     
+    console.log(config.indexedDB.saveInterval)
     // Set an interval to periodically save meta to IndexedDB
     setInterval(async () => {
+        console.warn('todo: saveDocument setInterval is not saving the doc when a synthfile is loaded. a new synthfile should be included as a new change, which maybe means it isnt seen as one or being added as one')
         // if(meta && syncMessageDataChannel && syncMessageDataChannel.readyState === 'closed'){
         if(meta && docUpdated){
             // await saveDocument(docID, Automerge.save(amDoc));
+            console.log('updating meta')
             await saveDocument('metaKey', Automerge.save(meta));
             docUpdated = false
         }
@@ -1124,6 +1132,7 @@ document.addEventListener("DOMContentLoaded", function () {
             meta.head.branch = config.patchHistory.firstBranchName
             meta.head.hash = hash 
             meta.branchOrder.push(meta.head.branch)
+            meta.synthFile = synthFile
             
         });
         // set the document branch (aka title) in the editor pane
@@ -1131,6 +1140,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         
             
+        docUpdated = true
         previousHash = meta.head.hash
         // send doc to history app
         reDrawHistoryGraph()
