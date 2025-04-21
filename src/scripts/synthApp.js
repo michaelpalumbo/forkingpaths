@@ -607,9 +607,6 @@ document.addEventListener("DOMContentLoaded", function () {
             
             if (saved) {
                 meta = Automerge.load(saved);
-                console.log("Loaded local meta from IndexedDB:", metaKey);
-
-                console.log(meta.synthFile)
             } else {
                 meta = Automerge.from({
                     title: "Forking Paths Synth",
@@ -644,7 +641,6 @@ document.addEventListener("DOMContentLoaded", function () {
         docID = 'forkingPathsDoc'; // Unique identifier for the document
         // Load the document from meta's store in IndexedDB or create a new one if it doesn't exist
 
-        console.log(meta.head.branch)
         // amDoc = await loadDocument(docID);
         // if meta doesn't contain a document, create a new one
         if (!meta.docs[meta.head.branch]) {
@@ -719,7 +715,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         } else {
 
-            console.log('building synth from doc')
             // meta does contain at least one document, so grab whichever is the one that was last looked at
             amDoc = Automerge.load(meta.docs[meta.head.branch]);
 
@@ -753,11 +748,10 @@ document.addEventListener("DOMContentLoaded", function () {
     console.log(config.indexedDB.saveInterval)
     // Set an interval to periodically save meta to IndexedDB
     setInterval(async () => {
-        console.warn('todo: saveDocument setInterval is not saving the doc when a synthfile is loaded. a new synthfile should be included as a new change, which maybe means it isnt seen as one or being added as one')
+       
         // if(meta && syncMessageDataChannel && syncMessageDataChannel.readyState === 'closed'){
         if(meta && docUpdated){
             // await saveDocument(docID, Automerge.save(amDoc));
-            console.log('updating meta')
             await saveDocument(metaKey, Automerge.save(meta));
             docUpdated = false
         }
@@ -1905,14 +1899,21 @@ document.addEventListener("DOMContentLoaded", function () {
 
     }
 
-    function updateFromSyncMessage(){
+    function updateFromSyncMessage(branch, hash){
+        if(!branch){
+            branch = meta.head.branch
+        }
+
+        if(!hash){
+            hash = meta.head.hash
+        }
         // set docUpdated so that indexedDB will save it
         docUpdated = true
                 // // need the branch
         // // need the current hash
-        let requestedDoc = loadAutomergeDoc(meta.head.branch)
+        let requestedDoc = loadAutomergeDoc(branch)
         // Use `Automerge.view()` to view the state at this specific point in history
-        const updatedView = Automerge.view(requestedDoc, [meta.head.hash]);
+        const updatedView = Automerge.view(requestedDoc, [hash]);
         
         updateSynthWorklet('loadVersion', updatedView.synth.graph, null, updatedView.changeType)
 
@@ -2576,7 +2577,6 @@ document.addEventListener("DOMContentLoaded", function () {
     // Otherwise, listen for the remote data channel.
     peerConnection.ondatachannel = event => {
         const channel = event.channel;
-        console.log("Data channel received from remote peer, label:", channel.label);
         channel.binaryType = 'arraybuffer';
         if (channel.label === "syncChannel" || channel.label === "myDataChannel") {
             syncMessageDataChannel = channel;
@@ -2590,12 +2590,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Function to set up the data channel events.
     function setupDataChannel() {
         syncMessageDataChannel.onopen = () => {
-            console.log("Data channel is open");
-            // let msg = JSON.stringify({
-            //     cmd: 'handShake',
-            //     data: `${thisPeerID} says hello`
-            // })
-            // syncMessageDataChannel.send(msg);
+
             sendSyncMessage()
         };
         syncMessageDataChannel.onmessage = event => {
@@ -2615,9 +2610,14 @@ document.addEventListener("DOMContentLoaded", function () {
                 // receiveSyncMessage returns a tuple [updatedDoc, updatedSyncState]
                 [meta, syncState] = Automerge.receiveSyncMessage(meta, syncState, incomingData);
                 
-                // Optionally, update your UI or application state with the new doc.
-                // updateUIFromDoc(doc);
-                updateFromSyncMessage()
+                const syncBranch = meta.head?.branch;
+                const syncHash = meta.head?.hash;
+                
+                if (syncBranch && syncHash && meta.docs?.[syncBranch]) {
+                  updateFromSyncMessage(syncBranch, syncHash);
+                } else {
+                  console.warn("Sync message received but state incomplete — skipping update.");
+                }
                 // After processing, check if there is an outgoing sync message to send.
                 sendSyncMessage();
             } catch (error) {
@@ -2629,7 +2629,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function setupPeerPointerDataChannel(channel) {
         channel.onopen = () => {
-            console.log("Peer Pointer channel is open");
             // You could send an initial message if needed:
             // channel.send(JSON.stringify({ type: 'pointerInit', data: ... }));
         };
