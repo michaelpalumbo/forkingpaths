@@ -424,6 +424,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     'color': config.cytoscape.synthGraph.style.parentNode.textColour, // Set the label text color
                     'font-size': config.cytoscape.synthGraph.style.parentNode.fontSize, // Adjust font size if needed
                     'text-margin-y': -10, // Optional: Move the label slightly up if desired
+                    'grabbable': false // prevent modules from being moved by cursor
                 
                 }
             },
@@ -649,8 +650,8 @@ document.addEventListener("DOMContentLoaded", function () {
             amDoc = Automerge.init();
 
             // load synthFile from indexedDB
-            let synthFile = JSON.parse(localStorage.getItem('synthFile'))
-            console.log('synthFile', synthFile)
+            // let synthFile = JSON.parse(localStorage.getItem('synthFile'))
+            // console.log('synthFile', synthFile)
             if (synthFile) {
 
 
@@ -1060,13 +1061,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
         amDoc = Automerge.init();
 
-        if(synthFile){
+        if(synthFile || meta.synthFile){
+
+            if(!meta.synthFile) { synthFile = meta.synthFile }
+
             let amMsg = makeChangeMessage(config.patchHistory.firstBranchName, `loaded${synthFile.filename}`)
             // Apply initial changes to the new document
             amDoc = Automerge.change(amDoc, amMsg, (amDoc) => {
                 amDoc.title = config.patchHistory.firstBranchName;
                 amDoc.elements = [ ] 
-                synthFile.visualGraph.elements.nodes.forEach((node)=>{
+                meta.synthFile.visualGraph.elements.nodes.forEach((node)=>{
                     amDoc.elements.push(node)
                 })
                 
@@ -1083,18 +1087,18 @@ document.addEventListener("DOMContentLoaded", function () {
             synthFile.visualGraph.elements.nodes.forEach((node, index)=>{
                 // set module grabbable to false -- prevents module movements in main view
                 if(node.classes === ':parent'){
-                    synthFile.visualGraph.elements.nodes[index].grabbable = false
+                    // synthFile.visualGraph.elements.nodes[index].grabbable = false
                 }
                 // create overlays
                 if(node.classes === 'paramAnchorNode'){
-                    let value = synthFile.audioGraph.modules[node.data.parent].params[node.data.label]
+                    let value = meta.synthFile.audioGraph.modules[node.data.parent].params[node.data.label]
                     createFloatingOverlay(node.data.parent, node, index, value)
             
                     // index++
                 }
             })
             // load synth graph from file into cytoscape
-            synthGraphCytoscape.json(synthFile.visualGraph)
+            synthGraphCytoscape.json(meta.synthFile.visualGraph)
 
             setTimeout(() => {
                 updateKnobPositionAndScale('all');
@@ -1103,22 +1107,22 @@ document.addEventListener("DOMContentLoaded", function () {
             }, 10); // Wait for the current rendering cycle to complete
         } else { 
             console.log('non synthFile')
+            console.warn('synthFile nor meta.synthFile not found')
+            // let amMsg = makeChangeMessage(config.patchHistory.firstBranchName, 'blank_patch')
+            // // Apply initial changes to the new document
+            // amDoc = Automerge.change(amDoc, amMsg, (amDoc) => {
+            //     amDoc.title = config.patchHistory.firstBranchName;
+            //     amDoc.elements = []
+            //     amDoc.synth = {
+            //         graph:{
+            //             modules: {
+            //             },
+            //             connections: []
+            //         }
+            //     }
+            // });
 
-            let amMsg = makeChangeMessage(config.patchHistory.firstBranchName, 'blank_patch')
-            // Apply initial changes to the new document
-            amDoc = Automerge.change(amDoc, amMsg, (amDoc) => {
-                amDoc.title = config.patchHistory.firstBranchName;
-                amDoc.elements = []
-                amDoc.synth = {
-                    graph:{
-                        modules: {
-                        },
-                        connections: []
-                    }
-                }
-            });
-
-            updateCytoscapeFromDocument(amDoc, 'buildUI');
+            // updateCytoscapeFromDocument(amDoc, 'buildUI');
             
         }
 
@@ -1331,11 +1335,12 @@ document.addEventListener("DOMContentLoaded", function () {
             
             // if this is the user's first time accessing the site (or from a private browser, etc), load the basic synth
 
-            let synthFile = JSON.parse(localStorage.getItem('synthFile'))
+            // let synthFile = JSON.parse(localStorage.getItem('synthFile'))
+            
                 
                 
             // I do this from the synthFile because the parentNodes' dimensions respond to their childs' positioning
-            synthGraphCytoscape.json(synthFile.visualGraph)
+            synthGraphCytoscape.json(meta.synthFile)
             // Sync the positions in `elements`
             const syncedElements = syncPositions(forkedDoc);
             // add all cables back in
@@ -1349,7 +1354,7 @@ document.addEventListener("DOMContentLoaded", function () {
             elements.forEach((node)=>{
                 // set module grabbable to false -- prevents module movements in main view
                 if(node.classes === ':parent'){
-                    synthFile.visualGraph.elements.nodes[index].grabbable = false
+                    // synthFile.visualGraph.elements.nodes[index].grabbable = false
                 }
                 if(node.classes === 'paramAnchorNode'){
                     let value = forkedDoc.synth.graph.modules[node.data.parent].params[node.data.label]
@@ -3253,31 +3258,6 @@ document.addEventListener("DOMContentLoaded", function () {
         
     // });
     
-
-    async function checkForUserStoredFile(){
-
-                    
-        if(!localStorage.getItem('synthFile')){
-            try {
-                const response = await fetch(`/assets/synths/${import.meta.env.VITE_FIRST_SYNTH}.fpsynth`).json;
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                return await response.json();
-                
-                // Continue with the rest of your code here...
-                } catch (error) {
-                console.error('Error fetching basic synth:', error);
-                }
-            }
-        else {
-            return 
-            
-        }
-    
-    
-    }
     // get .fpsynth files from user's filesystem
     document.getElementById('loadSynthButton').addEventListener('change', async (event) => {
         const file = event.target.files[0];
