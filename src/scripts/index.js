@@ -43,6 +43,7 @@ ws.onmessage = (event) => {
             const roomsList = document.getElementById('sharedRooms');
             roomsList.innerHTML = ''; // Clear existing list items
             
+            console.log(data.rooms)
             // Copy and sort the room data so that joinable rooms (i.e. missing a peer) appear first.
             // A room is considered full if both peer1 and peer2 exist.
             const sortedRooms = data.rooms.slice().sort((a, b) => {
@@ -100,6 +101,8 @@ ws.onmessage = (event) => {
                 
                 roomsList.appendChild(roomContainer);
             });
+
+            console.log(sortedRooms)
             
                 // data.rooms.forEach(room => {
                 //     // Create a list element for the room name

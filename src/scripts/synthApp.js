@@ -217,8 +217,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const room = params.get('room');
     // set text in panel
     document.getElementById("roomInfo").textContent = room;
-
-    
+    const peerCount = parseInt(params.get('peerCount') || '0');
+    let metaKey = room ? `meta-${room}` : 'meta';
 
 
     // get username
@@ -595,70 +595,79 @@ document.addEventListener("DOMContentLoaded", function () {
         // Forking Paths meta document:
         // contains all branches and branch history
         // will probably eventually contain user preferences, etc. 
-
-        // attempt to load meta from indexedDB store
-        meta = await loadDocument('meta');
-        if (!meta) {
-            meta = Automerge.from({
-                title: "Forking Paths Synth",
-                branches: {},
-                branchOrder: [],
-                docs: {},
-                head: {
-                    hash: null,
-                    branch: null
-                },
-                
-                userSettings: {
-                    focusNewBranch: true 
-                },
-                sequencer: {
-                    bpm: 120,
-                    ms: 500,
-                    traversalMode: 'Sequential'
-                },
-                synth: {
-                    rnboDeviceCache: null,
-                },
-                synthFile: {}
-
-
-            })
-            
-            syncState = Automerge.initSyncState()
-
-            // meta = Automerge.change(meta, (meta) => {
-            //     meta.title = "Forking Paths System";
-            //     meta.branches = {};
-            //     meta.branchOrder = []
-            //     meta.docs = {}
-            //     meta.head = {
-            //         hash: null,
-            //         branch: null
-            //     },
-                
-            //     meta.userSettings.focusNewBranch = false
-            // });
-            
-            await saveDocument('meta', Automerge.save(meta));
-
+        if (room && peerCount > 0) {
+            console.log("Joining active room. Starting from scratch.");
+            meta = Automerge.init();
         } else {
-            // If loaded, convert saved document state back to Automerge document
-            meta = Automerge.load(meta);
-
-            syncState = Automerge.initSyncState()
-
-            if(!meta.sequencer){
-
-                meta = Automerge.change(meta, (meta) => {
-                    meta.sequencer = {
-                        bpm: 120
-                    }
+            const saved = await loadDocument(metaKey);
+            if (saved) {
+                meta = Automerge.load(saved);
+                console.log("Loaded local meta from IndexedDB:", metaKey);
+            } else {
+                meta = Automerge.from({
+                    title: "Forking Paths Synth",
+                    branches: {},
+                    branchOrder: [],
+                    docs: {},
+                    head: {
+                        hash: null,
+                        branch: null
+                    } ,
+                    userSettings: {
+                        focusNewBranch: true 
+                    },
+                    sequencer: {
+                        bpm: 120,
+                        ms: 500,
+                        traversalMode: 'Sequential'
+                    },
+                    synth: {
+                        rnboDeviceCache: null,
+                    },
+                    synthFile: {}
                 });
+                console.log("No saved meta found. Starting fresh:", metaKey);
+                await saveDocument(metaKey, Automerge.save(meta));
             }
+        }
+                
+        syncState = Automerge.initSyncState()
+
+
+        //         // meta = Automerge.change(meta, (meta) => {
+        //         //     meta.title = "Forking Paths System";
+        //         //     meta.branches = {};
+        //         //     meta.branchOrder = []
+        //         //     meta.docs = {}
+        //         //     meta.head = {
+        //         //         hash: null,
+        //         //         branch: null
+        //         //     },
+                    
+        //         //     meta.userSettings.focusNewBranch = false
+        //         // });
+                
+        //         await saveDocument('meta', Automerge.save(meta));
+
+        // } 
+    
+        // else {
+        //     // If loaded, convert saved document state back to Automerge document
+        //     meta = Automerge.load(meta);
+
+        //     syncState = Automerge.initSyncState()
+
+        //     if(!meta.sequencer){
+
+        //         meta = Automerge.change(meta, (meta) => {
+        //             meta.sequencer = {
+        //                 bpm: 120
+        //             }
+        //         });
+        //     }
 
   
-        }
+        // }
 
         
 
@@ -2676,6 +2685,10 @@ document.addEventListener("DOMContentLoaded", function () {
             room: room
         }));
 
+        ws.send(JSON.stringify({
+            cmd: 'getRooms'
+        }))
+
         initiateConnection().catch(err => console.error("Error initiating connection:", err))
     };
     
@@ -2709,6 +2722,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             break
 
+            case 'roomInfo':
+                console.log('roomsInfo', msg)
+            break
             case 'roomFull':
                 alert('cannot connect to room, too many peers are active. please choose another room in the lobby')
             break
