@@ -1343,12 +1343,20 @@ document.addEventListener("DOMContentLoaded", function () {
             synthGraphCytoscape.json(meta.synthFile)
             // Sync the positions in `elements`
             const syncedElements = syncPositions(forkedDoc);
-            // add all cables back in
-            syncedElements.forEach((el)=>{
-                if(el.type === 'edge'){
-                    synthGraphCytoscape.add(el)
+            // add all cables back in with a check to make sure we don't render edges to empty parent nodes
+            syncedElements.forEach((el) => {
+                if (el.type === 'edge') {
+                  const sourceExists = synthGraphCytoscape.getElementById(el.data.source).length > 0;
+                  const targetExists = synthGraphCytoscape.getElementById(el.data.target).length > 0;
+              
+                  if (!sourceExists || !targetExists) {
+                    console.warn(`Skipping edge: ${el.data.id} due to missing source or target`);
+                    return;
+                  }
                 }
-            })
+              
+                synthGraphCytoscape.add(el);
+              });
             
             let index = 0
             elements.forEach((node)=>{
