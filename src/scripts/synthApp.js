@@ -27,6 +27,15 @@ import { config } from '../../config/forkingPathsConfig.js';
 // TODO: look for comments with this: //* old -repo version 
 // TODO: when new automerge implementation is working, remove their related code sections
 
+
+const App = {
+    synth: {
+        visual:{ 
+            modules: null
+        }
+    }
+}
+
 // ICE server configuration (using a public STUN server)
 const configuration = {
     iceServers: [
@@ -215,7 +224,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 visual:{
                     cytoscape: document.getElementById('cy'),
                     mouseTracker:  document.getElementById('mouseTracker'),
-                    signalAnalysisDisplay: document.getElementById('signalAnalysisDisplay')
+                    signalAnalysisDisplay: document.getElementById('signalAnalysisDisplay'),
+                    paramControls: {
+                        // a place to store all visible controls (prevents us from hammering the DOM each time we receive sync messages)
+                    }
                 }
             },
             panel: {
@@ -1140,11 +1152,7 @@ document.addEventListener("DOMContentLoaded", function () {
             meta.branchOrder.push(meta.head.branch)
             meta.synthFile = synthFile
             
-        });
-        // set the document branch (aka title) in the editor pane
-        // document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
-
-        
+        });     
             
         docUpdated = true
         previousHash = meta.head.hash
@@ -1294,7 +1302,7 @@ document.addEventListener("DOMContentLoaded", function () {
     
         // Function to update Cytoscape with the state from forkedDoc
     function updateCytoscapeFromDocument(forkedDoc, cmd) {
-
+        App.synth.visual.modules = forkedDoc.synth.graph.modules
         let elements = forkedDoc.elements
         peers.remote = {}
         // only rebuild the UI if needed
@@ -1356,7 +1364,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     // synthFile.visualGraph.elements.nodes[index].grabbable = false
                 }
                 if(node.classes === 'paramAnchorNode'){
-                    let value = forkedDoc.synth.graph.modules[node.data.parent].params[node.data.label]
+                    let value = App.synth.visual.modules[node.data.parent].params[node.data.label]
                     createFloatingOverlay(node.data.parent, node, index, value)
                     index++
                 }
@@ -1366,7 +1374,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 updateKnobPositionAndScale('all');
             }, 10); // Wait for the current rendering cycle to complete
             
-
+            // After loading your synth and creating overlays:
+            cacheVisibleParamControls(App.synth.visual.modules);
             
         } else if (cmd === 'buildFromSyncMessage'){
             // Sync the positions in `elements`
@@ -1378,7 +1387,7 @@ document.addEventListener("DOMContentLoaded", function () {
             synthGraphCytoscape.add(syncedElements)
 
             // loop through UI, update each param
-            const synthModules = forkedDoc.synth.graph.modules
+            // const synthModules = forkedDoc.synth.graph.modules
 
             // check to see if none of the overlays were made. this is the case if peer has a blank document and is syncing to another peer's doc
             // const overlaysExist = document.querySelectorAll(".paramUIOverlayContainer").length > 0;
@@ -1389,34 +1398,36 @@ document.addEventListener("DOMContentLoaded", function () {
                 return; // skip the rest, since buildUI handles everything
             }
 
-            Object.keys(synthModules).forEach((moduleID)=>{
-                // some nodes don't have params (like the feedbackDelayNode), so ignore them (otherwise this throws an error whenever there's a feedback cable)
-                if(synthModules[moduleID].params){
-                    Object.keys(synthModules[moduleID].params).forEach((param)=>{                  
-                        let id = `paramControl_parent:${moduleID}_param:${param}`
+            refreshParamControls(App.synth.visual.modules);
+
+            // Object.keys(synthModules).forEach((moduleID)=>{
+            //     // some nodes don't have params (like the feedbackDelayNode), so ignore them (otherwise this throws an error whenever there's a feedback cable)
+            //     if(synthModules[moduleID].params){
+            //         Object.keys(synthModules[moduleID].params).forEach((param)=>{                  
+            //             let id = `paramControl_parent:${moduleID}_param:${param}`
                         
-                        let paramControl = document.getElementById(id) 
-                        if (paramControl) {
-                            switch(paramControl.tagName){
-                                case 'INPUT':
-                                    paramControl.value = synthModules[moduleID].params[param]
-                                    $(paramControl).knobSet(paramControl.value);
-                                break
+            //             let paramControl = document.getElementById(id) 
+            //             if (paramControl) {
+            //                 switch(paramControl.tagName){
+            //                     case 'INPUT':
+            //                         paramControl.value = synthModules[moduleID].params[param]
+            //                         $(paramControl).knobSet(paramControl.value);
+            //                     break
         
-                                case 'SELECT':
-                                    paramControl.value = synthModules[moduleID].params[param]
-                                break
+            //                     case 'SELECT':
+            //                         paramControl.value = synthModules[moduleID].params[param]
+            //                     break
     
-                                default: console.warn('NEW UI DETECTED, CREATE A SWITCH CASE FOR IT ABOVE THIS LINE')
-                            }
-                        } else {
-                            console.warn(`param with id "${id}" not found.`);
-                            console.log(paramControl)
-                        }               
-                    })
-                }
+            //                     default: console.warn('NEW UI DETECTED, CREATE A SWITCH CASE FOR IT ABOVE THIS LINE')
+            //                 }
+            //             } else {
+            //                 console.warn(`param with id "${id}" not found.`);
+            //                 console.log(paramControl)
+            //             }               
+            //         })
+            //     }
                 
-            })
+            // })
                 
         }
         
@@ -1430,35 +1441,37 @@ document.addEventListener("DOMContentLoaded", function () {
             // 3. Add new elements to Cytoscape
             synthGraphCytoscape.add(syncedElements)
 
+            refreshParamControls(App.synth.visual.modules);
+
             // loop through UI, update each param
-            const synthModules = forkedDoc.synth.graph.modules
-            Object.keys(synthModules).forEach((moduleID)=>{
-                // some nodes don't have params (like the feedbackDelayNode), so ignore them (otherwise this throws an error whenever there's a feedback cable)
-                if(synthModules[moduleID].params){
-                    Object.keys(synthModules[moduleID].params).forEach((param)=>{                  
-                        let id = `paramControl_parent:${moduleID}_param:${param}`
+            // const synthModules = forkedDoc.synth.graph.modules
+            // Object.keys(App.synth.visual.modules).forEach((moduleID)=>{
+            //     // some nodes don't have params (like the feedbackDelayNode), so ignore them (otherwise this throws an error whenever there's a feedback cable)
+            //     if(App.synth.visual.modules[moduleID].params){
+            //         Object.keys(App.synth.visual.modules[moduleID].params).forEach((param)=>{                  
+            //             let id = `paramControl_parent:${moduleID}_param:${param}`
                         
-                        let paramControl = document.getElementById(id) 
-                        if (paramControl) {
-                            switch(paramControl.tagName){
-                                case 'INPUT':
-                                    paramControl.value = synthModules[moduleID].params[param]
-                                    $(paramControl).knobSet(paramControl.value);
-                                break
+            //             let paramControl = document.getElementById(id) 
+            //             if (paramControl) {
+            //                 switch(paramControl.tagName){
+            //                     case 'INPUT':
+            //                         paramControl.value = App.synth.visual.modules[moduleID].params[param]
+            //                         $(paramControl).knobSet(paramControl.value);
+            //                     break
         
-                                case 'SELECT':
-                                    paramControl.value = synthModules[moduleID].params[param]
-                                break
+            //                     case 'SELECT':
+            //                         paramControl.value = App.synth.visual.modules[moduleID].params[param]
+            //                     break
     
-                                default: console.warn('NEW UI DETECTED, CREATE A SWITCH CASE FOR IT ABOVE THIS LINE')
-                            }
-                          } else {
-                            console.warn(`param with id "${id}" not found.`);
-                          }               
-                    })
-                }
+            //                     default: console.warn('NEW UI DETECTED, CREATE A SWITCH CASE FOR IT ABOVE THIS LINE')
+            //                 }
+            //               } else {
+            //                 console.warn(`param with id "${id}" not found.`);
+            //               }               
+            //         })
+            //     }
                 
-            })
+            // })
         }
 
         // detectCycles()
@@ -4883,7 +4896,69 @@ document.addEventListener("DOMContentLoaded", function () {
         localStorage.setItem('syncMode', mode);
     }
 
-      
+    // ——————————————————————————————
+    // 2) Cache only the elements for nodes you can actually see
+    // ——————————————————————————————
+    function cacheVisibleParamControls() {
+        // reset the cache
+        UI.synth.visual.paramControls = {};
+    
+        // get all the visible module nodes in Cytoscape
+        const visible = synthGraphCytoscape.nodes(':visible');
+    
+        visible.forEach(node => {
+        const moduleID = node.id();
+        const params   = App.synth.visual.modules[moduleID]?.params;
+        if (!params) return;
+    
+        UI.synth.visual.paramControls[moduleID] = {};
+    
+        Object.keys(params).forEach(param => {
+            const id = `paramControl_parent:${moduleID}_param:${param}`;
+            const el = document.getElementById(id);
+            if (el) {
+            UI.synth.visual.paramControls[moduleID][param] = el;
+            }
+        });
+        });
+    }
+    
+    // ——————————————————————————————
+    // 3) Re‑cache whenever the viewport pans/zooms
+    // ——————————————————————————————
+    let cacheTimeout;
+    synthGraphCytoscape.on('pan zoom', () => {
+        clearTimeout(cacheTimeout);
+        cacheTimeout = setTimeout(cacheVisibleParamControls, 100);
+    });
+    
+    // ——————————————————————————————
+    // 4) Update only your cached controls
+    // ——————————————————————————————
+    function refreshParamControls() {
+        Object.entries(UI.synth.visual.paramControls).forEach(
+        ([moduleID, params]) => {
+            const values = App.synth.visual.modules[moduleID].params;
+            Object.entries(params).forEach(([paramName, el]) => {
+            const val = values[paramName];
+            switch (el.tagName) {
+                case 'INPUT':
+                el.value = val;
+                $(el).knobSet(val);
+                break;
+                case 'SELECT':
+                el.value = val;
+                break;
+                default:
+                console.warn(
+                    'NEW UI DETECTED, create a case for',
+                    el
+                );
+            }
+            });
+        }
+        );
+    }
 
 });
 
