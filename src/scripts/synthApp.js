@@ -2292,34 +2292,55 @@ document.addEventListener("DOMContentLoaded", function () {
             // drop any pending statechange hook
             audioContext.onstatechange = null;
             // suspend DSP
-            audioContext.suspend();
+            await audioContext.suspend();
             // update button styling
             audioToggleButton.style.backgroundColor = 'red'
             systemDropdown.style.backgroundColor = 'red'
             updateButtonText();
         } 
         // If suspended → resume, then sync only once we’re actually “running”
-        else if (audioContext && audioContext.state === 'suspended'){
-            
-            audioContext.onstatechange = () => {
-                if (audioContext.state === 'running') {
-                  // now that the worklet is processing, push the graph
-                  updateSynthWorklet('loadVersion', amDoc.synth.graph, null, amDoc.type);
-          
-                  // clear this handler so it only fires once
-                  audioContext.onstatechange = null;
-                }
-            };
+        else {
             await audioContext.resume();
 
-            // // re-sync the current synth state in the worklet
-            // updateSynthWorklet('loadVersion', amDoc.synth.graph, null, amDoc.type)
-            console.log('should resume')
-            audioToggleButton.style.backgroundColor = '#444'
-            systemDropdown.style.backgroundColor = '#444'
+            // wait 500ms before syncing the graph
+            setTimeout(() => {
+              updateSynthWorklet('loadVersion', amDoc.synth.graph, null, amDoc.type);
+            }, 500);
+        
+            audioToggleButton.style.backgroundColor = '#444';
+            systemDropdown.style.backgroundColor = '#444';
             updateButtonText();
-
         }
+        // else if (audioContext && audioContext.state === 'suspended'){
+            
+        //     audioContext.onstatechange = () => {
+        //         console.log('>>> audioContext state is now', audioContext.state);
+
+        //         if (audioContext.state === 'running') {
+        //                 // wait 500ms before syncing the graph
+        //             setTimeout(() => {
+        //                 updateSynthWorklet('loadVersion', amDoc.synth.graph, null, amDoc.type);
+
+        //                                     // clear this handler so it only fires once
+        //                  audioContext.onstatechange = null;
+
+        //             }, 500);
+        //             // // now that the worklet is processing, push the graph
+        //             // updateSynthWorklet('loadVersion', amDoc.synth.graph, null, amDoc.type);
+            
+
+        //         }
+        //     };
+        //     await audioContext.resume();
+
+        //     // // re-sync the current synth state in the worklet
+        //     // updateSynthWorklet('loadVersion', amDoc.synth.graph, null, amDoc.type)
+        //     console.log('should resume')
+        //     audioToggleButton.style.backgroundColor = '#444'
+        //     systemDropdown.style.backgroundColor = '#444'
+        //     updateButtonText();
+
+        // }
     });
 
 
