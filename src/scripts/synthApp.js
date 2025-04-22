@@ -38,7 +38,7 @@ const configuration = {
 // Create the RTCPeerConnection.
 let syncMessageDataChannel;
 let peerPointerDataChannel
-let peerPointer;
+
 let thisPeerID
 
 
@@ -206,13 +206,46 @@ fetch(`/help/myWorkspaceAndCollabPanel.md`)
 // *
 
 document.addEventListener("DOMContentLoaded", function () {
-    // fetch the help overlay md for synthApp
+    let UI = null
+    function initUI(){
+        if(UI) return UI // prevents these elements from being attached twice
+        return {
+
+            synth: {
+                visual:{
+                    cytoscape: document.getElementById('cy'),
+                    mouseTracker:  document.getElementById('mouseTracker'),
+                    signalAnalysisDisplay: document.getElementById('signalAnalysisDisplay')
+                }
+            },
+            panel: {
+                collaboration: {
+                    roomInfo: document.getElementById('roomInfo'),
+                    username: document.getElementById("username")
+                },
+                // …other panels…
+            },
+            overlays: {
+                firstTime: {
+                    overlay: document.getElementById('firstTimeOverlay'),
+                    close: document.getElementById('closeFirstTimeOverlay')
+                },
+                settings: {
+                    
+                }
+            }
+        }
+        
+    }
+    
+    UI = initUI();
+
 
 
 
     // first make sure that the mouseTracker div is positioned directly over the cytoscape div
-    const divA = document.getElementById('cy');
-    const divB = document.getElementById('mouseTracker');
+    const divA = UI.synth.visual.cytoscape
+    const divB = UI.synth.visual.mouseTracker
     const rect = divA.getBoundingClientRect();
 
     divB.style.position = 'absolute';
@@ -222,8 +255,13 @@ document.addEventListener("DOMContentLoaded", function () {
     // Parse the query parameter to get the room name.
     const params = new URLSearchParams(window.location.search);
     const room = params.get('room');
+
+
+    // set room info in collab panel
+    UI.panel.collaboration.roomInfo.textContent = room;
+
     // set text in panel
-    document.getElementById("roomInfo").textContent = room;
+    // document.getElementById("roomInfo").textContent = room;
     const peerCount = parseInt(params.get('peerCount') || '0');
     let metaKey = room ? `meta-${room}` : 'meta';
 
@@ -237,20 +275,20 @@ document.addEventListener("DOMContentLoaded", function () {
         thisPeerID = username + '-' + uuidv7().split('-')[3]
         localStorage.setItem('username', thisPeerID)
         // set peer id in status panel
-        document.getElementById("username").textContent = thisPeerID;
+        UI.panel.collaboration.username.textContent = thisPeerID;
         // Show the first-time overlay
-        const overlay = document.getElementById('firstTimeOverlay');
+        const overlay = UI.panel.overlays.firstTime;
         overlay.style.display = 'block';
 
         // Close button
-        document.getElementById('closeFirstTimeOverlay').onclick = () => {
+        UI.overlays.firstTime.close.onclick = () => {
             overlay.style.display = 'none';
         };
         
     } else {
         thisPeerID = localStorage.getItem('username')
         // set peer id in status panel
-        document.getElementById("username").textContent = thisPeerID;
+        UI.panel.collaboration.username.textContent = thisPeerID;
     }
 
 
@@ -286,7 +324,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 switch(event.data.cmd){
                     case 'analyzerData':
                         
-                        document.getElementById('signalAnalysisDisplay').textContent = `rms: ${event.data.rms}`
+                        UI.synth.visual.signalAnalysisDisplay.textContent = `rms: ${event.data.rms}`
                     break
                     default: console.warn('no switch case exists for message from synthWorklet:', event.data)
                    
@@ -329,37 +367,6 @@ document.addEventListener("DOMContentLoaded", function () {
         // console.warn('remember to uncomment the line above this warning')
 
     });
-    // document.getElementById('viewReadme').addEventListener('click', () => {
-    //     fetch('./README.md') // Fetch the README file
-    //         .then(response => response.text())
-    //         .then(markdown => {
-    //             const html = marked(markdown); // Convert Markdown to HTML
-    //             const newTab = window.open(); // Open a new tab
-    //             newTab.document.write(`
-    //                 <!DOCTYPE html>
-    //                 <html lang="en">
-    //                 <head>
-    //                     <meta charset="UTF-8">
-    //                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    //                     <title>README</title>
-    //                     <style>
-    //                         body { font-family: Arial, sans-serif; line-height: 1.6; margin: 20px; }
-    //                         pre { background: #f4f4f4; padding: 10px; border-radius: 5px; overflow: auto; }
-    //                         code { background: #f4f4f4; padding: 2px 4px; border-radius: 3px; }
-    //                         h1, h2, h3, h4, h5, h6 { margin-top: 1.5em; }
-    //                         a { color: #0366d6; text-decoration: none; }
-    //                         a:hover { text-decoration: underline; }
-    //                     </style>
-    //                 </head>
-    //                 <body>
-    //                     ${html}
-    //                 </body>
-    //                 </html>
-    //             `);
-    //             newTab.document.close();
-    //         })
-    //         .catch(err => console.error('Error fetching README:', err));
-    // });
 
 
     //*
@@ -369,7 +376,7 @@ document.addEventListener("DOMContentLoaded", function () {
     //*
     
     const synthGraphCytoscape = cytoscape({
-        container: document.getElementById('cy'),
+        container: UI.synth.visual.cytoscape,
 
         elements: [ ], // Start with no elements; add them dynamically
 
@@ -716,9 +723,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     meta.branchOrder.push(config.patchHistory.firstBranchName);
                 });
             }
-            // set the document branch (aka title) in the editor pane
-            // document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
-
 
         } else {
 
@@ -736,15 +740,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 // send doc to history app
                 reDrawHistoryGraph()
     
-                // ion this case we want the highlighted node to be on the current branch
-                //! highlightNode(historyDAG_cy.getElementById(meta.head.hash))
-    
-                // set the document branch (aka title)  in the editor pane
-                // document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
-                // addSpeaker()
-        
-                // currentZoom = synthGraphCytoscape.zoom()
-
             }, 1000);
 
 
@@ -870,15 +865,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 onChangeCallback(amDoc);
                 automergeDocuments.newClone = false
 
-                
-                // panToBranch(historyDAG_cy.getElementById(hash)) //! remove this line when 2nd window is working fully
-                
-                // sendMsgToHistoryApp({
-                //     appID: 'forkingPathsMain',
-                //     cmd: 'panToBranch',
-                //     data: hash
-                        
-                // })
             }
             return amDoc;
 
