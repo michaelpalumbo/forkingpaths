@@ -228,20 +228,41 @@ document.addEventListener("DOMContentLoaded", function () {
                     signalAnalysisDisplay: document.getElementById('signalAnalysisDisplay'),
                     paramControls: {
                         // a place to store all visible controls (prevents us from hammering the DOM each time we receive sync messages)
+                        //* NOTE This gets auto populated by cacheVisibleParamControls() and updated by refreshParamControls()
+                        // don't edit this directly or remove it
                     }
                 }
             },
             panel: {
                 collaboration: {
                     roomInfo: document.getElementById('roomInfo'),
-                    username: document.getElementById("username")
+                    username: document.getElementById("username"),
+                    recallMode: {
+                        selectmenu: document.getElementById('versionRecallModeSelect'),
+                        remote: document.getElementById("remoteVersionRecallMode")
+                    },
+                    remotePeerUsername: document.getElementById("remotePeerUsername")
                 },
-                // …other panels…
             },
             menus:{
+                file: {
+                    loadDemoSynth: document.getElementById('loadDemoSynthButton'),
+                    loadSynthFile: document.getElementById('loadSynthButton'), 
+                    
+                    newPatchHistory: document.getElementById('newPatchHistory'),
+                    loadPatchHistory: document.getElementById('loadPatchHistory'),
+                    savePatchHistory: document.getElementById("saveButton")
+                },
+                view: {
+                    openSynthDesigner: document.getElementById('openSynthDesigner'),
+                    openHistoryWindow: document.getElementById('openHistoryWindow')
+                },
                 settings: {
                     
                     audioToggleButton: document.getElementById('audioToggleButton')
+                },
+                testing: {
+                    bugReport: document.getElementById("createGithubIssue")
                 }
             },
             overlays: {
@@ -253,16 +274,22 @@ document.addEventListener("DOMContentLoaded", function () {
                     overlay: document.getElementById('settingsOverlay'),
                     settingsButton: document.getElementById('settingsButton'),
                     close: document.getElementById('closeOverlayButton'),
-                    displaySignalAnalysisButton: document.getElementById('displaySignalAnalysisButton')
+                    displaySignalAnalysisButton: document.getElementById('displaySignalAnalysisButton'),
+                    volumeSlider: document.getElementById('volumeSlider'),
+                    volumeValue: document.getElementById('volumeValue')
                 },
                 help: {
                     synth:{
                         overlay: document.getElementById("synthAppHelpOverlay"),
-                        content: document.getElementById("synthAppHelpOverlayContent")
+                        content: document.getElementById("synthAppHelpOverlayContent"),
+                        button: document.getElementById("synthAppHelp"),
+                        close: document.getElementById("closeHelpOverlay")
                     },
                     workspaceAndCollab: {
                         overlay: document.getElementById("workspaceAndCollabPanelHelpOverlay"),
-                        content: document.getElementById("workspaceAndCollabPanelHelpContent")
+                        content: document.getElementById("workspaceAndCollabPanelHelpContent"),
+                        button: document.getElementById("workspaceAndCollabPanelHelp"),
+                        close: document.getElementById("closeWorkspaceAndCollabPanelHelpOverlay")
                     }
                 }
             }
@@ -2704,8 +2731,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         
                             case 'version_recall_mode_announcement':
                                 const remoteMode = msg.mode;
-                                document.getElementById("remoteVersionRecallMode").innerText =
-                                    `Remote peer mode: ${remoteMode}`;
+                                UI.panel.collaboration.recallMode.remote.innerText = `Remote peer mode: ${remoteMode}`;
                         
                                 collaborationSettings.remotePeer.versionRecallMode = remoteMode;
                                 
@@ -2713,8 +2739,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                             case 'remotePeerCollaborationSettings':
                                 collaborationSettings.remotePeer.versionRecallMode = msg.data.local.versionRecallMode
-                                document.getElementById("remoteVersionRecallMode").innerText =
-                                `Remote peer mode: ${msg.data.local.versionRecallMode}`;
+                                UI.panel.collaboration.recallMode.remote.innerText = `Remote peer mode: ${msg.data.local.versionRecallMode}`;
                             break
                   
                         default:
@@ -2832,7 +2857,7 @@ document.addEventListener("DOMContentLoaded", function () {
         switch(msg.cmd){
             case 'newPeer':
                 const peerMessage = JSON.parse(msg.msg).msg
-                document.getElementById("remotePeerUsername").textContent = JSON.parse(msg.msg).peerID;
+                UI.panel.collaboration.remotePeerUsername.textContent = JSON.parse(msg.msg).peerID;
 
                 // Process the signaling message based on its type.
                 if (peerMessage.type === 'offer') {
@@ -3012,7 +3037,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 // set param value visually
                 let paramID = `paramControl_parent:${data.parent}_param:${data.param}`
-                const paramElement = document.getElementById(paramID);
+                const paramElement = UI.synth.visual.paramControls[node.parent][node.param];
                 paramElement.value = data.value;
                 // for all non-menu UIs
                 if(event.data.kind != 'menu'){
@@ -3065,13 +3090,12 @@ document.addEventListener("DOMContentLoaded", function () {
 //* Functions that directly handle UI interactions
 //*
 
-    const recallSelect = document.getElementById('versionRecallModeSelect');
-    recallSelect.value = getVersionRecallMode();
+    UI.panel.collaboration.recallMode.selectmenu.value = getVersionRecallMode();
 
-    recallSelect.addEventListener('change', (e) => {
+    UI.panel.collaboration.recallMode.selectmenu.addEventListener('change', (e) => {
         localStorage.setItem('versionRecallMode', e.target.value);
         collaborationSettings.local.versionRecallMode = e.target.value
-        console.log(collaborationSettings)
+      
         // Send to peer
         if (syncMessageDataChannel?.readyState === "open") {
             const message = {
@@ -3084,30 +3108,31 @@ document.addEventListener("DOMContentLoaded", function () {
         
 
     });
-
+    // https://forms.gle/aerpRUgBR7bH1xpB9
  
     // opens the GitHub issue page in a new browser tab.
-    document.getElementById("createGithubIssue").addEventListener("click", function() {
+    UI.menus.testing.bugReport.addEventListener("click", function() {
         window.open("https://github.com/michaelpalumbo/forkingpaths/issues/new", "_blank");
     });
+
         
     // synth patching help overlay
-    document.getElementById("synthAppHelp").addEventListener("click", () => {
+    UI.overlays.help.synth.button.addEventListener("click", () => {
         toggleHelpOverlay("synthAppHelp", "left");
     });
     
-    document.getElementById("closeHelpOverlay").addEventListener("click", () => {
-        document.getElementById("synthAppHelpOverlay").classList.add("hidden");
+    UI.overlays.help.synth.close.addEventListener("click", () => {
+        UI.overlays.help.synth.overlay.classList.add("hidden");
         activeHelpKey = null;
     });
 
     // My Workspace and Collab Panel Help Overlay
-    document.getElementById("workspaceAndCollabPanelHelp").addEventListener("click", () => {
+    UI.overlays.help.workspaceAndCollab.button.addEventListener("click", () => {
         toggleWorkspaceAndCollabPanelHelp();
     });
       
-      document.getElementById("closeWorkspaceAndCollabPanelHelpOverlay").addEventListener("click", () => {
-        document.getElementById("workspaceAndCollabPanelHelpOverlay").classList.add("hidden");
+    UI.overlays.help.workspaceAndCollab.close.addEventListener("click", () => {
+        UI.overlays.help.workspaceAndCollab.overlay.classList.add("hidden");
         activeWorkspaceHelp = false;
     });
       
@@ -3167,14 +3192,14 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 
-    const tracker = document.getElementById('mouseTracker');
+   
 
       // You can attach a mousemove listener on the document or the tracker div.
     // Note: If you attach it to tracker and it has pointer-events: none, 
     // you may not get events reliably, so attaching to document is often best.
     document.addEventListener('mousemove', (event) => {
         // Compute the position relative to the tracker div.
-        const rect = tracker.getBoundingClientRect();
+        const rect = UI.synth.visual.mouseTracker.getBoundingClientRect();
         const x = event.clientX - rect.left;
         const y = event.clientY - rect.top;
 
@@ -3194,8 +3219,8 @@ document.addEventListener("DOMContentLoaded", function () {
     // updateSynthWorklet(setOutputVolume, gainLevel)
 
     // Slider functionality
-    const volumeSlider = document.getElementById('volumeSlider');
-    const volumeValue = document.getElementById('volumeValue');
+    const volumeSlider = UI.overlays.settings.volumeSlider
+    const volumeValue = UI.overlays.settings.volumeValue
 
     // Initialize the GainNode and slider with the saved volume
     volumeValue.textContent = `${Math.round(savedVolume * 100)}%`; // Update percentage display
@@ -3242,12 +3267,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
     synthGraphCytoscape.off('add');
 
-    document.getElementById('openSynthDesigner').addEventListener('click', () => {
+    UI.menus.view.openSynthDesigner.addEventListener('click', () => {
         window.open('synthDesigner.html')
     });
 
     // Open the history sequencer in a new tab
-    document.getElementById('openHistoryWindow').addEventListener('click', () => {
+    UI.menus.view.openHistoryWindow.addEventListener('click', () => {
         openGraphWindow()
         localStorage.setItem('patchHistoryWindowOpen', true); 
 
@@ -3279,7 +3304,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
     
     // get .forkingpaths files from user's filesystem
-    document.getElementById('loadPatchHistory').addEventListener('change', async (event) => {
+    UI.menus.file.loadPatchHistory.addEventListener('change', async (event) => {
         const file = event.target.files[0];
     
         if (!file) {
@@ -3314,7 +3339,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 saveDocument(metaKey, Automerge.save(meta));
                 // enable new history button now that a synth has been loaded
-                document.getElementById('newPatchHistory').disabled = false
+                UI.menus.file.newPatchHistory.disabled = false
             } catch (err) {
                 console.error('Failed to load Automerge document:', err);
                 alert('Failed to load Automerge document. The file may be corrupted.');
@@ -3332,7 +3357,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // load the demo synth from /public/assets
 
-    document.getElementById('loadDemoSynthButton').addEventListener('click', async (event) => {
+    UI.menus.file.loadDemoSynth.addEventListener('click', async (event) => {
         try {
             // Fetch the JSON file (with a custom extension)
           const response = await fetch(`/assets/synths/${import.meta.env.VITE_FIRST_SYNTH}.fpsynth`);
@@ -3351,7 +3376,7 @@ document.addEventListener("DOMContentLoaded", function () {
           createNewPatchHistory(fileContent);
 
           // enable new history button now that a synth has been loaded
-          document.getElementById('newPatchHistory').disabled = false
+          UI.menus.file.newPatchHistory.disabled = false
           
         } catch (error) {
           console.error("Error loading template file:", error);
@@ -3398,7 +3423,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // });
     
     // get .fpsynth files from user's filesystem
-    document.getElementById('loadSynthButton').addEventListener('change', async (event) => {
+    UI.menus.file.loadSynthFile.addEventListener('change', async (event) => {
         const file = event.target.files[0];
     
         if (!file) {
@@ -3440,7 +3465,7 @@ document.addEventListener("DOMContentLoaded", function () {
     
     
     // save forking paths files to user's file system
-    document.getElementById("saveButton").addEventListener("click", () => {
+    UI.menus.file.savePatchHistory.addEventListener("click", () => {
         // check if browser supports the File System Access API
         if(!!window.showSaveFilePicker){
             
@@ -4193,20 +4218,10 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // Select the button element by its ID
-    // const clearGraphButton = document.getElementById('clearGraph');
-
-    // // Add an event listener to the button for the 'click' event
-    // clearGraphButton.addEventListener('click', function() {
-
-    //     removeAllCables()
-    // });
-
-    // Select the button element by its ID
-    const newPatchHistory = document.getElementById('newPatchHistory');
+ 
 
     // open a new session (with empty document)
-    newPatchHistory.addEventListener('click', function() {
+    UI.menus.file.newPatchHistory.addEventListener('click', function() {
 
         
         createNewPatchHistory()
