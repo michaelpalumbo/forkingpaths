@@ -1,6 +1,8 @@
 ### Synth App
 
-This is the modular synthesizer interface. Use it to create patches and play sounds.
+This is the modular synthesizer interface. Use it to create patches and play sounds. 
+
+**If this is your first time: Click the other HELP button to get started** (located above "My Workspace")
 
 ---
 
