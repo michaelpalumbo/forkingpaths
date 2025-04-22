@@ -102,10 +102,13 @@
                   Version Recall Mode <small class="text-muted">(applies when loading previous versions)</small>
                 </label>
                 <select id="versionRecallModeSelect" class="form-select">
-                  <option value="globalLoadVersion">Global</option>
-                  <option value="localLoadVersion">Local</option>
-                  <option disabled value="requestGlobalLoadVersion">By Request</option>
+                  <option value="openLoadVersion">Open</option>
+                  <option value="closedLoadVersion">Closed</option>
+                  <option disabled value="requestOpenLoadVersion">By Request</option>
                 </select>
+                <small id="remoteVersionRecallMode" class="form-text text-muted">
+                  Remote peer mode: Waiting...
+                </small>
 
               </div>
 

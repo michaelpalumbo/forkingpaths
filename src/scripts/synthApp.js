@@ -77,7 +77,14 @@ let previousHash;
 let meta;
 let syncState;
 
-
+let collaborationSettings = {
+    local: {
+        versionRecallMode: null
+    },
+    remotePeer: {
+        versionRecallMode: null
+    }
+}
 
 let throttleSend = true
 let metaIsDirty = false
@@ -1693,15 +1700,17 @@ document.addEventListener("DOMContentLoaded", function () {
             automergeDocuments.newClone = true
         }
 
-
+        if(fromPeer){
+            // send message to 
+        }
         // ⬇️ Optional sync/permission handling AFTER local load
         const recallMode = getVersionRecallMode();
         // ensure that loadVersion calls from the peer don't make past this point, becuase otherwise they'd send it back and forth forever 
-        if (recallMode === 'globalLoadVersion' && !fromPeer) {
-            globalVersionRecall(targetHash, branch);
+        if (recallMode === 'openLoadVersion' && !fromPeer) {
+            openVersionRecall(targetHash, branch);
         }
 
-        if (recallMode === 'requestGlobalLoadVersion'  && !fromPeer) {
+        if (recallMode === 'requestOpenLoadVersion'  && !fromPeer) {
             // requestVersionRecallWithPermission(amDoc, Automerge.getHeads(amDoc)[0], meta.head.branch);
             console.warn('not set up yet')
         }
@@ -1965,18 +1974,21 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function getVersionRecallMode() {
-        return localStorage.getItem('versionRecallMode') || 'globalLoadVersion';
+        let mode = localStorage.getItem('versionRecallMode') || 'openLoadVersion';
+        collaborationSettings.local.versionRecallMode = mode
+        
+        return mode
     }
 
     // 
-    function globalVersionRecall(hash, branch) {
+    function openVersionRecall(hash, branch) {
         if (!syncMessageDataChannel || syncMessageDataChannel.readyState !== 'open') {
-          console.warn("Cannot send global version recall: Data channel is not open.");
+          console.warn("Cannot send open version recall: Data channel is not open.");
           return;
         }
       
         const message = {
-          type: 'version_recall_global',
+          cmd: 'version_recall_open',
           hash,
           branch,
           from: thisPeerID
@@ -2648,6 +2660,13 @@ document.addEventListener("DOMContentLoaded", function () {
     function setupDataChannel() {
         syncMessageDataChannel.onopen = () => {
 
+            const message = {
+                cmd: 'remotePeerCollaborationSettings',
+                from: thisPeerID,
+                data: collaborationSettings
+            };
+            syncMessageDataChannel.send(JSON.stringify(message));
+
             sendSyncMessage()
         };
         syncMessageDataChannel.onmessage = event => {
@@ -2657,20 +2676,35 @@ document.addEventListener("DOMContentLoaded", function () {
                 try {
                     const msg = JSON.parse(event.data);
         
-                    switch (msg.type) {
-                        case 'version_recall_global': {
-
-                            loadVersion(msg.hash, msg.branch, 'fromPeer')
-
+                    console.log(msg)
+                    try {
+                        switch (msg.cmd) {
+                            case 'version_recall_open': 
+                                loadVersion(msg.hash, msg.branch, 'fromPeer');
                             break;
-                        }
-        
-                        // TODO: Add 'merge_request', 'replace_request', etc. here later
-        
+                        
+                        
+                            case 'version_recall_mode_announcement':
+                                const remoteMode = msg.mode;
+                                document.getElementById("remoteVersionRecallMode").innerText =
+                                    `Remote peer mode: ${remoteMode}`;
+                        
+                                collaborationSettings.remotePeer.versionRecallMode = remoteMode;
+                                
+                            break;
+
+                            case 'remotePeerCollaborationSettings':
+                                collaborationSettings.remotePeer.versionRecallMode = msg.data.local.versionRecallMode
+                                document.getElementById("remoteVersionRecallMode").innerText =
+                                `Remote peer mode: ${msg.data.local.versionRecallMode}`;
+                            break
+                  
                         default:
-                            console.warn("Unknown custom message type:", msg.type);
-                    }
-        
+                            console.warn("Unknown custom message cmd:", msg.cmd);
+                        }
+                      } catch (err) {
+                        console.error("Error handling JSON message:", err);
+                      }
                 } catch (err) {
                     console.error("Failed to parse custom JSON message:", event.data);
                 }
@@ -3018,6 +3052,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
     recallSelect.addEventListener('change', (e) => {
         localStorage.setItem('versionRecallMode', e.target.value);
+        collaborationSettings.local.versionRecallMode = e.target.value
+        console.log(collaborationSettings)
+        // Send to peer
+        if (syncMessageDataChannel?.readyState === "open") {
+            const message = {
+                cmd: 'version_recall_mode_announcement',
+                from: thisPeerID,
+                mode: e.target.value
+            };
+            syncMessageDataChannel.send(JSON.stringify(message));
+        }
+        
+
     });
 
  
