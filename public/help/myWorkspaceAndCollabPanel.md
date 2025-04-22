@@ -56,7 +56,7 @@ The **My Workspace** section includes menus like **File**, **View**, **System**,
 
 -   Click **Resume Audio** to enable DSP.
 
-    -   `Pause Audio`: DSP is running
+    -   `Pause Audio`: DSP is running **MIGHT NEED TO PRESS TWICE (sorry, it's a weird bug i'm trying to fix!)**
 
     -   `Resume Audio` (blinking red): DSP is off
 

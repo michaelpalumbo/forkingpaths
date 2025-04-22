@@ -28,7 +28,7 @@ The demo synth includes:
 
 **IMPORTANT** You must connect an OUT to the `AudioDestination` module to hear anything. Try Patching the **Oscillator OUT** to the **AudioDestination IN**. 
 
-**If you still don't hear sound**, check that the System menu bar isn't blinking red. Go there and click Resume Audio. (More info about this in the **Workspace Panel Help Button**)
+**If you still don't hear sound**, check that the System menu bar isn't blinking red. Go there and click Resume Audio. **MIGHT NEED TO PRESS TWICE (sorry, it's a weird bug i'm trying to fix!) (More info about this in the **Workspace Panel Help Button**)
 
 ---
 

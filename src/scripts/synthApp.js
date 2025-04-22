@@ -2284,14 +2284,37 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     let audioToggleButton = UI.menus.settings.audioToggleButton
     // Add event listener to toggle button
-    audioToggleButton.addEventListener('click', function () {
+    audioToggleButton.addEventListener('click', async function () {
+        if (!audioContext) return;
+
+        //  if running, suspend immediately
         if (audioContext && audioContext.state === 'running') {
+            // drop any pending statechange hook
+            audioContext.onstatechange = null;
+            // suspend DSP
             audioContext.suspend();
+            // update button styling
             audioToggleButton.style.backgroundColor = 'red'
             systemDropdown.style.backgroundColor = 'red'
             updateButtonText();
-        } else if (audioContext && audioContext.state === 'suspended'){
-            audioContext.resume();
+        } 
+        // If suspended → resume, then sync only once we’re actually “running”
+        else if (audioContext && audioContext.state === 'suspended'){
+            
+            audioContext.onstatechange = () => {
+                if (audioContext.state === 'running') {
+                  // now that the worklet is processing, push the graph
+                  updateSynthWorklet('loadVersion', amDoc.synth.graph, null, amDoc.type);
+          
+                  // clear this handler so it only fires once
+                  audioContext.onstatechange = null;
+                }
+            };
+            await audioContext.resume();
+
+            // // re-sync the current synth state in the worklet
+            // updateSynthWorklet('loadVersion', amDoc.synth.graph, null, amDoc.type)
+            console.log('should resume')
             audioToggleButton.style.backgroundColor = '#444'
             systemDropdown.style.backgroundColor = '#444'
             updateButtonText();
