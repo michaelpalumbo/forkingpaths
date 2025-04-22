@@ -336,7 +336,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // set peer id in status panel
         UI.panel.collaboration.username.textContent = thisPeerID;
         // Show the first-time overlay
-        const overlay = UI.panel.overlays.firstTime;
+        const overlay = UI.overlays.firstTime.overlay;
         overlay.style.display = 'block';
 
         // Close button
@@ -700,8 +700,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     },
                     synth: {
                         rnboDeviceCache: null,
-                    },
-                    synthFile: {}
+                    }
                 });
                 console.log("No saved meta found. Starting fresh:", metaKey);
                 await saveDocument(metaKey, Automerge.save(meta));
@@ -724,10 +723,10 @@ document.addEventListener("DOMContentLoaded", function () {
             // load synthFile from indexedDB
             // let synthFile = JSON.parse(localStorage.getItem('synthFile'))
             // console.log('synthFile', synthFile)
-            if (synthFile) {
-
-
-                createNewPatchHistory(synthFile)
+            if (meta.synthFile) {
+                console.log('here')
+               
+                createNewPatchHistory(meta.synthFile)
                 // const firstChangeLabel = synthFile.name
                 // ? `load_synth:${synthFile.name}`
                 // : 'load_synth:unnamed';
