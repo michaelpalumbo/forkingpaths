@@ -76,7 +76,6 @@
                             <button class="action-button">Give Feedback</button>
                           </a>
                         <hr>
-                        <button class="action-button" id="feedbackForm">Give Feedback</button>
                         <button class="action-button" id="createGithubIssue">Bug Report</button>
                     </div>
                   </div>
@@ -84,65 +83,69 @@
               </div>
             <!-- ! todo: figure out where to place this -->
             <!-- <button class="action-button" id="clearGraph">Clear Cables</button> -->
+            <div class="scale-150">
+
+              <h1 class="mb-3">Collaboration Tools</h1>
+
+              <div class="mb-4">
+                <!-- <h2>Patch Histories</h2> -->
+                <div class="row">
+
+                  <!-- <button class="btn btn-primary btn-sm me-1 mb-1" onclick="saveCurrentPatch()">Save</button> -->
+                  <!-- <button class="btn btn-outline-secondary btn-sm mb-1" onclick="loadPrivatePatch()">Load Private</button> -->
+                  <!-- <button class="btn btn-success btn-sm me-1 mb-1" onclick="proposeMerge()">Propose Merge</button> -->
+                  <!-- <button class="btn btn-danger btn-sm mb-1" onclick="proposeReplace()">Propose Replace</button> -->
+                  <p>
+                </div>
+
+                <div class="row">
+                  <label for="versionRecallModeSelect" class="form-label">
+                    Version Recall Mode <small class="text-muted">(applies when loading previous versions)</small>
+                  </label>
+                  <select id="versionRecallModeSelect" class="form-select">
+                    <option value="openLoadVersion">Open</option>
+                    <option value="closedLoadVersion">Closed</option>
+                    <option disabled value="requestOpenLoadVersion">By Request</option>
+                  </select>
+                  <small id="remoteVersionRecallMode" class="form-text text-muted">
+                    Remote peer mode: Waiting...
+                  </small>
+
+                </div>
+
+              </div>
             
-            <h1 class="mb-3">Collaboration Tools</h1>
 
-            <div class="mb-4">
-              <h2>Patch Histories</h2>
-              <div class="row">
-
-                <!-- <button class="btn btn-primary btn-sm me-1 mb-1" onclick="saveCurrentPatch()">Save</button> -->
-                <button class="btn btn-outline-secondary btn-sm mb-1" onclick="loadPrivatePatch()">Load Private</button>
-                <button class="btn btn-success btn-sm me-1 mb-1" onclick="proposeMerge()">Propose Merge</button>
-                <button class="btn btn-danger btn-sm mb-1" onclick="proposeReplace()">Propose Replace</button>
-                <p>
-              </div>
-
-              <div class="row">
-                <label for="versionRecallModeSelect" class="form-label">
-                  Version Recall Mode <small class="text-muted">(applies when loading previous versions)</small>
-                </label>
-                <select id="versionRecallModeSelect" class="form-select">
-                  <option value="openLoadVersion">Open</option>
-                  <option value="closedLoadVersion">Closed</option>
-                  <option disabled value="requestOpenLoadVersion">By Request</option>
-                </select>
-                <small id="remoteVersionRecallMode" class="form-text text-muted">
-                  Remote peer mode: Waiting...
-                </small>
-
-              </div>
-
-            </div>
-          
-
-          
-            <div class="mb-4">
-              <h2>Patching Modes</h2>
-              (Coming soon!)
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="editLimitToggle" onchange="toggleEditLimit()">
-                <label class="form-check-label" for="editLimitToggle">5 Edits Per Turn</label>
-              </div>
-              <small class="text-muted" id="turnInfo">Waiting to start…</small>
-            </div>
-          
-            <div>
-                <h2>Status</h2>
-                <h3 class="text-muted" id="roomInfo">Room: abc123</h3>
-                <ul class="list-unstyled mb-0">
-                    <li><strong id="username"></strong></li>
-                    <li id="remotePeerUsername">Waiting For Peer...</li>
-                </ul>
-                <small class="text-muted" id="lastUpdateTime">Last update: just now</small><br>
-
-            </div>
-            <div class="mb-4">
-                <h2>Chat </h2>
+            
+              <div class="mb-4">
+                <h2>Patching Modes</h2>
                 (Coming soon!)
-                <div class="border p-2 mb-2 bg-white" id="chatMessages" style="height: 100px; overflow-y: auto;"></div>
-                <input type="text" id="chatInput" class="form-control form-control-sm" placeholder="Type message..." onkeydown="if(event.key==='Enter'){sendChat()}">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="editLimitToggle" onchange="toggleEditLimit()">
+                  <label class="form-check-label" for="editLimitToggle">5 Edits Per Turn</label>
+                </div>
+                <small class="text-muted" id="turnInfo">Waiting to start…</small>
+              </div>
+            
+              <div>
+                  <h2>Status</h2>
+                  <h3 class="text-muted" id="roomInfo">Room: abc123</h3>
+                  <ul class="list-unstyled mb-0">
+                      <li><strong id="username"></strong></li>
+                      <li id="remotePeerUsername">Waiting For Peer...</li>
+                  </ul>
+                  <small class="text-muted" id="lastUpdateTime">Last update: just now</small><br>
+
+              </div>
+              <div class="mb-4">
+                  <h2>Chat </h2>
+                  (Coming soon!)
+                  <div class="border p-2 mb-2 bg-white" id="chatMessages" style="height: 100px; overflow-y: auto;"></div>
+                  <input type="text" id="chatInput" class="form-control form-control-sm" placeholder="Type message..." onkeydown="if(event.key==='Enter'){sendChat()}">
+              </div>
+              
             </div>
+            
         </div>
           
          
