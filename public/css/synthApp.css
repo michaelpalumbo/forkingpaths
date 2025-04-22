@@ -52,7 +52,7 @@ html, body {
   box-sizing: border-box; /* Prevent padding from affecting dimensions */
 }
 
-#helpOverlay {
+#synthAppHelpOverlay {
   position: absolute; /* or fixed, depending on your layout */
   top: 0;
   left: auto;
@@ -69,11 +69,11 @@ html, body {
   opacity: 1;
 }
 
-#helpOverlay.hidden {
+#synthAppHelpOverlay.hidden {
   display: none;
 }
 
-#helpOverlayContent {
+#synthAppHelpOverlayContent {
   display: block;
   width: 100%;
   height: auto;
@@ -87,19 +87,19 @@ html, body {
   box-sizing: border-box;
 }
 
-#helpOverlayContent h2,
-#helpOverlayContent h3 {
+#synthAppHelpOverlayContent h2,
+#synthAppHelpOverlayContent h3 {
   font-size: 2.2rem;
   margin-top: 1.5rem;
   margin-bottom: 1rem;
 }
 
-#helpOverlayContent ul {
+#synthAppHelpOverlayContent ul {
   padding-left: 2rem;
   margin-bottom: 1.5rem;
 }
 
-#helpOverlayContent p {
+#synthAppHelpOverlayContent p {
   margin-bottom: 1.2rem;
 }
 

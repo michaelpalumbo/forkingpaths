@@ -224,6 +224,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 visual:{
                     cytoscape: document.getElementById('cy'),
                     mouseTracker:  document.getElementById('mouseTracker'),
+                    cytoscapeTooltipText: document.getElementById('cytoscapeTooltipText'),
                     signalAnalysisDisplay: document.getElementById('signalAnalysisDisplay'),
                     paramControls: {
                         // a place to store all visible controls (prevents us from hammering the DOM each time we receive sync messages)
@@ -237,13 +238,32 @@ document.addEventListener("DOMContentLoaded", function () {
                 },
                 // …other panels…
             },
+            menus:{
+                settings: {
+                    
+                    audioToggleButton: document.getElementById('audioToggleButton')
+                }
+            },
             overlays: {
                 firstTime: {
                     overlay: document.getElementById('firstTimeOverlay'),
                     close: document.getElementById('closeFirstTimeOverlay')
                 },
                 settings: {
-                    
+                    overlay: document.getElementById('settingsOverlay'),
+                    settingsButton: document.getElementById('settingsButton'),
+                    close: document.getElementById('closeOverlayButton'),
+                    displaySignalAnalysisButton: document.getElementById('displaySignalAnalysisButton')
+                },
+                help: {
+                    synth:{
+                        overlay: document.getElementById("synthAppHelpOverlay"),
+                        content: document.getElementById("synthAppHelpOverlayContent")
+                    },
+                    workspaceAndCollab: {
+                        overlay: document.getElementById("workspaceAndCollabPanelHelpOverlay"),
+                        content: document.getElementById("workspaceAndCollabPanelHelpContent")
+                    }
                 }
             }
         }
@@ -2123,8 +2143,8 @@ document.addEventListener("DOMContentLoaded", function () {
     let activeHelpKey = null;
 
     function toggleHelpOverlay(key, columnSide = "left") {
-        const overlay = document.getElementById("helpOverlay");
-        const content = document.getElementById("helpOverlayContent");
+        const overlay = UI.overlays.help.synth.overlay
+        const content = UI.overlays.help.synth.content
         
         if (activeHelpKey === key && !overlay.classList.contains("hidden")) {
             overlay.classList.add("hidden");
@@ -2134,7 +2154,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         // console.log(key, columnSide, helpTexts[key])
         content.innerHTML = synthAppHelpOverlay || "<em>Help not available.</em>";
-        // document.getElementById('helpOverlayContent').innerHTML = "<h3>Hello</h3><p>This is a test.</p>";
+        // document.getElementById('synthAppHelpOverlayContent').innerHTML = "<h3>Hello</h3><p>This is a test.</p>";
 
 
         overlay.style.left = columnSide === "left" ? "50%" : "0%";
@@ -2146,8 +2166,8 @@ document.addEventListener("DOMContentLoaded", function () {
     let activeWorkspaceHelp = false;
 
     function toggleWorkspaceAndCollabPanelHelp() {
-    const overlay = document.getElementById("workspaceAndCollabPanelHelpOverlay");
-    const content = document.getElementById("workspaceAndCollabPanelHelpContent");
+    const overlay = UI.overlays.help.workspaceAndCollab.overlay;
+    const content = UI.overlays.help.workspaceAndCollab.content;
 
     if (activeWorkspaceHelp && !overlay.classList.contains("hidden")) {
         overlay.classList.add("hidden");
@@ -2217,26 +2237,26 @@ document.addEventListener("DOMContentLoaded", function () {
 
     }
 
-    const displaySignalAnalysisButton = document.getElementById('displaySignalAnalysisButton');
+   
 
-    displaySignalAnalysisButton.addEventListener("click", async () => {
+    UI.overlays.settings.displaySignalAnalysisButton.addEventListener("click", async () => {
         signalAnalysisSetting = !signalAnalysisSetting
         updateSynthWorklet('setSignalAnalysis', signalAnalysisSetting)
     })
 
     function setSynthToolTip(description){
-        const element = document.getElementById('cytoscapeTooltipText');
+        const element = UI.synth.visual.cytoscapeTooltipText;
         // Set new text content
         element.textContent = description;
         
     }
-    const audioToggleButton = document.getElementById('audioToggleButton');
+
 
     // Update button text based on Web Audio state
     function updateButtonText() {
-        audioToggleButton.textContent = (audioContext.state === 'running') ? 'Pause Audio' : 'Resume Audio';
+        UI.menus.settings.audioToggleButton.textContent = (audioContext.state === 'running') ? 'Pause Audio' : 'Resume Audio';
     }
-
+    let audioToggleButton = UI.menus.settings.audioToggleButton
     // Add event listener to toggle button
     audioToggleButton.addEventListener('click', function () {
         if (audioContext && audioContext.state === 'running') {
@@ -2288,15 +2308,14 @@ document.addEventListener("DOMContentLoaded", function () {
     
 // Toggle the visibility of the settings overlay
     function toggleSettingsOverlay() {
-        const overlay = document.getElementById('settingsOverlay');
-        overlay.style.display = overlay.style.display === 'flex' ? 'none' : 'flex';
+        
+        UI.overlays.settings.overlay.style.display = UI.overlays.settings.overlay.style.display === 'flex' ? 'none' : 'flex';
     }
 
     // Add event listener for the settings button
-    document.getElementById('settingsButton').addEventListener('click', toggleSettingsOverlay);
+    UI.overlays.settings.settingsButton.addEventListener('click', toggleSettingsOverlay);
 
-    const closeOverlayButton = document.getElementById('closeOverlayButton');
-    closeOverlayButton.addEventListener('click', toggleSettingsOverlay);
+    UI.overlays.settings.close.addEventListener('click', toggleSettingsOverlay);
 
 
     // Function to create and manage an overlay div
@@ -3078,7 +3097,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
     
     document.getElementById("closeHelpOverlay").addEventListener("click", () => {
-        document.getElementById("helpOverlay").classList.add("hidden");
+        document.getElementById("synthAppHelpOverlay").classList.add("hidden");
         activeHelpKey = null;
     });
 
