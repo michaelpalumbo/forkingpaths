@@ -224,7 +224,6 @@ document.addEventListener("DOMContentLoaded", function () {
     // get username
     if(!localStorage.getItem('username')){
         let username = prompt("please type a username (any)")
-        console.log(typeof username)
         if(username === ''){
             username = 'user'
         }
@@ -746,7 +745,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     })();
     
-    console.log(config.indexedDB.saveInterval)
     // Set an interval to periodically save meta to IndexedDB
     setInterval(async () => {
        
@@ -1394,7 +1392,6 @@ document.addEventListener("DOMContentLoaded", function () {
             const overlaysExist = document.querySelector('[id^="paramControl_parent:"]') !== null;
 
             if (!overlaysExist) {
-                console.log('rebuilding synth visual graph')
                 updateCytoscapeFromDocument(forkedDoc, 'buildUI');
                 return; // skip the rest, since buildUI handles everything
             }
@@ -1521,8 +1518,6 @@ document.addEventListener("DOMContentLoaded", function () {
         // previousHash = Automerge.getHeads(amDoc)[0]
 
         let hashes = Automerge.getHeads(mergedDoc)
-        
-        console.log('hashes', hashes)
 
         // create empty change to 'flatten' the merged Doc
         amDoc = Automerge.emptyChange(mergedDoc);
@@ -1615,19 +1610,31 @@ document.addEventListener("DOMContentLoaded", function () {
 
     }
     // Load a version from the DAG
-    async function loadVersion(targetHash, branch) {
+    async function loadVersion(targetHash, branch, fromPeer) {
 
         // get the head from this branch
         let head = meta.branches[branch].head
         // get the automerge doc associated with the requested hash
         let requestedDoc = loadAutomergeDoc(branch)
 
+
+ 
         // Use `Automerge.view()` to view the state at this specific point in history
         const historicalView = Automerge.view(requestedDoc, [targetHash]);
+
+        // ⬇️ Optional sync logic for collaboration mode
+        // const versionSyncMode = localStorage.getItem('syncMode') || 'shared';
+
+        // if (versionSyncMode === 'shared') {
+        //     // Propose to replace current state for both peers
+        //     requestMergeOrReplace('replace', Automerge.save(historicalView));
+        //     return; // Stop here — the update will happen after peer accepts
+        // }
          
         // Check if we're on the head; reset clone if true (so we don't trigger opening a new branch with changes made to head)
         // compare the point in history we want (targetHash) against the head of its associated branch (head)
         if (head === targetHash){
+   
             // no need to create a new branch if the user makes changes after this operation
             automergeDocuments.newClone = false
             // send the synth graph from this point in the history to the DSP worklet first
@@ -1685,6 +1692,20 @@ document.addEventListener("DOMContentLoaded", function () {
             // set newClone to true
             automergeDocuments.newClone = true
         }
+
+
+        // ⬇️ Optional sync/permission handling AFTER local load
+        const recallMode = getVersionRecallMode();
+        // ensure that loadVersion calls from the peer don't make past this point, becuase otherwise they'd send it back and forth forever 
+        if (recallMode === 'globalLoadVersion' && !fromPeer) {
+            globalVersionRecall(targetHash, branch);
+        }
+
+        if (recallMode === 'requestGlobalLoadVersion'  && !fromPeer) {
+            // requestVersionRecallWithPermission(amDoc, Automerge.getHeads(amDoc)[0], meta.head.branch);
+            console.warn('not set up yet')
+        }
+
     }
 
     //TODO OLD AUTOMERGE-REPO IMPLEMENTATION, PHASE IT OUT EVENTUALLY
@@ -1943,6 +1964,30 @@ document.addEventListener("DOMContentLoaded", function () {
         // }
     }
 
+    function getVersionRecallMode() {
+        return localStorage.getItem('versionRecallMode') || 'globalLoadVersion';
+    }
+
+    // 
+    function globalVersionRecall(hash, branch) {
+        if (!syncMessageDataChannel || syncMessageDataChannel.readyState !== 'open') {
+          console.warn("Cannot send global version recall: Data channel is not open.");
+          return;
+        }
+      
+        const message = {
+          type: 'version_recall_global',
+          hash,
+          branch,
+          from: thisPeerID
+        };
+      
+        syncMessageDataChannel.send(JSON.stringify(message));
+      
+    }
+      
+      
+
         // !
         // todo: update this with automerge version when either p2p or websocket server is working
         // handle.on("ephemeral-message", (message) => {
@@ -2165,7 +2210,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     displaySignalAnalysisButton.addEventListener("click", async () => {
         signalAnalysisSetting = !signalAnalysisSetting
-        console.log(signalAnalysisSetting)
         updateSynthWorklet('setSignalAnalysis', signalAnalysisSetting)
     })
 
@@ -2608,6 +2652,32 @@ document.addEventListener("DOMContentLoaded", function () {
         };
         syncMessageDataChannel.onmessage = event => {
             let incomingData;
+            // handle Custom JSON messages (like version recalls, merge requests, etc.)
+            if (typeof event.data === "string") {
+                try {
+                    const msg = JSON.parse(event.data);
+        
+                    switch (msg.type) {
+                        case 'version_recall_global': {
+
+                            loadVersion(msg.hash, msg.branch, 'fromPeer')
+
+                            break;
+                        }
+        
+                        // TODO: Add 'merge_request', 'replace_request', etc. here later
+        
+                        default:
+                            console.warn("Unknown custom message type:", msg.type);
+                    }
+        
+                } catch (err) {
+                    console.error("Failed to parse custom JSON message:", event.data);
+                }
+        
+                return; // Do not proceed to Automerge sync handling
+            }
+            // handle binary blobs (automerge sync messages)
             if (event.data instanceof ArrayBuffer) {
                 incomingData = new Uint8Array(event.data);
 
@@ -2617,10 +2687,6 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             try {
-                // let syncMessage = event.data;
-                // console.log(syncMessage)
-                // Process the incoming message to update doc and syncState.
-                // receiveSyncMessage returns a tuple [updatedDoc, updatedSyncState]
                 [meta, syncState] = Automerge.receiveSyncMessage(meta, syncState, incomingData);
                 
                 const syncBranch = meta.head?.branch;
@@ -2947,12 +3013,13 @@ document.addEventListener("DOMContentLoaded", function () {
 //* Functions that directly handle UI interactions
 //*
 
-    // Listen for mouse movements on the the cytoscape container
-    // const cyDiv = document.getElementById('cy');
-    // cyDiv.addEventListener('mousemove', (e) => {
-    //     const rect = cyDiv.getBoundingClientRect();
-    //     const x = e.clientX - rect.left;
-    //     const y = e.clientY - rect.top;
+    const recallSelect = document.getElementById('versionRecallModeSelect');
+    recallSelect.value = getVersionRecallMode();
+
+    recallSelect.addEventListener('change', (e) => {
+        localStorage.setItem('versionRecallMode', e.target.value);
+    });
+
  
     // opens the GitHub issue page in a new browser tab.
     document.getElementById("createGithubIssue").addEventListener("click", function() {
@@ -3202,7 +3269,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     document.getElementById('loadDemoSynthButton').addEventListener('click', async (event) => {
         try {
-          console.log('fired')
             // Fetch the JSON file (with a custom extension)
           const response = await fetch(`/assets/synths/${import.meta.env.VITE_FIRST_SYNTH}.fpsynth`);
           
@@ -3672,8 +3738,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 // todo: inserting a blockSize delay in the worklet is clunky...
                 if(cycle){
-                    console.warn('see todo comment above this warning in script.js')
-                    console.log('cable is part of feedback path:', cycle)
                     // ...  therefore, need to create a feedbackDelayNode that gets added to the synth.graph.modules
                     // ...  and has 2 connections: {source: src, target: feedbackDelayNode.IN} & {source: feedbackDelayNode.IN, target: targ}
                     // ...  then we need to add in the audioWorklet a 128-sample delay to the if statement for processing module kinds:
@@ -3933,12 +3997,6 @@ document.addEventListener("DOMContentLoaded", function () {
             let audioGraphConnections = amDoc.synth.graph.connections
             updateSynthWorklet('removeCable', { source: cableSource, target: cableTarget})
             
-            // let cycle = isEdgeInCycle(synthGraphCytoscape.$(`#${edgeId}`))
-
-            // console.warn('todo: check if this cable was part of a cycle, if it is, ensure that its associated feedbackDelayNode is also removed from the synth.graph along with its 2 edges')
-
-            // console.log('connections:', amDoc.synth.graph.connections)
-            // console.log('cable data', highlightedEdge.data())
 
             amDoc = applyChange(amDoc, (amDoc) => {
                 
@@ -4782,7 +4840,17 @@ document.addEventListener("DOMContentLoaded", function () {
           console.warn(`Module "${moduleName}" or parameter "${paramName}" not found.`);
 
         }
-      }
+    }
+
+    function getSyncMode() {
+        return localStorage.getItem('syncMode') || 'shared';
+    }
+      
+    function setSyncMode(mode) {
+        localStorage.setItem('syncMode', mode);
+    }
+
+      
 
 });
 

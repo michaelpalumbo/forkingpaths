@@ -87,11 +87,28 @@
             <h1 class="mb-3">Collaboration Tools</h1>
 
             <div class="mb-4">
-              <h2>Patch Tools</h2>
-              <!-- <button class="btn btn-primary btn-sm me-1 mb-1" onclick="saveCurrentPatch()">Save</button> -->
-              <button class="btn btn-outline-secondary btn-sm mb-1" onclick="loadPrivatePatch()">Load Private</button>
-              <button class="btn btn-success btn-sm me-1 mb-1" onclick="proposeMerge()">Propose Merge</button>
-              <button class="btn btn-danger btn-sm mb-1" onclick="proposeReplace()">Propose Replace</button>
+              <h2>Patch Histories</h2>
+              <div class="row">
+
+                <!-- <button class="btn btn-primary btn-sm me-1 mb-1" onclick="saveCurrentPatch()">Save</button> -->
+                <button class="btn btn-outline-secondary btn-sm mb-1" onclick="loadPrivatePatch()">Load Private</button>
+                <button class="btn btn-success btn-sm me-1 mb-1" onclick="proposeMerge()">Propose Merge</button>
+                <button class="btn btn-danger btn-sm mb-1" onclick="proposeReplace()">Propose Replace</button>
+                <p>
+              </div>
+
+              <div class="row">
+                <label for="versionRecallModeSelect" class="form-label">
+                  Version Recall Mode <small class="text-muted">(applies when loading previous versions)</small>
+                </label>
+                <select id="versionRecallModeSelect" class="form-select">
+                  <option value="globalLoadVersion">Global</option>
+                  <option value="localLoadVersion">Local</option>
+                  <option disabled value="requestGlobalLoadVersion">By Request</option>
+                </select>
+
+              </div>
+
             </div>
           
 
