@@ -3877,7 +3877,6 @@ document.addEventListener("DOMContentLoaded", function () {
             if (temporaryCables.local.targetNode) {
                 let cableColour = UI.synth.visual.patchCableColors[Math.floor(Math.random() * UI.synth.visual.patchCableColors.length)]
 
-                console.log(cableColour)
                 let src = temporaryCables.local.source.id()
                 let targ = temporaryCables.local.targetNode.id()
 
