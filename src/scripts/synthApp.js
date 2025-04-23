@@ -767,19 +767,45 @@ document.addEventListener("DOMContentLoaded", function () {
             } else {
                 console.log("No synth file found. amDoc initialized but not changed.");
                 previousHash = null;
+
+                try {
+                        // Fetch the Demo Synth
+                    const response = await fetch(`/assets/synths/${import.meta.env.VITE_FIRST_SYNTH}.fpsynth`);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    // Parse the response as JSON
+                    const fileContent = await response.json();
+                    
+                    // Store the JSON string in localStorage if needed
+                    localStorage.setItem('synthFile', JSON.stringify(fileContent));
+                    
+                    // Process the JSON content
+                    createNewPatchHistory(fileContent);
             
-                meta = Automerge.change(meta, (meta) => {
-                    // Only set up empty branch metadata — no doc yet
-                    meta.branches[config.patchHistory.firstBranchName] = {
-                        head: null,
-                        root: null,
-                        parent: null,
-                        history: []
-                    };
-                    meta.head.branch = config.patchHistory.firstBranchName;
-                    meta.head.hash = null;
-                    meta.branchOrder.push(config.patchHistory.firstBranchName);
-                });
+                    // enable new history button now that a synth has been loaded
+                    UI.menus.file.newPatchHistory.disabled = false
+                  
+                } catch (error) {
+                    console.error("Error loading template file:", error);
+                }
+           
+
+            
+                // meta = Automerge.change(meta, (meta) => {
+                //     // Only set up empty branch metadata — no doc yet
+                //     meta.branches[config.patchHistory.firstBranchName] = {
+                //         head: null,
+                //         root: null,
+                //         parent: null,
+                //         history: []
+                //     };
+                //     meta.head.branch = config.patchHistory.firstBranchName;
+                //     meta.head.hash = null;
+                //     meta.branchOrder.push(config.patchHistory.firstBranchName);
+                // });
             }
 
         } else {
