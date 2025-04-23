@@ -123,7 +123,8 @@ let hid = {
         shift: false,
         o: false,
         v: false,
-        s: false
+        s: false,
+        num: false
     },
     mouse: {
         left: false,
@@ -237,7 +238,8 @@ document.addEventListener("DOMContentLoaded", function () {
                         '#8A2BE2', // Blue Violet
                         '#FF8C00', // Dark Orange
                         '#228B22'  // Forest Green
-                    ]
+                    ],
+                    ghostCableColour: '#5C9AE3'
                 }
             },
             panel: {
@@ -3788,6 +3790,13 @@ document.addEventListener("DOMContentLoaded", function () {
         // this is for local Ghost cables only
         // Step 2: Update ghost node position to follow the mouse and track collisons
         if (temporaryCables.local.ghostNode) {
+            // if player is holding down a number key, assign a colour to the ghost cable
+            if(hid.key.num){
+                UI.synth.visual.ghostCableColour = UI.synth.visual.patchCableColors[hid.key.num - 1]
+            } 
+
+            temporaryCables.local.tempEdge.style({ 'line-color': UI.synth.visual.ghostCableColour})
+            
             if(parentConnectedEdges.length > 0){
                 parentConnectedEdges.forEach((edge)=>{
                     edge.removeClass('connectedEdges');
@@ -3875,7 +3884,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         if (temporaryCables.local.tempEdge) {
             if (temporaryCables.local.targetNode) {
-                let cableColour = UI.synth.visual.patchCableColors[Math.floor(Math.random() * UI.synth.visual.patchCableColors.length)]
+                let cableColour = UI.synth.visual.ghostCableColour
 
                 let src = temporaryCables.local.source.id()
                 let targ = temporaryCables.local.targetNode.id()
@@ -4139,6 +4148,17 @@ document.addEventListener("DOMContentLoaded", function () {
         if (event.key === 'Shift') {
             hid.key.shift = true
         }
+
+        if (['1','2','3','4','5'].includes(event.key)) {
+            const n = Number(event.key);
+            hid.key.num = n
+
+            if(hid.mouse.left){
+                UI.synth.visual.ghostCableColour = UI.synth.visual.patchCableColors[hid.key.num - 1]
+                temporaryCables.local.tempEdge.style({ 'line-color': UI.synth.visual.ghostCableColour})
+            }
+        }
+
     });
 
     window.addEventListener('keyup', (event) => {
@@ -4160,6 +4180,11 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         if (event.key === 'Shift') {
             hid.key.shift = false
+        }
+        if (['1','2','3','4','5'].includes(event.key)) {
+            // const n = Number(event.key);
+            hid.key.num = false
+
         }
     });
 
@@ -4350,6 +4375,15 @@ document.addEventListener("DOMContentLoaded", function () {
         temporaryCables.local.source = source;
         const mousePos = position;
 
+
+        // if player is holding down a number key, assign a colour to the ghost cable
+        if(hid.key.num){
+            UI.synth.visual.ghostCableColour = UI.synth.visual.patchCableColors[hid.key.num - 1]
+        } else {
+            // if not, set it to random colour
+            UI.synth.visual.ghostCableColour = UI.synth.visual.patchCableColors[Math.floor(Math.random() * UI.synth.visual.patchCableColors.length)]
+        }
+
         // Get the ghostCable property from the temporaryCables.local.ghostNode, default to 'ellipse' if undefined
         const ghostShape =  temporaryCables.local.source.data('ghostCableShape') || 'ellipse';
         const ghostColour =  temporaryCables.local.source.data('ghostCableColour') || '#5C9AE3';
@@ -4366,17 +4400,19 @@ document.addEventListener("DOMContentLoaded", function () {
         // Apply the ghostShape to the ghostNode using a direct style override
         temporaryCables.local.ghostNode.style({
             'shape': ghostShape,
-            'background-color': ghostColour
+            'background-color': ghostColour,
+          
+            // 'target-arrow-color': cableColour
         });
         // Create a temporary edge from ghostNodes.local.source to temporaryCables.local.ghostNode
         temporaryCables.local.tempEdge = synthGraphCytoscape.add({
             group: 'edges',
-            data: { id: 'localTempEdge', source: temporaryCables.local.source.id(), target: 'localGhostNode' },
+            data: { id: 'localTempEdge', source: temporaryCables.local.source.id(), target: 'localGhostNode', colour: UI.synth.visual.ghostCableColour },
             classes: 'tempEdge'
         });
 
         // Set target endpoint to mouse position initially
-        temporaryCables.local.tempEdge.style({ 'line-color': '#FFA500', 'line-style': 'dashed',  'source-arrow-shape': 'none'  }); // Set temporary edge color        
+        temporaryCables.local.tempEdge.style({ 'line-color': UI.synth.visual.ghostCableColour, 'line-style': 'dashed',  'source-arrow-shape': 'none'  }); // Set temporary edge color        
     }
 
     function handleRemoteCables(cmd,  peerID, sourceID, position){
