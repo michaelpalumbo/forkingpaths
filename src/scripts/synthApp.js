@@ -230,7 +230,14 @@ document.addEventListener("DOMContentLoaded", function () {
                         // a place to store all visible controls (prevents us from hammering the DOM each time we receive sync messages)
                         //* NOTE This gets auto populated by cacheVisibleParamControls() and updated by refreshParamControls()
                         // don't edit this directly or remove it
-                    }
+                    },
+                    patchCableColors: [
+                        '#FFD700', // Gold
+                        '#00CED1', // Dark Turquoise
+                        '#8A2BE2', // Blue Violet
+                        '#FF8C00', // Dark Orange
+                        '#228B22'  // Forest Green
+                    ]
                 }
             },
             panel: {
@@ -445,7 +452,7 @@ document.addEventListener("DOMContentLoaded", function () {
         fit: false,
         resize: true,
         userZoomingEnabled: false, // Disable zooming
-        userPanningEnabled: false,
+        userPanningEnabled: true,
         boxSelectionEnabled: false,
         
         style: [
@@ -522,9 +529,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 selector: 'edge',
                 style: {
                     'width': 9,
-                    'line-color': '#ccc',
+                    // 'line-color': '#ccc',
                     'target-arrow-shape': 'triangle',
-
+                    'line-color': 'data(colour)',
                     'source-arrow-shape': 'none', 
                     // 'source-arrow-color': '#000',
                     'target-arrow-color': '#000',
@@ -3868,7 +3875,9 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         if (temporaryCables.local.tempEdge) {
             if (temporaryCables.local.targetNode) {
+                let cableColour = UI.synth.visual.patchCableColors[Math.floor(Math.random() * UI.synth.visual.patchCableColors.length)]
 
+                console.log(cableColour)
                 let src = temporaryCables.local.source.id()
                 let targ = temporaryCables.local.targetNode.id()
 
@@ -3877,7 +3886,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     targ = temporaryCables.local.source.id()
                 }
 
- 
+                                    
+
 
                 // If a target node is highlighted, connect the edge to it
                 // tempEdge.data('target', targ); // Update the edge target
@@ -3888,8 +3898,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 synthGraphCytoscape.add({
                     group: 'edges',
-                    data: { id: edgeId, source: src, target: targ, kind: 'cable' },
+                    data: { id: edgeId, source: src, target: targ, kind: 'cable', colour: cableColour },
                     classes: 'edge'
+                });
+
+
+                // Grab it and force its colour (even tho we set it above, it was sometimes not rendering still)
+                synthGraphCytoscape.getElementById(edgeId).style({
+                    'line-color':         cableColour,
+                    'target-arrow-color': cableColour
                 });
                 const parentSourceID = temporaryCables.local.source.parent().data().id
                 const parentTargetID = temporaryCables.local.targetNode.parent().data().id
@@ -3915,12 +3932,12 @@ document.addEventListener("DOMContentLoaded", function () {
                     updateSynthWorklet('addCable', { source: feedbackDelayNodeID + '.OUT', target: targ, feedback: cycle})  
                     
                     //todo to amDoc.synth.graph.connections: add 2 connections: {source: src, target: feedbackDelayNode.IN} & {source: feedbackDelayNode.IN, target: targ}
-                    
+
                     amDoc = applyChange(amDoc, (amDoc) => {
                         amDoc.elements.push({
                             type: 'edge',
                             id: edgeId,
-                            data: { id: edgeId, source: src, target: targ, kind: 'cable' }
+                            data: { id: edgeId, source: src, target: targ, kind: 'cable', colour: cableColour }
                         });
                         // set the change type
                         amDoc.changeType = {
@@ -3938,14 +3955,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 } else {
                     // update audio
-                    updateSynthWorklet('addCable', { source: src, target: targ, feedback: cycle})
+                    updateSynthWorklet('addCable', { source: src, target: targ, feedback: cycle })
                     
                     // * automerge version:                
                     amDoc = applyChange(amDoc, (amDoc) => {
                         amDoc.elements.push({
                             type: 'edge',
                             id: edgeId,
-                            data: { id: edgeId, source: src, target: targ, kind: 'cable' }
+                            data: { id: edgeId, source: src, target: targ, kind: 'cable', colour: cableColour }
                         });
                         // set the change type
                         amDoc.changeType = {
