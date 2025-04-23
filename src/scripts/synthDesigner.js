@@ -308,14 +308,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // save synth to user's computer as .fpsynth
     async function saveFile(fileName) {
-        const synthDef = {
-            filename: fileName,
-            visualGraph: cy.json(),
-            paramUIOverlays: paramUIOverlays,
-            audioGraph: synthGraph
-        }
+
         // Show the file save dialog
-        const fileHandle = await window.showSaveFilePicker({
+        let fileHandle = await window.showSaveFilePicker({
             suggestedName: fileName,
             types: [
                 {
@@ -325,7 +320,16 @@ document.addEventListener("DOMContentLoaded", function () {
             ],
         });
 
-        
+        console.log(fileHandle)
+        if(!fileHandle.name.includes('.fpsynth')){
+            fileHandle.name += '.fpsynth'
+        }
+        const synthDef = {
+            filename: fileHandle.name,
+            visualGraph: cy.json(),
+            paramUIOverlays: paramUIOverlays,
+            audioGraph: synthGraph
+        }
         let cytoscapeSynthGraph = JSON.stringify(synthDef, null, 2)
 
         // Create a writable stream for the file
