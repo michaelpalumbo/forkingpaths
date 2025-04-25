@@ -3438,7 +3438,7 @@ document.addEventListener("DOMContentLoaded", function () {
     UI.menus.file.loadDemoSynth.addEventListener('click', async (event) => {
         try {
             // Fetch the JSON file (with a custom extension)
-          const response = await fetch(`/assets/synths/${import.meta.env.VITE_FIRST_SYNTH}.fpsynth`);
+          const response = await fetch(`/assets/synths/demoApril2025.fpsynth`);
           
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
