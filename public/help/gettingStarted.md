@@ -7,11 +7,13 @@ ELI5: Think of it as getting *really* creative with the undo/redo history of a s
 
 ## Quick Start
 
-1. This app operates across several tabs. Some will open automatically.
+1. This app must be **run in Chrome**. (Other chromium browsers like Brave aren't supported) 
 
-2. The first tab that will open has a **HELP button in the top-right corner.** Use that to get started making sounds!
+2. This app operates across several tabs. Some will open automatically.
 
-3. **Join** a room in the Forking Paths Lobby (left column of this page). The **Synth App** will open. 
+3. The first tab that will open has a **HELP button in the top-right corner.** Use that to get started making sounds!
+
+4. **Join** a room in the Forking Paths Lobby (left column of this page). The **Synth App** will open. 
 
 
 ## User Testing
