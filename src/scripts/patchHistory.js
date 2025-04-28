@@ -2116,7 +2116,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Show and move the overlay
     historyDAG_cy.on('mouseover', 'node', function(evt) {
         const data = evt.target.data();
-   
+        console.log(data)
         let overlayString
         if(!data.label){
             // dealing with a node that doesn't have the info we need yet
@@ -2266,6 +2266,16 @@ document.addEventListener("DOMContentLoaded", async () => {
             case "merge":
                 console.warn('need to set up merge case for historyNodeOverlay')
             break
+
+            case 'draw':
+                overlayString = `
+                <strong>Change Node:</strong> Draw<br>    
+                <strong>Strokes:</strong> ${labelArray[2]}<br><br>
+                <strong>Branch:</strong> ${data.branch}<br>
+            `;
+            break
+
+            default: console.warn('no switch case exists for changeNode', data)
         }
 
         
