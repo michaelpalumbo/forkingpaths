@@ -250,7 +250,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 ctx: null, // define this afterward
                 cursor: penCursorImage,
                 currentStrokePoints: [], // for storing in automerge on mouseup
-                canvasStrokes: []
+                canvasStrokes: [],
+                eraser: document.getElementById('eraseDrawing'),
             },
             panel: {
                 collaboration: {
@@ -856,6 +857,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 
                 // send doc to history app
                 reDrawHistoryGraph()
+
+                // load the draw canvas
+                if(amDoc.drawing){
+                    loadCanvasVersion(amDoc.drawing)
+                }
     
             }, 1000);
 
@@ -2295,6 +2301,19 @@ document.addEventListener("DOMContentLoaded", function () {
         // apply points to temp array for storing in automerge on mouseup
         UI.draw.currentStrokePoints.push({ x, y });
     }
+
+    UI.draw.eraser.addEventListener("click", async () => {
+        UI.draw.ctx.clearRect(0, 0, UI.draw.canvas.width, UI.draw.canvas.height);
+
+        // clear the temp array of strokes
+        UI.draw.currentStrokePoints = []
+        // clear the drawing array
+        UI.draw.canvasStrokes = []
+        amDoc = applyChange(amDoc, (amDoc) => {
+            amDoc.drawing = []
+        }, onChange,  `draw Erase_Drawing`);
+
+    })
     // // use this to ensure the cytoscape doesn't draw a mousedown circle when we are drawing with the pen tool
     // function forceCytoscapeMouseup() {
     //     // Simulate a mouseup event into Cytoscape
@@ -2308,7 +2327,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     function loadCanvasVersion(strokes){
-        if (!strokes || strokes.length === 0) return;
+        if (!strokes || strokes.length === 0) {
+            UI.draw.ctx.clearRect(0, 0, UI.draw.canvas.width, UI.draw.canvas.height);
+
+            return
+        };
 
         const ctx = UI.draw.ctx; // Your canvas 2D context
         const canvas = UI.draw.canvas;
@@ -3456,7 +3479,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         parent: groupChange.parentNode,
                         value: groupChange.values
                     }
-                }, onChange, `paramUpdate ${groupChange.paramLabel} = ${groupChange.values[0]}$PARENT ${groupChange.parentNode}`);
+                }, `paramUpdate ${groupChange.paramLabel} = ${groupChange.values[0]}$PARENT ${groupChange.parentNode}`);
             } else if(groupChange.values.length > 1){
                 // are storing a gesture
                 // Update in Automerge
