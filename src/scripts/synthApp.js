@@ -242,6 +242,11 @@ document.addEventListener("DOMContentLoaded", function () {
                     ghostCableColour: '#5C9AE3'
                 }
             },
+            draw: {
+                canvas: document.getElementById('draw'),
+                drawing: false,
+                ctx: null // define this afterward
+            },
             panel: {
                 collaboration: {
                     roomInfo: document.getElementById('roomInfo'),
@@ -308,7 +313,7 @@ document.addEventListener("DOMContentLoaded", function () {
     
     UI = initUI();
 
-
+    UI.draw.ctx = UI.draw.canvas.getContext('2d')
 
 
     // first make sure that the mouseTracker div is positioned directly over the cytoscape div
@@ -319,6 +324,11 @@ document.addEventListener("DOMContentLoaded", function () {
     divB.style.position = 'absolute';
     divB.style.top = rect.top + 'px';
     divB.style.left = rect.left + 'px';
+
+    // setup the drawing canvas dimensions
+    UI.draw.canvas.width = rect.width
+    UI.draw.canvas.height = rect.height
+    
 
     // Parse the query parameter to get the room name.
     const params = new URLSearchParams(window.location.search);
@@ -454,10 +464,19 @@ document.addEventListener("DOMContentLoaded", function () {
         fit: false,
         resize: true,
         userZoomingEnabled: false, // Disable zooming
-        userPanningEnabled: true,
+        userPanningEnabled: false,
         boxSelectionEnabled: false,
         
         style: [
+            {
+                selector: 'core',
+                style: {
+                    'active-bg-color': 'transparent', // no color
+                    'active-bg-opacity': 0,            // fully transparent
+                    'active-bg-size': 1                // zero size
+                }
+            },
+
             {
                 selector: 'node',
                 style: {
@@ -2197,7 +2216,85 @@ document.addEventListener("DOMContentLoaded", function () {
 //* UI UPDATES
 //* Functions that directly handle updating DOM elements & cytoscape
 //*
+    // * DRAWING
+
+    function canStartDrawing(e) {
+        const topElement = document.elementFromPoint(e.clientX, e.clientY);
+
+        // First, it must be the canvas
+        if (topElement !== UI.draw.canvas) {
+            return false;
+        }
+        
+        // Second, no Cytoscape node/edge should be under the mouse
+        const pos = synthGraphCytoscape.renderer().projectIntoViewport(e.clientX, e.clientY);
+        // const eles = synthGraphCytoscape.elements().filter(ele => {
+        //     return ele.isNode() || ele.isEdge();
+        // }).filter(ele => ele.boundingBox().x1 <= pos[0] && pos[0] <= ele.boundingBox().x2
+        //             && ele.boundingBox().y1 <= pos[1] && pos[1] <= ele.boundingBox().y2);
+
+        // if (eles.length > 0) {
+        //     // Cytoscape has a node or edge here — don't draw
+        //     return false;
+        // }
+
+        const target = synthGraphCytoscape.renderer().findNearestElement(pos[0], pos[1], true);
+
+        if (!target) {
+            // No cytoscape element under pointer = OK to draw
+            return true;
+        }
+
+        // Otherwise: Check if target is something we should still block
+        if (target.isNode()) {
+            console.log(target.data())
+            // If you want to allow dragging from childNodes (ports), you need to allow nodes here
+            return false;
+        }
+
+        if (target.isEdge()) {
+            console.log(target.data())
+            // Hovering over an edge = don't draw
+            return false;
+        }
+        return true;
+    }
+
+    // selectively toggle pointer events on the draw canvas depending on whether mouse is over cytoscape
+    function enableDrawingMode() {
+        UI.draw.canvas.style.pointerEvents = 'auto';
+    }
     
+    function disableDrawingMode() {
+        UI.draw.canvas.style.pointerEvents = 'none';
+    }
+
+    function draw(e) {
+        const rect = UI.draw.canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+  
+        UI.draw.ctx.lineWidth = 5;
+        UI.draw.ctx.lineCap = 'round';
+        UI.draw.ctx.strokeStyle = '#000';
+        
+        UI.draw.ctx.lineTo(x, y);
+        UI.draw.ctx.stroke();
+        UI.draw.ctx.beginPath();
+        UI.draw.ctx.moveTo(x, y);
+    }
+    // // use this to ensure the cytoscape doesn't draw a mousedown circle when we are drawing with the pen tool
+    // function forceCytoscapeMouseup() {
+    //     // Simulate a mouseup event into Cytoscape
+    //     const event = new MouseEvent('mouseup', {
+    //         bubbles: true,
+    //         cancelable: true,
+    //         view: window
+    //     });
+    //     synthGraphCytoscape.container().dispatchEvent(event);
+    // }
+
+
     // * HELP OVERLAYS
 
     // synth pathcing interface help overlay
@@ -3221,12 +3318,22 @@ document.addEventListener("DOMContentLoaded", function () {
     document.addEventListener('mousedown', function(event) {
         hid.mouse.left = true
 
+        // enable the mouse drawing tool
+        if (canStartDrawing(event)) {
+            enableDrawingMode();
+            UI.draw.drawing = true;
+            draw(event); // start drawing immediately
+        } else {
+            disableDrawingMode();
+            UI.draw.drawing = false;
+        }
+
     });
     
     // Listen for mouse up event on the document
     document.addEventListener('mouseup', function(event) {
         hid.mouse.left = false
-      
+        
         // if the user has been playing with a param knob, we need to store it as a param change (or list of param changes) in automerge
         if(Object.keys(groupChange).length > 0){
             // if we are storing a single param change, do a paramUpdate
@@ -3266,6 +3373,12 @@ document.addEventListener("DOMContentLoaded", function () {
             groupChange = { }
         }
 
+        // disable drawing
+        disableDrawingMode();
+        UI.draw.drawing = false;
+        UI.draw.ctx.beginPath(); // Reset path to avoid artifacts
+
+
 
     });
 
@@ -3291,7 +3404,18 @@ document.addEventListener("DOMContentLoaded", function () {
     
             // }
         }
+
+        // // also update the drawing canvas dimensions
+        // UI.draw.canvas.width = rect.width
+        // UI.draw.canvas.height = rect.height
+
+        // Only draw if actively drawing
+        if (UI.draw.drawing) {
+            draw(event);
+        }
     });
+
+
     
 
     // updateSynthWorklet(setOutputVolume, gainLevel)
@@ -3571,6 +3695,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // get mousedown events from cytoscape
     synthGraphCytoscape.on('mousedown', (event) => {
+
+        // first check if we are not interacting with the cytoscape elements (i.e. if outside, we want to active the pen tool instead)
+        const pos = synthGraphCytoscape.renderer().projectIntoViewport(event.originalEvent.clientX, event.originalEvent.clientY);
+        const target = synthGraphCytoscape.renderer().findNearestElement(pos[0], pos[1], true);
+        if (target && (target.isNode() || target.isEdge())) {
+            // Clicked on a module, port, or cable: stay in Cytoscape interaction
+            disableDrawingMode();
+            UI.draw.drawing = false;
+        } else {
+            // forceCytoscapeMouseup()
+            // Clicked on empty canvas background
+            enableDrawingMode();
+            UI.draw.drawing = true;
+            return
+        }
+
         hid.cyMouse.left = true
         // handle slider events
         if(event.target.data().kind && event.target.data().kind === 'slider'){
@@ -4056,6 +4196,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // update pan after dragging viewport
         // currentPan = synthGraphCytoscape.pan()
 
+        // synthGraphCytoscape.autoungrabify(true)
 
     });
 
@@ -5115,6 +5256,80 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         );
     }
+
+
+    // const canvas = document.getElementById('draw');
+    // const ctx = canvas.getContext('2d');
+
+    // // Make the canvas fill the whole window
+    // canvas.width = window.innerWidth;
+    // canvas.height = window.innerHeight;
+
+    // let drawing = false;
+
+    // // function startDrawing(e) {
+    // //     if (e.target !== canvas) return;
+
+    // //     drawing = true;
+    // //     draw(e); // Start drawing immediately
+    // // }
+
+    // function startDrawing(e) {
+    //     const clientX = e.clientX;
+    //     const clientY = e.clientY;
+      
+    //     // 1. Check if mouse is over Cytoscape node or edge
+    //     const cyElement = synthGraphCytoscape.renderer().findNearestElement(clientX, clientY, true);
+      
+    //     if (cyElement) {
+    //       // If it finds any node or edge, block drawing
+    //       return;
+    //     }
+      
+    //     // 2. Check if mouse is over a floating knob element
+    //     const domElements = document.elementsFromPoint(clientX, clientY);
+    //     for (let el of domElements) {
+    //       if (el.classList.contains('knob') || el.closest('.knob-container')) {
+    //         return;
+    //       }
+    //     }
+      
+    //     // 3. Otherwise allow drawing
+    //     drawing = true;
+    //     draw(e);
+    //   }
+      
+      
+      
+
+    // function endDrawing() {
+    //     drawing = false;
+    //     ctx.beginPath(); // Reset the path
+    // }
+
+    // function draw(e) {
+    //     if (!drawing) return;
+
+    //     ctx.lineWidth = 5;
+    //     ctx.lineCap = 'round';
+    //     ctx.strokeStyle = '#000';
+
+    //     ctx.lineTo(e.clientX, e.clientY);
+    //     ctx.stroke();
+    //     ctx.beginPath();
+    //     ctx.moveTo(e.clientX, e.clientY);
+    // }
+
+    // canvas.addEventListener('mousedown', startDrawing);
+    // canvas.addEventListener('mouseup', endDrawing);
+    // canvas.addEventListener('mousemove', draw);
+    // canvas.addEventListener('mouseout', endDrawing);
+
+    window.addEventListener('resize', () => {
+        UI.draw.canvas.width = window.innerWidth;
+        UI.draw.canvas.height = window.innerHeight;
+    });
+    
 
 });
 
