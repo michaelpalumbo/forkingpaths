@@ -51,6 +51,10 @@ Colour options:
 
 **If you still don't hear sound**, check that the System menu bar isn't blinking red. Go there and click Resume Audio. **(More info about this in the **Workspace Panel Help Button**)
 
+### Patch Notes
+
+You can draw within the synth view. Useful for making patch notes or communicating with another player. Just click and drag anywhere within the canvas that isn't part of the synth. 
+
 ---
 
 ### Tips

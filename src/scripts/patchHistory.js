@@ -201,7 +201,7 @@ let graphLayouts = {
 let docHistoryGraphStyling = {
     nodeColours: {
         connect: "#004cb8",
-        disconnect: "#b85c00",
+        disconnect: "#b8000f",
         // add: "#00b806",
         // remove: "#b8000f",
         merge: "#e0ad1a",
@@ -209,6 +209,7 @@ let docHistoryGraphStyling = {
         gesture: "#00ffff",
         clear: "#000000",
         sequence: "#00b39b", 
+        draw: "#b85c00",
         blank_patch: "#ccc"
     }
 }

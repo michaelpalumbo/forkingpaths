@@ -248,7 +248,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 canvas: document.getElementById('draw'),
                 drawing: false,
                 ctx: null, // define this afterward
-                cursor: penCursorImage
+                cursor: penCursorImage,
+                currentStrokePoints: [], // for storing in automerge on mouseup
+                canvasStrokes: []
             },
             panel: {
                 collaboration: {
@@ -1731,6 +1733,10 @@ document.addEventListener("DOMContentLoaded", function () {
         // Use `Automerge.view()` to view the state at this specific point in history
         const historicalView = Automerge.view(requestedDoc, [targetHash]);
 
+        if(historicalView.drawing){
+            console.log(historicalView.drawing)
+            loadCanvasVersion(historicalView.drawing)
+        }
         // ⬇️ Optional sync logic for collaboration mode
         // const versionSyncMode = localStorage.getItem('syncMode') || 'shared';
 
@@ -2285,6 +2291,9 @@ document.addEventListener("DOMContentLoaded", function () {
         UI.draw.ctx.stroke();
         UI.draw.ctx.beginPath();
         UI.draw.ctx.moveTo(x, y);
+
+        // apply points to temp array for storing in automerge on mouseup
+        UI.draw.currentStrokePoints.push({ x, y });
     }
     // // use this to ensure the cytoscape doesn't draw a mousedown circle when we are drawing with the pen tool
     // function forceCytoscapeMouseup() {
@@ -2298,6 +2307,37 @@ document.addEventListener("DOMContentLoaded", function () {
     // }
 
 
+    function loadCanvasVersion(strokes){
+        if (!strokes || strokes.length === 0) return;
+
+        const ctx = UI.draw.ctx; // Your canvas 2D context
+        const canvas = UI.draw.canvas;
+
+        // 1. Clear the canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // 2. Loop through each stroke
+        for (const stroke of strokes) {
+            if (!stroke.points || stroke.points.length < 2) continue;
+
+            ctx.beginPath();
+            ctx.strokeStyle = stroke.color || '#000';
+            ctx.lineWidth = stroke.thickness || 2;
+            ctx.lineJoin = 'round';
+            ctx.lineCap = 'round';
+
+            // 3. Move to the first point
+            ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
+
+            // 4. Draw lines to the next points
+            for (let i = 1; i < stroke.points.length; i++) {
+                ctx.lineTo(stroke.points[i].x, stroke.points[i].y);
+            }
+
+            ctx.stroke();
+            ctx.closePath();
+        }
+    }
 
     function updateCursor(event) {
 
@@ -3384,6 +3424,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // enable the mouse drawing tool
         if (canStartDrawing(event)) {
+            UI.draw.currentStrokePoints = []
+
             enableDrawingMode();
             UI.draw.drawing = true;
             draw(event); // start drawing immediately
@@ -3441,7 +3483,22 @@ document.addEventListener("DOMContentLoaded", function () {
         disableDrawingMode();
         UI.draw.drawing = false;
         UI.draw.ctx.beginPath(); // Reset path to avoid artifacts
+        if(UI.draw.currentStrokePoints.length > 1){
 
+            // Push the new finished stroke into the full strokes array
+            UI.draw.canvasStrokes.push({
+                points: [...UI.draw.currentStrokePoints],
+                color: UI.draw.color || '#000',
+                thickness: UI.draw.lineWidth || 2,
+                timestamp: Date.now()
+            });
+            
+            amDoc = applyChange(amDoc, (amDoc) => {
+                amDoc.drawing = UI.draw.canvasStrokes
+            }, onChange,  `draw added_strokes: ${UI.draw.currentStrokePoints.length}`);
+
+            UI.draw.currentStrokePoints = [ ]
+        }
 
 
     });
