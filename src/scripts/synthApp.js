@@ -207,7 +207,8 @@ fetch(`/help/myWorkspaceAndCollabPanel.md`)
     console.error(`Error loading myWorkspaceAndCollabPanel.md:`, error);
   });
 
-
+const penCursorImage = new Image();
+penCursorImage.src = './assets/pen-cursor.png';
 
 // *
 // *
@@ -239,13 +240,15 @@ document.addEventListener("DOMContentLoaded", function () {
                         '#FF8C00', // Dark Orange
                         '#228B22'  // Forest Green
                     ],
-                    ghostCableColour: '#5C9AE3'
+                    ghostCableColour: '#5C9AE3',
+                    
                 }
             },
             draw: {
                 canvas: document.getElementById('draw'),
                 drawing: false,
-                ctx: null // define this afterward
+                ctx: null, // define this afterward
+                cursor: penCursorImage
             },
             panel: {
                 collaboration: {
@@ -2295,6 +2298,40 @@ document.addEventListener("DOMContentLoaded", function () {
     // }
 
 
+
+    function updateCursor(event) {
+
+        //! ignore this for now. not as important
+        
+        // const topElement = document.elementFromPoint(event.clientX, event.clientY);
+    
+        // const container = synthGraphCytoscape.container();
+
+        // // Pointer is over something that allows drawing
+        // if (topElement === UI.draw.canvas) {
+            
+        //     // const cy = UI.synth.visual.cytoscape;
+        //     const pos = synthGraphCytoscape.renderer().projectIntoViewport(event.clientX, event.clientY);
+        //     const target = synthGraphCytoscape.renderer().findNearestElement(pos[0], pos[1], true);
+    
+        //     if (!target) {
+        //         // console.log()
+        //         // console.log('pen')
+        //         // No node or edge under pointer — empty space = drawing mode
+        //         // container.style.cursor = 'url("./assets/pencil.png"), auto'; // or 'crosshair'
+        //         // console.log(container.style.cursor)
+        //     } else {
+        //         // console.log('synth')
+        //         // Over a node or edge — normal interaction
+        //         // container.style.cursor = 'default';
+        //     }
+        // } else {
+        //     console.log('other')
+        //     // Over some other floating UI element
+        //     container.style.cursor = 'default';
+        // }
+    }
+
     // * HELP OVERLAYS
 
     // synth pathcing interface help overlay
@@ -3408,6 +3445,9 @@ document.addEventListener("DOMContentLoaded", function () {
         // // also update the drawing canvas dimensions
         // UI.draw.canvas.width = rect.width
         // UI.draw.canvas.height = rect.height
+
+        // set mousecursor
+        updateCursor(event);
 
         // Only draw if actively drawing
         if (UI.draw.drawing) {
@@ -5326,11 +5366,16 @@ document.addEventListener("DOMContentLoaded", function () {
     // canvas.addEventListener('mouseout', endDrawing);
 
     window.addEventListener('resize', () => {
-        UI.draw.canvas.width = window.innerWidth;
-        UI.draw.canvas.height = window.innerHeight;
+        resizeCanvas()
     });
     
+    function resizeCanvas (){
+        UI.draw.canvas.width = window.innerWidth;
+        UI.draw.canvas.height = window.innerHeight;
+    }
 
+    // also call it after page load:
+    resizeCanvas()
 });
 
 
