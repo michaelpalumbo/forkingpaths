@@ -2302,7 +2302,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function updateCursor(event) {
 
         //! ignore this for now. not as important
-        
+
         // const topElement = document.elementFromPoint(event.clientX, event.clientY);
     
         // const container = synthGraphCytoscape.container();
@@ -2640,9 +2640,21 @@ document.addEventListener("DOMContentLoaded", function () {
         // paramDiv.style.zIndex = '1000';
         // paramDiv.style.pointerEvents = 'auto'; // Ensure interactions are enabled
 
+
+
+        // Create a small wrapper div for each knob
+        const knobWrapper = document.createElement('div');
+        knobWrapper.style.position = 'relative';
+        knobWrapper.style.width = '100%';
+        knobWrapper.style.height = '100%';
+
+
+        // Append the knob into this wrapper
+        knobWrapper.appendChild(paramDiv);
+
         // Append the input to the container
         containerDiv.appendChild(labelDiv);
-        containerDiv.appendChild(paramDiv);
+        containerDiv.appendChild(knobWrapper);
         document.body.appendChild(containerDiv);
         
 
@@ -2699,6 +2711,21 @@ document.addEventListener("DOMContentLoaded", function () {
                     //! could use this to get the start and end of a knob gesture and store it as an array in the history sequence
                 },
 
+            });
+
+            // fix input text to centre of knob
+            Object.assign(paramDiv.style, {
+                position: 'absolute',
+                top: '15%',
+                left: '125%',
+                transform: 'translate(-50%, -50%)',
+                width: '40%',
+                height: 'auto',
+                textAlign: 'center',
+                fontSize: '14px',
+                pointerEvents: 'none',
+                background: 'transparent',
+                border: 'none'
             });
         } else if (param.data.ui === 'menu'){
             // ignore
