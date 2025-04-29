@@ -3076,32 +3076,35 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // function to modify selectmenu
     function modifyHistoryAnalysisMenu(cmd, data){
-        switch(cmd){
+        const selectModuleChangesCheckbox = document.getElementById("history-getSelectedModuleChanges")
 
+        switch(cmd){
+            
             case 'setSelectedModule':
-                const menu = document.getElementById("getHistoryAnalysisMenu")
-                if(!document.getElementById("selectedModuleOption")){
-                    // Create a new option element
-                    let newOption = document.createElement('option');
-                    // Set the text and value of the new option
-                    newOption.text = data
-                    newOption.value = "getSelectedModule";
-                    newOption.id = 'selectedModuleOption'
-                    // Add the new option to the select menu
-                    menu.add(newOption);
-                } else {
-                    // retrieve option element
-                    let updateOption = document.getElementById('selectedModuleOption');
-                    // Set the text and value of the new option
-                    updateOption.text = data;
-                    updateOption.value = "getSelectedModule";
-                    updateOption.id = 'selectedModuleOption'
-                    // Add the new option to the select menu
-                    // menu.add(updateOption);
-                }
+                selectModuleChangesCheckbox.disabled = false
+
+                // if(!document.getElementById("selectedModuleOption")){
+                //     // Create a new option element
+                //     let newOption = document.createElement('option');
+                //     // Set the text and value of the new option
+                //     newOption.text = data
+                //     newOption.value = "getSelectedModule";
+                //     newOption.id = 'selectedModuleOption'
+                //     // Add the new option to the select menu
+                //     menu.add(newOption);
+                // } else {
+                //     // retrieve option element
+                //     let updateOption = document.getElementById('selectedModuleOption');
+                //     // Set the text and value of the new option
+                //     updateOption.text = data;
+                //     updateOption.value = "getSelectedModule";
+                //     updateOption.id = 'selectedModuleOption'
+                //     // Add the new option to the select menu
+                //     // menu.add(updateOption);
+                // }
             break;
             case 'removeSelectedModule':
-                document.getElementById('selectedModuleOption').remove()
+                selectModuleChangesCheckbox.disabled = true
             break
         }
     }
@@ -3200,6 +3203,29 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     });
     const titleElement = document.getElementById("analysisResultTitle");
+
+    function getCheckboxStates() {
+        const container = document.getElementById('getHistoryAnalysisMenuCheckboxes');
+        const checkboxes = container.querySelectorAll('input[type="checkbox"]');
+      
+        const states = {};
+        checkboxes.forEach(checkbox => {
+          states[checkbox.value] = checkbox.checked;
+        });
+      
+        return states;
+      }
+
+
+    const container = document.getElementById('getHistoryAnalysisMenuCheckboxes');
+
+    container.addEventListener('change', (event) => {
+        if (event.target.matches('input[type="checkbox"]')) {
+            const currentStates = getCheckboxStates();
+            console.log(currentStates); // updated live!
+        }
+    });
+
 
     function populateAnalysisNodeList(nodes, group) {
         
