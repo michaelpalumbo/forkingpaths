@@ -35,7 +35,7 @@ if(!localStorage.appSettings){
 
 }
 
-
+let graphJSONstore
 
 let stepLength = '4n'
 let sequencerMode = "mono";
@@ -968,44 +968,85 @@ document.addEventListener("DOMContentLoaded", async () => {
         switch(msg.cmd){
             case 'historyGraphRenderUpdate':
                 historyGraphNodesArray = msg.data.elements.nodes
-                historyDAG_cy.json(msg.data)
-                // disable automatic layout so your manual position values are respected
-                // historyDAG_cy.layout({ name: 'preset' }).run();
-                historyDAG_cy.panBy({x: 25, y: 25 })
 
-                const latestNode = historyDAG_cy.nodes().last()
-                highlightGestureNode(latestNode)
+                setGraphFromHistoryRenderer(msg)
+                
+                graphJSONstore = msg
 
-                selectedNode = latestNode.data()
+                // historyDAG_cy.json(msg.data)
+                // // disable automatic layout so your manual position values are respected
+                // // historyDAG_cy.layout({ name: 'preset' }).run();
+                // historyDAG_cy.panBy({x: 25, y: 25 })
 
-                panToBranch(latestNode)
+                // const latestNode = historyDAG_cy.nodes().last()
+                // highlightGestureNode(latestNode)
 
-                if(!selectedNode.label){
-                    // dealing with a node that doesn't have the info we need yet
-                    console.warn('node does not have the info needed to display they hover tooltip', selectedNode)
-                    return
-                }
-                if(selectedNode.label.split(' ')[0] === 'gesture'){
+                // selectedNode = latestNode.data()
 
-                    // load the gesture into the gesture viewer
-                    sendToMainApp(
-                        {
-                            cmd: "getGestureData",
-                            data: { hash: selectedNode.id, branch: selectedNode.branch },
-                        }
-                    ); 
+                // panToBranch(latestNode)
 
-                    gestureData.branch = selectedNode.branch
-                    gestureData.historyID = selectedNode.id
+                // if(!selectedNode.label){
+                //     // dealing with a node that doesn't have the info we need yet
+                //     console.warn('node does not have the info needed to display they hover tooltip', selectedNode)
+                //     return
+                // }
+                // if(selectedNode.label.split(' ')[0] === 'gesture'){
 
-                }
+                //     // load the gesture into the gesture viewer
+                //     sendToMainApp(
+                //         {
+                //             cmd: "getGestureData",
+                //             data: { hash: selectedNode.id, branch: selectedNode.branch },
+                //         }
+                //     ); 
 
+                //     gestureData.branch = selectedNode.branch
+                //     gestureData.historyID = selectedNode.id
+
+                // }
+
+                // graphJSONstore = msg.data
                 
             break
         }
 
         
     };
+
+    async function setGraphFromHistoryRenderer(json){
+        historyGraphNodesArray = json.data.elements.nodes
+        historyDAG_cy.json(json.data)
+        // disable automatic layout so your manual position values are respected
+        // historyDAG_cy.layout({ name: 'preset' }).run();
+        historyDAG_cy.panBy({x: 25, y: 25 })
+
+        const latestNode = historyDAG_cy.nodes().last()
+        highlightGestureNode(latestNode)
+
+        selectedNode = latestNode.data()
+
+        panToBranch(latestNode)
+
+        if(!selectedNode.label){
+            // dealing with a node that doesn't have the info we need yet
+            console.warn('node does not have the info needed to display they hover tooltip', selectedNode)
+            return
+        }
+        if(selectedNode.label.split(' ')[0] === 'gesture'){
+
+            // load the gesture into the gesture viewer
+            sendToMainApp(
+                {
+                    cmd: "getGestureData",
+                    data: { hash: selectedNode.id, branch: selectedNode.branch },
+                }
+            ); 
+
+            gestureData.branch = selectedNode.branch
+            gestureData.historyID = selectedNode.id
+
+        }
+    }
     
     ws.onclose = () => {
         console.log('Disconnected from WebSocket server');
@@ -3028,51 +3069,51 @@ document.addEventListener("DOMContentLoaded", async () => {
     // * 
     // *
     // Add an event listener for the 'change' event
-    document.getElementById("getHistoryAnalysisMenu").addEventListener("change", (event) => {
-        const selected = event.target.value; // Get the selected option's value
+    // document.getElementById("getHistoryAnalysisMenu").addEventListener("change", (event) => {
+    //     const selected = event.target.value; // Get the selected option's value
 
-        switch(selected){
+    //     switch(selected){
 
-            case 'getLeaves':
-                // Filter nodes with no outgoing edges
-                const leaves = historyDAG_cy.nodes().filter(node => node.outgoers('edge').length === 0);
-                const leafNodes = leaves.map(node => node.data());
+    //         case 'getLeaves':
+    //             // Filter nodes with no outgoing edges
+    //             const leaves = historyDAG_cy.nodes().filter(node => node.outgoers('edge').length === 0);
+    //             const leafNodes = leaves.map(node => node.data());
 
-                populateAnalysisNodeList(leafNodes, 'Leaf Nodes')
-            break
+    //             populateAnalysisNodeList(leafNodes, 'Leaf Nodes')
+    //         break
 
-            case 'paramUpdate':
-                populateAnalysisNodeList(historyDAG_cy.nodes(`[label *= "paramUpdate"]`).map((node) => node.data()), 'All Param Changes')
+    //         case 'paramUpdate':
+    //             populateAnalysisNodeList(historyDAG_cy.nodes(`[label *= "paramUpdate"]`).map((node) => node.data()), 'All Param Changes')
 
-            break
+    //         break
 
-            case 'getGestures':
-                populateAnalysisNodeList(historyDAG_cy.nodes(`[label *= "gesture"]`).map((node) => node.data()), 'All Gestures')
+    //         case 'getGestures':
+    //             populateAnalysisNodeList(historyDAG_cy.nodes(`[label *= "gesture"]`).map((node) => node.data()), 'All Gestures')
 
-            break
+    //         break
 
-            case 'getCables':
-                populateAnalysisNodeList(historyDAG_cy.nodes(`[label *= "connect"]`).map((node) => node.data()), 'All Cable Changes: Connections')
-            break
+    //         case 'getCables':
+    //             populateAnalysisNodeList(historyDAG_cy.nodes(`[label *= "connect"]`).map((node) => node.data()), 'All Cable Changes: Connections')
+    //         break
 
-            case 'getMerges':
-                populateAnalysisNodeList(historyDAG_cy.nodes(`[label *= "merge"]`).map((node) => node.data()), 'All Merges')
-            break
+    //         case 'getMerges':
+    //             populateAnalysisNodeList(historyDAG_cy.nodes(`[label *= "merge"]`).map((node) => node.data()), 'All Merges')
+    //         break
 
-            case 'getSelectedModule':
-                const option = document.getElementById("selectedModuleOption")
-                const matchingChanges = historyDAG_cy.nodes().filter((node) => {
-                    const parentString = node.data().parents; // Access the 'parent' field in data
-                    return parentString.includes(option.text);
-                }).map((node) => node.data())
-                populateAnalysisNodeList(matchingChanges, option.text.split('_')[0] + '_' + option.text.split('_')[1])
-            break
+    //         case 'getSelectedModule':
+    //             const option = document.getElementById("selectedModuleOption")
+    //             const matchingChanges = historyDAG_cy.nodes().filter((node) => {
+    //                 const parentString = node.data().parents; // Access the 'parent' field in data
+    //                 return parentString.includes(option.text);
+    //             }).map((node) => node.data())
+    //             populateAnalysisNodeList(matchingChanges, option.text.split('_')[0] + '_' + option.text.split('_')[1])
+    //         break
 
-            default: console.warn('no switch case exists for analysis type of ', selected)
-        }
+    //         default: console.warn('no switch case exists for analysis type of ', selected)
+    //     }
 
         
-    });
+    // });
 
     // function to modify selectmenu
     function modifyHistoryAnalysisMenu(cmd, data){
@@ -3208,28 +3249,52 @@ document.addEventListener("DOMContentLoaded", async () => {
         const container = document.getElementById('getHistoryAnalysisMenuCheckboxes');
         const checkboxes = container.querySelectorAll('input[type="checkbox"]');
       
-        const states = {};
-        checkboxes.forEach(checkbox => {
-          states[checkbox.value] = checkbox.checked;
-        });
-      
-        return states;
+        const states = [];
+        let queryString = ``
+
+
+            
+            checkboxes.forEach(checkbox => {
+                if(checkbox.checked){
+                    if(checkbox.value === 'leaves'){
+                        const leaves = historyDAG_cy.nodes().filter(node => node.outgoers('edge').length === 0);
+                        states.push(leaves.map(node => node.data()))
+                    } else {
+                        queryString += `[label *= "${checkbox.value}"]`
+
+                        states.push(historyDAG_cy.nodes(`[label *= "${checkbox.value}"]`).map((node) => node.data()))
+                        
+
+                    }
+                }
+            //   states[checkbox.value] = checkbox.checked;
+            });
+
+        
+        return states.flat();
       }
 
 
     const container = document.getElementById('getHistoryAnalysisMenuCheckboxes');
 
     container.addEventListener('change', (event) => {
+        console.log(event.target)
+        setGraphFromHistoryRenderer(graphJSONstore)
         if (event.target.matches('input[type="checkbox"]')) {
-            const currentStates = getCheckboxStates();
+            const currentStates = uniqueById(getCheckboxStates());
             console.log(currentStates); // updated live!
+            if(currentStates.length > 0){
+                populateAnalysisNodeList(currentStates)
+
+            }
+
         }
     });
 
 
     function populateAnalysisNodeList(nodes, group) {
         
-        titleElement.textContent = group; // Update the text content
+        // titleElement.textContent = group; // Update the text content
 
         listElement.innerHTML = ""; // Clear any existing content
     
@@ -4041,6 +4106,17 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
 
 
+    const uniqueById = array => {
+        const seen = new Set();
+        return array.filter(item => {
+        if (seen.has(item.id)) {
+            return false; // already seen, filter out
+        }
+        seen.add(item.id);
+        return true; // first time seeing this id, keep it
+        });
+    };
+    
 })
 
 

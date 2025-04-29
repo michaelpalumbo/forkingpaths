@@ -75,7 +75,7 @@
                                       type="checkbox"
                                       id="history-getGestures"
                                       name="getHistoryAnalysisMenu"
-                                      value="getGestures"
+                                      value="gesture"
                                     >
                                     <label class="form-check-label" for="history-getGestures">
                                       Gestures
@@ -86,12 +86,24 @@
                                     <input
                                       class="form-check-input"
                                       type="checkbox"
-                                      id="history-getCables"
+                                      id="history-connect"
                                       name="getHistoryAnalysisMenu"
-                                      value="getCables"
+                                      value="connect"
                                     >
-                                    <label class="form-check-label" for="history-getCables">
-                                      Cable Changes
+                                    <label class="form-check-label" for="history-connect">
+                                      Connect Changes
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input
+                                      class="form-check-input"
+                                      type="checkbox"
+                                      id="history-disconnect"
+                                      name="getHistoryAnalysisMenu"
+                                      value="disconnect"
+                                    >
+                                    <label class="form-check-label" for="history-disconnect">
+                                      Disconnect Changes
                                     </label>
                                 </div>
                                 <div class="form-check">
@@ -113,7 +125,7 @@
                                     type="checkbox"
                                     id="history-getLeaves"
                                     name="getHistoryAnalysisMenu"
-                                    value="getLeaves"
+                                    value="leaves"
                                   >
                                   <label class="form-check-label" for="history-getLeaves">
                                     Leaves (Latest Change per Branch)
@@ -122,7 +134,7 @@
                               
                                 
                             </div>
-                            <select id="getHistoryAnalysisMenu" class="form-select mb-3">
+                            <!-- <select id="getHistoryAnalysisMenu" class="form-select mb-3">
                                 <option value="none">none...</option>
                                 <option disabled>Graph-Based:</option>
                                 <option value="getLeaves">Leaves</option>
@@ -132,7 +144,7 @@
                                 <option value="getCables">Cable Changes</option>
                                 <option disabled value="getMerges">Merges -- Coming Soon...</option>
                                 <option disabled>Selected Module Changes</option>
-                            </select>
+                            </select> -->
                             <div class="border p-2 overflow-auto" style="max-height: 90%">
                                 <h4 id="analysisResultTitle">Results</h4>
                                 <ul id="analysisNodeList" class="list-group">
