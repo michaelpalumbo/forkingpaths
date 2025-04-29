@@ -3264,7 +3264,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             timeStamp: el.data.timeStamp
         }));
 
-        let { nodes: reducedNodes, edges: reducedEdges } = buildReducedGraphSkeleton(meta, filteredNodes);
+        let { nodes: reducedNodes, edges: reducedEdges } = buildReducedGraphSkeleton(meta, filteredNodes, docHistoryGraphStyling);
 
 
  
@@ -3798,19 +3798,19 @@ document.addEventListener("DOMContentLoaded", async () => {
         return data
     }
 
-    function buildReducedGraphSkeleton(meta, filteredNodes) {
+    function buildReducedGraphSkeleton(meta, filteredNodes, docHistoryGraphStyling) {
         const nodes = [];
         const edges = [];
     
-        const branchOrder = meta.branchOrder; // Branch names in original left-right order
-        const branches = meta.branches;        // Branches with history arrays
+        const branchOrder = meta.branchOrder;  
+        const branches = meta.branches;         
         const historyGraphYIncrement = 75;
-        
-        const branchRootY = new Map();
-        const plannedYPositions = new Map();
-        const nodeIdToNode = new Map(); // Map nodeId => node
     
-        // Step 1: calculate vertical Y positions based on timestamps
+        const plannedYPositions = new Map();
+        const nodeIdToNode = new Map(); 
+        const positionedNodes = new Map(); 
+    
+        // Step 1: Calculate vertical Y positions based on timestamps
         branchOrder.forEach(branchName => {
             const branch = branches[branchName];
             if (!branch) return;
@@ -3818,15 +3818,49 @@ document.addEventListener("DOMContentLoaded", async () => {
             const sortedHistory = [...branch.history].sort((a, b) => a.timeStamp - b.timeStamp);
     
             sortedHistory.forEach((item, i) => {
-                const y = -i * historyGraphYIncrement;
+                const y = -i * historyGraphYIncrement; 
                 plannedYPositions.set(item.hash, y);
             });
         });
     
-        // Step 2: create nodes with manual positions
-        branchOrder.forEach((branchName, branchIndex) => {
+        // Step 2: Find earliest timestamp per branch
+        let branchEarliestTimes = {};
+        branchOrder.forEach(branchName => {
             const branchFilteredNodes = filteredNodes.filter(n => n.branch === branchName);
+            if (branchFilteredNodes.length > 0) {
+                branchEarliestTimes[branchName] = Math.min(...branchFilteredNodes.map(n => n.timeStamp));
+            } else {
+                branchEarliestTimes[branchName] = Infinity; 
+            }
+        });
+    
+        // Step 3: Sort branches horizontally by earliest timestamp
+        let sortedBranches = [...branchOrder].sort((a, b) => branchEarliestTimes[a] - branchEarliestTimes[b]);
+    
+        // Step 4: Create nodes with manual X/Y positions
+        sortedBranches.forEach((branchName, branchIndex) => {
+            const branchFilteredNodes = filteredNodes
+                .filter(n => n.branch === branchName)
+                .sort((a, b) => a.timeStamp - b.timeStamp);
+    
             branchFilteredNodes.forEach(node => {
+                let y;
+    
+                // Try to position based on parent if possible
+                if (node.parents) {
+                    const parents = Array.isArray(node.parents) ? node.parents : [node.parents];
+                    const foundParent = parents.find(parentId => positionedNodes.has(parentId));
+    
+                    if (foundParent) {
+                        y = positionedNodes.get(foundParent).y - historyGraphYIncrement;
+                    }
+                }
+    
+                // Fallback to planned timestamp Y
+                if (y === undefined) {
+                    y = plannedYPositions.get(node.id) || 0;
+                }
+    
                 nodes.push({
                     group: "nodes",
                     data: {
@@ -3834,58 +3868,151 @@ document.addEventListener("DOMContentLoaded", async () => {
                         label: node.label,
                         branch: branchName,
                         parents: node.parents,
-                        color: docHistoryGraphStyling.nodeColours[node.label.split(" ")[0]] || "#ccc",
-                        timeStamp: node.timeStamp
+                        timeStamp: node.timeStamp,
+                        color: docHistoryGraphStyling.nodeColours[node.label.split(" ")[0]] || "#ccc"
                     },
                     position: {
                         x: branchIndex * 220,
-                        y: plannedYPositions.get(node.id) || 0
+                        y: y
                     }
                 });
-                nodeIdToNode.set(node.id, node); // save for edge building
+    
+                positionedNodes.set(node.id, { x: branchIndex * 220, y: y });
+                nodeIdToNode.set(node.id, node);
             });
         });
     
-        // Step 3: create edges
-        branchOrder.forEach(branchName => {
-            const branchFilteredNodes = filteredNodes.filter(n => n.branch === branchName)
-                .sort((a, b) => a.timeStamp - b.timeStamp);
-    
-            // Inside branch connections
-            for (let i = 0; i < branchFilteredNodes.length - 1; i++) {
-                edges.push({
-                    group: "edges",
-                    data: {
-                        id: `edge-${branchFilteredNodes[i].id}-${branchFilteredNodes[i+1].id}`,
-                        source: branchFilteredNodes[i].id,
-                        target: branchFilteredNodes[i+1].id
-                    }
-                });
+       // Step 5: stitch each branch back into its parent, then link in-branch nodes sequentially
+        const filteredNodeIds = new Set(filteredNodes.map(n => n.id));
+
+        sortedBranches.forEach(branchName => {
+        // grab this branch’s filtered nodes in timestamp order
+        const branchFiltered = filteredNodes
+            .filter(n => n.branch === branchName)
+            .sort((a, b) => a.timeStamp - b.timeStamp);
+
+        if (branchFiltered.length === 0) return;
+
+        // 5a) FIRST: link the root of this branch back to its parent-branch
+        const root = branchFiltered[0];
+
+        // try any of its “real” parents first
+        let direct = Array
+            .from([].concat(root.parents || []))
+            .find(p => filteredNodeIds.has(p));
+
+        if (direct) {
+            edges.push({
+            group: "edges",
+            data: {
+                id: `parentedge-${direct}-${root.id}`,
+                source: direct,
+                target: root.id
             }
-    
-            // Cross-branch parent edges
-            branchFilteredNodes.forEach(node => {
-                if (node.parents) {
-                    const parents = Array.isArray(node.parents) ? node.parents : [node.parents];
-                    parents.forEach(parentId => {
-                        if (nodeIdToNode.has(parentId)) {
-                            // only connect if parent is also a connect node
-                            edges.push({
-                                group: "edges",
-                                data: {
-                                    id: `parentedge-${parentId}-${node.id}`,
-                                    source: parentId,
-                                    target: node.id
-                                }
-                            });
-                        }
-                    });
+            });
+        } else {
+            // fallback: walk back in the full branch history
+            let fb = findClosestAvailableParent(root.id, meta, filteredNodeIds);
+            if (fb) {
+            edges.push({
+                group: "edges",
+                data: {
+                id: `fallbackedge-${fb}-${root.id}`,
+                source: fb,
+                target: root.id
                 }
             });
+            }
+        }
+
+        // 5b) THEN: link each filtered node to the next one in the same branch
+        for (let i = 0; i < branchFiltered.length - 1; i++) {
+            let src = branchFiltered[i].id;
+            let tgt = branchFiltered[i+1].id;
+
+            edges.push({
+            group: "edges",
+            data: {
+                id: `edge-${src}-${tgt}`,
+                source: src,
+                target: tgt
+            }
+            });
+        }
         });
+
+
+
+        // // Step 5: Create edges between nodes
+        // sortedBranches.forEach(branchName => {
+        //     const branchFilteredNodes = filteredNodes
+        //         .filter(n => n.branch === branchName)
+        //         .sort((a, b) => a.timeStamp - b.timeStamp);
+    
+        //     // Inside-branch consecutive edges
+        //     for (let i = 0; i < branchFilteredNodes.length - 1; i++) {
+        //         edges.push({
+        //             group: "edges",
+        //             data: {
+        //                 id: `edge-${branchFilteredNodes[i].id}-${branchFilteredNodes[i+1].id}`,
+        //                 source: branchFilteredNodes[i].id,
+        //                 target: branchFilteredNodes[i+1].id
+        //             }
+        //         });
+        //     }
+    
+        //     // Cross-branch parent edges
+        //     branchFilteredNodes.forEach(node => {
+        //         if (node.parents) {
+        //             const parents = Array.isArray(node.parents) ? node.parents : [node.parents];
+        //             parents.forEach(parentId => {
+        //                 if (nodeIdToNode.has(parentId)) {
+        //                     edges.push({
+        //                         group: "edges",
+        //                         data: {
+        //                             id: `parentedge-${parentId}-${node.id}`,
+        //                             source: parentId,
+        //                             target: node.id
+        //                         }
+        //                     });
+        //                 }
+        //             });
+        //         }
+        //     });
+        // });
     
         return { nodes, edges };
     }
+    
+    function findClosestAvailableParent(nodeId, meta, filteredNodeIds) {
+        // 1) locate which branch this node lives in
+        let branchName = null;
+        let item       = null;
+      
+        for (let b of meta.branchOrder) {
+          let hist = meta.branches[b].history;
+          item = hist.find(x => x.hash === nodeId);
+          if (item) {
+            branchName = b;
+            break;
+          }
+        }
+        if (!branchName) return null;
+      
+        // 2) get that branch’s full history array
+        let history = meta.branches[branchName].history;
+        let idx     = history.findIndex(x => x.hash === nodeId);
+        if (idx === -1) return null;
+      
+        // 3) walk backward looking for the first hash that’s in filteredNodeIds
+        for (let i = idx - 1; i >= 0; i--) {
+          let prev = history[i].hash;
+          if (filteredNodeIds.has(prev)) {
+            return prev;
+          }
+        }
+        return null;
+      }
 
 
 })
