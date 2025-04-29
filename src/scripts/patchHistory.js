@@ -3052,7 +3052,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             break
 
             case 'getCables':
-                populateAnalysisNodeList(historyDAG_cy.nodes(`[label *= "connect"]`).map((node) => node.data()), 'All Cable Changes')
+                populateAnalysisNodeList(historyDAG_cy.nodes(`[label *= "connect"]`).map((node) => node.data()), 'All Cable Changes: Connections')
             break
 
             case 'getMerges':
@@ -3217,7 +3217,65 @@ document.addEventListener("DOMContentLoaded", async () => {
             listItem.dataset.branch = node.branch
             listElement.appendChild(listItem);
         });
+
+        //todo: move this into its own function:
+        // Group connect nodes by branch
+        let nodesByBranch = {};
+        nodes.forEach(node => {
+            console.log(node)
+            let branch = node.branch;
+            if (!nodesByBranch[branch]) {
+                nodesByBranch[branch] = [];
+            }
+            nodesByBranch[branch].push(node);
+        });
+
+        // For each branch...
+        let newEdges = [];
+        for (let branch in nodesByBranch) {
+            // Sort connect nodes by timestamp
+            nodesByBranch[branch].sort((a, b) => a.timestamp - b.timestamp);
+
+            // Create new edges between consecutive connect nodes
+            let nodes = nodesByBranch[branch];
+            for (let i = 0; i < nodes.length - 1; i++) {
+                newEdges.push({
+                    data: {
+                        id: `edge-${nodes[i].id}-${nodes[i+1].id}`,
+                        source: nodes[i].id,
+                        target: nodes[i+1].id,
+                        branch: branch // optional, in case you want branch info on edges too
+                    }
+                });
+            }
+        }
+
+        // Then you can create the new skeleton graph
+        let newElements = nodes.map(n => ({ data: n })).concat(newEdges);
+        
+        // Extract only the node data cleanly
+        let filteredNodes = newElements
+        .filter(el => el.data && !el.data.source && !el.data.target)
+        .map(el => ({
+            id: el.data.id,
+            label: el.data.label,
+            branch: el.data.branch,
+            parents: el.data.parents,
+            timeStamp: el.data.timeStamp
+        }));
+
+        let { nodes: reducedNodes, edges: reducedEdges } = buildReducedGraphSkeleton(meta, filteredNodes);
+
+
+ 
+        historyDAG_cy.elements().remove();
+        historyDAG_cy.add(reducedNodes.concat(reducedEdges));
+        // historyDAG_cy.layout({ name: 'dagre' }).run();
+
     }
+
+
+    
 
 
 
@@ -3739,6 +3797,96 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         return data
     }
+
+    function buildReducedGraphSkeleton(meta, filteredNodes) {
+        const nodes = [];
+        const edges = [];
+    
+        const branchOrder = meta.branchOrder; // Branch names in original left-right order
+        const branches = meta.branches;        // Branches with history arrays
+        const historyGraphYIncrement = 75;
+        
+        const branchRootY = new Map();
+        const plannedYPositions = new Map();
+        const nodeIdToNode = new Map(); // Map nodeId => node
+    
+        // Step 1: calculate vertical Y positions based on timestamps
+        branchOrder.forEach(branchName => {
+            const branch = branches[branchName];
+            if (!branch) return;
+    
+            const sortedHistory = [...branch.history].sort((a, b) => a.timeStamp - b.timeStamp);
+    
+            sortedHistory.forEach((item, i) => {
+                const y = -i * historyGraphYIncrement;
+                plannedYPositions.set(item.hash, y);
+            });
+        });
+    
+        // Step 2: create nodes with manual positions
+        branchOrder.forEach((branchName, branchIndex) => {
+            const branchFilteredNodes = filteredNodes.filter(n => n.branch === branchName);
+            branchFilteredNodes.forEach(node => {
+                nodes.push({
+                    group: "nodes",
+                    data: {
+                        id: node.id,
+                        label: node.label,
+                        branch: branchName,
+                        parents: node.parents,
+                        color: docHistoryGraphStyling.nodeColours[node.label.split(" ")[0]] || "#ccc",
+                        timeStamp: node.timeStamp
+                    },
+                    position: {
+                        x: branchIndex * 220,
+                        y: plannedYPositions.get(node.id) || 0
+                    }
+                });
+                nodeIdToNode.set(node.id, node); // save for edge building
+            });
+        });
+    
+        // Step 3: create edges
+        branchOrder.forEach(branchName => {
+            const branchFilteredNodes = filteredNodes.filter(n => n.branch === branchName)
+                .sort((a, b) => a.timeStamp - b.timeStamp);
+    
+            // Inside branch connections
+            for (let i = 0; i < branchFilteredNodes.length - 1; i++) {
+                edges.push({
+                    group: "edges",
+                    data: {
+                        id: `edge-${branchFilteredNodes[i].id}-${branchFilteredNodes[i+1].id}`,
+                        source: branchFilteredNodes[i].id,
+                        target: branchFilteredNodes[i+1].id
+                    }
+                });
+            }
+    
+            // Cross-branch parent edges
+            branchFilteredNodes.forEach(node => {
+                if (node.parents) {
+                    const parents = Array.isArray(node.parents) ? node.parents : [node.parents];
+                    parents.forEach(parentId => {
+                        if (nodeIdToNode.has(parentId)) {
+                            // only connect if parent is also a connect node
+                            edges.push({
+                                group: "edges",
+                                data: {
+                                    id: `parentedge-${parentId}-${node.id}`,
+                                    source: parentId,
+                                    target: node.id
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        });
+    
+        return { nodes, edges };
+    }
+
 
 })
 
