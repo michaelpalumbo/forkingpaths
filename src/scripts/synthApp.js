@@ -884,7 +884,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // handle document changes and call a callback
     function applyChange(doc, changeCallback, onChangeCallback, changeMessage) {
-
         // in this condition, we are applying a change on the current branch
         if(automergeDocuments.newClone === false ){
             let amMsg = makeChangeMessage(meta.head.branch, changeMessage)
@@ -1596,17 +1595,23 @@ document.addEventListener("DOMContentLoaded", function () {
  
     function reDrawHistoryGraph(){
         metaIsDirty = true
-        if(!throttleSend){
+        // if(!throttleSend){
             
-            sendMsgToHistoryApp({
-                appID: 'forkingPathsMain',
-                cmd: 'reDrawHistoryGraph',
-                data: meta
+        //     sendMsgToHistoryApp({
+        //         appID: 'forkingPathsMain',
+        //         cmd: 'reDrawHistoryGraph',
+        //         data: meta
                     
-            })
-            throttleSend = true
-        }
-
+        //     })
+        //     throttleSend = true
+        // }
+   
+        sendMsgToHistoryApp({
+            appID: 'forkingPathsMain',
+            cmd: 'reDrawHistoryGraph',
+            data: meta
+                
+        })
     }
 
     // merge 2 versions & create a new node in the graph
@@ -3479,7 +3484,8 @@ document.addEventListener("DOMContentLoaded", function () {
                         parent: groupChange.parentNode,
                         value: groupChange.values
                     }
-                }, `paramUpdate ${groupChange.paramLabel} = ${groupChange.values[0]}$PARENT ${groupChange.parentNode}`);
+                }, onChange, `paramUpdate ${groupChange.paramLabel} = ${groupChange.values[0]}$PARENT ${groupChange.parentNode}`);
+
             } else if(groupChange.values.length > 1){
                 // are storing a gesture
                 // Update in Automerge

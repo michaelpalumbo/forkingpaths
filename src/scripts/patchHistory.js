@@ -3254,13 +3254,20 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
             
-            checkboxes.forEach(checkbox => {
+            checkboxes.forEach((checkbox, index) => {
                 if(checkbox.checked){
                     if(checkbox.value === 'leaves'){
                         const leaves = historyDAG_cy.nodes().filter(node => node.outgoers('edge').length === 0);
                         states.push(leaves.map(node => node.data()))
                     } else {
-                        queryString += `[label *= "${checkbox.value}"]`
+
+                        if(index > 0){
+                            queryString += `,[label *= "${checkbox.value}"]`
+
+                        } else {
+                            queryString += `[label *= "${checkbox.value}"]`
+
+                        }
 
                         states.push(historyDAG_cy.nodes(`[label *= "${checkbox.value}"]`).map((node) => node.data()))
                         
