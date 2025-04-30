@@ -473,6 +473,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (label.startsWith("gesture")) {
           row.dataset.gesture = true;
           row.dataset.gestureData = JSON.stringify(gestureData);
+          console.log('should include gestureData', gestureData)
         }
       
         if (nodeData.gestureDataPoint) {
@@ -1395,7 +1396,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                         id: row.dataset.id,
                         label: row.dataset.label,
                         branch: row.dataset.branch
-                    }
+                    },
+                    gestureData: JSON.parse(row.dataset.gestureData) || null,
+                    gesture: row.dataset.gesture || false
                 };
             } else {
                 // row doesn't have an assigned history node
@@ -1621,7 +1624,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
     
     function quantizeGesture(gesture, stepLength) {
-    
+        console.log(gesture)
         const duration = gesture.endTime - gesture.startTime;
         const scale = stepLength / duration;
       
@@ -3389,7 +3392,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     saveSequenceButton.addEventListener("click", async () => {
         // re-disable the save button
         setSequencerSaveButtonState(true)
-        let data = 'test'
+        console.log('saved', storedSequencerTable)
         sendToMainApp(
             {
                 cmd: "saveSequence",
