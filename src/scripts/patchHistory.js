@@ -473,7 +473,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (label.startsWith("gesture")) {
           row.dataset.gesture = true;
           row.dataset.gestureData = JSON.stringify(gestureData);
-          console.log('should include gestureData', gestureData)
         }
       
         if (nodeData.gestureDataPoint) {
@@ -1293,8 +1292,10 @@ document.addEventListener("DOMContentLoaded", async () => {
                 // load the version
                 loadVersion(currentStep.node.id, currentStep.node.branch)
                 
+                // after loading the version (which gets the full state), if we are recalling a gesture, play it back
                 if(targetRow.dataset.gesture){
-            
+                    console.log('gesture data', targetRow.dataset.gestureData)
+                    // if getting it from 
                     playGestureFromSequencerStep(JSON.parse(targetRow.dataset.gestureData), loop.interval)
                     // createGestureGraph(targetRow.dataset.gestureData.gesturePoints, targetRow.dataset.gestureData.range, targetRow.dataset.gestureData.min, targetRow.dataset.gestureData.max)
                 }
@@ -1376,16 +1377,15 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Function to save the table's contents as a JS object
     function saveSequencerTable() {
-        console.warn("saveSequencerTable triggered!");
-        console.trace();
 
         const tableBody = document.getElementById("dynamicTableBody2");
         const rows = tableBody.querySelectorAll("tr");
-
+        
         // Extract the contents of each row into an array of objects
         const tableData = Array.from(rows).map(row => {
             const cells = row.querySelectorAll("td");
-
+            let gestureData = null
+            if(row.dataset.gestureData) gestureData = row.dataset.gestureData
             if(row.dataset.id){
                 return {
                     stepChange: cells[1].textContent, // Step (Change) cell content
@@ -1397,7 +1397,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                         label: row.dataset.label,
                         branch: row.dataset.branch
                     },
-                    gestureData: JSON.parse(row.dataset.gestureData) || null,
+                    gestureData: gestureData,
                     gesture: row.dataset.gesture || false
                 };
             } else {
@@ -2828,6 +2828,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                         // load the sequence change node into the sequencer (i.e. replace the current sequence with this sequence)
                         event.target.data().sequencerTable.forEach((step, index) => {
                             if (step.node) {
+                                console.log('loading step:', step)
                               updateStepRow(index, step.node);
                             } else {
                               clearStepRow(index); // you'd need to define this if it doesn't already exist
