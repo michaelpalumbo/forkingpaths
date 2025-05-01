@@ -34,7 +34,17 @@ if(!localStorage.appSettings){
     appSettings = localStorage.getItem('appSettings')
 
 }
+let sequencerData = {
 
+    sizes: [1, 1, 1, 1, 1, 1, 1, 1],
+    changeNodes: [0, 0, 0, 0, 0, 0, 0, 0],
+    timing: [] // remember to flatten this as well
+    
+}
+
+function flattenSequence(){
+
+}
 let graphJSONstore
 
 let stepLength = '4n'
@@ -49,28 +59,32 @@ let gestureRange
 let mouseoverState = null
 
 // gestureCy data
-let gestureData = {
-    nodes: [],
-    scheduler: [],
-    loop: false,
-    startTime: null,
-    endTime: null,
-    length: null,
-    assign: {
-        parent: null,
-        param: 'default',
-        range: null
-    },
-    gesturePoints: [],
-    linearGesturePoints: [], // at times this will be a duplicate of gesturePoints, but we need it for when we want to switch from an ease function back to linear mapping
-    values: [],
-    timestamps: [], 
-    range: null,
-    min: null,
-    max: null,
-    branch: null,
-    historyID: null,
-    easeFunction: 'linear'
+let gestureData = {}
+
+function resetGestureData(){
+    gestureData = {
+        nodes: [],
+        scheduler: [],
+        loop: false,
+        startTime: null,
+        endTime: null,
+        length: null,
+        assign: {
+            parent: null,
+            param: 'default',
+            range: null
+        },
+        gesturePoints: [],
+        linearGesturePoints: [], // at times this will be a duplicate of gesturePoints, but we need it for when we want to switch from an ease function back to linear mapping
+        values: [],
+        timestamps: [], 
+        range: null,
+        min: null,
+        max: null,
+        branch: null,
+        historyID: null,
+        easeFunction: 'linear'
+    }
 }
 // ease functions for applying easing on gestures in the editor
 const easeFunctions = {
@@ -417,6 +431,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                     } else {
                         updateStepRow(i, selectedNode, gestureData);
                         setSequencerSaveButtonState(false)
+                        makeFlatSequence('add', i, selectedNode, gestureData)
+                        
                     }
   
                 }
@@ -428,6 +444,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                         alert('adding sequence changeNodes to a sequencer step not yet supported (coming soon!)')
                     } else {
                         updateStepRow(i, selectedNode, gestureData);
+
+                        makeFlatSequence('add', i, selectedNode, gestureData)
+
                         setSequencerSaveButtonState(false)
                     }
                 }
@@ -437,12 +456,17 @@ document.addEventListener("DOMContentLoaded", async () => {
             row.cells[1].addEventListener("contextmenu", (e) => {
                 clearStepRow(i);
                 setSequencerSaveButtonState(false)
+ 
+                makeFlatSequence('remove', i)
 
             });
             // to delete a step by clicking the node change cell
             row.cells[0].addEventListener("contextmenu", (e) => {
                 clearStepRow(i);
                 setSequencerSaveButtonState(false)
+
+                makeFlatSequence('remove', i)
+
             });
         });
       }
@@ -450,7 +474,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     // attach the event listeners for the sequencer
     attachSequencerListeners();
 
-    function updateStepRow(index, nodeData, gestureData = null) {
+    function updateStepRow(index, nodeData, gestureDataLocal = null) {
+
         const row = document.querySelectorAll("#dynamicTableBody2 tr")[index];
         if (!row) return;
       
@@ -472,7 +497,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         // Handle gesture metadata
         if (label.startsWith("gesture")) {
           row.dataset.gesture = true;
-          row.dataset.gestureData = JSON.stringify(gestureData);
+          row.dataset.gestureDataLocal = JSON.stringify(gestureDataLocal);
         }
       
         if (nodeData.gestureDataPoint) {
@@ -1186,7 +1211,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             
             } 
             else if (targetRow.dataset.sequencerTable) {
-                console.log('snared')
 
                 const embeddedSeq = JSON.parse(targetRow.dataset.sequencerTable);
                 const totalSubsteps = embeddedSeq.length;
@@ -1215,7 +1239,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                 });
             
                 const embeddedPart = new Tone.Part((t, eventCallback) => {
-                    console.log('test')
                     eventCallback(t);
                 }, embeddedEvents);
             
@@ -1294,7 +1317,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                 
                 // after loading the version (which gets the full state), if we are recalling a gesture, play it back
                 if(targetRow.dataset.gesture){
-                    console.log('gesture data', targetRow.dataset.gestureData)
                     // if getting it from 
                     playGestureFromSequencerStep(JSON.parse(targetRow.dataset.gestureData), loop.interval)
                     // createGestureGraph(targetRow.dataset.gestureData.gesturePoints, targetRow.dataset.gestureData.range, targetRow.dataset.gestureData.min, targetRow.dataset.gestureData.max)
@@ -1363,7 +1385,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (func === "fixed") {
             setFixedLengths()
         } else if (func === "userEditable") {
-            console.log("Step Length Function set to: User Editable");
             // Add logic for user-editable step length
         } else if (func === "closenessCentrality") {
             calculateDistancesFromTableRows()
@@ -1412,7 +1433,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         });
 
-        console.log('tableData after saving:', tableData)
         const update = {
             cmd: 'updateSequencer',
             setting: 'tableData',
@@ -1547,7 +1567,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     function setSequenceOrder(order){
         switch(order){
             case 'entry':
-                console.log('setSequenceOrder')
                 // createSequencerTable(storedSequencerTable)
             break
             case 'topologicalSort':
@@ -1624,7 +1643,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
     
     function quantizeGesture(gesture, stepLength) {
-        console.log(gesture)
         const duration = gesture.endTime - gesture.startTime;
         const scale = stepLength / duration;
       
@@ -2160,7 +2178,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Show and move the overlay
     historyDAG_cy.on('mouseover', 'node', function(evt) {
         const data = evt.target.data();
-        console.log(data)
         let overlayString
         if(!data.label){
             // dealing with a node that doesn't have the info we need yet
@@ -2512,6 +2529,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             // add node to sequencer
 
         } else {
+
             highlightGestureNode(event.target)
             selectedNode = event.target.data()
 
@@ -2796,6 +2814,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             // add node to sequencer
 
         } else {
+            resetGestureData()
+            selectedNode = null
             highlightNode(event.target)
 
             // loadVersion(event.target.data().id, event.target.data().branch)
@@ -2828,7 +2848,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                         // load the sequence change node into the sequencer (i.e. replace the current sequence with this sequence)
                         event.target.data().sequencerTable.forEach((step, index) => {
                             if (step.node) {
-                                console.log('loading step:', step)
+                          
                               updateStepRow(index, step.node);
                             } else {
                               clearStepRow(index); // you'd need to define this if it doesn't already exist
@@ -3289,11 +3309,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     const container = document.getElementById('getHistoryAnalysisMenuCheckboxes');
 
     container.addEventListener('change', (event) => {
-        console.log(event.target)
         setGraphFromHistoryRenderer(graphJSONstore)
         if (event.target.matches('input[type="checkbox"]')) {
             const currentStates = uniqueById(getCheckboxStates());
-            console.log(currentStates); // updated live!
             if(currentStates.length > 0){
                 populateAnalysisNodeList(currentStates)
 
@@ -3324,7 +3342,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         // Group connect nodes by branch
         let nodesByBranch = {};
         nodes.forEach(node => {
-            console.log(node)
             let branch = node.branch;
             if (!nodesByBranch[branch]) {
                 nodesByBranch[branch] = [];
@@ -3393,7 +3410,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     saveSequenceButton.addEventListener("click", async () => {
         // re-disable the save button
         setSequencerSaveButtonState(true)
-        console.log('saved', storedSequencerTable)
         sendToMainApp(
             {
                 cmd: "saveSequence",
@@ -4127,6 +4143,46 @@ document.addEventListener("DOMContentLoaded", async () => {
         return true; // first time seeing this id, keep it
         });
     };
+
+    function makeFlatSequence(cmd, i, selectedNode, gestureData){
+        let insertPosition = sequencerData.sizes.slice(0, (i)).reduce((a, b) => a + b, 0);
+                
+        let previousStepSize = sequencerData.sizes[i]
+
+        switch(cmd){
+            case 'add':
+                let changeNodeType = selectedNode.label.split(' ')[0]
+
+                if(changeNodeType === 'gesture'){
+
+                    console.log(gestureData)
+                    // replace previous step (which could be any length) with this gesture
+                    sequencerData.changeNodes.splice(insertPosition, previousStepSize, gestureData.gesturePoints)
+                    sequencerData.sizes[i] = gestureData.gesturePoints.length
+
+                } else if (changeNodeType === 'sequence'){
+
+
+                }
+                else {
+                    // replace previous step (which could be any length) with this single change node
+                    sequencerData.changeNodes.splice(insertPosition, previousStepSize, selectedNode)
+                    sequencerData.sizes[i] = 1
+                }
+            break
+            
+            case 'remove':
+                // from the index i, get the size of the step and splice it out
+                sequencerData.changeNodes.splice(insertPosition, previousStepSize)
+                sequencerData.sizes[i] = 1
+            break
+
+        }
+        
+        // flatten each of the arrays
+        sequencerData.changeNodes = sequencerData.changeNodes.flat()
+        console.log(sequencerData)
+    }
     
 })
 
