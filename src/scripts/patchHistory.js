@@ -4155,7 +4155,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
                 if(changeNodeType === 'gesture'){
 
-                    console.log(gestureData)
+                    console.log(gestureData, 'numPoints', gestureData.gesturePoints.length)
                     // replace previous step (which could be any length) with this gesture
                     sequencerData.changeNodes.splice(insertPosition, previousStepSize, gestureData.gesturePoints)
                     sequencerData.sizes[i] = gestureData.gesturePoints.length
@@ -4173,7 +4173,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             
             case 'remove':
                 // from the index i, get the size of the step and splice it out
-                sequencerData.changeNodes.splice(insertPosition, previousStepSize)
+                sequencerData.changeNodes.splice(insertPosition, previousStepSize, 0)
                 sequencerData.sizes[i] = 1
             break
 
