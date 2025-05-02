@@ -465,7 +465,8 @@ document.addEventListener("DOMContentLoaded", async () => {
           select.addEventListener("change", () => {
             saveSequencerTable();
             sequencerData.stepLengths[i] = select.value
-            console.log(sequencerData)
+            // console.log(sequencerData)
+            makeFlatSequence('stepLength', i, null, null, select.value)
           });
         });
       
@@ -3237,35 +3238,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     sequencerWorklet.port.postMessage({
                         cmd: 'start'
                     });
-                    // await Tone.start(); // Required to start audio in modern browsers
-        
-                    // // set the interval length based on this step's note length
-                    // flatLoop.interval = storedSequencerTable[0].stepLength
-                    // stepLength = flatLoop.interval
-
-                    // set the flatLoop starting interval based on the sequencer's microTiming table
-                    // flatLoop.interval = sequencerData.microTiming[0]
-
-                    // transport.start();
-                    // sequence.start(0);
-                    // flatLoop.start(0)
-                    // startFlatLoop();
-                    // console.log(sequencerData.microTiming[currentStepIndex], sequencerData.microTiming)
-                    // Start the sequence
-                    // Tone.Transport.start();
-                    // Tone.Transport.scheduleOnce(scheduleNextStep, Tone.now());
-                        // Start first tick
-                    // clock.start();
-                    // audioContext.resume().then(() => {
-                    //     clock.start();
-                    //     clock.callbackAtTime(scheduleNextStep.bind(null, clock), audioContext.currentTime + 0.1); // slight offset for safety
-                    //   });
-                    // Resume context and start
-                    // await Tone.start();
-                    // Tone.Transport.start("+0.1");
-                    // Tone.Transport.scheduleOnce(scheduleStep, Tone.Transport.seconds);
-                    // Kick off the first event 500ms from now
-                    // clock.callbackAtTime(scheduleNextStep.bind(null, clock), audioContext.currentTime);
+                    
                     startStopButton.textContent = "Stop Sequencer";
                 }
                 isPlaying = !isPlaying;
@@ -4473,7 +4446,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     };
 
-    function makeFlatSequence(cmd, i, selectedNode, gestureData){
+    function makeFlatSequence(cmd, i, selectedNode, gestureData, length){
         let insertPosition = sequencerData.sizes.slice(0, (i)).reduce((a, b) => a + b, 0);
                 
         let previousStepSize = sequencerData.sizes[i]
@@ -4509,13 +4482,15 @@ document.addEventListener("DOMContentLoaded", async () => {
                 sequencerData.changeNodes.splice(insertPosition, previousStepSize, 0)
                 sequencerData.sizes[i] = 1
             break
+            case 'stepLength':
+                sequencerData.stepLengths[i] = length
+            break
 
         }
         
         // flatten each of the arrays
         sequencerData.changeNodes = sequencerData.changeNodes.flat()
         setTiming()
-        console.log(sequencerData)
         sequencerWorklet.port.postMessage({
             cmd: 'updateSequence',
             microTiming: sequencerData.microTiming,
