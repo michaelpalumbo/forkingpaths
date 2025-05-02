@@ -3288,7 +3288,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             tableData: []
                         }
                     }
-                    amDoc.sequencer.tableData = event.data.data
+                    amDoc.sequencer.data = event.data.data
                     // set the change type
                     amDoc.changeType = {
                         msg: 'sequence',

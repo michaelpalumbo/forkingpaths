@@ -34,14 +34,20 @@ if(!localStorage.appSettings){
     appSettings = localStorage.getItem('appSettings')
 
 }
-let sequencerData = {
 
-    sizes: [1, 1, 1, 1, 1, 1, 1, 1],
-    changeNodes: [0, 0, 0, 0, 0, 0, 0, 0],
-    timing: [], // each step's duration relative to stepLength and bpm
-    microTiming: [], // the actual intervals in milliseconds between all points in the sequence. i.e. if step 3 is a gesture with 4 points, each point's timestamp will be quantized against the macro step duration
-    stepLengths: ["4n", "4n", "4n", "4n", "4n", "4n", "4n", "4n"]
+let sequencerData = {}
+
+function clearSequencerData(){
+    sequencerData = {
+        steps: ['Empty', 'Empty', 'Empty', 'Empty', 'Empty', 'Empty', 'Empty', 'Empty'],
+        sizes: [1, 1, 1, 1, 1, 1, 1, 1],
+        changeNodes: [0, 0, 0, 0, 0, 0, 0, 0],
+        timing: [], // each step's duration relative to stepLength and bpm
+        microTiming: [], // the actual intervals in milliseconds between all points in the sequence. i.e. if step 3 is a gesture with 4 points, each point's timestamp will be quantized against the macro step duration
+        stepLengths: ["4n", "4n", "4n", "4n", "4n", "4n", "4n", "4n"]
+    }
 }
+ 
 
 function flattenSequence(){
 
@@ -362,7 +368,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             // ✅ Safely attach event listeners now
             sequencerWorklet.port.onmessage = (event) => {
-                console.log(event.data)
                 switch(event.data.cmd){
                     case 'changeNode':
                         let changeNode = event.data.data
@@ -390,8 +395,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                                     loadVersionWithGestureDataPoint(changeNode.historyID, changeNode.branch, dataPoint);
                                 }
                             } else {
-                                console.log(changeNode)
-
                                 loadVersion(changeNode.id, changeNode.branch);
                             }
                         }
@@ -586,31 +589,31 @@ document.addEventListener("DOMContentLoaded", async () => {
         row.dataset.label = label;
         row.dataset.branch = nodeData.branch;
       
-        // Handle gesture metadata
-        if (label.startsWith("gesture")) {
-          row.dataset.gesture = true;
-          row.dataset.gestureDataLocal = JSON.stringify(gestureDataLocal);
-        }
+        // // Handle gesture metadata
+        // if (label.startsWith("gesture")) {
+        //   row.dataset.gesture = true;
+        //   row.dataset.gestureDataLocal = JSON.stringify(gestureDataLocal);
+        // }
       
-        if (nodeData.gestureDataPoint) {
-          const abrv = `${nodeData.parents.split('_')[0]}_${nodeData.parents.split('_')[1]}`;
-          const gestureLabel = `gesturePoint: ${abrv}:${nodeData.param}:${nodeData.value}`;
-          stepLabelCell.textContent = gestureLabel;
+        // if (nodeData.gestureDataPoint) {
+        //   const abrv = `${nodeData.parents.split('_')[0]}_${nodeData.parents.split('_')[1]}`;
+        //   const gestureLabel = `gesturePoint: ${abrv}:${nodeData.param}:${nodeData.value}`;
+        //   stepLabelCell.textContent = gestureLabel;
       
-          row.dataset.label = gestureLabel;
-          row.dataset.isGestureDataPoint = true;
-          row.dataset.gestureDataPointValue = nodeData.value;
-          row.dataset.param = nodeData.param;
-          row.dataset.parent = nodeData.parents;
-          row.dataset.id = nodeData.historyID; // override with gesture node ID
-        }
+        //   row.dataset.label = gestureLabel;
+        //   row.dataset.isGestureDataPoint = true;
+        //   row.dataset.gestureDataPointValue = nodeData.value;
+        //   row.dataset.param = nodeData.param;
+        //   row.dataset.parent = nodeData.parents;
+        //   row.dataset.id = nodeData.historyID; // override with gesture node ID
+        // }
 
-        // handle sequence change nodes (where we set a previous sequence into the sequencer step)
-        if(nodeData.sequencerTable){
-            row.dataset.sequencerTable = JSON.stringify(nodeData.sequencerTable)
-        }
+        // // handle sequence change nodes (where we set a previous sequence into the sequencer step)
+        // if(nodeData.sequencerTable){
+        //     row.dataset.sequencerTable = JSON.stringify(nodeData.sequencerTable)
+        // }
       
-        saveSequencerTable(); // Save the new state immediately
+        // saveSequencerTable(); // Save the new state immediately
         setGestureSaveButtonState(false)
     }
 
@@ -680,7 +683,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           row.removeAttribute("data-parent");
         });
         
-        saveSequencerTable(); // optional: refresh internal state
+        // saveSequencerTable(); // optional: refresh internal state
     }
 
     const assignGestureToParam = document.getElementById("assignGestureToParam")
@@ -2602,13 +2605,15 @@ document.addEventListener("DOMContentLoaded", async () => {
                 <strong>Name</strong> ${labelArray[1]}<br><br>
 
                 `
+                sequencerData = data.sequencerTable
+                makeFlatSequence()
                 // add seq steps to the string
-                data.sequencerTable.forEach((step, index) => {
-                    if(step.stepChange != '(Empty)'){
+                // data.data.forEach((step, index) => {
+                //     if(step.stepChange != '(Empty)'){
                         
-                        overlayString += `<strong>Step ${index}:</strong> ${step.stepChange}<br>\n<strong>Length:</strong> ${step.stepLength}<br>\n`
-                    }
-                })
+                //         overlayString += `<strong>Step ${index}:</strong> ${step.stepChange}<br>\n<strong>Length:</strong> ${step.stepLength}<br>\n`
+                //     }
+                // })
                 overlayString += `\n<strong>Branch:</strong> ${data.branch}<br>`;
             break
 
@@ -3133,15 +3138,19 @@ document.addEventListener("DOMContentLoaded", async () => {
                 // we want to handle sequence nodes differently than the others (but still clear the gesture editor below)
                 if(event.target.data().label.split(' ')[0] === 'sequence'){
                     if(hid.key.cmd){
-                        // load the sequence change node into the sequencer (i.e. replace the current sequence with this sequence)
-                        event.target.data().sequencerTable.forEach((step, index) => {
-                            if (step.node) {
+                        // update sequencer data
+                        sequencerData = event.target.data().sequencerTable
+                        makeFlatSequence()
+                        // update sequencer HTML table
+                        sequencerData.steps.forEach((step, index) => {
+                            if (step != 'Empty') {
                           
-                              updateStepRow(index, step.node);
+                              updateStepRow(index, step);
                             } else {
                               clearStepRow(index); // you'd need to define this if it doesn't already exist
                             }
-                          });
+                        });
+
                     } else {
                         // prepare the sequence to be loaded as a step in the sequencer
                     }
@@ -3344,14 +3353,17 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
     clearSequencerButton.addEventListener("click", async () => {
-        // stop the sequencer
-        if (isPlaying) {
-            transport.stop();
-            startStopButton.textContent = "Start Sequencer";
-            isPlaying = !isPlaying;
-        }      
- 
+        clearSequencerData()
+        makeFlatSequence()
         resetSequencerTable()
+        // stop the sequencer
+        // if (isPlaying) {
+        //     transport.stop();
+        //     startStopButton.textContent = "Start Sequencer";
+        //     isPlaying = !isPlaying;
+        // }      
+ 
+        // resetSequencerTable()
     });
 
     // document.getElementById('dynamicTableBody').addEventListener('mouseover', (event) => {
@@ -3746,75 +3758,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         sendToMainApp(
             {
                 cmd: "saveSequence",
-                data: storedSequencerTable
+                data: sequencerData
             }
         );
-        // we need this parentNode to know where to create a new branch from for the cloned gesture
-        // let sourceGestureNode = historyDAG_cy.getElementById(gestureData.historyID)
-        // let parentNode = sourceGestureNode.incomers('node').data();
-        
-        // let scaledValues = []        
-        // let targetParam 
-        // let data
-
-        
-        
-        // if(gestureData.assign.param === 'default'){
-        //     // in this case, we have simply modified the gesture and want to save it in the history graph
-        //     // so just grab all the values as they are currently
-        //     gestureData.gesturePoints.forEach((point)=>{
-        //         let value = point.value
-        //         scaledValues.push(value)
-        //     })
-        //     // load into obj
-        //     data = { 
-        //         parentNode: parentNode, 
-        //         assignTo: {
-        //             parent: gestureData.gesturePoints[0].parent,
-        //             param: gestureData.gesturePoints[0].param,
-        //             // range: null // not needed for this operation
-        //         },
-        //         scaledValues: scaledValues,
-        //         timestamps: gestureData.timestamps
-        //     } 
-       
-        
-        // } else {
-        //     // we are cloning the gesture onto a different param, so we now we need to map the values
-        //     targetParam = gestureData.assign
-
-        //     // if(gestureData.assign.kind === 'menu') {
-        //     //     // we need to handle menu param conversion differently
-        //     //     gestureData.gesturePoints.forEach((point)=>{
-        //     //         let storedParam = meta.synthFile.audioGraph.modules[point.parent].moduleSpec.parameters[point.param]
-        //     //         let value = point.value
-        //     //         convertParams(storedParam, targetParam, value).value
-        //     //     })
-
-
-        //     // } else {
-        //         // dealing with a knob
-        //         // get the updated param value (user may have made edits to gesture)
-        //         // scale it to the range of the newly assigned param
-        //         gestureData.gesturePoints.forEach((point)=>{
-        //             let storedParam = meta.synthFile.audioGraph.modules[point.parent].moduleSpec.parameters[point.param]
-        //             let value = point.value
-        //             scaledValues.push(convertParams(storedParam, targetParam, value).value)
-        //         })
-
-            
-        
-        //         data = { 
-        //             parentNode: parentNode, 
-        //             assignTo: gestureData.assign,
-        //             scaledValues: scaledValues,
-        //             timestamps: gestureData.timestamps
-        //         }
-        //     // }
-            
-        // }
-
-
     })
     
     // Add an event listener for the 'change' event
@@ -4487,8 +4433,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                 let changeNodeType = selectedNode.label.split(' ')[0]
 
                 if(changeNodeType === 'gesture'){
-
-                    console.log(gestureData, 'numPoints', gestureData.gesturePoints.length)
                     // ensure that the label is present (so we can route step values to main app for loading)
                     gestureData.gesturePoints.forEach((p, i)=>{
                         if(i === 0){
@@ -4499,16 +4443,28 @@ document.addEventListener("DOMContentLoaded", async () => {
                     // replace previous step (which could be any length) with this gesture
                     sequencerData.changeNodes.splice(insertPosition, previousStepSize, gestureData.gesturePoints)
                     sequencerData.sizes[i] = gestureData.gesturePoints.length
+                    console.log(gestureData)
+                    // store info about the step for the sequencer table
+                    sequencerData.steps[i] = {
+                        gesture: true,
+                        label: `gesture ${gestureData.nodes[0].data.param} ${gestureData.nodes[0].data.parents.split("_").slice(0, 2).join("_")}`,
+                        branch: gestureData.branch,
+                        id: gestureData.historyID
+                    }
 
                 } else if (changeNodeType === 'sequence'){
 
 
                 }
                 else {
+                    console.log(selectedNode)
                     // replace previous step (which could be any length) with this single change node
                     sequencerData.changeNodes.splice(insertPosition, previousStepSize, selectedNode)
                     sequencerData.sizes[i] = 1
+                    // store info about the step for the sequencer table
+                    sequencerData.steps[i] = selectedNode
                 }
+                
             break
             
             case 'remove':
