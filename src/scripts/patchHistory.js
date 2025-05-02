@@ -50,6 +50,7 @@ let graphJSONstore
 
 let stepLength = '4n'
 let sequencerMode = "mono";
+let sequencerLoadMode = 'value'
 let polyphonicLoops = []; // Will hold individual loops for each row
 
 let selectedModule = null
@@ -1351,21 +1352,33 @@ document.addEventListener("DOMContentLoaded", async () => {
     let intervalIndex = 0;
 
     const audioContext = new AudioContext();
-const clock = new WAAClock(audioContext);
+    const clock = new WAAClock(audioContext);
 
     function scheduleNextStep(clock, event) {
         const currentTime = event.deadline
         const durationSec = sequencerData.microTiming[intervalIndex] / 1000;
         
-        console.log('step', intervalIndex, 'time', currentTime, 'duration', durationSec);
-        
-        if (!isFinite(durationSec) || durationSec <= 0) {
-            console.warn('Invalid durationSec at step', intervalIndex, durationSec);
-            return;
-        }
+        // console.log('step', intervalIndex, 'time', currentTime, 'duration', durationSec);
 
         // handle musical stuff:
-
+        // console.log(sequencerData.changeNodes[intervalIndex])
+        let changeNode = sequencerData.changeNodes[intervalIndex]
+        if(sequencerLoadMode === 'value'){
+            // all sequencer step values will send param updates without loading full states (cables changes will still change)
+        } else {
+            // all sequencer step values will recall the version
+            if(changeNode.label.split(' ')[0] === 'gesture'){
+                console.log(changeNode.value)
+                let dataPoint = {
+                    parent: changeNode.parent,
+                    param: changeNode.param,
+                    value: changeNode.value
+                }
+                
+                // it's a special form of loadVersion, where we want to load the version, but ensure that the associated gesture point value is loaded 
+                loadVersionWithGestureDataPoint(changeNode.historyID, changeNode.branch, dataPoint)
+            }
+        }
         // loadVersion(currentStep.node.id, currentStep.node.branch)
         
         // let historyNode = historyDAG_cy.getElementById(currentStep.node.id)
@@ -1374,6 +1387,7 @@ const clock = new WAAClock(audioContext);
         
         // Schedule the next step at currentTime + this step's duration
         clock.callbackAtTime(scheduleNextStep.bind(null, clock), currentTime + durationSec);
+        console.log('kickoff')
     }
 
 
@@ -2290,6 +2304,18 @@ const clock = new WAAClock(audioContext);
     // * EVENT HANDLERS
     // * 
     // *
+
+     // for switching between polyphonic and monophonic sequencing modes
+     const sequencerLoadModeMenu = document.getElementById("sequencerLoadMode");
+     sequencerLoadModeMenu.addEventListener("change", (e) => {
+         sequencerLoadMode = e.target.value;
+         if (sequencerLoadMode === "version") {
+            // all sequencer step values will recall the version
+         } else {
+            // all sequencer step values will send param updates without loading full states (cables changes will still change)
+
+         }
+     });
 
     // Assumes helpTexts[] is already populated via fetch + marked
 
@@ -4381,6 +4407,10 @@ const clock = new WAAClock(audioContext);
                 if(changeNodeType === 'gesture'){
 
                     console.log(gestureData, 'numPoints', gestureData.gesturePoints.length)
+                    // ensure that the label is present (so we can route step values to main app for loading)
+                    gestureData.gesturePoints.forEach((p, i)=>{
+                        p.label = [p.msg, p.param, p.parent].join(' ')
+                    })
                     // replace previous step (which could be any length) with this gesture
                     sequencerData.changeNodes.splice(insertPosition, previousStepSize, gestureData.gesturePoints)
                     sequencerData.sizes[i] = gestureData.gesturePoints.length
@@ -4407,7 +4437,7 @@ const clock = new WAAClock(audioContext);
         // flatten each of the arrays
         sequencerData.changeNodes = sequencerData.changeNodes.flat()
         setTiming()
-        // console.log(sequencerData)
+        console.log(sequencerData)
     }
 
    
