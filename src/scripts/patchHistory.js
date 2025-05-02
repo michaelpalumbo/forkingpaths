@@ -44,14 +44,13 @@ function clearSequencerData(){
         changeNodes: [0, 0, 0, 0, 0, 0, 0, 0],
         timing: [], // each step's duration relative to stepLength and bpm
         microTiming: [], // the actual intervals in milliseconds between all points in the sequence. i.e. if step 3 is a gesture with 4 points, each point's timestamp will be quantized against the macro step duration
-        stepLengths: ["4n", "4n", "4n", "4n", "4n", "4n", "4n", "4n"]
+        stepLengths: ["4n", "4n", "4n", "4n", "4n", "4n", "4n", "4n"],
+        sequencerRowNumber: [] // each changeNode belongs to a step in the sequencer. use this to determine which sequencer row to highlight
     }
 }
  
+clearSequencerData()
 
-function flattenSequence(){
-
-}
 let graphJSONstore
 let sequencerWorklet; 
 let stepLength = '4n'
@@ -342,7 +341,7 @@ window.addEventListener("load", () => {
 
 });
 
-
+let currentRowStepNumber
 
 document.addEventListener("DOMContentLoaded", async () => {
 
@@ -368,11 +367,26 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             // ✅ Safely attach event listeners now
             sequencerWorklet.port.onmessage = (event) => {
+                
                 switch(event.data.cmd){
                     case 'changeNode':
                         let changeNode = event.data.data
+                        if(currentRowStepNumber != event.data.sequencerRowNumber ){
+                            // update row highlighting (filter out repeating numbers so we don't hammer the dom)
+                            currentRowStepNumber = event.data.sequencerRowNumber
+                            console.log(currentRowStepNumber)
+                            // Highlight the current step in the table
+                            const tableRows = document.querySelectorAll("#dynamicTableBody2 tr");
+                            tableRows.forEach((row) => row.classList.remove("table-active"));
+                            const targetRow = tableRows[currentRowStepNumber];
+                            if (targetRow) targetRow.classList.add("table-active");
+                        }
+                       
+        
+
                         if(changeNode === 0){
                             // empty step, ignore
+                            console.warn('consider making empty steps be the empty patch (the new patch state')
                         } else {
                             if( changeNode.label.split(' ')[0] === 'gesture'){
                                 if(changeNode.gestureStart && changeNode.gestureStart === true){
@@ -2606,7 +2620,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
                 `
                 sequencerData = data.sequencerTable
-                makeFlatSequence()
+                console.log(sequencerData)
+                // makeFlatSequence()
                 // add seq steps to the string
                 // data.data.forEach((step, index) => {
                 //     if(step.stepChange != '(Empty)'){
@@ -3137,6 +3152,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
                 // we want to handle sequence nodes differently than the others (but still clear the gesture editor below)
                 if(event.target.data().label.split(' ')[0] === 'sequence'){
+                    console.log('hid.key.cmd', hid.key.cmd)
                     if(hid.key.cmd){
                         // update sequencer data
                         sequencerData = event.target.data().sequencerTable
@@ -4443,7 +4459,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                     // replace previous step (which could be any length) with this gesture
                     sequencerData.changeNodes.splice(insertPosition, previousStepSize, gestureData.gesturePoints)
                     sequencerData.sizes[i] = gestureData.gesturePoints.length
-                    console.log(gestureData)
                     // store info about the step for the sequencer table
                     sequencerData.steps[i] = {
                         gesture: true,
@@ -4483,8 +4498,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         setTiming()
         sequencerWorklet.port.postMessage({
             cmd: 'updateSequence',
-            microTiming: sequencerData.microTiming,
-            changeNodes: sequencerData.changeNodes
+            data: sequencerData
         });
     }
 
@@ -4510,16 +4524,23 @@ document.addEventListener("DOMContentLoaded", async () => {
                 let microTiming = scaleIntervals(a, sequencerData.timing[index])
                 // Add computed durations to the microTiming array
                 sequencerData.microTiming.push(...microTiming);
+
+                // fill the sequencerRowNumber array (we'll use this to determine the step position for the sequencer highlighting)
+                let currentStepArray = new Array(subSequence.length).fill(index)
+                console.log(currentStepArray)
+                sequencerData.sequencerRowNumber.push(...currentStepArray);
+               
             } else {
                 // If this step only has one changeNode, use the full step duration
                 sequencerData.microTiming.push(sequencerData.timing[index]);
-
+                // let currentStepArray = new Array(subSequence.length).fill(index)
+                sequencerData.sequencerRowNumber.push(index);
             }
             // Track how many changeNodes have been processed so far
             visited += size
         })
 
-        console.log(sequencerData.microTiming, sequencerData.microTiming.length,sequencerData.changeNodes.length )
+        console.log(sequencerData)
     }
 
 

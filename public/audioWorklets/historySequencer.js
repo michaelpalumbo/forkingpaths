@@ -2,6 +2,7 @@ class SequencerProcessor extends AudioWorkletProcessor {
   constructor() {
     super();
     this.currentStepIndex = 0;
+    this.sequencerData = {}
     this.microTiming = [];
     this.changeNodes = [];
     this.elapsedSamples = 0;
@@ -15,14 +16,16 @@ class SequencerProcessor extends AudioWorkletProcessor {
 
       switch (e.data.cmd) {
         case 'updateSequence':
-          this.microTiming = e.data.microTiming.map(ms => ms / 1000);
-          this.changeNodes = e.data.changeNodes;
+          this.sequencerData = e.data.data
+          this.microTiming = this.sequencerData.microTiming.map(ms => ms / 1000);
+          this.changeNodes = this.sequencerData.changeNodes;
+          this.sequencerRowNumber = this.sequencerData.sequencerRowNumber
           this.currentStepIndex = 0;
           this.elapsedSamples = 0;
           this.samplesPerStep = this.microTiming[0] * this.sampleRate;
 
 
-          console.log(this.microTiming)
+          console.log(this.sequencerRowNumber)
           break;
         case 'start':
           this.play = true;
@@ -37,7 +40,7 @@ class SequencerProcessor extends AudioWorkletProcessor {
   }
 
   process(inputs, outputs, parameters) {
-    if (!this.play || this.microTiming.length === 0) return true;
+    if (!this.play || this.microTiming.length === 0 || !this.changeNodes.some(item => item !== 0)) return true;
     const bufferSize = outputs[0][0].length;
     this.elapsedSamples += bufferSize;
 
@@ -47,7 +50,8 @@ class SequencerProcessor extends AudioWorkletProcessor {
       // Post step to main thread
       this.port.postMessage({
         cmd: 'changeNode',
-        data: this.changeNodes[this.currentStepIndex]
+        data: this.changeNodes[this.currentStepIndex],
+        sequencerRowNumber: this.sequencerRowNumber[this.currentStepIndex]
       });
 
       this.currentStepIndex = (this.currentStepIndex + 1) % this.microTiming.length;
