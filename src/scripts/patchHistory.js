@@ -5,7 +5,7 @@ import { uuidv7 } from "uuidv7";
 import { WebMidi } from "webmidi"; // skip this line if you're using a script tag
 import modules from '../modules/modules.json' assert { type: 'json'}
 import { marked } from 'marked'
-
+import WAAClock from 'waaclock'
 // Use the correct protocol based on your site's URL
 const VITE_WS_URL = import.meta.env.VITE_WS_URL
 // const VITE_WS_URL = "wss://historygraphrenderer.onrender.com/10000"
@@ -1348,19 +1348,41 @@ document.addEventListener("DOMContentLoaded", async () => {
     //* new flattened sequencer
     let currentStepIndex = 0;
 
-    function scheduleNextStep(time) {
-        const stepDurationMs = sequencerData.microTiming[currentStepIndex];
-        const stepDurationSec = stepDurationMs / 1000;
+    let intervalIndex = 0;
+
+    const audioContext = new AudioContext();
+const clock = new WAAClock(audioContext);
+
+    function scheduleNextStep(clock, event) {
+        const currentTime = event.deadline
+      const durationSec = sequencerData.microTiming[intervalIndex] / 1000;
+    
+      console.log('step', intervalIndex, 'time', currentTime, 'duration', durationSec);
+    
+      // Do something musical here — trigger synth, update UI, etc.
+    
+      intervalIndex = (intervalIndex + 1) % sequencerData.microTiming.length;
+    
+      // Schedule the next step at currentTime + this step's duration
+      clock.callbackAtTime(scheduleNextStep.bind(null, clock), currentTime + durationSec);
+    }
+
+
+    
+
+    // function scheduleNextStep(time) {
+    //     const stepDurationMs = sequencerData.microTiming[currentStepIndex];
+    //     const stepDurationSec = stepDurationMs / 1000;
       
-        // Do your step logic here
-        console.log("step", currentStepIndex, "time", time, "duration", stepDurationMs);
-        console.log(sequencerData.changeNodes[currentStepIndex]);
+    //     // Do your step logic here
+    //     console.log("step", currentStepIndex, "time", time, "duration", stepDurationMs);
+    //     console.log(sequencerData.changeNodes[currentStepIndex]);
       
-        currentStepIndex = (currentStepIndex + 1) % sequencerData.microTiming.length;
+    //     currentStepIndex = (currentStepIndex + 1) % sequencerData.microTiming.length;
       
-        // Schedule the next step
-        Tone.Transport.scheduleOnce(scheduleNextStep, time + stepDurationSec);
-      }
+    //     // Schedule the next step
+    //     Tone.Transport.scheduleOnce(scheduleNextStep, Tone.now() + stepDurationSec);
+    //   }
       
 
     // const flatLoop = new Tone.Loop(function(time){
@@ -3120,10 +3142,14 @@ document.addEventListener("DOMContentLoaded", async () => {
                     // startFlatLoop();
                     console.log(sequencerData.microTiming[currentStepIndex], sequencerData.microTiming)
                     // Start the sequence
-                    Tone.Transport.start();
-                    Tone.Transport.scheduleOnce(scheduleNextStep, Tone.now());
+                    // Tone.Transport.start();
+                    // Tone.Transport.scheduleOnce(scheduleNextStep, Tone.now());
                         // Start first tick
                     // clock.start();
+                    clock.start();
+
+                    // Kick off the first event 500ms from now
+                    clock.callbackAtTime(scheduleNextStep.bind(null, clock), audioContext.currentTime);
                     startStopButton.textContent = "Stop Sequencer";
                 }
                 isPlaying = !isPlaying;
