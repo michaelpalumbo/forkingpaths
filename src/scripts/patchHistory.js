@@ -369,7 +369,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                         if(changeNode === 0){
                             // empty step, ignore
                         } else {
-                            console.log(changeNode)
                             if( changeNode.label.split(' ')[0] === 'gesture'){
                                 if(changeNode.gestureStart && changeNode.gestureStart === true){
                                     // request the version
@@ -391,6 +390,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                                     loadVersionWithGestureDataPoint(changeNode.historyID, changeNode.branch, dataPoint);
                                 }
                             } else {
+                                console.log(changeNode)
+
                                 loadVersion(changeNode.id, changeNode.branch);
                             }
                         }
@@ -3240,6 +3241,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         bpmValue.textContent = bpm; // Display the current BPM
         transport.bpm.value = bpm; // Dynamically update the BPM
+
+        makeFlatSequence()
 
     });
 
