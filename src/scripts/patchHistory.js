@@ -5,7 +5,7 @@ import { uuidv7 } from "uuidv7";
 import { WebMidi } from "webmidi"; // skip this line if you're using a script tag
 import modules from '../modules/modules.json' assert { type: 'json'}
 import { marked } from 'marked'
-import WAAClock from 'waaclock'
+
 // Use the correct protocol based on your site's URL
 const VITE_WS_URL = import.meta.env.VITE_WS_URL
 // const VITE_WS_URL = "wss://historygraphrenderer.onrender.com/10000"
@@ -47,7 +47,7 @@ function flattenSequence(){
 
 }
 let graphJSONstore
-
+let sequencerWorklet; 
 let stepLength = '4n'
 let sequencerMode = "mono";
 let sequencerLoadMode = 'value'
@@ -339,7 +339,64 @@ window.addEventListener("load", () => {
 
 
 document.addEventListener("DOMContentLoaded", async () => {
+    
+    // Audio context
+    const audioContext = new AudioContext();
 
+    async function setupSequencerWorklet() {
+        try {
+            // assuming we're in development Load the worklet module from /src/
+            let historySequencerPath = '../audioWorklets/historySequencer.js'
+            // check if we're in production mode
+            if(import.meta.env.MODE === 'production'){
+                // this path is the result of the build:worklet script in package.json
+                historySequencerPath = '/audioWorklets/historySequencer.js';
+            }
+
+            await audioContext.audioWorklet.addModule(historySequencerPath);
+          
+            // Now we safely create the worklet **after** it has loaded
+            sequencerWorklet = new AudioWorkletNode(audioContext, 'sequencer-processor');
+            sequencerWorklet.connect(audioContext.destination);
+
+            // ✅ Safely attach event listeners now
+            sequencerWorklet.port.onmessage = (event) => {
+                console.log(event.data)
+                switch(event.data.cmd){
+                    case 'changeNode':
+                        
+                        console.log(event.data.data)
+                    break
+                    default: console.warn('no switch case exists for message from sequencerWorklet:', event.data)
+                   
+                }
+                if (event.data.type === 'status-update') {
+                    console.log('🎛️ DSP Status:', event.data.message);
+                } else if (event.data.type === 'performance-metrics') {
+                    console.log('📊 DSP Load:', event.data.load.toFixed(2), '%');
+                }
+            };
+
+        } catch (error) {
+            console.error("❌ Failed to initialize AudioWorklet:", error);
+        }
+    }
+
+    // 🚀 Call setup function
+    setupSequencerWorklet();
+
+    // ensure audio state is running after any click
+    document.addEventListener('click', async () => {
+        if (audioContext.state !== 'running') {
+          await audioContext.resume();
+          console.log('🔊 Audio context resumed');
+        }
+    });
+
+    function sendToSequencerWorklet(data){
+
+
+    }
 
     // disable the sequencer save button
     setGestureSaveButtonState(true)
@@ -3171,12 +3228,16 @@ document.addEventListener("DOMContentLoaded", async () => {
         switch (sequencerMode){
             case 'mono':
                 if (isPlaying) {
-                    transport.stop();
-                    // sequence.stop(0);
-                    flatLoop.stop()
+                    sequencerWorklet.port.postMessage({
+                        cmd: 'stop'
+                    });
                     startStopButton.textContent = "Start Sequencer";
                 } else {
-                    await Tone.start(); // Required to start audio in modern browsers
+
+                    sequencerWorklet.port.postMessage({
+                        cmd: 'start'
+                    });
+                    // await Tone.start(); // Required to start audio in modern browsers
         
                     // // set the interval length based on this step's note length
                     // flatLoop.interval = storedSequencerTable[0].stepLength
@@ -3189,7 +3250,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     // sequence.start(0);
                     // flatLoop.start(0)
                     // startFlatLoop();
-                    console.log(sequencerData.microTiming[currentStepIndex], sequencerData.microTiming)
+                    // console.log(sequencerData.microTiming[currentStepIndex], sequencerData.microTiming)
                     // Start the sequence
                     // Tone.Transport.start();
                     // Tone.Transport.scheduleOnce(scheduleNextStep, Tone.now());
@@ -3200,9 +3261,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                     //     clock.callbackAtTime(scheduleNextStep.bind(null, clock), audioContext.currentTime + 0.1); // slight offset for safety
                     //   });
                     // Resume context and start
-                    await Tone.start();
-                    Tone.Transport.start("+0.1");
-                    Tone.Transport.scheduleOnce(scheduleStep, Tone.Transport.seconds);
+                    // await Tone.start();
+                    // Tone.Transport.start("+0.1");
+                    // Tone.Transport.scheduleOnce(scheduleStep, Tone.Transport.seconds);
                     // Kick off the first event 500ms from now
                     // clock.callbackAtTime(scheduleNextStep.bind(null, clock), audioContext.currentTime);
                     startStopButton.textContent = "Stop Sequencer";
@@ -4455,6 +4516,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         sequencerData.changeNodes = sequencerData.changeNodes.flat()
         setTiming()
         console.log(sequencerData)
+        sequencerWorklet.port.postMessage({
+            cmd: 'updateSequence',
+            microTiming: sequencerData.microTiming,
+            changeNodes: sequencerData.changeNodes
+        });
     }
 
    
