@@ -339,6 +339,7 @@ window.addEventListener("load", () => {
 
 
 document.addEventListener("DOMContentLoaded", async () => {
+
     
     // Audio context
     const audioContext = new AudioContext();
@@ -364,8 +365,35 @@ document.addEventListener("DOMContentLoaded", async () => {
                 console.log(event.data)
                 switch(event.data.cmd){
                     case 'changeNode':
-                        
-                        console.log(event.data.data)
+                        let changeNode = event.data.data
+                        if(changeNode === 0){
+                            // empty step, ignore
+                        } else {
+                            console.log(changeNode)
+                            if( changeNode.label.split(' ')[0] === 'gesture'){
+                                if(changeNode.gestureStart && changeNode.gestureStart === true){
+                                    // request the version
+                                    const dataPoint = {
+                                        parent: changeNode.parent,
+                                        param: changeNode.param,
+                                        value: changeNode.value
+                                    };
+
+                                    loadVersionWithGestureDataPoint(changeNode.historyID, changeNode.branch, dataPoint);
+                                } else {
+                                    // just send the datapoint
+                                    const dataPoint = {
+                                        parent: changeNode.parent,
+                                        param: changeNode.param,
+                                        value: changeNode.value
+                                    };
+
+                                    loadVersionWithGestureDataPoint(changeNode.historyID, changeNode.branch, dataPoint);
+                                }
+                            } else {
+                                loadVersion(changeNode.id, changeNode.branch);
+                            }
+                        }
                     break
                     default: console.warn('no switch case exists for message from sequencerWorklet:', event.data)
                    
@@ -4460,6 +4488,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                     console.log(gestureData, 'numPoints', gestureData.gesturePoints.length)
                     // ensure that the label is present (so we can route step values to main app for loading)
                     gestureData.gesturePoints.forEach((p, i)=>{
+                        if(i === 0){
+                            p.gestureStart = true
+                        }
                         p.label = [p.msg, p.param, p.parent].join(' ')
                     })
                     // replace previous step (which could be any length) with this gesture
