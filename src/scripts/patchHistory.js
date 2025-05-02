@@ -1181,7 +1181,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     let currentNode = null
 
     // MONOPHONIC SEQUENCER (Lock Step Operation through steps 1-8 linearly)
-    let currentStepIndex = 0; // Tracks the current step in the table
+    // let currentStepIndex = 0; // Tracks the current step in the table
 
     const loop = new Tone.Loop(function(time){
         // ✅ Set current step's duration immediately
@@ -1346,107 +1346,126 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
     //* new flattened sequencer
-    let currentFlatLoopStepIndex = 0
+    let currentStepIndex = 0;
 
-    const flatLoop = new Tone.Loop(function(time){
-        // Set current step's duration immediately
-        stepLength = storedSequencerTable[currentStepIndex].stepLength;
-        flatLoop.interval = stepLength;
-    
+    function scheduleNextStep(time) {
+        const stepDurationMs = sequencerData.microTiming[currentStepIndex];
+        const stepDurationSec = stepDurationMs / 1000;
+      
+        // Do your step logic here
+        console.log("step", currentStepIndex, "time", time, "duration", stepDurationMs);
+        console.log(sequencerData.changeNodes[currentStepIndex]);
+      
+        currentStepIndex = (currentStepIndex + 1) % sequencerData.microTiming.length;
+      
+        // Schedule the next step
+        Tone.Transport.scheduleOnce(scheduleNextStep, time + stepDurationSec);
+      }
+      
 
-        // Get the current step
-        const currentStep = storedSequencerTable[currentStepIndex];
+    // const flatLoop = new Tone.Loop(function(time){
+    //     // Set current step's duration immediately
+    //     stepLength = sequencerData.microTiming[currentStepIndex];
+    //     flatLoop.interval = stepLength;
+    //     console.log('stepLength', stepLength)
+    //     console.log(sequencerData.changeNodes[currentStepIndex])
 
 
-        // Highlight the current step in the table
-        const tableRows = document.querySelectorAll("#dynamicTableBody2 tr");
-        tableRows.forEach((row) => row.classList.remove("table-active"));
-        const targetRow = tableRows[currentStepIndex];
+    //     // // Get the current step
+    //     // const currentStep = storedSequencerTable[currentStepIndex];
 
-        if (targetRow) targetRow.classList.add("table-active");
+
+    //     // // Highlight the current step in the table
+    //     // const tableRows = document.querySelectorAll("#dynamicTableBody2 tr");
+    //     // tableRows.forEach((row) => row.classList.remove("table-active"));
+    //     // const targetRow = tableRows[currentStepIndex];
+
+    //     // if (targetRow) targetRow.classList.add("table-active");
 
         
         
 
-        // if step is active, send request to load the version
-        if (currentStep.status == "Active"){
+    //     // // if step is active, send request to load the version
+    //     // if (currentStep.status == "Active"){
 
-            // first check if we're loading a gesture point (a single knob position within a gesture)
-            if(targetRow.dataset.isGestureDataPoint){
-                let dataPoint = {
-                    parent: targetRow.dataset.parent,
-                    param: targetRow.dataset.param,
-                    value: targetRow.dataset.gestureDataPointValue
-                }
+    //     //     // first check if we're loading a gesture point (a single knob position within a gesture)
+    //     //     if(targetRow.dataset.isGestureDataPoint){
+    //     //         let dataPoint = {
+    //     //             parent: targetRow.dataset.parent,
+    //     //             param: targetRow.dataset.param,
+    //     //             value: targetRow.dataset.gestureDataPointValue
+    //     //         }
                 
-                // it's a special form of loadVersion, where we want to load the version, but ensure that the associated gesture point value is loaded 
-                loadVersionWithGestureDataPoint(currentStep.node.id, currentStep.node.branch, dataPoint)
+    //     //         // it's a special form of loadVersion, where we want to load the version, but ensure that the associated gesture point value is loaded 
+    //     //         loadVersionWithGestureDataPoint(currentStep.node.id, currentStep.node.branch, dataPoint)
             
-            } 
-            else if (targetRow.dataset.sequencerTable) {
+    //     //     } 
+    //     //     else if (targetRow.dataset.sequencerTable) {
 
-                const embeddedSeq = JSON.parse(targetRow.dataset.sequencerTable);
-                const totalSubsteps = embeddedSeq.length;
-                const outerStepDuration = Tone.Time(flatLoop.interval).toSeconds(); // duration of current step
-                const subStepDuration = outerStepDuration / totalSubsteps;
+    //     //         const embeddedSeq = JSON.parse(targetRow.dataset.sequencerTable);
+    //     //         const totalSubsteps = embeddedSeq.length;
+    //     //         const outerStepDuration = Tone.Time(flatLoop.interval).toSeconds(); // duration of current step
+    //     //         const subStepDuration = outerStepDuration / totalSubsteps;
             
-                const embeddedEvents = embeddedSeq.map((row, i) => {
-                    return [i * subStepDuration, () => {
-                      if (row.status === "Active") {
-                        if (row.isGestureDataPoint) {
-                          const dataPoint = {
-                            parent: row.parent,
-                            param: row.param,
-                            value: row.value
-                          };
-                          loadVersionWithGestureDataPoint(row.node.id, row.node.branch, dataPoint);
-                        } else {
-                          loadVersion(row.node.id, row.node.branch);
+    //     //         const embeddedEvents = embeddedSeq.map((row, i) => {
+    //     //             return [i * subStepDuration, () => {
+    //     //               if (row.status === "Active") {
+    //     //                 if (row.isGestureDataPoint) {
+    //     //                   const dataPoint = {
+    //     //                     parent: row.parent,
+    //     //                     param: row.param,
+    //     //                     value: row.value
+    //     //                   };
+    //     //                   loadVersionWithGestureDataPoint(row.node.id, row.node.branch, dataPoint);
+    //     //                 } else {
+    //     //                   loadVersion(row.node.id, row.node.branch);
                   
-                          if (row.stepChange?.startsWith("gesture") && row.gestureData) {
-                            playGestureFromSequencerStep(row.gestureData, `${subStepDuration}s`);
-                          }
-                        }
-                      }
-                    }];
-                });
+    //     //                   if (row.stepChange?.startsWith("gesture") && row.gestureData) {
+    //     //                     playGestureFromSequencerStep(row.gestureData, `${subStepDuration}s`);
+    //     //                   }
+    //     //                 }
+    //     //               }
+    //     //             }];
+    //     //         });
             
-                const embeddedPart = new Tone.Part((t, eventCallback) => {
-                    eventCallback(t);
-                }, embeddedEvents);
+    //     //         const embeddedPart = new Tone.Part((t, eventCallback) => {
+    //     //             eventCallback(t);
+    //     //         }, embeddedEvents);
             
-                embeddedPart.start(time); // starts at the same moment the outer step begins
+    //     //         embeddedPart.start(time); // starts at the same moment the outer step begins
             
-                // Optional cleanup
-                transport.scheduleOnce(() => {
-                    embeddedPart.dispose(); // or .stop() if you want to reuse
-                }, time + outerStepDuration);
-            }
+    //     //         // Optional cleanup
+    //     //         transport.scheduleOnce(() => {
+    //     //             embeddedPart.dispose(); // or .stop() if you want to reuse
+    //     //         }, time + outerStepDuration);
+    //     //     }
              
-            else {
-                // load the version
-                loadVersion(currentStep.node.id, currentStep.node.branch)
+    //     //     else {
+    //     //         // load the version
+    //     //         loadVersion(currentStep.node.id, currentStep.node.branch)
                 
-                // after loading the version (which gets the full state), if we are recalling a gesture, play it back
-                if(targetRow.dataset.gesture){
-                    // if getting it from 
-                    playGestureFromSequencerStep(JSON.parse(targetRow.dataset.gestureData), flatLoop.interval)
-                    // createGestureGraph(targetRow.dataset.gestureData.gesturePoints, targetRow.dataset.gestureData.range, targetRow.dataset.gestureData.min, targetRow.dataset.gestureData.max)
-                }
-            }
+    //     //         // after loading the version (which gets the full state), if we are recalling a gesture, play it back
+    //     //         if(targetRow.dataset.gesture){
+    //     //             // if getting it from 
+    //     //             playGestureFromSequencerStep(JSON.parse(targetRow.dataset.gestureData), flatLoop.interval)
+    //     //             // createGestureGraph(targetRow.dataset.gestureData.gesturePoints, targetRow.dataset.gestureData.range, targetRow.dataset.gestureData.min, targetRow.dataset.gestureData.max)
+    //     //         }
+    //     //     }
 
-            let historyNode = historyDAG_cy.getElementById(currentStep.node.id)
-            highlightNode(historyNode)
+    //     //     let historyNode = historyDAG_cy.getElementById(currentStep.node.id)
+    //     //     highlightNode(historyNode)
 
-            // get the step length of the next row:
-            // const burstSelect = targetRow.cells[2].querySelector('select'); // adjust index as needed
-            // const currentValue = burstSelect.value;
-            // console.log(`Selected burst value: ${currentValue}`);
-        }
+    //     //     // get the step length of the next row:
+    //     //     // const burstSelect = targetRow.cells[2].querySelector('select'); // adjust index as needed
+    //     //     // const currentValue = burstSelect.value;
+    //     //     // console.log(`Selected burst value: ${currentValue}`);
+    //     // }
+    //     console.log('this step', currentStepIndex)
+    //     currentStepIndex = (currentStepIndex + 1) % sequencerData.changeNodes.length;
+    //     console.log('next step', currentStepIndex)
 
-        currentStepIndex = (currentStepIndex + 1) % storedSequencerTable.length;
 
-    }, stepLength)
+    // }, stepLength)
 
     //* POLYPHONIC SEQUENCER
 
@@ -3074,7 +3093,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     startStopButton.addEventListener("click", async () => {
         // we have this here to prevent both modes running simultaneously (which can happen if anything glitches out)
         transport.stop();
-        flatLoop.stop();
+        // flatLoop.stop();
         stopPolyphonicSequencer();
 
         // start either the monophonic or polyphonic sequencer
@@ -3088,12 +3107,23 @@ document.addEventListener("DOMContentLoaded", async () => {
                 } else {
                     await Tone.start(); // Required to start audio in modern browsers
         
-                    // set the interval length based on this step's note length
-                    flatLoop.interval = storedSequencerTable[0].stepLength
-                    stepLength = flatLoop.interval
-                    transport.start();
+                    // // set the interval length based on this step's note length
+                    // flatLoop.interval = storedSequencerTable[0].stepLength
+                    // stepLength = flatLoop.interval
+
+                    // set the flatLoop starting interval based on the sequencer's microTiming table
+                    // flatLoop.interval = sequencerData.microTiming[0]
+
+                    // transport.start();
                     // sequence.start(0);
-                    flatLoop.start(0)
+                    // flatLoop.start(0)
+                    // startFlatLoop();
+                    console.log(sequencerData.microTiming[currentStepIndex], sequencerData.microTiming)
+                    // Start the sequence
+                    Tone.Transport.start();
+                    Tone.Transport.scheduleOnce(scheduleNextStep, Tone.now());
+                        // Start first tick
+                    // clock.start();
                     startStopButton.textContent = "Stop Sequencer";
                 }
                 isPlaying = !isPlaying;
@@ -4394,8 +4424,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         const factor = targetMs / sum;
         return intervals.map(i => i * factor);
     }
-    
-    
+
+      
 })
 
 
