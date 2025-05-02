@@ -1349,8 +1349,22 @@ document.addEventListener("DOMContentLoaded", async () => {
     //* new flattened sequencer
     let currentStepIndex = 0;
 
-    let intervalIndex = 0;
+    let stepIndex = 0;
 
+    function scheduleStep(time) {
+        const stepDuration = sequencerData.microTiming[stepIndex] / 1000;
+
+        console.log(`Step ${stepIndex}`, time, `Duration: ${stepDuration}`);
+
+        // Perform musical step here...
+
+        stepIndex = (stepIndex + 1) % sequencerData.microTiming.length;
+        Tone.Transport.scheduleOnce(scheduleStep, time + stepDuration);
+    }
+
+
+    let intervalIndex = 0;
+/*
     const audioContext = new AudioContext();
     const clock = new WAAClock(audioContext);
 
@@ -1390,7 +1404,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         console.log('kickoff')
     }
 
-
+*/
     
 
     // function scheduleNextStep(time) {
@@ -3181,11 +3195,14 @@ document.addEventListener("DOMContentLoaded", async () => {
                     // Tone.Transport.scheduleOnce(scheduleNextStep, Tone.now());
                         // Start first tick
                     // clock.start();
-                    audioContext.resume().then(() => {
-                        clock.start();
-                        clock.callbackAtTime(scheduleNextStep.bind(null, clock), audioContext.currentTime + 0.1); // slight offset for safety
-                      });
-
+                    // audioContext.resume().then(() => {
+                    //     clock.start();
+                    //     clock.callbackAtTime(scheduleNextStep.bind(null, clock), audioContext.currentTime + 0.1); // slight offset for safety
+                    //   });
+                    // Resume context and start
+                    await Tone.start();
+                    Tone.Transport.start("+0.1");
+                    Tone.Transport.scheduleOnce(scheduleStep, Tone.Transport.seconds);
                     // Kick off the first event 500ms from now
                     // clock.callbackAtTime(scheduleNextStep.bind(null, clock), audioContext.currentTime);
                     startStopButton.textContent = "Stop Sequencer";
