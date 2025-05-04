@@ -42,8 +42,8 @@ let sequencerMode = "mono";
 let polyphonicLoops = []; // Will hold individual loops for each row
 
 let selectedModule = null
-// meta doc
-let meta;
+// patchHistory doc
+let patchHistory;
 let gestureNodes;
 let gestureRange
 let mouseoverState = null
@@ -821,12 +821,12 @@ document.addEventListener("DOMContentLoaded", async () => {
             // console.log(event.data)
             switch (event.data.cmd){
                 case 'reDrawHistoryGraph':
-                    meta = event.data.data
-                    // reDrawHistoryGraph(meta)
+                    patchHistory = event.data.data
+                    // reDrawHistoryGraph(patchHistory)
                             // Send the elements to the server for rendering
                     const update = JSON.stringify({
                         cmd: 'updateGraph',
-                        meta: meta,
+                        patchHistory: patchHistory,
                         // existingHistoryNodeIDs: existingHistoryNodeIDs,
                         docHistoryGraphStyling: docHistoryGraphStyling
                     })
@@ -834,11 +834,11 @@ document.addEventListener("DOMContentLoaded", async () => {
                     ws.send(update);
 
                     // sequencer settings:
-                    stepLengthFunctionSelect.value = meta.sequencer.stepLengthFunction || 'fixed'
+                    stepLengthFunctionSelect.value = patchHistory.sequencer.stepLengthFunction || 'fixed'
                     setStepLengthFunction(stepLengthFunctionSelect.value)
 
-                    bpmValue.textContent = meta.sequencer.bpm; // Display the current BPM
-                    transport.bpm.value = meta.sequencer.bpm; // Dynamically update the BPM
+                    bpmValue.textContent = patchHistory.sequencer.bpm; // Display the current BPM
+                    transport.bpm.value = patchHistory.sequencer.bpm; // Dynamically update the BPM
 
                     modifyGestureParamAssign() 
 
@@ -1596,7 +1596,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     
                     let value = node.value
                     
-                    let storedParam = meta.synthFile.audioGraph.modules[node.parent].moduleSpec.parameters[node.param]
+                    let storedParam = patchHistory.synthFile.audioGraph.modules[node.parent].moduleSpec.parameters[node.param]
                     let targetParam = gesture.assign
                     
                     sendToMainApp({
@@ -1972,7 +1972,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     
                     let value = node.data.value
                     
-                    let storedParam = meta.synthFile.audioGraph.modules[node.data.parents].moduleSpec.parameters[node.data.param]
+                    let storedParam = patchHistory.synthFile.audioGraph.modules[node.data.parents].moduleSpec.parameters[node.data.param]
                     let targetParam = gestureData.assign
                     
                     sendToMainApp({
@@ -2046,7 +2046,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         }
 
-        const modules = removeElementsBySubstring(Object.keys(meta.synthFile.audioGraph.modules), 'AudioDestination');
+        const modules = removeElementsBySubstring(Object.keys(patchHistory.synthFile.audioGraph.modules), 'AudioDestination');
         
         modules.forEach((module, index)=>{
             // start by adding the module to the menu as a disabled option
@@ -2064,10 +2064,10 @@ document.addEventListener("DOMContentLoaded", async () => {
             synthParamRanges[module] = { }
 
             // now add each param under this option
-            let paramNames = Object.keys(meta.synthFile.audioGraph.modules[module].params)
+            let paramNames = Object.keys(patchHistory.synthFile.audioGraph.modules[module].params)
 
             for(let i = 0; i < paramNames.length; i++){
-                let metadata = meta.synthFile.audioGraph.modules[module].moduleSpec.parameters[paramNames[i]]
+                let metadata = patchHistory.synthFile.audioGraph.modules[module].moduleSpec.parameters[paramNames[i]]
                 // Create a new option element
                 let newOption = document.createElement('option');
                 // Set the text and value of the new option
@@ -2378,7 +2378,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             // if(gestureData.assign.kind === 'menu') {
             //     // we need to handle menu param conversion differently
             //     gestureData.gesturePoints.forEach((point)=>{
-            //         let storedParam = meta.synthFile.audioGraph.modules[point.parent].moduleSpec.parameters[point.param]
+            //         let storedParam = patchHistory.synthFile.audioGraph.modules[point.parent].moduleSpec.parameters[point.param]
             //         let value = point.value
             //         convertParams(storedParam, targetParam, value).value
             //     })
@@ -2389,7 +2389,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 // get the updated param value (user may have made edits to gesture)
                 // scale it to the range of the newly assigned param
                 gestureData.gesturePoints.forEach((point)=>{
-                    let storedParam = meta.synthFile.audioGraph.modules[point.parent].moduleSpec.parameters[point.param]
+                    let storedParam = patchHistory.synthFile.audioGraph.modules[point.parent].moduleSpec.parameters[point.param]
                     let value = point.value
                     scaledValues.push(convertParams(storedParam, targetParam, value).value)
                 })
@@ -2754,11 +2754,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Listen for changes to the radio buttons
     // const radioButtons = document.querySelectorAll('input[name="traversalMode"]');
-    // console.warn('need to setup the sequencer meta control see the associated code')
+    // console.warn('need to setup the sequencer patchHistory control see the associated code')
     // radioButtons.forEach((radio) => {
     //     radio.addEventListener('change', (event) => {
-    //         meta = Automerge.change(meta, (meta) =>{
-    //             meta.sequencer.traversalMode = event.target.value  
+    //         patchHistory = Automerge.change(patchHistory, (patchHistory) =>{
+    //             patchHistory.sequencer.traversalMode = event.target.value  
     //         })
     //     });
     // });
@@ -3362,7 +3362,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             timeStamp: el.data.timeStamp
         }));
 
-        let { nodes: reducedNodes, edges: reducedEdges } = buildReducedGraphSkeleton(meta, filteredNodes, docHistoryGraphStyling);
+        let { nodes: reducedNodes, edges: reducedEdges } = buildReducedGraphSkeleton(patchHistory, filteredNodes, docHistoryGraphStyling);
 
 
  
@@ -3896,12 +3896,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         return data
     }
 
-    function buildReducedGraphSkeleton(meta, filteredNodes, docHistoryGraphStyling) {
+    function buildReducedGraphSkeleton(patchHistory, filteredNodes, docHistoryGraphStyling) {
         const nodes = [];
         const edges = [];
     
-        const branchOrder = meta.branchOrder;  
-        const branches = meta.branches;         
+        const branchOrder = patchHistory.branchOrder;  
+        const branches = patchHistory.branches;         
         const historyGraphYIncrement = 75;
     
         const plannedYPositions = new Map();
@@ -4010,7 +4010,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             });
         } else {
             // fallback: walk back in the full branch history
-            let fb = findClosestAvailableParent(root.id, meta, filteredNodeIds);
+            let fb = findClosestAvailableParent(root.id, patchHistory, filteredNodeIds);
             if (fb) {
             edges.push({
                 group: "edges",
@@ -4082,13 +4082,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         return { nodes, edges };
     }
     
-    function findClosestAvailableParent(nodeId, meta, filteredNodeIds) {
+    function findClosestAvailableParent(nodeId, patchHistory, filteredNodeIds) {
         // 1) locate which branch this node lives in
         let branchName = null;
         let item       = null;
       
-        for (let b of meta.branchOrder) {
-          let hist = meta.branches[b].history;
+        for (let b of patchHistory.branchOrder) {
+          let hist = patchHistory.branches[b].history;
           item = hist.find(x => x.hash === nodeId);
           if (item) {
             branchName = b;
@@ -4098,7 +4098,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (!branchName) return null;
       
         // 2) get that branch’s full history array
-        let history = meta.branches[branchName].history;
+        let history = patchHistory.branches[branchName].history;
         let idx     = history.findIndex(x => x.hash === nodeId);
         if (idx === -1) return null;
       

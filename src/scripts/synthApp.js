@@ -83,7 +83,7 @@ let automergeDocuments = {
 let docUpdated = false
 
 let previousHash;
-let meta;
+let patchHistory;
 let syncState;
 
 let collaborationSettings = {
@@ -96,7 +96,7 @@ let collaborationSettings = {
 }
 
 let throttleSend = true
-let metaIsDirty = false
+let patchHistoryIsDirty = false
 
 let isDraggingEnabled = false;
 let highlightedNode = null
@@ -347,7 +347,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // set text in panel
     // document.getElementById("roomInfo").textContent = room;
     const peerCount = parseInt(params.get('peerCount') || '0');
-    let metaKey = room ? `meta-${room}` : 'meta';
+    let patchHistoryKey = room ? `patchHistory-${room}` : 'patchHistory';
 
 
     // get username
@@ -699,23 +699,23 @@ document.addEventListener("DOMContentLoaded", function () {
         // Load Automerge asynchronously and assign it to the global variable
         Automerge = await import('@automerge/automerge');
         
-        // Forking Paths meta document:
+        // Forking Paths patchHistory document:
         // contains all branches and branch history
         // will probably eventually contain user preferences, etc. 
         console.log('peercount', peerCount)
         if (room && peerCount > 0) {
-            meta = Automerge.init();
+            patchHistory = Automerge.init();
             syncState = Automerge.initSyncState(); // ✅ this must exist here
             console.log("Joining active room. Waiting for sync.");
 
             return
         } else {
-            const saved = await loadDocument(metaKey);
+            const saved = await loadDocument(patchHistoryKey);
             
             if (saved) {
-                meta = Automerge.load(saved);
+                patchHistory = Automerge.load(saved);
             } else {
-                meta = Automerge.from({
+                patchHistory = Automerge.from({
                     title: "Forking Paths Synth",
                     branches: {},
                     branchOrder: [],
@@ -736,8 +736,8 @@ document.addEventListener("DOMContentLoaded", function () {
                         rnboDeviceCache: null,
                     }
                 });
-                console.log("No saved meta found. Starting fresh:", metaKey);
-                await saveDocument(metaKey, Automerge.save(meta));
+                console.log("No saved patchHistory found. Starting fresh:", patchHistoryKey);
+                await saveDocument(patchHistoryKey, Automerge.save(patchHistory));
             }
         }
                 
@@ -745,11 +745,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // * synth changes document
         docID = 'forkingPathsDoc'; // Unique identifier for the document
-        // Load the document from meta's store in IndexedDB or create a new one if it doesn't exist
+        // Load the document from patchHistory's store in IndexedDB or create a new one if it doesn't exist
 
         // amDoc = await loadDocument(docID);
-        // if meta doesn't contain a document, create a new one
-        if (!meta.docs[meta.head.branch]) {
+        // if patchHistory doesn't contain a document, create a new one
+        if (!patchHistory.docs[patchHistory.head.branch]) {
 
             console.log('starting from blank patch')
             amDoc = Automerge.init();
@@ -757,10 +757,10 @@ document.addEventListener("DOMContentLoaded", function () {
             // load synthFile from indexedDB
             // let synthFile = JSON.parse(localStorage.getItem('synthFile'))
             // console.log('synthFile', synthFile)
-            if (meta.synthFile) {
+            if (patchHistory.synthFile) {
                 console.log('here')
                
-                createNewPatchHistory(meta.synthFile)
+                createNewPatchHistory(patchHistory.synthFile)
                 // const firstChangeLabel = synthFile.name
                 // ? `load_synth:${synthFile.name}`
                 // : 'load_synth:unnamed';
@@ -781,18 +781,18 @@ document.addEventListener("DOMContentLoaded", function () {
                 // const hash = Automerge.getHeads(amDoc)[0];
                 // previousHash = hash;
             
-                // meta = Automerge.change(meta, (meta) => {
-                //     meta.branches[config.patchHistory.firstBranchName] = {
+                // patchHistory = Automerge.change(patchHistory, (patchHistory) => {
+                //     patchHistory.branches[config.patchHistory.firstBranchName] = {
                 //         head: hash,
                 //         root: null,
                 //         parent: null,
                 //         history: [{ hash: hash, parent: null, msg: firstChangeLabel }]
                 //     };
                 
-                //     meta.docs[config.patchHistory.firstBranchName] = Automerge.save(amDoc);
-                //     meta.head.branch = config.patchHistory.firstBranchName;
-                //     meta.head.hash = hash;
-                //     meta.branchOrder.push(config.patchHistory.firstBranchName);
+                //     patchHistory.docs[config.patchHistory.firstBranchName] = Automerge.save(amDoc);
+                //     patchHistory.head.branch = config.patchHistory.firstBranchName;
+                //     patchHistory.head.hash = hash;
+                //     patchHistory.branchOrder.push(config.patchHistory.firstBranchName);
                 // });
 
                 // // send doc to history app
@@ -828,24 +828,24 @@ document.addEventListener("DOMContentLoaded", function () {
            
 
             
-                // meta = Automerge.change(meta, (meta) => {
-                //     // Only set up empty branch metadata — no doc yet
-                //     meta.branches[config.patchHistory.firstBranchName] = {
+                // patchHistory = Automerge.change(patchHistory, (patchHistory) => {
+                //     // Only set up empty branch patchHistorydata — no doc yet
+                //     patchHistory.branches[config.patchHistory.firstBranchName] = {
                 //         head: null,
                 //         root: null,
                 //         parent: null,
                 //         history: []
                 //     };
-                //     meta.head.branch = config.patchHistory.firstBranchName;
-                //     meta.head.hash = null;
-                //     meta.branchOrder.push(config.patchHistory.firstBranchName);
+                //     patchHistory.head.branch = config.patchHistory.firstBranchName;
+                //     patchHistory.head.hash = null;
+                //     patchHistory.branchOrder.push(config.patchHistory.firstBranchName);
                 // });
             }
 
         } else {
 
-            // meta does contain at least one document, so grab whichever is the one that was last looked at
-            amDoc = Automerge.load(meta.docs[meta.head.branch]);
+            // patchHistory does contain at least one document, so grab whichever is the one that was last looked at
+            amDoc = Automerge.load(patchHistory.docs[patchHistory.head.branch]);
 
             // wait 1 second before loading content (give the audio worklet a moment to load)
             setTimeout(()=>{
@@ -853,7 +853,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 updateCytoscapeFromDocument(amDoc, 'buildUI');
                 
-                previousHash = meta.head.hash
+                previousHash = patchHistory.head.hash
                 
                 // send doc to history app
                 reDrawHistoryGraph()
@@ -870,13 +870,13 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     })();
     
-    // Set an interval to periodically save meta to IndexedDB
+    // Set an interval to periodically save patchHistory to IndexedDB
     setInterval(async () => {
        
-        // if(meta && syncMessageDataChannel && syncMessageDataChannel.readyState === 'closed'){
-        if(meta && docUpdated){
+        // if(patchHistory && syncMessageDataChannel && syncMessageDataChannel.readyState === 'closed'){
+        if(patchHistory && docUpdated){
             // await saveDocument(docID, Automerge.save(amDoc));
-            await saveDocument(metaKey, Automerge.save(meta));
+            await saveDocument(patchHistoryKey, Automerge.save(patchHistory));
             docUpdated = false
         }
 
@@ -886,11 +886,11 @@ document.addEventListener("DOMContentLoaded", function () {
     function applyChange(doc, changeCallback, onChangeCallback, changeMessage) {
         // in this condition, we are applying a change on the current branch
         if(automergeDocuments.newClone === false ){
-            let amMsg = makeChangeMessage(meta.head.branch, changeMessage)
+            let amMsg = makeChangeMessage(patchHistory.head.branch, changeMessage)
             // we are working from a head
 
             // grab the current hash before making the new change:
-            previousHash = meta.head.hash
+            previousHash = patchHistory.head.hash
             
             // Apply the change using Automerge.change
             amDoc = Automerge.change(amDoc, amMsg, changeCallback);
@@ -900,17 +900,17 @@ document.addEventListener("DOMContentLoaded", function () {
             if (amDoc !== doc && typeof onChangeCallback === 'function') {
                 let hash = Automerge.getHeads(amDoc)[0]
                 
-                meta = Automerge.change(meta, (meta) => {
+                patchHistory = Automerge.change(patchHistory, (patchHistory) => {
 
-                    // Initialize the branch metadata if it doesn't already exist
-                    if (!meta.branches[meta.head.branch]) {
-                        meta.branches[meta.head.branch] = { head: null, history: [] };
+                    // Initialize the branch patchHistorydata if it doesn't already exist
+                    if (!patchHistory.branches[patchHistory.head.branch]) {
+                        patchHistory.branches[patchHistory.head.branch] = { head: null, history: [] };
                     }
                     // Update the head property
-                    meta.branches[meta.head.branch].head = hash;
+                    patchHistory.branches[patchHistory.head.branch].head = hash;
 
                     // Push the new history entry into the existing array
-                    meta.branches[meta.head.branch].history.push({
+                    patchHistory.branches[patchHistory.head.branch].history.push({
                         hash: hash,
                         parent: previousHash,
                         msg: changeMessage,
@@ -919,11 +919,11 @@ document.addEventListener("DOMContentLoaded", function () {
                     });
 
                     // encode the doc as a binary object for efficiency
-                    meta.docs[meta.head.branch] = Automerge.save(amDoc)
+                    patchHistory.docs[patchHistory.head.branch] = Automerge.save(amDoc)
                     // store the HEAD info
-                    meta.head.hash = hash
-                    meta.timeStamp = new Date().getTime()
-                    //? meta.head.branch = amDoc.title
+                    patchHistory.head.hash = hash
+                    patchHistory.timeStamp = new Date().getTime()
+                    //? patchHistory.head.branch = amDoc.title
                     
                 });
                 
@@ -935,19 +935,19 @@ document.addEventListener("DOMContentLoaded", function () {
             // player has made changes to an earlier version, so create a branch and set amDoc to new clone
 
             // store previous amDoc in automergeDocuments, and its property is the hash of its head
-            automergeDocuments.otherDocs[meta.head.branch] = amDoc
+            automergeDocuments.otherDocs[patchHistory.head.branch] = amDoc
             // set amDoc to current cloned doc
             amDoc = Automerge.clone(automergeDocuments.current.doc)
 
             // create a new branch name
             const newBranchName = uuidv7();
             // use the new branch title
-            let amMsg = makeChangeMessage(meta.head.branch, changeMessage)
+            let amMsg = makeChangeMessage(patchHistory.head.branch, changeMessage)
 
             // grab the current hash before making the new change:
             previousHash = Automerge.getHeads(amDoc)[0]
             //! if any issues with graph arise, try switching above code to this:
-            //! previousHash = meta.head.hash
+            //! previousHash = patchHistory.head.hash
             
             // Apply the change using Automerge.change
             amDoc = Automerge.change(amDoc, amMsg, changeCallback);
@@ -956,10 +956,10 @@ document.addEventListener("DOMContentLoaded", function () {
             // If there was a change, call the onChangeCallback
             if (amDoc !== doc && typeof onChangeCallback === 'function') {   
                 const timestamp = new Date().getTime()
-                meta = Automerge.change(meta, (meta) => {
+                patchHistory = Automerge.change(patchHistory, (patchHistory) => {
 
                     // create the branch
-                    meta.branches[newBranchName] = {
+                    patchHistory.branches[newBranchName] = {
                         head: hash,
                         parent: previousHash,
                         history: [{
@@ -971,16 +971,16 @@ document.addEventListener("DOMContentLoaded", function () {
                     }
 
                     // store current doc
-                    meta.docs[newBranchName] = Automerge.save(amDoc)
+                    patchHistory.docs[newBranchName] = Automerge.save(amDoc)
                     
                     // store the HEAD info
-                    meta.head.hash = hash
-                    meta.head.branch = newBranchName
+                    patchHistory.head.hash = hash
+                    patchHistory.head.branch = newBranchName
 
-                    meta.timeStamp = timestamp
+                    patchHistory.timeStamp = timestamp
 
                     // store the branch name so that we can ensure its ordering later on
-                    meta.branchOrder.push(newBranchName)
+                    patchHistory.branchOrder.push(newBranchName)
                 });
                
                 // makeBranch(changeMessage, Automerge.getHeads(newDoc)[0])
@@ -1117,7 +1117,7 @@ document.addEventListener("DOMContentLoaded", function () {
         
         // deletes the document in the indexedDB instance
         deleteDocument(docID)
-        deleteDocument('meta')
+        deleteDocument('patchHistory')
         updateSynthWorklet('clearGraph')
         // ensure their container divs are removed too
         clearparamContainerDivs()
@@ -1139,8 +1139,8 @@ document.addEventListener("DOMContentLoaded", function () {
         // ensure their container divs are removed too
         clearparamContainerDivs()
 
-        let metaJSON = {
-            title: "Forking Paths System",
+        let patchHistoryJSON = {
+            title: "Forking Paths Patch History",
             branches: {},
             branchOrder: [],
             docs: {},
@@ -1163,27 +1163,27 @@ document.addEventListener("DOMContentLoaded", function () {
 
         }
         if(synthFile){
-            metaJSON.synthFile = synthFile
-        } else if (meta.synthFile){
+            patchHistoryJSON.synthFile = synthFile
+        } else if (patchHistory.synthFile){
             // if a synth file had been previously loaded, load it again
-            metaJSON.synthFile = meta.synthFile
-            synthFile = meta.synthFile
+            patchHistoryJSON.synthFile = patchHistory.synthFile
+            synthFile = patchHistory.synthFile
         }
 
-        meta = Automerge.from(metaJSON)
+        patchHistory = Automerge.from(patchHistoryJSON)
 
         amDoc = Automerge.init();
 
-        if(synthFile || meta.synthFile){
+        if(synthFile || patchHistory.synthFile){
 
-            if(!meta.synthFile) { synthFile = meta.synthFile }
+            if(!patchHistory.synthFile) { synthFile = patchHistory.synthFile }
 
             let amMsg = makeChangeMessage(config.patchHistory.firstBranchName, `loaded${synthFile.filename}`)
             // Apply initial changes to the new document
             amDoc = Automerge.change(amDoc, amMsg, (amDoc) => {
                 amDoc.title = config.patchHistory.firstBranchName;
                 amDoc.elements = [ ] 
-                meta.synthFile.visualGraph.elements.nodes.forEach((node)=>{
+                patchHistory.synthFile.visualGraph.elements.nodes.forEach((node)=>{
                     amDoc.elements.push(node)
                 })
                 
@@ -1204,14 +1204,14 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
                 // create overlays
                 if(node.classes === 'paramAnchorNode'){
-                    let value = meta.synthFile.audioGraph.modules[node.data.parent].params[node.data.label]
+                    let value = patchHistory.synthFile.audioGraph.modules[node.data.parent].params[node.data.label]
                     createFloatingOverlay(node.data.parent, node, index, value)
             
                     // index++
                 }
             })
             // load synth graph from file into cytoscape
-            synthGraphCytoscape.json(meta.synthFile.visualGraph)
+            synthGraphCytoscape.json(patchHistory.synthFile.visualGraph)
 
             setTimeout(() => {
                 updateKnobPositionAndScale('all');
@@ -1220,7 +1220,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }, 10); // Wait for the current rendering cycle to complete
         } else { 
             console.log('non synthFile')
-            console.warn('synthFile nor meta.synthFile not found')
+            console.warn('synthFile nor patchHistory.synthFile not found')
             // let amMsg = makeChangeMessage(config.patchHistory.firstBranchName, 'blank_patch')
             // // Apply initial changes to the new document
             // amDoc = Automerge.change(amDoc, amMsg, (amDoc) => {
@@ -1246,8 +1246,8 @@ document.addEventListener("DOMContentLoaded", function () {
         if (synthFile){
             msg = synthFile.filename
         }
-        meta = Automerge.change(meta, (meta) => {
-            meta.branches[config.patchHistory.firstBranchName] = {
+        patchHistory = Automerge.change(patchHistory, (patchHistory) => {
+            patchHistory.branches[config.patchHistory.firstBranchName] = {
                 head: hash,
                 root: null,
                 parent: null,
@@ -1256,25 +1256,25 @@ document.addEventListener("DOMContentLoaded", function () {
             }
             
             // encode the doc as a binary object for efficiency
-            meta.docs[config.patchHistory.firstBranchName] = Automerge.save(amDoc)
-            meta.head.branch = config.patchHistory.firstBranchName
-            meta.head.hash = hash 
-            meta.branchOrder.push(meta.head.branch)
-            meta.synthFile = synthFile
+            patchHistory.docs[config.patchHistory.firstBranchName] = Automerge.save(amDoc)
+            patchHistory.head.branch = config.patchHistory.firstBranchName
+            patchHistory.head.hash = hash 
+            patchHistory.branchOrder.push(patchHistory.head.branch)
+            patchHistory.synthFile = synthFile
             
         });     
             
         docUpdated = true
-        previousHash = meta.head.hash
+        previousHash = patchHistory.head.hash
         // send doc to history app
         reDrawHistoryGraph()
 
         // addSpeaker()
     }
-    // save forking paths doc (meta) to disk
+    // save forking paths doc (patchHistory) to disk
     function saveAutomergeDocument(fileName) {
         // Generate the binary format of the Automerge document
-        const binaryData = Automerge.save(meta);
+        const binaryData = Automerge.save(patchHistory);
 
         // Create a Blob object for the binary data
         const blob = new Blob([binaryData], { type: 'application/octet-stream' });
@@ -1296,7 +1296,7 @@ document.addEventListener("DOMContentLoaded", function () {
         URL.revokeObjectURL(url); // Release memory
     }
 
-    // save meta to user's computer as .patchhistory
+    // save patchHistory to user's computer as .patchhistory
     async function saveFile(suggestedFilename) {
         // Show the file save dialog
         const fileName = await window.showSaveFilePicker({
@@ -1310,7 +1310,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
         
         // Create a Blob object for the binary data
-        const blob = new Blob([Automerge.save(meta)], { type: 'application/octet-stream' });
+        const blob = new Blob([Automerge.save(patchHistory)], { type: 'application/octet-stream' });
 
         // Create a URL for the Blob
         const url = URL.createObjectURL(blob);
@@ -1330,7 +1330,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // // Write the content to the file
         // const writable = await fileHandle.createWritable();
-        // await writable.write(Automerge.save(meta));
+        // await writable.write(Automerge.save(patchHistory));
         // await writable.close();
     }
 
@@ -1449,7 +1449,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 
                 
             // I do this from the synthFile because the parentNodes' dimensions respond to their childs' positioning
-            synthGraphCytoscape.json(meta.synthFile)
+            synthGraphCytoscape.json(patchHistory.synthFile)
             // Sync the positions in `elements`
             const syncedElements = syncPositions(forkedDoc);
             // add all cables back in with a check to make sure we don't render edges to empty parent nodes
@@ -1594,13 +1594,13 @@ document.addEventListener("DOMContentLoaded", function () {
     */
  
     function reDrawHistoryGraph(){
-        metaIsDirty = true
+        patchHistoryIsDirty = true
         // if(!throttleSend){
             
         //     sendMsgToHistoryApp({
         //         appID: 'forkingPathsMain',
         //         cmd: 'reDrawHistoryGraph',
-        //         data: meta
+        //         data: patchHistory
                     
         //     })
         //     throttleSend = true
@@ -1609,7 +1609,7 @@ document.addEventListener("DOMContentLoaded", function () {
         sendMsgToHistoryApp({
             appID: 'forkingPathsMain',
             cmd: 'reDrawHistoryGraph',
-            data: meta
+            data: patchHistory
                 
         })
     }
@@ -1620,11 +1620,11 @@ document.addEventListener("DOMContentLoaded", function () {
         let doc2 = nodes[1]
         // load historical views of both docs
 
-        let head1 = meta.branches[doc1.branch].head
+        let head1 = patchHistory.branches[doc1.branch].head
         let requestedDoc1 = loadAutomergeDoc(doc1.branch)
         // const historicalView1 = Automerge.view(requestedDoc1, [doc1.id]);
 
-        let head2 = meta.branches[doc2.branch].head
+        let head2 = patchHistory.branches[doc2.branch].head
         let requestedDoc2 = loadAutomergeDoc(doc2.branch)
         // const historicalView2 = Automerge.view(requestedDoc2, [doc2.id]);
 
@@ -1634,7 +1634,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         
         // store previous amDoc in automergeDocuments, and its property is the hash of its head
-        //? automergeDocuments.otherDocs[meta.head.branch] = amDoc
+        //? automergeDocuments.otherDocs[patchHistory.head.branch] = amDoc
 
         // grab the current hash before making the new change:
         // previousHash = Automerge.getHeads(amDoc)[0]
@@ -1653,32 +1653,32 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const newBranchName = uuidv7()
 
-        meta = Automerge.change(meta, (meta) => {
+        patchHistory = Automerge.change(patchHistory, (patchHistory) => {
 
-            // Initialize the branch metadata if it doesn't already exist
-            if (!meta.branches[newBranchName]) {
-                meta.branches[newBranchName] = { head: null, parent: null, history: [] };
+            // Initialize the branch patchHistorydata if it doesn't already exist
+            if (!patchHistory.branches[newBranchName]) {
+                patchHistory.branches[newBranchName] = { head: null, parent: null, history: [] };
                 
             }
 
             // Update the head property
-            meta.branches[newBranchName].head = hash;
+            patchHistory.branches[newBranchName].head = hash;
 
             // Push the new history entry into the existing array
-            meta.branches[newBranchName].history.push({
+            patchHistory.branches[newBranchName].history.push({
                 hash: hash,
                 msg: 'merge',
                 parent: hashes
             });
             // store current doc
-            meta.docs[newBranchName] = Automerge.save(amDoc)
+            patchHistory.docs[newBranchName] = Automerge.save(amDoc)
             
             // store the HEAD info
-            meta.head.hash = hash
-            meta.head.branch = newBranchName
+            patchHistory.head.hash = hash
+            patchHistory.head.branch = newBranchName
 
             // store the branch name so that we can ensure its ordering later on
-            meta.branchOrder.push(newBranchName)
+            patchHistory.branchOrder.push(newBranchName)
         });
 
         // set docUpdated so that indexedDB will save it
@@ -1700,7 +1700,7 @@ document.addEventListener("DOMContentLoaded", function () {
     async function loadVersionWithGestureDataPoint(targetHash, branch, gestureDataPoint){
 
         // get the head from this branch
-        let head = meta.branches[branch].head
+        let head = patchHistory.branches[branch].head
 
         let requestedDoc = loadAutomergeDoc(branch)
 
@@ -1735,7 +1735,7 @@ document.addEventListener("DOMContentLoaded", function () {
     async function loadVersion(targetHash, branch, fromPeer) {
 
         // get the head from this branch
-        let head = meta.branches[branch].head
+        let head = patchHistory.branches[branch].head
         // get the automerge doc associated with the requested hash
         let requestedDoc = loadAutomergeDoc(branch)
 
@@ -1767,11 +1767,11 @@ document.addEventListener("DOMContentLoaded", function () {
             updateSynthWorklet('loadVersion', historicalView.synth.graph)
             // send the visual graph from this point in the history to the synth cytoscape
             updateCytoscapeFromDocument(historicalView);
-            // update meta to set the current head and change hash
-            meta = Automerge.change(meta, (meta) => {
+            // update patchHistory to set the current head and change hash
+            patchHistory = Automerge.change(patchHistory, (patchHistory) => {
                 // store the HEAD info (the most recent HEAD and branch that were viewed or operated on)
-                meta.head.hash = targetHash
-                meta.head.branch = branch
+                patchHistory.head.hash = targetHash
+                patchHistory.head.branch = branch
             });
             // set global var for easy checking
             automergeDocuments.current = {
@@ -1782,7 +1782,7 @@ document.addEventListener("DOMContentLoaded", function () {
         } 
 
         // this is necessary for loading a hash on another branch that ISN'T the head
-        else if (branch != meta.head.branch) {
+        else if (branch != patchHistory.head.branch) {
             // send the synth graph from this point in the history to the DSP worklet first
             updateSynthWorklet('loadVersion', historicalView.synth.graph, null, historicalView.changeType)
             // send the visual graph from this point in the history to the synth cytoscape
@@ -1791,11 +1791,11 @@ document.addEventListener("DOMContentLoaded", function () {
             automergeDocuments.current = {
                 doc: requestedDoc
             }
-            // update meta to set the current head and change hash
-            meta = Automerge.change(meta, (meta) => {
+            // update patchHistory to set the current head and change hash
+            patchHistory = Automerge.change(patchHistory, (patchHistory) => {
                 // store the HEAD info (the most recent HEAD and branch that were viewed or operated on)
-                meta.head.hash = targetHash
-                meta.head.branch = branch
+                patchHistory.head.hash = targetHash
+                patchHistory.head.branch = branch
             });
             // set newClone to true
             automergeDocuments.newClone = true
@@ -1830,7 +1830,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         if (recallMode === 'requestOpenLoadVersion'  && !fromPeer) {
-            // requestVersionRecallWithPermission(amDoc, Automerge.getHeads(amDoc)[0], meta.head.branch);
+            // requestVersionRecallWithPermission(amDoc, Automerge.getHeads(amDoc)[0], patchHistory.head.branch);
             console.warn('not set up yet')
         }
 
@@ -2050,7 +2050,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // syncState = Automerge.initSyncState();
             let msg = Uint8Array | null
             // Generate a sync message from the current doc and sync state.
-            ;[syncState, msg] = Automerge.generateSyncMessage(meta, syncState);
+            ;[syncState, msg] = Automerge.generateSyncMessage(patchHistory, syncState);
             // syncState = newSyncState; // update sync state with any changes from generating a message
             
             if(msg != null){
@@ -2063,11 +2063,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function updateFromSyncMessage(branch, hash){
         if(!branch){
-            branch = meta.head.branch
+            branch = patchHistory.head.branch
         }
 
         if(!hash){
-            hash = meta.head.hash
+            hash = patchHistory.head.hash
         }
         // set docUpdated so that indexedDB will save it
         docUpdated = true
@@ -3071,12 +3071,12 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             try {
-                [meta, syncState] = Automerge.receiveSyncMessage(meta, syncState, incomingData);
+                [patchHistory, syncState] = Automerge.receiveSyncMessage(patchHistory, syncState, incomingData);
                 
-                const syncBranch = meta.head?.branch;
-                const syncHash = meta.head?.hash;
+                const syncBranch = patchHistory.head?.branch;
+                const syncHash = patchHistory.head?.hash;
                 
-                if (syncBranch && syncHash && meta.docs?.[syncBranch]) {
+                if (syncBranch && syncHash && patchHistory.docs?.[syncBranch]) {
                   updateFromSyncMessage(syncBranch, syncHash);
                 } else {
                   console.warn("Sync message received but state incomplete — skipping update.");
@@ -3259,7 +3259,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 sendMsgToHistoryApp({
                     appID: 'forkingPathsMain',
                     cmd: 'reDrawHistoryGraph',
-                    data: meta
+                    data: patchHistory
                         
                 })
                 
@@ -3293,14 +3293,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
             break
             case 'updateSequencer':
-                meta = Automerge.change(meta, (meta) => {
-                    meta.sequencer[event.data.setting] = event.data.data
+                patchHistory = Automerge.change(patchHistory, (patchHistory) => {
+                    patchHistory.sequencer[event.data.setting] = event.data.data
                 });
 
                 sendMsgToHistoryApp({
                     appID: 'forkingPathsMain',
                     cmd: 'sequencerUpdate',
-                    data: meta
+                    data: patchHistory
                         
                 })
             break
@@ -3312,7 +3312,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             case 'getGestureData':
                 // get the head from this branch
-                let head = meta.branches[event.data.data.branch].head
+                let head = patchHistory.branches[event.data.data.branch].head
 
                 let gestureDoc = loadAutomergeDoc(event.data.data.branch)
 
@@ -3679,20 +3679,21 @@ document.addEventListener("DOMContentLoaded", function () {
         reader.onload = function (e) {
             const binaryData = new Uint8Array(e.target.result); // Convert to Uint8Array
             try {
+                console.log('loading', binaryData)
                 // Load the Automerge document
-                meta = Automerge.load(binaryData);
-                amDoc = Automerge.load(meta.docs.main)
+                patchHistory = Automerge.load(binaryData);
+                amDoc = Automerge.load(patchHistory.docs.main)
 
                 updateCytoscapeFromDocument(amDoc, 'buildUI');
             
-                previousHash = meta.head.hash
+                previousHash = patchHistory.head.hash
                 
                 reDrawHistoryGraph()
     
                 // set the document branch (aka title)  in the editor pane
                 // document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
 
-                saveDocument(metaKey, Automerge.save(meta));
+                saveDocument(patchHistoryKey, Automerge.save(patchHistory));
                 // enable new history button now that a synth has been loaded
                 UI.menus.file.newPatchHistory.disabled = false
             } catch (err) {
@@ -3740,7 +3741,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
     // // get .fpsynth files from user's filesystem
     // document.getElementById('loadDemoSynthButton').addEventListener('click', async (event) => {
-    //     let file = await fetch(`/assets/synths/${import.meta.env.VITE_FIRST_SYNTH}.fpsynth`).json()
+    //     let file = await fetch(`/assets/synths/${import.patchHistory.env.VITE_FIRST_SYNTH}.fpsynth`).json()
     
     //     console.log(file)
     //     if (!file) {
@@ -3825,9 +3826,9 @@ document.addEventListener("DOMContentLoaded", function () {
         // check if browser supports the File System Access API
         if(!!window.showSaveFilePicker){
             
-            saveFile("filename.forkingpaths");
+            saveFile("filename");
         } else {
-            saveAutomergeDocument('session.forkingpaths');
+            saveAutomergeDocument('session');
         }
         
     });
@@ -3837,8 +3838,8 @@ document.addEventListener("DOMContentLoaded", function () {
     // const radioButtons = document.querySelectorAll('input[name="traversalMode"]');
     // radioButtons.forEach((radio) => {
     //     radio.addEventListener('change', (event) => {
-    //         meta = Automerge.change(meta, (meta) =>{
-    //             meta.sequencer.traversalMode = event.target.value  
+    //         patchHistory = Automerge.change(patchHistory, (patchHistory) =>{
+    //             patchHistory.sequencer.traversalMode = event.target.value  
     //         })
     //     });
     // });
@@ -4998,8 +4999,8 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function loadAutomergeDoc(branch){
-        if (!meta.docs[branch]) throw new Error(`Branchname ${branch} not found`);
-        return Automerge.load(meta.docs[branch]); // Load the document
+        if (!patchHistory.docs[branch]) throw new Error(`Branchname ${branch} not found`);
+        return Automerge.load(patchHistory.docs[branch]); // Load the document
     }
 
     function removeLastInstanceById(array, id) {
@@ -5014,16 +5015,16 @@ document.addEventListener("DOMContentLoaded", function () {
     // messages to historyCy throttling
     setInterval(() => {
         throttleSend = false
-        if(metaIsDirty){
+        if(patchHistoryIsDirty){
             sendMsgToHistoryApp({
                 appID: 'forkingPathsMain',
                 cmd: 'reDrawHistoryGraph',
-                data: meta
+                data: patchHistory
                     
             })
         }
 
-        metaIsDirty = false
+        patchHistoryIsDirty = false
     }, config.appCommunication.throttleInterval); // Attempt to send updates every interval
 
 

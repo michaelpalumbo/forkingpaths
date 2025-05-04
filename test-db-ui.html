@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Forking Paths DB Test UI</title>
+</head>
+<body>
+  <h1>🎛 Forking Paths Patch Storage UI</h1>
+
+  <section>
+    <h2>Upload Synth Template (.fpsynth)</h2>
+    <input type="file" id="fpsynthFile">
+    <input type="text" id="synthName" placeholder="Name">
+    <input type="text" id="synthAuthor" placeholder="Author">
+    <input type="text" id="synthTags" placeholder="Tags (comma-separated)">
+    <textarea id="synthDesc" placeholder="Description"></textarea>
+    <button onclick="uploadSynth()">Upload Synth Template</button>
+  </section>
+
+  <section>
+    <h2>Upload Patch History</h2>
+    <input type="text" id="patchTitle" placeholder="Patch Title">
+    <input type="text" id="patchAuthor" placeholder="Author(s, comma-separated)">
+    <input type="text" id="patchTags" placeholder="Tags">
+    <textarea id="patchDesc" placeholder="Description"></textarea>
+    <input type="number" id="templateId" placeholder="Synth Template ID">
+    <input type="file" id="patchFile">
+    <button onclick="uploadPatch()">Upload Patch History</button>
+  </section>
+
+  <section>
+    <h2>Saved Patch Histories</h2>
+    <button onclick="fetchPatches()">Refresh</button>
+    <ul id="patchList"></ul>
+  </section>
+
+  <section>
+    <h2>Saved Synth Templates</h2>
+    <button onclick="fetchSynths()">Refresh</button>
+    <ul id="synthList"></ul>
+  </section>
+
+  <script>
+    async function uploadSynth() {
+      const file = document.getElementById('fpsynthFile').files[0];
+      if (!file) return alert('No file selected');
+      const content = await file.text();
+
+      const payload = {
+        name: document.getElementById('synthName').value,
+        author: document.getElementById('synthAuthor').value,
+        description: document.getElementById('synthDesc').value,
+        tags: document.getElementById('synthTags').value.split(',').map(t => t.trim()),
+        synth_json: JSON.parse(content)
+      };
+
+      const res = await fetch('/api/synthFiles', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+      alert('Saved with ID: ' + data.synthFileId);
+    }
+
+    async function uploadPatch() {
+      const file = document.getElementById('patchFile').files[0];
+      if (!file) return alert('No patch file selected');
+      const buffer = await file.arrayBuffer();
+      const binary = new Uint8Array(buffer);
+      const base64 = btoa(String.fromCharCode(...binary));
+
+      const payload = {
+        title: document.getElementById('patchTitle').value,
+        description: document.getElementById('patchDesc').value,
+        authors: document.getElementById('patchAuthor').value.split(',').map(a => a.trim()),
+        tags: document.getElementById('patchTags').value.split(',').map(t => t.trim()),
+        visibility: 'public',
+        patchHistoryBase64: base64,
+        synth_template_id: parseInt(document.getElementById('templateId').value)
+      };
+
+      const res = await fetch('/api/patchHistories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+      alert('Patch saved with ID: ' + data.patchHistoryId);
+    }
+
+    async function fetchPatches() {
+      const res = await fetch('/api/patchHistories');
+      const data = await res.json();
+      const ul = document.getElementById('patchList');
+      ul.innerHTML = '';
+      data.forEach(p => {
+        const li = document.createElement('li');
+        li.textContent = `ID ${p.id}: ${p.title} (by ${p.authors.join(', ')})`;
+        ul.appendChild(li);
+      });
+    }
+
+    async function fetchSynths() {
+      const res = await fetch('/api/synthFiles');
+      const data = await res.json();
+      const ul = document.getElementById('synthList');
+      ul.innerHTML = '';
+      data.forEach(t => {
+        const li = document.createElement('li');
+        li.textContent = `ID ${t.id}: ${t.name} (by ${t.author})`;
+        ul.appendChild(li);
+      });
+    }
+  </script>
+</body>
+</html>
