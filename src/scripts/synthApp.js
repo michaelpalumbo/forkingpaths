@@ -268,6 +268,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 file: {
                     loadDemoSynth: document.getElementById('loadDemoSynthButton'),
                     loadSynthFile: document.getElementById('loadSynthButton'), 
+                    openSynthBrowser: document.getElementById('openSynthBrowser'),
                     
                     newPatchHistory: document.getElementById('newPatchHistory'),
                     loadPatchHistory: document.getElementById('loadPatchHistory'),
@@ -311,6 +312,11 @@ document.addEventListener("DOMContentLoaded", function () {
                         button: document.getElementById("workspaceAndCollabPanelHelp"),
                         close: document.getElementById("closeWorkspaceAndCollabPanelHelpOverlay")
                     }
+                },
+                synthBrowser: {
+                    
+                    overlay: document.getElementById("synthBrowserOverlay"),
+                    close: document.getElementById("closeSynthBrowserOverlay")
                 }
             }
         }
@@ -2611,8 +2617,9 @@ document.addEventListener("DOMContentLoaded", function () {
         // const sr = synthWorklet.getSampleRate()
   
     }, 1000);
-    
-    
+
+
+
 // Toggle the visibility of the settings overlay
     function toggleSettingsOverlay() {
         
@@ -3712,7 +3719,16 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     // load the demo synth from /public/assets
+    
 
+    function toggleSynthBrowserOverlay(){
+        UI.overlays.synthBrowser.overlay.style.display = UI.overlays.synthBrowser.overlay.style.display === 'flex' ? 'none' : 'flex';
+    }
+
+    UI.overlays.synthBrowser.close.addEventListener('click', toggleSynthBrowserOverlay);
+    
+    UI.menus.file.openSynthBrowser.addEventListener('click', toggleSynthBrowserOverlay)
+    
     UI.menus.file.loadDemoSynth.addEventListener('click', async (event) => {
         try {
             // Fetch the JSON file (with a custom extension)
