@@ -6,6 +6,11 @@
 **!**
 **!**
 
+DONE: add hand drawn patch notes to the grey area of the cytoscape viewport. it's like the marginalia (you directly cite on marginalia for this, and its like graffiti as a way to communicate -- also like patch diagrams)
+
+randomize button -- randomly patches cables (including one that ensures output to speaker) and random param values. this is represented by howver many changes available. 
+
+
 query tool + graph analysis: graph analysis: https://networkx.org/ (very lightweight, much, much better at it than cytoscape i.e. cytoscape excels at rendering, networkx is for analysis)
 
 query tool: make it so users can select multiple options (i.e. selected module changes & cable changes = only the cable changes of that selected module)
@@ -24,23 +29,20 @@ gesture editor: gestures can be trimmed, extended, or otherwise shaped before re
 
 sequencer: when playing a gesture as a step, load that gesture into the editor
 
-sequencer: save sequencer state (all steps and their settings) as a change node. (then experiment with ways to add this AS a step in another sequencer)
+DONE: sequencer: save sequencer state (all steps and their settings) as a change node. (then experiment with ways to add this AS a step in another sequencer)
+
+
+graffiti mode for FP: whoever is the last player to touch a knob, colour the knob as that user’s colour. this can also be useful within the graph history. (cite the multiplayer pd project that we cite in the JNMR article)
 
 legibility: after saving a gesture, its node is highlighted. but if you click another node, the first node remains highlighted (should unhighlight)
 
 chris vanderwees asked about creating changeNodes based on analysis of the graph (in other words, machine agency based on affordances of the patch history)
 
+DONE hold down a number 1 through 5 when making a cable sets the colour of the ghost cable (and the subsequent connected cable). then make sure to represent the cable's colour in the history graph (but only if the player intended to set the colour, so we need a prop for random vs player-set colours)
 
 **priority: when creating merges, when you hover over it, you should have info on the 2 parent changes (what their change nodes are)**
 
-
 go through script src tags in html and download them. put in dir so that player can use the app offline?
-
-lit review:
-
-look into Mental time travel by endel tulving (u of t psychologist) (someone at freq freaks recommended him)
-
-
 
 # Feature: Nested Sequencer Playback via ChangeNode
 

@@ -319,6 +319,19 @@ input[type="text"] {
   text-align: center;
 }
 
+.done-overlay {
+  background: #00aaff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+.done-overlay:hover {
+  background: #555;
+}
 /* Close button */
 .close-overlay {
   background: #333;
@@ -334,3 +347,26 @@ input[type="text"] {
   background: #555;
 }
 
+/* Improve visibility for text inputs and textarea in the overlay */
+#saveOverlay input[type="text"],
+#saveOverlay textarea {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+/* Improve visibility for text inputs and textarea in the overlay */
+#saveOverlay input[type="text"],
+#saveOverlay textarea {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  box-sizing: border-box;
+}

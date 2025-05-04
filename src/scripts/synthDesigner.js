@@ -10,7 +10,11 @@ import { marked } from 'marked'
 import 'jquery-knob';   // Import jQuery Knob plugin
 import { computePosition, flip, shift } from '@floating-ui/dom';
 import { config } from '../../config/forkingPathsConfig.js';
-
+import { uuidv7 } from "uuidv7";
+// Use the correct protocol based on your site's URL
+const VITE_WS_URL = import.meta.env.VITE_WS_URL
+// const VITE_WS_URL = "wss://historygraphrenderer.onrender.com/10000"
+const ws = new WebSocket(VITE_WS_URL);
 
 // * UI
 const baseKnobSize = config.UI.knob.baseKnobSize; // Default size in pixels
@@ -56,37 +60,24 @@ let synthGraph = {
 
 document.addEventListener("DOMContentLoaded", function () {
 
-    document.getElementById('viewReadme').addEventListener('click', () => {
-        fetch('./README.md') // Fetch the README file
-            .then(response => response.text())
-            .then(markdown => {
-                const html = marked(markdown); // Convert Markdown to HTML
-                const newTab = window.open(); // Open a new tab
-                newTab.document.write(`
-                    <!DOCTYPE html>
-                    <html lang="en">
-                    <head>
-                        <meta charset="UTF-8">
-                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                        <title>README</title>
-                        <style>
-                            body { font-family: Arial, sans-serif; line-height: 1.6; margin: 20px; }
-                            pre { background: #f4f4f4; padding: 10px; border-radius: 5px; overflow: auto; }
-                            code { background: #f4f4f4; padding: 2px 4px; border-radius: 3px; }
-                            h1, h2, h3, h4, h5, h6 { margin-top: 1.5em; }
-                            a { color: #0366d6; text-decoration: none; }
-                            a:hover { text-decoration: underline; }
-                        </style>
-                    </head>
-                    <body>
-                        ${html}
-                    </body>
-                    </html>
-                `);
-                newTab.document.close();
-            })
-            .catch(err => console.error('Error fetching README:', err));
+
+
+    const urlParams = new URLSearchParams(window.location.search);
+
+    ws.addEventListener('open', () => {
+        console.log('Connected to WS server');
     });
+      
+    ws.addEventListener('message', (event) => {
+        const data = JSON.parse(event.data);
+        console.log('Message from server:', data);
+    });
+    
+    function sendMsgToServer(msg){
+        // send a message
+        ws.send(msg);
+    }
+
 
 
     //*
@@ -475,12 +466,12 @@ document.addEventListener("DOMContentLoaded", function () {
     
 // Toggle the visibility of the settings overlay
     function toggleSettingsOverlay() {
-        const overlay = document.getElementById('settingsOverlay');
+        const overlay = document.getElementById('saveOverlay');
         overlay.style.display = overlay.style.display === 'flex' ? 'none' : 'flex';
     }
 
     // Add event listener for the settings button
-    document.getElementById('settingsButton').addEventListener('click', toggleSettingsOverlay);
+    document.getElementById('saveButton').addEventListener('click', toggleSettingsOverlay);
 
     const closeOverlayButton = document.getElementById('closeOverlayButton');
     closeOverlayButton.addEventListener('click', toggleSettingsOverlay);
@@ -849,7 +840,6 @@ document.addEventListener("DOMContentLoaded", function () {
         updateKnobPositionAndScale('node', node)
     });
 
-
     cy.off('add');
 
     // Reference the module library list element
@@ -889,56 +879,73 @@ document.addEventListener("DOMContentLoaded", function () {
     });
     
     // get .fpsynth files from user's filesystem
-    document.getElementById('fileInput').addEventListener('change', async (event) => {
-        console.log(event.target)
-        const file = event.target.files[0];
+    // document.getElementById('fileInput').addEventListener('change', async (event) => {
+    //     console.log(event.target)
+    //     const file = event.target.files[0];
     
-        if (!file) {
-            alert('No file selected');
-            return;
-        }
+    //     if (!file) {
+    //         alert('No file selected');
+    //         return;
+    //     }
     
-        // Ensure the file is a valid Automerge binary (based on extension or type)
-        if (!file.name.endsWith('.fpsynth')) {
-            alert('Invalid file type. Please select a .fpsynth file.');
-            return;
-        }
+    //     // Ensure the file is a valid Automerge binary (based on extension or type)
+    //     if (!file.name.endsWith('.fpsynth')) {
+    //         alert('Invalid file type. Please select a .fpsynth file.');
+    //         return;
+    //     }
     
-        const reader = new FileReader();
+    //     const reader = new FileReader();
     
-        reader.onload = () => {
-            try {
-                // Parse the JSON data
-                const jsonData = JSON.parse(reader.result);
+    //     reader.onload = () => {
+    //         try {
+    //             // Parse the JSON data
+    //             const jsonData = JSON.parse(reader.result);
 
-                loadSynthGraphFromFile(jsonData.visualGraph)
+    //             loadSynthGraphFromFile(jsonData.visualGraph)
 
-            } catch (error) {
-                console.error("Failed to parse JSON:", error);
+    //         } catch (error) {
+    //             console.error("Failed to parse JSON:", error);
+    //         }
+    //     };
+    //     reader.onerror = () => {
+    //         console.error("Error reading the file:", reader.error);
+    //     };
+
+    //     // Start reading the file
+    //     reader.readAsText(file);
+        
+    // });
+
+    async function storeFPSYNTH() {  
+        
+        const payload = {
+            name: document.getElementById('synthName').value || `synth_${uuidv7().split('-')[0]}`,
+            author: urlParams.get('username') || 'anonymous',
+            description: document.getElementById('synthDesc').value,
+            tags: document.getElementById('synthTags').value.split(',').map(t => t.trim()),
+            synth_json: {
+                filename: document.getElementById('synthName').value,
+                visualGraph: cy.json(),
+                paramUIOverlays: paramUIOverlays,
+                audioGraph: synthGraph
             }
         };
-        reader.onerror = () => {
-            console.error("Error reading the file:", reader.error);
-        };
-
-        // Start reading the file
-        reader.readAsText(file);
-        
-    });
-
-    
-    
-    // save forking paths files to user's file system
-    document.getElementById("saveButton").addEventListener("click", () => {
-        // check if browser supports the File System Access API
-        if(!!window.showSaveFilePicker){
-            saveFile("filename.fpsynth");
-        } else {
-            
-            saveSynth('filename.fpsynth');
-        }
-        
-    });
+  
+        sendMsgToServer(JSON.stringify({
+            cmd: 'saveSynth',
+            data: payload
+        }))
+        // const res = await fetch('/api/synthFiles', {
+        //   method: 'POST',
+        //   headers: { 'Content-Type': 'application/json' },
+        //   body: JSON.stringify(payload)
+        // });
+  
+        // const data = await res.json();
+        // alert('Saved with ID: ' + data.synthFileId);
+    }
+    // // save forking paths files to user's file system
+    document.getElementById("storeFPSYNTHButton").addEventListener("click", storeFPSYNTH);
 
     // Listen for drag events on nodes
     cy.on('grab', (event)=> {

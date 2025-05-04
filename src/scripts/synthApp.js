@@ -3623,7 +3623,7 @@ document.addEventListener("DOMContentLoaded", function () {
     synthGraphCytoscape.off('add');
 
     UI.menus.view.openSynthDesigner.addEventListener('click', () => {
-        window.open('synthDesigner.html')
+        window.open(`synthDesigner.html?username=${encodeURIComponent(UI.panel.collaboration.username.innerHTML)}`)
     });
 
     // Open the history sequencer in a new tab

@@ -25,19 +25,7 @@
     <div id="container">
         <!-- Menubar at the top -->
         <div class="menubar">
-            <div class="menu-item">
-                File
-                <div class="dropdown">
-                    <button id="newSession">New Synth</button> 
-                    <hr>
-                    <button id="saveButton">Save Synth</button>
-                    <input type="file" id="fileInput" accept=".fpsynth" />
-                    <label for="fileInput" class="custom-file-button">Load Synth</label>
-                    <hr>
-                    <button id="viewReadme">Help</button>
-                    <button id="settingsButton">Settings</button>
-                </div>
-            </div>
+
             
             <div class="menu-buttons">
                 <h3>Forking Paths Synth Designer</h3>
@@ -48,6 +36,10 @@
 
         
         <div id="leftColumn">
+            <button id="newSession">New Synth</button> 
+            <p>
+            <button id="saveButton">Save Synth</button>
+            <hr>
             <h3> Modules Library </h3>
             <div id="modulesLibraryContainer">
                 <ul id="moduleList"></ul>
@@ -63,17 +55,18 @@
         </div>
          
 
-        <div id="settingsOverlay" class="overlay">
+        <div id="saveOverlay" class="overlay">
             <div class="overlay-content">
-                <h2>Settings</h2>
-                <button class="close-overlay" id="closeOverlayButton">Close</button>
+                <h2>Save Synth</h2>
+                
                 <hr>
-                <div class="settings-options">
-                    <!-- Add settings options here -->
-                    <label for="settings_controlPointDistance">Cable Control Point Distance:</label>
-                    <input type="range" id="settings_controlPointDistance" min="0" max="200" step="1" value="20">
-                    <hr>
-                    <p id="settings_sampleRate">This is the default text.</p>
+                <div class="save-options">
+                    <input type="text" id="synthName" placeholder="Enter Synth Name...">
+                    <!-- <input type="text" id="synthAuthor" placeholder="Author"> -->
+                    <input type="text" id="synthTags" placeholder="Enter Tags (comma-separated)">
+                    <textarea id="synthDesc" placeholder="Description"></textarea>
+                    <!-- <button onclick="uploadSynth()">Upload Synth Template</button> -->
+                    <button id="storeFPSYNTHButton" class="done-overlay" >Done</button><button class="close-overlay" id="closeOverlayButton">Cancel</button>
                     <!-- <label>
                         <input type="checkbox" id="darkModeToggle" />
                         Enable Dark Mode
