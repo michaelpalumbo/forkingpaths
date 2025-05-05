@@ -2485,6 +2485,13 @@ document.addEventListener("DOMContentLoaded", function () {
       }
       
 
+    function onSynthClick(id){
+        console.log(id)
+        ws.send(JSON.stringify({
+            cmd: 'getSynthFile',
+            id: id
+        }))
+    }
 
     // * HELP OVERLAYS
 
@@ -3289,6 +3296,48 @@ document.addEventListener("DOMContentLoaded", function () {
                 populateTags(msg.data);
                 updateSynths(msg.data);
 
+            break
+
+            case 'retrievedSynthFile':
+                const file = msg.data.rows[0].synth_json
+                console.log(file)
+                if (!file) {
+                    alert('No file selected');
+                    return;
+                }
+            
+                localStorage.setItem('synthFile', file);
+
+                // Parse the JSON data
+                // const jsonData = JSON.parse(reader.result);
+                createNewPatchHistory(file)
+                // Ensure the file is a valid Automerge binary (based on extension or type)
+                // if (!file.name.endsWith('.fpsynth')) {
+                //     alert('Invalid file type. Please select a .fpsynth file.');
+                //     return;
+                // }
+            
+                // const reader = new FileReader();
+            
+                // reader.onload = () => {
+                //     try {
+
+                //         localStorage.setItem('synthFile', reader.result);
+
+                //         // Parse the JSON data
+                //         const jsonData = JSON.parse(reader.result);
+                //         createNewPatchHistory(jsonData)
+
+                //     } catch (error) {
+                //         console.error("Failed to parse JSON:", error);
+                //     }
+                // };
+                // reader.onerror = () => {
+                //     console.error("Error reading the file:", reader.error);
+                // };
+
+                // // Start reading the file
+                // reader.readAsText(file);
             break
 
             default: console.warn('no switch case exists for message:', msg)
