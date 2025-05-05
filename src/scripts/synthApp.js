@@ -1122,7 +1122,7 @@ document.addEventListener("DOMContentLoaded", function () {
         */
     }
     function createNewPatchHistory(synthFile){
-        
+        eraseDrawing()
         // deletes the document in the indexedDB instance
         deleteDocument(docID)
         deleteDocument('patchHistory')
@@ -2316,6 +2316,10 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     UI.draw.eraser.addEventListener("click", async () => {
+        eraseDrawing()
+    })
+
+    function eraseDrawing(){
         UI.draw.ctx.clearRect(0, 0, UI.draw.canvas.width, UI.draw.canvas.height);
 
         // clear the temp array of strokes
@@ -2325,8 +2329,7 @@ document.addEventListener("DOMContentLoaded", function () {
         amDoc = applyChange(amDoc, (amDoc) => {
             amDoc.drawing = []
         }, onChange,  `draw Erase_Drawing`);
-
-    })
+    }
     // // use this to ensure the cytoscape doesn't draw a mousedown circle when we are drawing with the pen tool
     // function forceCytoscapeMouseup() {
     //     // Simulate a mouseup event into Cytoscape
@@ -2461,6 +2464,7 @@ document.addEventListener("DOMContentLoaded", function () {
       
       function updateSynths(synthFiles, selectedAuthor = 'all', selectedTag = 'all') {
         const synthList = document.getElementById('synthList');
+        const tooltip = document.getElementById('synthListTooltip');
         synthList.innerHTML = '';
       
         const filtered = synthFiles.filter(t => {
@@ -2481,6 +2485,17 @@ document.addEventListener("DOMContentLoaded", function () {
           const li = document.createElement('li');
           li.textContent = t.name;
           li.dataset.id = t.id;
+          li.onmouseenter = (e) => {
+                tooltip.textContent = t.description || '(no description)';
+                tooltip.style.display = 'block';
+          };
+          li.onmousemove = (e) => {
+                tooltip.style.left = e.pageX + 10 + 'px';
+                tooltip.style.top = e.pageY + 10 + 'px';
+          };
+          li.onmouseleave = () => {
+            tooltip.style.display = 'none';
+          };
           li.onclick = () => onSynthClick(t.id);
           synthList.appendChild(li);
         });
@@ -2488,7 +2503,6 @@ document.addEventListener("DOMContentLoaded", function () {
       
 
     function onSynthClick(id){
-        console.log(id)
         ws.send(JSON.stringify({
             cmd: 'getSynthFile',
             id: id
@@ -2496,7 +2510,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function onTagClick(tag){
-        console.log(tag)
         if(tag ==='all'){
             ws.send(JSON.stringify({ cmd: 'getSynthTemplates'}));
         } else {
@@ -2506,7 +2519,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function onAuthorClick(author){
-        console.log(author)
         if(author ==='all'){
             ws.send(JSON.stringify({ cmd: 'getSynthTemplates'}));
         } else {
@@ -3313,6 +3325,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             case 'synthTemplatesList':
                 dbSynthFiles = msg.data // store locally for when we want to filter results in the synth filebrowser panel
+                console.log(msg.data)
                 populateAuthors(msg.data);
                 populateTags(msg.data);
                 updateSynths(msg.data);
