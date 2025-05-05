@@ -465,16 +465,16 @@ document.addEventListener("DOMContentLoaded", function () {
     } 
     
 // Toggle the visibility of the settings overlay
-    function toggleSettingsOverlay() {
+    function toggleSaveOverlay() {
         const overlay = document.getElementById('saveOverlay');
         overlay.style.display = overlay.style.display === 'flex' ? 'none' : 'flex';
     }
 
     // Add event listener for the settings button
-    document.getElementById('saveButton').addEventListener('click', toggleSettingsOverlay);
+    document.getElementById('saveButton').addEventListener('click', toggleSaveOverlay);
 
     const closeOverlayButton = document.getElementById('closeOverlayButton');
-    closeOverlayButton.addEventListener('click', toggleSettingsOverlay);
+    closeOverlayButton.addEventListener('click', toggleSaveOverlay);
 
 
     // Function to create and manage an overlay div
@@ -935,6 +935,8 @@ document.addEventListener("DOMContentLoaded", function () {
             cmd: 'saveSynth',
             data: payload
         }))
+
+        toggleSaveOverlay()
         // const res = await fetch('/api/synthFiles', {
         //   method: 'POST',
         //   headers: { 'Content-Type': 'application/json' },

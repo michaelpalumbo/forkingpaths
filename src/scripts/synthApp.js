@@ -2421,6 +2421,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const allItem = document.createElement('li');
         allItem.textContent = 'All';
         allItem.dataset.value = 'all';
+        allItem.classList.add('selected');
         allItem.onclick = () => onAuthorClick('all');
         authorList.appendChild(allItem);
       
@@ -2443,6 +2444,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const allItem = document.createElement('li');
         allItem.textContent = 'All';
         allItem.dataset.value = 'all';
+        allItem.classList.add('selected');
         allItem.onclick = () => onTagClick('all');
         tagList.appendChild(allItem);
       
