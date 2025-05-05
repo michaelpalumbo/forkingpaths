@@ -2406,6 +2406,84 @@ document.addEventListener("DOMContentLoaded", function () {
         // }
     }
 
+
+    //* BROWSERS
+
+    // synth file browser
+    document.getElementById('authorList').addEventListener('change', updateSynths);
+    document.getElementById('tagList').addEventListener('change', updateSynths);
+
+    function populateAuthors(synthFiles) {
+        const uniqueAuthors = [...new Set(synthFiles.map(t => t.author))].sort();
+        const authorList = document.getElementById('authorList');
+        authorList.innerHTML = '';
+      
+        const allItem = document.createElement('li');
+        allItem.textContent = 'All';
+        allItem.dataset.value = 'all';
+        allItem.onclick = () => onAuthorClick('all');
+        authorList.appendChild(allItem);
+      
+        uniqueAuthors.forEach(author => {
+          const li = document.createElement('li');
+          li.textContent = author;
+          li.dataset.value = author;
+          li.onclick = () => onAuthorClick(author);
+          authorList.appendChild(li);
+        });
+      }
+      
+      function populateTags(synthFiles) {
+        const tagSet = new Set();
+        synthFiles.forEach(t => (t.tags || []).forEach(tag => tagSet.add(tag)));
+        const tags = Array.from(tagSet).sort();
+        const tagList = document.getElementById('tagList');
+        tagList.innerHTML = '';
+      
+        const allItem = document.createElement('li');
+        allItem.textContent = 'All';
+        allItem.dataset.value = 'all';
+        allItem.onclick = () => onTagClick('all');
+        tagList.appendChild(allItem);
+      
+        tags.forEach(tag => {
+          const li = document.createElement('li');
+          li.textContent = tag;
+          li.dataset.value = tag;
+          li.onclick = () => onTagClick(tag);
+          tagList.appendChild(li);
+        });
+      }
+      
+      function updateSynths(synthFiles, selectedAuthor = 'all', selectedTag = 'all') {
+        const synthList = document.getElementById('synthList');
+        synthList.innerHTML = '';
+      
+        const filtered = synthFiles.filter(t => {
+          const matchAuthor = selectedAuthor === 'all' || t.author === selectedAuthor;
+          const matchTag = selectedTag === 'all' || (t.tags || []).includes(selectedTag);
+          return matchAuthor && matchTag;
+        });
+      
+        if (filtered.length === 0) {
+          const li = document.createElement('li');
+          li.textContent = '(no matching synths)';
+          li.style.fontStyle = 'italic';
+          synthList.appendChild(li);
+          return;
+        }
+      
+        filtered.forEach(t => {
+          const li = document.createElement('li');
+          li.textContent = t.name;
+          li.dataset.id = t.id;
+          li.onclick = () => onSynthClick(t.id);
+          synthList.appendChild(li);
+        });
+      }
+      
+
+
     // * HELP OVERLAYS
 
     // synth pathcing interface help overlay
@@ -3202,6 +3280,16 @@ document.addEventListener("DOMContentLoaded", function () {
             case 'roomFull':
                 alert('cannot connect to room, too many peers are active. please choose another room in the lobby')
             break
+
+            case 'synthTemplatesList':
+                console.log(msg)
+                populateAuthors(msg.data);
+                populateTags(msg.data);
+                updateSynths(msg.data);
+
+            break
+
+            default: console.warn('no switch case exists for message:', msg)
         }
     };
     
