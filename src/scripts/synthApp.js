@@ -50,7 +50,9 @@ let peerPointerDataChannel
 
 let thisPeerID
 
+let dbSynthFiles = {
 
+}
 // * Audio 
 let audioGraphDirty = false
 let synthWorklet; // the audioWorklet for managing and running the audio graph
@@ -2493,6 +2495,25 @@ document.addEventListener("DOMContentLoaded", function () {
         }))
     }
 
+    function onTagClick(tag){
+        console.log(tag)
+        if(tag ==='all'){
+            ws.send(JSON.stringify({ cmd: 'getSynthTemplates'}));
+        } else {
+            ws.send(JSON.stringify({ cmd: 'getSynthTemplates', filter: 'tags', query: tag }));
+        }
+
+    }
+
+    function onAuthorClick(author){
+        console.log(author)
+        if(author ==='all'){
+            ws.send(JSON.stringify({ cmd: 'getSynthTemplates'}));
+        } else {
+            ws.send(JSON.stringify({ cmd: 'getSynthTemplates', filter: 'authors', query: author }));
+        }
+
+    }
     // * HELP OVERLAYS
 
     // synth pathcing interface help overlay
@@ -3291,7 +3312,7 @@ document.addEventListener("DOMContentLoaded", function () {
             break
 
             case 'synthTemplatesList':
-                console.log(msg)
+                dbSynthFiles = msg.data // store locally for when we want to filter results in the synth filebrowser panel
                 populateAuthors(msg.data);
                 populateTags(msg.data);
                 updateSynths(msg.data);
@@ -3300,7 +3321,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
             case 'retrievedSynthFile':
                 const file = msg.data.rows[0].synth_json
-                console.log(file)
                 if (!file) {
                     alert('No file selected');
                     return;
