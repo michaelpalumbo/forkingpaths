@@ -1225,6 +1225,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                           loadVersion(row.node.id, row.node.branch);
                   
                           if (row.stepChange?.startsWith("gesture") && row.gestureData) {
+                            
                             playGestureFromSequencerStep(sequencerData.gestures[currentStepIndex], `${subStepDuration}s`);
                           }
                         }
@@ -1311,8 +1312,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                 loadVersion(currentStep.node.id, currentStep.node.branch)
                 
                 if(targetRow.dataset.gesture){
-                    console.log(targetRow.dataset.gestureData)
-                    playGestureFromSequencerStep(JSON.parse(targetRow.dataset.gestureData), loop.interval)
+                    console.log('here too')
+                    playGestureFromSequencerStep(sequencerData.gestures[currentStepIndex], loop.interval)
                     // createGestureGraph(targetRow.dataset.gestureData.gesturePoints, targetRow.dataset.gestureData.range, targetRow.dataset.gestureData.min, targetRow.dataset.gestureData.max)
                 }
             }
@@ -1356,7 +1357,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 } else {
                     loadVersion(step.node.id, step.node.branch);
                     if (targetRow.dataset.gesture) {
-                    playGestureFromSequencerStep(JSON.parse(targetRow.dataset.gestureData), step.stepLength);
+                    playGestureFromSequencerStep(sequencerData.gestures[index], step.stepLength);
                     }
                 }
                 }
