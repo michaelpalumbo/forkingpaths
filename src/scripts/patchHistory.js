@@ -49,28 +49,32 @@ let gestureRange
 let mouseoverState = null
 
 // gestureCy data
-let gestureData = {
-    nodes: [],
-    scheduler: [],
-    loop: false,
-    startTime: null,
-    endTime: null,
-    length: null,
-    assign: {
-        parent: null,
-        param: 'default',
-        range: null
-    },
-    gesturePoints: [],
-    linearGesturePoints: [], // at times this will be a duplicate of gesturePoints, but we need it for when we want to switch from an ease function back to linear mapping
-    values: [],
-    timestamps: [], 
-    range: null,
-    min: null,
-    max: null,
-    branch: null,
-    historyID: null,
-    easeFunction: 'linear'
+let gestureData = {}
+
+function resetGestureData(){
+    gestureData = {
+        nodes: [],
+        scheduler: [],
+        loop: false,
+        startTime: null,
+        endTime: null,
+        length: null,
+        assign: {
+            parent: null,
+            param: 'default',
+            range: null
+        },
+        gesturePoints: [],
+        linearGesturePoints: [], // at times this will be a duplicate of gesturePoints, but we need it for when we want to switch from an ease function back to linear mapping
+        values: [],
+        timestamps: [], 
+        range: null,
+        min: null,
+        max: null,
+        branch: null,
+        historyID: null,
+        easeFunction: 'linear'
+    }
 }
 // ease functions for applying easing on gestures in the editor
 const easeFunctions = {
@@ -2793,6 +2797,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             // add node to sequencer
 
         } else {
+            resetGestureData()
+            selectedNode = null
             highlightNode(event.target)
 
             // loadVersion(event.target.data().id, event.target.data().branch)
