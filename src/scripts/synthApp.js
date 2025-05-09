@@ -7,7 +7,9 @@
 
 export const forceBundle = true;
 
+const DISABLE_HISTORY_WINDOW_CLOSE = import.meta.env.VITE_DISABLE_HISTORY_WINDOW_CLOSE
 
+console.log(typeof DISABLE_HISTORY_WINDOW_CLOSE)
 // const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
 // const ws = new WebSocket(`${wsProtocol}://${window.location.host}/ws`);
 
@@ -451,12 +453,16 @@ document.addEventListener("DOMContentLoaded", function () {
     // console.warn('make sure to uncomment the code below this message when finished making big changes to the history seq page')
     // Remove the flag when the graph window is closed
     window.addEventListener('beforeunload', () => {
+        console.log(DISABLE_HISTORY_WINDOW_CLOSE)
+        if(DISABLE_HISTORY_WINDOW_CLOSE === "1") {
+            console.warn('remember to set VITE_DISABLE_HISTORY_WINDOW_CLOSE to 0 in .env.development')
+   
+            return
+        }
         if (patchHistoryWindow) {
             patchHistoryWindow.close();
-            // console.warn('remember to uncomment the line above this warning')
         }
         localStorage.removeItem('patchHistoryWindowOpen');
-        // console.warn('remember to uncomment the line above this warning')
 
     });
 
@@ -1121,6 +1127,7 @@ document.addEventListener("DOMContentLoaded", function () {
         synthGraphCytoscape.edges().remove();
         */
     }
+    
     function createNewPatchHistory(synthFile){
         eraseDrawing()
         // deletes the document in the indexedDB instance
@@ -3487,6 +3494,22 @@ document.addEventListener("DOMContentLoaded", function () {
             case 'merge':
                 createMerge(event.data.nodes)
                 
+            break
+
+            case 'hydrateGesture':
+                // we've recalled a sequence node into the entire sequencer, so hydrate the sequencerData.gestures array in the patchHistory.js
+                let hydratedDoc = loadAutomergeDoc(event.data.data.branch)
+
+                // Use `Automerge.view()` to view the state at this specific point in history
+                const hydratedView = Automerge.view(hydratedDoc, [event.data.data.hash]);
+
+                console.log(hydratedView, event.data.data.index)
+                sendMsgToHistoryApp({
+                    appID: 'forkingPathsMain',
+                    cmd: 'hydrateGesture',
+                    data: hydratedView.changeType,   
+                    index: event.data.data.index   
+                })
             break
 
             case 'getGestureData':

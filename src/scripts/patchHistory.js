@@ -896,6 +896,52 @@ document.addEventListener("DOMContentLoaded", async () => {
                     }
 
                 break
+                
+                case 'hydrateGesture':
+
+                    let tempGestureData = {
+                        scheduler: [],
+                        historyID: event.data.data.historyID,
+                        branch: event.data.data.branch,
+                        assign: {
+                            param: 'default'
+                        }
+
+                    }
+                    const minVal2 = Math.min(...event.data.data.values);
+                    const maxVal2 = Math.max(...event.data.data.values);
+                    tempGestureData.range = maxVal2 - minVal2
+                    tempGestureData.min = minVal2
+                    tempGestureData.max = maxVal2
+
+
+                    // set the gesture length, start and end times
+                    tempGestureData.startTime = event.data.data.timestamps[0]
+                    tempGestureData.endTime = event.data.data.timestamps[event.data.data.timestamps.length - 1]
+                    tempGestureData.length = tempGestureData.endTime - tempGestureData.startTime
+
+                    tempGestureData.values = event.data.data.values
+                    tempGestureData.timestamps = event.data.data.timestamps
+                    
+                    // map the gesture values and timestamps to a new array of objects
+                    const gestureArray2 = event.data.data.values.map((value, i) => ({
+                        value: value,
+                        timestamp: event.data.data.timestamps[i],
+                        parent: event.data.data.parent,
+                        param: event.data.data.param,
+                        msg: 'gesture',
+                        historyID: tempGestureData.historyID,
+                        branch: tempGestureData.branch
+                    }));
+
+
+                    tempGestureData.gesturePoints = gestureArray2
+                    tempGestureData.linearGesturePoints = gestureArray2
+
+
+                    sequencerData.gestures[event.data.index] = tempGestureData
+                    console.log(sequencerData.gestures)
+                break
 
                 case 'getGestureData':
 
@@ -1394,8 +1440,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Function to save the table's contents as a JS object
     function saveSequencerTable() {
-        console.warn("saveSequencerTable triggered!");
-        console.trace();
+
 
         const tableBody = document.getElementById("dynamicTableBody2");
         const rows = tableBody.querySelectorAll("tr");
@@ -1583,6 +1628,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     function playGestureFromSequencerStep(gesture, stepLength){
         let quantizedGesture = quantizeGesture(gesture, stepLength)
         
+        console.log('qG', quantizedGesture)
         // create the scheduler
         quantizedGesture.forEach((node) => {
             const delay = node.t * 1000; // (convert to milliseconds)
@@ -2847,6 +2893,18 @@ document.addEventListener("DOMContentLoaded", async () => {
                         // load the sequence change node into the sequencer (i.e. replace the current sequence with this sequence)
                         event.target.data().sequencerTable.forEach((step, index) => {
                             if (step.node) {
+                                // check if step node is a gesture, we need to hydrate the sequence first
+                                console.log(step.node)
+                                if(step.node.label.split(' ')[0] === 'gesture'){
+                                    console.log('yeah?')
+                                    sendToMainApp(
+                                        {
+                                            cmd: "hydrateGesture",
+                                            data: { hash: step.node.id, branch: step.node.branch, index: index },
+                                        }
+                                    ); 
+                                }
+                   
                               updateStepRow(index, step.node);
                             } else {
                               clearStepRow(index); // you'd need to define this if it doesn't already exist
