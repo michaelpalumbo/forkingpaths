@@ -1,3 +1,5 @@
+
+
 html, body {
   margin: 0;
   padding: 0;
@@ -8,6 +10,78 @@ html, body {
   background-color: #222;
 }
 
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: calc(6 * 2.2em); /* Adjust 2.2em if your <li> height differs */
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+li.odd {
+  background-color: #f9f9f9;
+}
+
+li.even {
+  background-color: #ffffff;
+}
+
+/* Alternate row coloring */
+ul li:nth-child(odd) {
+  background-color: #f9f9f9;
+}
+ul li:nth-child(even) {
+  background-color: #ffffff;
+}
+
+
+ul li.selected {
+  background-color: #cde8ff; /* Light blue background for selected item */
+  font-weight: bold;
+  border-left: 4px solid #3399ff;
+}
+
+
+/* Optional: consistent spacing and separation */
+ul li {
+  padding: 8px 10px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+}
+
+#authorList, #tagList, #synthList {
+  max-height: calc(6 * 2.2em);
+  overflow-y: auto;
+  display: block;
+  border: 1px solid #ccc;
+}
+
+/* Fallback if above fails, use a pixel-based height */
+#authorList, #tagList, #synthList {
+  height: 13.2em; /* fallback height */
+}
+
+
+#authorList li:nth-child(odd),
+#tagList li:nth-child(odd),
+#synthList li:nth-child(odd) {
+  background-color: #f9f9f9; /* light gray */
+}
+
+#authorList li:nth-child(even),
+#tagList li:nth-child(even),
+#synthList li:nth-child(even) {
+  background-color: #ffffff; /* white */
+}
+
+#authorList li,
+#tagList li,
+#synthList li {
+  padding: 6px 10px;
+  border-bottom: 1px solid #ddd;
+}
 
  /* General container layout */
 #container {
@@ -132,6 +206,42 @@ html, body {
 #workspaceAndCollabPanelHelpOverlay.hidden {
   display: none;
 }
+
+
+#synthBrowserOverlay {
+  position: absolute; /* or fixed if needed */
+  top: 0;
+  left: auto;
+  right: 0;
+  width: 20%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.95);
+  color: #111;
+  z-index: 9999;
+  padding: 1rem;
+  overflow-y: auto;
+  box-shadow: 0 0 20px rgba(0,0,0,0.2);
+  transition: opacity 0.5s ease;
+  opacity: 1;
+}
+
+#synthBrowserOverlay.hidden {
+  display: none;
+}
+
+#closeSynthBrowserOverlay {
+  margin-left: 16px;
+  background: none;
+  border: none;
+  color: #111;
+  font-weight: bold;
+  font-size: 30px;
+  cursor: pointer;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
 
 #workspaceAndCollabPanelHelpContent {
   display: block;
@@ -281,6 +391,28 @@ html, body {
 
 }
 
+.loadFile-button {
+  /* background-color: #444; */
+  /* color: white; */
+  border: 1px solid #555;
+  padding: 5px 10px;
+  cursor: pointer;
+
+  font-size: 1.2rem;
+  padding: 0.2rem 0.5rem;
+  /* background: #eee; */
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  /* cursor: pointer; */
+  background-color: #9beffe;
+  color: #000000;
+}
+
+.loadFile-button:hover {
+  background-color: #64bbfd;
+}
+
+
 .dropdown {
   display: none;
   position: absolute;
@@ -332,6 +464,20 @@ html, body {
   margin-left: 10px; /* Keep spacing between buttons */
 }
 
+#synthListTooltip {
+  position: absolute;
+  background: #333;
+  color: #fff;
+  padding: 6px 10px;
+  font-size: 18px;
+  border-radius: 4px;
+  pointer-events: none;
+  white-space: normal;         /* Allow text wrapping */
+  word-wrap: break-word;       /* Wrap long words if needed */
+  max-width: 250px;            /* Set a reasonable width limit */
+  z-index: 10000;
+  display: none;
+}
 
 /* Left column */
 /* #leftColumn {
@@ -595,3 +741,4 @@ input[type="text"] {
 .knob-input {
   font-size: 24px !important; /* Set desired font size */
 }
+

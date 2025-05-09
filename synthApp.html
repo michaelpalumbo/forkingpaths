@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -43,13 +45,12 @@
                     <button class="help-button" id="workspaceAndCollabPanelHelp">Help</button>
 
                 </div>
-                <h1>My Workspace</h1>
+                <h1>Workspace</h1>
+                
                 <div class="menubar">
                   <div class="menu-item">File
                     <div class="dropdown">
-                        <button id="loadDemoSynthButton">Load Demo Synth</button>
-                        <input type="file" id="loadSynthButton" accept=".fpsynth" />
-                        <label for="loadSynthButton" class="custom-file-button">Load Synth From Disk...</label>     
+                       
     
                         <hr>
                         <button disabled id="newPatchHistory">New Patch History</button> 
@@ -86,6 +87,8 @@
                     </div>
                   </div>
                 </div>
+                <hr>
+                <button id="openSynthBrowser">Open Synth Browser...</button>
                 <hr>
                 <div id='drawToolPanel'>
                   <h2>Draw Tool</h2>
@@ -269,7 +272,48 @@
         ">[✕] Close</button>
     </div>
 
+    <div id="synthBrowserOverlay" class="hidden">
+      <button id="closeSynthBrowserOverlay">×</button>
+      <div id="browserContent">
+
+        <button id="loadDemoSynthButton"  class="loadFile-button">Load Demo Synth</button>
+        <br><br>      
+        <input type="file" id="loadSynthButton" accept=".fpsynth" />
+        <label for="loadSynthButton" class="loadFile-button">Load Synth From Disk...</label>     
+        
+        <h2>Browse Synth Files</h2>
+
+        <div>
+        
+          <h3>Authors</h3>
+          <ul id="authorList"></ul>
+        </div>
+
+        <div>
+      
+          <h3>Tags</h3>
+          <ul id="tagList"></ul>
+        
+        </div>
+
+          <h3>Synth Files</h3>
+          <ul id="synthList"></ul>
+        <div>
+
+      </div>
+
+      
+
+
+    </div>
+    
+
+      
+  </div>
+
 
     <script type="module" src="src/scripts/synthApp.js"></script>
+    <div id="synthListTooltip"></div>
 </body>
 </html>
+
