@@ -2371,7 +2371,17 @@ document.addEventListener("DOMContentLoaded", async () => {
             break
 
             case "merge":
-                console.warn('need to set up merge case for historyNodeOverlay')
+                console.log(data)
+                overlayString = `
+                <strong>Change Node:</strong> Merge<br>    
+                <strong>Parent 1:</strong><br>
+                <strong>   Change</strong> ${data.mergeData.nodes[0].label}<br>
+                <strong>   Branch</strong> ${data.mergeData.nodes[0].branch}<br><br>
+                <strong>Parent 2:</strong><br>
+                <strong>   Change</strong> ${data.mergeData.nodes[1].label}<br>
+                <strong>   Branch</strong> ${data.mergeData.nodes[1].branch}<br>
+                `
+                // console.warn('need to set up merge case for historyNodeOverlay')
             break
 
             case 'draw':

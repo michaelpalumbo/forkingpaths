@@ -1579,6 +1579,8 @@ document.addEventListener("DOMContentLoaded", function () {
     function createMerge(nodes){
         let doc1 = nodes[0]
         let doc2 = nodes[1]
+
+        console.log(doc1, doc2)
         // load historical views of both docs
 
         let head1 = patchHistory.branches[doc1.branch].head
@@ -1601,7 +1603,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // previousHash = Automerge.getHeads(amDoc)[0]
         // we previously used this to get the hashes, but it means it grabs just the leaves of both branches, when what we want are the actual parent nodes (see next line that is not commented out)
         // let hashes = Automerge.getHeads(mergedDoc)
-        let hashes = [ nodes[0].id, nodes[1].id ]
+        let hashes = [ doc1.id, doc2.id ]
 
         // create empty change to 'flatten' the merged Doc
         amDoc = Automerge.emptyChange(mergedDoc);
@@ -1615,11 +1617,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const newBranchName = uuidv7()
 
-        patchHistory = Automerge.change(patchHistory, (patchHistory) => {
+        patchHistory = Automerge.change(patchHistory, { message: `merge parents: ${doc1.id} ${doc2.id} `}, (patchHistory) => {
 
             // Initialize the branch patchHistorydata if it doesn't already exist
             if (!patchHistory.branches[newBranchName]) {
-                patchHistory.branches[newBranchName] = { head: null, parent: [ nodes[0].id, nodes[1].id ], history: [] };
+                patchHistory.branches[newBranchName] = { head: null, parent: [ doc1.id, doc2.id ], history: [] };
                 
             }
 
@@ -1630,7 +1632,9 @@ document.addEventListener("DOMContentLoaded", function () {
             patchHistory.branches[newBranchName].history.push({
                 hash: hash,
                 msg: 'merge',
-                parent: hashes
+                parent: hashes,
+                nodes: [doc1, doc2]
+
             });
             // store current doc
             patchHistory.docs[newBranchName] = Automerge.save(amDoc)
