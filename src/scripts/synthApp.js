@@ -834,7 +834,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     createNewPatchHistory(fileContent);
             
                     // enable new history button now that a synth has been loaded
-                    UI.menus.file.newPatchHistory.disabled = false
+                    // UI.menus.file.newPatchHistory.disabled = false
                   
                 } catch (error) {
                     console.error("Error loading template file:", error);
@@ -1129,7 +1129,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     
     function createNewPatchHistory(synthFile){
-        eraseDrawing()
+        resetDrawing()
         // deletes the document in the indexedDB instance
         deleteDocument(docID)
         deleteDocument('patchHistory')
@@ -1208,6 +1208,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
                 
                 audioGraphDirty = true
+
+                amDoc.drawing = []
             }, onChange, `loaded ${synthFile.filename}`);
 
             updateSynthWorklet('loadVersion', amDoc.synth.graph, null, amDoc.changeType)
@@ -1430,6 +1432,7 @@ document.addEventListener("DOMContentLoaded", function () {
         App.synth.visual.modules = forkedDoc.synth.graph.modules
         let elements = forkedDoc.elements
         peers.remote = {}
+        console.log('cmd', cmd)
         // only rebuild the UI if needed
         if(cmd === 'buildUI'){
             parentNodePositions = []; // Array to store positions of all parent nodes
@@ -1563,6 +1566,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // clear 
             synthGraphCytoscape.elements().remove();
 
+            console.log(syncedElements)
             // 3. Add new elements to Cytoscape
             synthGraphCytoscape.add(syncedElements)
 
@@ -2336,6 +2340,16 @@ document.addEventListener("DOMContentLoaded", function () {
         amDoc = applyChange(amDoc, (amDoc) => {
             amDoc.drawing = []
         }, onChange,  `draw Erase_Drawing`);
+    }
+
+    function resetDrawing(){
+        // this is different, in this case we don't want to add to the version history
+        UI.draw.ctx.clearRect(0, 0, UI.draw.canvas.width, UI.draw.canvas.height);
+
+        // clear the temp array of strokes
+        UI.draw.currentStrokePoints = []
+        // clear the drawing array
+        UI.draw.canvasStrokes = []
     }
     // // use this to ensure the cytoscape doesn't draw a mousedown circle when we are drawing with the pen tool
     // function forceCytoscapeMouseup() {
@@ -3897,7 +3911,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 saveDocument(patchHistoryKey, Automerge.save(patchHistory));
                 // enable new history button now that a synth has been loaded
-                UI.menus.file.newPatchHistory.disabled = false
+                // UI.menus.file.newPatchHistory.disabled = false
             } catch (err) {
                 console.error('Failed to load Automerge document:', err);
                 alert('Failed to load Automerge document. The file may be corrupted.');
@@ -3944,7 +3958,7 @@ document.addEventListener("DOMContentLoaded", function () {
           createNewPatchHistory(fileContent);
 
           // enable new history button now that a synth has been loaded
-          UI.menus.file.newPatchHistory.disabled = false
+        //   UI.menus.file.newPatchHistory.disabled = false
           
         } catch (error) {
           console.error("Error loading template file:", error);
