@@ -3029,6 +3029,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     
             }
             if (event.key === 'z') {
+                
                 historyDAG_cy.zoomingEnabled(false)
             }
             if (event.key === 'Shift') {
@@ -3717,18 +3718,25 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         const position = node.position(); // Get the node's position
 
+        // get the zoom amount
+        const zoom = historyDAG_cy.zoom();
+
+
         // Check if the node is outside the viewport
         const isOutsideViewport =
         position.x < extent.x1 || position.x > extent.x2 ||
         position.y < extent.y1 || position.y > extent.y2;
 
+        console.log(historyDAG_cy.zoom())
         if (isOutsideViewport) {
             // Pan to the node
             historyDAG_cy.pan({
-                x: -position.x + (historyDAG_cy.width() /2), // Adjust for viewport center
-                y: -position.y + (historyDAG_cy.height() / 1.5)
+                x: -position.x * zoom + (historyDAG_cy.width() /2), // Adjust for viewport center
+                y: -position.y * zoom + (historyDAG_cy.height() / 1.5)
             });
         }
+
+        // set zoom according to last zoomed amount
     }
     
     
