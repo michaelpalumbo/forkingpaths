@@ -650,7 +650,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     'line-color': '#ccc',
                     'target-arrow-shape': 'triangle',
                     'target-arrow-color': '#ccc',
-                    'target-arrow-width': 20, // Size of the target endpoint shape
+                    // 'target-arrow-width': 20, // Size of the target endpoint shape
                     'curve-style': 'bezier' // Use a Bezier curve to help arrows render more clearly
 
                 }
@@ -671,36 +671,36 @@ document.addEventListener("DOMContentLoaded", async () => {
                     'shape': 'rectangle'
                 }
             },
-            {
-                selector: '.sequencerSelectionBox',
-                style: {
-                    'border-color': 'blue', // Highlight color
-                    'border-width': 4,
-                    'shape': 'rectangle',
-                    'background-color': 'white',
-                    "background-opacity": 0,
-                    "width": 50,
-                    "height": 'data(height)',
-                    "label": '',
-                    "z-index": -1
+            // {
+            //     selector: '.sequencerSelectionBox',
+            //     style: {
+            //         'border-color': 'blue', // Highlight color
+            //         'border-width': 4,
+            //         'shape': 'rectangle',
+            //         'background-color': 'white',
+            //         "background-opacity": 0,
+            //         "width": 50,
+            //         "height": 'data(height)',
+            //         "label": '',
+            //         "z-index": -1
 
-                }
-            },
-            {
-                selector: '.sequencerSelectionBox-handle',
-                style: {
-                    // 'border-color': 'blue', // Highlight color
-                    'border-width': 0,
-                    'shape': 'ellipse',
-                    'background-color': 'blue',
-                    // "background-opacity": 0,
-                    "width": '10',
-                    "height": '10',
-                    "label": '',
-                    "z-index": 10
+            //     }
+            // },
+            // {
+            //     selector: '.sequencerSelectionBox-handle',
+            //     style: {
+            //         // 'border-color': 'blue', // Highlight color
+            //         'border-width': 0,
+            //         'shape': 'ellipse',
+            //         'background-color': 'blue',
+            //         // "background-opacity": 0,
+            //         "width": '10',
+            //         "height": '10',
+            //         "label": '',
+            //         "z-index": 10
 
-                }
-            },
+            //     }
+            // },
             {
                 selector: '.sequencerNode',
                 style: {
@@ -742,7 +742,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 style: {
                     'background-color': 'data(color)',
                     'label': 'data(label)',
-                    'text-valign': 'center',
+                    // 'text-valign': 'center',
                     'color': '#000', 
                     // 'text-outline-width': 2,
                     // 'text-outline-color': '#0074D9',
@@ -850,15 +850,20 @@ document.addEventListener("DOMContentLoaded", async () => {
                     })
                     
                     ws.send(update);
-                    if(patchHistory.sequencer && patchHistory.sequencer.stepLengthFunction){
-                        // sequencer settings:
-                        stepLengthFunctionSelect.value = patchHistory.sequencer.stepLengthFunction || 'fixed'
-                        setStepLengthFunction(stepLengthFunctionSelect.value)
+                    if(patchHistory && patchHistory.sequencer){
+                        bpmValue.textContent = patchHistory.sequencer.bpm; // Display the current BPM
+                        transport.bpm.value = patchHistory.sequencer.bpm; // Dynamically update the BPM
+
+                        if(patchHistory.sequencer.stepLengthFunction){
+                            // sequencer settings:
+                            stepLengthFunctionSelect.value = patchHistory.sequencer.stepLengthFunction || 'fixed'
+                            setStepLengthFunction(stepLengthFunctionSelect.value)
+                        }
+
                     }
 
 
-                    bpmValue.textContent = patchHistory.sequencer.bpm; // Display the current BPM
-                    transport.bpm.value = patchHistory.sequencer.bpm; // Dynamically update the BPM
+
 
                     modifyGestureParamAssign() 
 
