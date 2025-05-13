@@ -2352,7 +2352,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 data.sequencerTable.forEach((step, index) => {
                     if(step.stepChange != '(Empty)'){
                         
-                        overlayString += `<strong>Step ${index}:</strong> ${step.stepChange}<br>\n<strong>Length:</strong> ${step.stepLength}<br>\n`
+                        overlayString += `<strong>Step ${index + 1}:</strong> ${step.stepChange}<br>\n<strong>Length:</strong> ${step.stepLength}<br>\n`
                     }
                 })
                 overlayString += `\n<strong>Branch:</strong> ${data.branch}<br>`;
