@@ -1490,10 +1490,8 @@ document.addEventListener("DOMContentLoaded", function () {
             elements.forEach((node)=>{
                 // set module grabbable to false -- prevents module movements in main view
                 if(node.classes === ':parent'){
-                    console.log(node)
                     // lock the module's position
                     synthGraphCytoscape.getElementById(node.data.id).lock();
-                    // synthFile.visualGraph.elements.nodes[index].grabbable = false
                 }
                 if(node.classes === 'paramAnchorNode'){
                     let value = App.synth.visual.modules[node.data.parent].params[node.data.label]
