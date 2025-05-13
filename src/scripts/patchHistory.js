@@ -403,6 +403,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     function attachSequencerListeners() {
         document.querySelectorAll(".step-length").forEach((select, i) => {
           select.addEventListener("change", () => {
+            stepLengthFunctionSelect.value = "userEditable"
             setSequencerSaveButtonState(false)
             saveSequencerTable();
           });
@@ -1432,9 +1433,16 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
     function setStepLengthFunction(func){
+
             // Perform actions based on the selected value
-        if (func === "fixed") {
-            setFixedLengths()
+        if (func === "setAllTo4n") {
+            document.querySelectorAll(".step-length").forEach((select, i) => {
+                select.value = '4n'
+
+
+            })
+            setSequencerSaveButtonState(false)
+            saveSequencerTable();
         } else if (func === "userEditable") {
             console.log("Step Length Function set to: User Editable");
             // Add logic for user-editable step length
@@ -1447,6 +1455,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
    
+    
 
     // Function to save the table's contents as a JS object
     function saveSequencerTable() {
