@@ -2344,6 +2344,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function resetDrawing(){
         // this is different, in this case we don't want to add to the version history
+        // this function is being called by newPatchHistory(), which already applies amDoc.drawing = [ ] within the patch init
         UI.draw.ctx.clearRect(0, 0, UI.draw.canvas.width, UI.draw.canvas.height);
 
         // clear the temp array of strokes
