@@ -1675,9 +1675,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     async function loadVersionWithGestureDataPoint(targetHash, branch, gestureDataPoint){
 
-        // get the head from this branch
-        let head = patchHistory.branches[branch].head
-
         let requestedDoc = loadAutomergeDoc(branch)
 
         // Use `Automerge.view()` to view the state at this specific point in history
@@ -1809,210 +1806,7 @@ document.addEventListener("DOMContentLoaded", function () {
             console.warn('not set up yet')
         }
 
-    }
-
-    //TODO OLD AUTOMERGE-REPO IMPLEMENTATION, PHASE IT OUT EVENTUALLY
-    // Import dependencies dynamically
-    // (async () => {
-    //     const { DocHandle, Repo, isValidAutomergeUrl, DocumentId, Document } = await import('@automerge/automerge-repo');
-    //     const { BrowserWebSocketClientAdapter } = await import('@automerge/automerge-repo-network-websocket');
-    //     const { IndexedDBStorageAdapter } = await import("@automerge/automerge-repo-storage-indexeddb");
-        
-    //     const storage = new IndexedDBStorageAdapter("automerge");
-    //     // Initialize the Automerge repository with WebSocket adapter
-    //     repo = new Repo({
-    //         network: [new BrowserWebSocketClientAdapter('ws://localhost:3030')],
-    //         // storage: LocalForageStorageAdapter, // Optional: use a storage adapter if needed
-    //         storage: storage, // Optional: use a storage adapter if needed
-    //     });
-
-    //     automergeDocument = Document
-
-    //     // Create or load the document
-    //     // Initialize or load the document with a unique ID
-    //     // Check for a document URL in the fragment
-    //     let docUrl = decodeURIComponent(window.location.hash.substring(1));
-        
-
-
-    //     try {
-    //         if (docUrl && isValidAutomergeUrl(docUrl)) {
-    //             // Attempt to find the document with the provided URL
-    //             handle = repo.find(docUrl);
-    //         } else {
-    //             throw new Error("No document URL found in fragment.");
-    //         }
-    //     } catch (error) {
-    //         // If document is not found or an error occurs, create a new document
-    //         handle = repo.create({
-    //             elements: []
-    //         }, {
-    //             message: 'set array: elements'
-    //         });
-    //         docUrl = handle.url;
-
-    //         // Update the window location to include the new document URL
-    //         window.location.href = `${window.location.origin}/#${encodeURIComponent(docUrl)}`;
-    //     }
-
-    //     window.location.href = `${window.location.origin}/#${encodeURIComponent(handle.url)}`;
-    //     // Wait until the document handle is ready
-    //     await handle.whenReady();
-
-    //     // Check if a peer ID is already stored in sessionStorage
-    //     peers.local.id = sessionStorage.getItem('localPeerID');
-
-    //     if (!peers.local.id) {
-    //         // Generate or retrieve the peer ID from the Automerge-Repo instance
-    //         peers.local.id = repo.networkSubsystem.peerId;
-
-    //         // Store the peer ID in sessionStorage for the current tab session
-    //         sessionStorage.setItem('localPeerID', peers.local.id);
-    //     } else { }
-        
-    //     handle.docSync().elements
-    //     // Populate Cytoscape with elements from the document if it exists
-    //     if (handle.docSync().elements && handle.docSync().elements.length > 0) {
-    //         let currentGraph = handle.docSync().elements
-    //         for(let i = 0; i< currentGraph.length; i++){
-    //             synthGraphCytoscape.add(currentGraph[i]);
-    //         }
-            
-    //         synthGraphCytoscape.layout({ name: 'preset' }).run(); // Run the layout to position the elements
-    //     }
-    //     synthGraphCytoscape.layout({ name: 'preset' }).run();
-
-    //     handle.on('change', (newDoc) => {
-    //         // Compare `newDoc.elements` with current `cy` state and update `cy` accordingly
-    //         const newElements = newDoc.doc.elements;
-            
-    //         // Add or update elements
-    //         newElements.forEach((newEl) => {
-    //             if (!synthGraphCytoscape.getElementById(newEl.data.id).length) {
-    //                 // Add new element if it doesn't exist
-    //                 synthGraphCytoscape.add(newEl);
-    //             }
-    //         });
-            
-    //         // Remove elements that are no longer in `newDoc`
-    //         synthGraphCytoscape.elements().forEach((currentEl) => {
-    //             if (!newElements.find(el => el.data.id === currentEl.id())) {
-                    
-    //                 synthGraphCytoscape.remove(currentEl);
-    //             }
-    //         });
-
-    //         // Optionally, re-run the layout if needed
-            
-            
-    //     })
-
-
-
- 
-
-        // // get document history
-        // const { getHistory, applyChanges, init, encodeChange, clone } = await import ('@automerge/automerge');
-        // retrieveHistory = getHistory; // assign method to global variable
-        // applyNewChanges = applyChanges
-        // automergeInit = init
-        // automergeEncodeChange = encodeChange
-        // getClone = clone
-        // try {
-        //     const currentDoc = handle.docSync();
-        //     if (!currentDoc) {
-        //         console.error('Document not properly loaded.');
-        //         return;
-        //     }
-    
-            // Extract the history from the document using the latest Automerge
-            // * automerge version
-            //! note that i moved it to the automerge init asyc function
-
-            // * -repo version
-            /*
-            history = getHistory(currentDoc);
-            if (!history || history.length === 0) {
-                console.error('No history available for the document.');
-            } else {
-                const elements = [];
-
-                // Track existing node IDs
-                const nodeIds = new Set();
-
-                // Create nodes for each change in the history
-                history.forEach((entry) => {
-
-                    // Serialize the change data and store it in the node's data object
-                    let serializedChange;
-                    try {
-                        serializedChange = entry.change.bytes || entry.change.raw || encodeChange(entry.change);
-                    } catch (error) {
-                        console.error(`Error serializing change at index:`, error);
-                        return; // Skip this change if it can't be serialized
-                    }
-                    
-                    const nodeId = entry.change.hash;
-                    nodeIds.add(nodeId);
-                    let bgColour = "#ccc"
-                    // set the node colours according to the edit type
-                    if(entry.change.message){
-                        bgColour = docHistoryGraphStyling.nodeColours[entry.change.message.split(' ')[0]]
-                    }
-                    
-                    elements.push({
-                        data: {
-                            id: nodeId,
-                            label: entry.change.message || 'new document',
-                            actor: entry.change.actor,
-                            color: bgColour,
-                            serializedChange: serializedChange
-                        },
-                        classes: 'node'
-                    });
-                    historyNodes.push({
-                        data: {
-                            id: nodeId,
-                            label: entry.change.message || 'new document',
-                            actor: entry.change.actor,
-                            color: bgColour,
-                            serializedChange: serializedChange
-                        },
-                        classes: 'node'
-                    })
-                });
-
-                // Create edges based on dependencies between changes
-                history.forEach(entry => {                
-                    entry.change.deps.forEach(dep => {
-                        if (entry.change.hash && dep && nodeIds.has(dep) && nodeIds.has(entry.change.hash)) {
-                            elements.push({
-                                data: {
-                                    id: `${entry.change.hash}-${dep}`,
-                                    source: dep,
-                                    target: entry.change.hash
-                                },
-                                classes: 'edge'
-                            });
-                            
-                        } else {
-                            console.warn(`Skipping edge creation: ${entry.changeHash}-${dep} because one or both nodes do not exist`);
-                        }
-                    });
-                });
-                // Add elements to Cytoscape
-                // historyDAG_cy.add(elements);
-                // historyDAG_cy.layout({ name: 'dagre', rankDir: 'BT' }).run();
-                // previousHistoryLength = history.length
-
-
-            }
-
-            */
-        // } catch (error) {
-        //     console.error('Error extracting or visualizing history:', error);
-        // }
-                
+    } 
 
     //*
     //*
@@ -3868,7 +3662,15 @@ document.addEventListener("DOMContentLoaded", function () {
             // Example: Load into Automerge
             patchHistory = Automerge.load(binaryData);
 
-            amDoc = Automerge.load(patchHistory.docs.main)
+            console.log(patchHistory)
+
+            // get latest branch
+            let latestBranch = patchHistory.branchOrder[patchHistory.branchOrder.length - 1]
+
+            console.log(latestBranch)
+            amDoc = Automerge.load(patchHistory.docs[latestBranch])
+
+            updateSynthWorklet('loadVersion', amDoc.synth.graph)
 
             updateCytoscapeFromDocument(amDoc, 'buildUI');
             
