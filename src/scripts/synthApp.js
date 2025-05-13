@@ -3270,7 +3270,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 // Use `Automerge.view()` to view the state at this specific point in history
                 const hydratedView = Automerge.view(hydratedDoc, [event.data.data.hash]);
 
-                console.log(hydratedView, event.data.data.index)
                 sendMsgToHistoryApp({
                     appID: 'forkingPathsMain',
                     cmd: 'hydrateGesture',
@@ -3652,6 +3651,18 @@ document.addEventListener("DOMContentLoaded", function () {
                 alert("Invalid file type. Please select a .patchhistory file.");
                 return;
             }
+
+            ws.send(JSON.stringify({
+                cmd: 'clearHistoryGraph'
+            }))
+            // clear the sequences
+            // sendMsgToHistoryApp({
+            //     appID: 'forkingPathsMain',
+            //     cmd: 'newPatchHistory'
+                    
+            // })
+
+            resetDrawing()
 
             // Read file contents as an ArrayBuffer
             const arrayBuffer = await file.arrayBuffer();
@@ -4537,107 +4548,7 @@ document.addEventListener("DOMContentLoaded", function () {
             synthGraphCytoscape.remove(highlightedEdge)
             highlightedEdge = null; // Clear the reference after deletion
         } else if (highlightedNode && (event.key === 'Backspace' || event.key === 'Delete')){
-            /*
-            if (highlightedNode.isParent()) {
-                const nodeId = highlightedNode.id();
-
-                // update audioGraph right away
-                updateSynthWorklet('removeNode', nodeId)
--d 
-
-
-                // * automerge version:
-                
-                amDoc = applyChange(amDoc, (amDoc) => {
-                    delete amDoc.synth.graph.modules[highlightedNode.data().parent]
-                    const elementIndex = amDoc.elements.findIndex(el => el.data.id === nodeId);
-                    // IMPORTANT: here we need to remove elements in this order:
-                    // 1. connected edges
-                    // 2. children belonging to the parentNode
-                    // 3. the parentNode
-                    // any other order, and cytoscape throws an error because it attempts to draw the descendents
-
-                    // Collect IDs of child nodes to remove edges connected to them
-                    const childNodeIds = [];
-                    for (let i = amDoc.elements.length - 1; i >= 0; i--) {
-                        if (amDoc.elements[i].data.parent === nodeId) {
-                            childNodeIds.push(amDoc.elements[i].data.id); // Collect the child node ID
-                        }
-                    }
-
-                    // Remove edges connected to the child nodes
-                    for (let i = amDoc.elements.length - 1; i >= 0; i--) {
-                        const element = amDoc.elements[i];
-                        if (element.type === 'edge' &&
-                            (childNodeIds.includes(element.data.source) || childNodeIds.includes(element.data.target))) {
-                                amDoc.elements.splice(i, 1); // Remove the edge
-                        }
-                    }
-
-                    // Iterate through the array to remove child nodes
-                    for (let i = amDoc.elements.length - 1; i >= 0; i--) {
-                        if (amDoc.elements[i].data.parent === nodeId) {
-                            amDoc.elements.splice(i, 1);
-                        }
-                    }
-                    
-                    if (elementIndex !== -1) {
-                        amDoc.elements.splice(elementIndex, 1); // Remove the node from the Automerge document
-                    }
-                }, onChange, `remove ${nodeId}`);
-
-                synthGraphCytoscape.remove(highlightedNode); // Remove the node from the Cytoscape instance
-                highlightedNode = null; // Clear the reference after deletion
-
-                removeUIOverlay('singleNode', nodeId)
-
-                // Update the Automerge document to reflect the deletion
-
-
-                //* old -repo version
-
-                // handle.change((doc) => {
-                //     const elementIndex = doc.elements.findIndex(el => el.data.id === nodeId);
-                //     // IMPORTANT: here we need to remove elements in this order:
-                //     // 1. connected edges
-                //     // 2. children belonging to the parentNode
-                //     // 3. the parentNode
-                //     // any other order, and cytoscape throws an error because it attempts to draw the descendents
-
-                //     // Collect IDs of child nodes to remove edges connected to them
-                //     const childNodeIds = [];
-                //     for (let i = doc.elements.length - 1; i >= 0; i--) {
-                //         if (doc.elements[i].data.parent === nodeId) {
-                //             childNodeIds.push(doc.elements[i].data.id); // Collect the child node ID
-                //         }
-                //     }
-
-                //     // Remove edges connected to the child nodes
-                //     for (let i = doc.elements.length - 1; i >= 0; i--) {
-                //         const element = doc.elements[i];
-                //         if (element.type === 'edge' &&
-                //             (childNodeIds.includes(element.data.source) || childNodeIds.includes(element.data.target))) {
-                //             doc.elements.splice(i, 1); // Remove the edge
-                //         }
-                //     }
-
-                //     // Iterate through the array to remove child nodes
-                //     for (let i = doc.elements.length - 1; i >= 0; i--) {
-                //         if (doc.elements[i].data.parent === nodeId) {
-                //             doc.elements.splice(i, 1);
-                //         }
-                //     }
-                    
-                //     if (elementIndex !== -1) {
-                //         doc.elements.splice(elementIndex, 1); // Remove the node from the Automerge document
-                //     }
-
-
-                // },{
-                //     message: `remove ${nodeId}` // Set a custom change message here
-                // });
-            }
-            */
+            // this was from the version that let us remove modules from the main app viewport... 
         }
     });
 
@@ -4786,82 +4697,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     } 
 
-    // function addModule(module, position, children, structure) {
-        
-    //     // const parentNode = new ParentNode(module, position, children); // old version. 
-
-    //     const parentNode = new ParentNode_WebAudioNode(module, position, children, structure, config.UI.moduleLayout);
-  
-
-    //     // parentNode.getModule('oscillator')
-    //     const { parentNode: parentNodeData, childrenNodes, audioGraph, paramOverlays } = parentNode.getNodeStructure();
-    //     // Add nodes to Cytoscape
-    //     synthGraphCytoscape.add(parentNodeData);
-    //     synthGraphCytoscape.add(childrenNodes);
-        
-        
-    //     debugVar = parentNodeData.data.id
-    //     // index determines the left or right positioning of each knob
-    //     let index = 0
-    //     paramUIOverlays[parentNodeData.data.id] = []
-
-    //     // let tempOverlayArray = [ ]
-    //     childrenNodes.forEach((param)=>{
-            
-    //         if (param.classes == 'paramAnchorNode' && paramOverlays){
-    //             let uiOverlay = createFloatingOverlay(parentNodeData.data.id, param, index);
-    //             paramUIOverlays[parentNodeData.data.id].push(uiOverlay)
-    //             // tempOverlayArray.push(serializeDivToBase64(uiOverlay))
-    //             index++
-    //         }
-    //     })
-    //     // Initial position and scale update. delay it to wait for cytoscape rendering to complete. 
-    //     setTimeout(() => {
-    //         updateKnobPositionAndScale('all');
-    //     }, 10); // Wait for the current rendering cycle to complete
-    //     // * automerge version:        
-    //     amDoc = applyChange(amDoc, (amDoc) => {
-    //         amDoc.elements.push(parentNodeData);
-    //         amDoc.elements.push(...childrenNodes);
-    //         amDoc.synth.graph.modules[parentNodeData.data.id] = audioGraph
-    //         audioGraphDirty = true
-
-    //         // amDoc.paramUIOverlays[parentNodeData.data.id] = tempOverlayArray
-    //     }, onChange, `add ${parentNodeData.data.id}`);
-        
-    //     // update the synthWorklet
-    //     updateSynthWorklet('addNode', parentNode, structure )
-
-
-    //     // addNode(parentNode.data())
-    //     // todo: remove the -repo version once AM is working
-    //     // Update Automerge-repo document
-    // //     handle.change((doc) => {
-    // //         doc.elements.push(parentNodeData);
-    // //         doc.elements.push(...childrenNodes);
-
-    // //     },{
-    // //         message: `add ${parentNodeData.data.id}` // Set a custom change message here
-    // //     });
-    // }
-    
-
-    // // function updateSliderBoundaries(parentNode){
-    // //     // Update the position constraints for all slider handles that are children of this parent node
-    // //     cy.nodes(`node[parent="${parentNode.data().id}"]`).forEach((childNode) => {
-    // //         if (childNode.hasClass('sliderHandle')) {
-    // //             const trackLength = childNode.data('length') || 100; // Assuming track length is stored in data
-    // //             const newTrackStartX = parentNode.position().x - trackLength / 2;
-    // //             const newTrackEndX = parentNode.position().x + trackLength / 2;
-    // //             const fixedY = parentNode.position().y; // Update if necessary based on your layout logic
-
-    // //             // Update data attributes for the handle to use when dragging
-    // //             childNode.data('trackStartX', newTrackStartX);
-    // //             childNode.data('trackEndX', newTrackEndX);
-    // //             childNode.data('fixedY', fixedY);
-    // //         }
-    // //     });
-    // // }
 
     function displayPeerPointers(peer, position){
         if(!peers.remote[peer]){
@@ -5095,85 +4930,6 @@ document.addEventListener("DOMContentLoaded", function () {
         matchingDivs.forEach(div => div.remove());
     }
 
-    function serializeDivToBase64(div) {
-        const htmlString = div.containerDiv.outerHTML; // Get the full HTML of the div
-        const encoder = new TextEncoder(); // Convert string to binary
-        const binaryData = encoder.encode(htmlString);
-        const base64Data = btoa(String.fromCharCode(...binaryData));
-        return { base64Div: base64Data, removeKnob: div.removeKnob }
-    }
-    
-    
-   
-
-
-    // // cytoscape.use(cytoscapePopper(popperFactory));
-    // function loadSynthGraphFromFile(graphJSON) {
-    //     parentNodePositions = []; // Array to store positions of all parent nodes
-
-    //     // Step 1: Extract all parent nodes from the given document
-    //     const parentNodes = graphJSON.elements.nodes.filter(el => el.classes === ':parent'); // Adjust based on your schema
-    //     parentNodes.forEach(parentNode => {
-    //         if (parentNode.position) {
-    //             parentNodePositions.push({
-    //                 id: parentNode.data.id,
-    //                 position: parentNode.position
-    //             });
-    //         }
-    //     });
-    
-    //     let elements = graphJSON.elements.nodes
-
-    //     // Clear existing elements from Cytoscape instance
-    //     synthGraphCytoscape.elements().remove();
-
-    //     // remove all dynamicly generated UI overlays (knobs, umenus, etc)
-    //     removeUIOverlay('allNodes')
-        
-    //     // ensure their container divs are removed too
-    //     clearparamContainerDivs()
-
-    //     synthGraphCytoscape.json(graphJSON);
-    //     // synthGraphCytoscape.add(elements)
-
-    //     parentNodePositions.forEach(parentNode => {
-    //         const node = synthGraphCytoscape.getElementById(parentNode.id);
-
-    //         if (node) {
-    //             // test
-    //             let pos = {x: parseFloat(parentNode.position.x), y: parseFloat(parentNode.position.y)}
-                
-    //             // pos = {x: Math.random() * 100 + 200, y: Math.random() * 100 + 200};
-    //                 // console.log(`Random`, typeof pos.x, typeof pos.y);
-    //             // pos = {x: 273.3788826175895, y: 434.9628649535062};
-    //             // let clonedPos = {...pos}
-    //             node.position(pos); // Set the position manually  
-    //         }
-    //     });
-        
-    //     // add overlay UI elements
-    //     let index = 0
-    //     elements.forEach((node)=>{
-            
-    //         if(node.classes === 'paramAnchorNode'){
-    //             // let value = graphJSON.synth.graph.modules[node.data.parent].params[node.data.label]
-    //             createFloatingOverlay(node.data.parent, node, index)
-        
-    //             index++
-    //         }
-    //     })
-    //     // Initial position and scale update. delay it to wait for cytoscape rendering to complete. 
-    //     setTimeout(() => {
-    //         updateKnobPositionAndScale('all');
-    //     }, 10); // Wait for the current rendering cycle to complete
-    // }  
-
-    // function filterAutomergeArray(doc, arrayKey, condition) {
-    //     const filtered = doc[arrayKey].filter(condition);
-    //     doc[arrayKey] = filtered; // Replace the array
-    // }
-    
-
     // Define the knobSet method (Extend jquery-knob)
     $.fn.knobSet = function (value) {
         return this.each(function () {
@@ -5364,9 +5120,9 @@ document.addEventListener("DOMContentLoaded", function () {
         localStorage.setItem('syncMode', mode);
     }
 
-    // ——————————————————————————————
-    // 2) Cache only the elements for nodes you can actually see
-    // ——————————————————————————————
+
+    // 2 Cache only the elements for nodes we can actually see
+
     function cacheVisibleParamControls() {
         // reset the cache
         UI.synth.visual.paramControls = {};
@@ -5391,18 +5147,17 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
     
-    // ——————————————————————————————
-    // 3) Re‑cache whenever the viewport pans/zooms
-    // ——————————————————————————————
+
+    // 3 Re‑cache whenever the viewport pans/zooms
+
     let cacheTimeout;
     synthGraphCytoscape.on('pan zoom', () => {
         clearTimeout(cacheTimeout);
         cacheTimeout = setTimeout(cacheVisibleParamControls, 100);
     });
     
-    // ——————————————————————————————
-    // 4) Update only your cached controls
-    // ——————————————————————————————
+
+    // 4 Update only the cached controls
     function refreshParamControls() {
         Object.entries(UI.synth.visual.paramControls).forEach(
         ([moduleID, params]) => {
@@ -5428,73 +5183,6 @@ document.addEventListener("DOMContentLoaded", function () {
         );
     }
 
-
-    // const canvas = document.getElementById('draw');
-    // const ctx = canvas.getContext('2d');
-
-    // // Make the canvas fill the whole window
-    // canvas.width = window.innerWidth;
-    // canvas.height = window.innerHeight;
-
-    // let drawing = false;
-
-    // // function startDrawing(e) {
-    // //     if (e.target !== canvas) return;
-
-    // //     drawing = true;
-    // //     draw(e); // Start drawing immediately
-    // // }
-
-    // function startDrawing(e) {
-    //     const clientX = e.clientX;
-    //     const clientY = e.clientY;
-      
-    //     // 1. Check if mouse is over Cytoscape node or edge
-    //     const cyElement = synthGraphCytoscape.renderer().findNearestElement(clientX, clientY, true);
-      
-    //     if (cyElement) {
-    //       // If it finds any node or edge, block drawing
-    //       return;
-    //     }
-      
-    //     // 2. Check if mouse is over a floating knob element
-    //     const domElements = document.elementsFromPoint(clientX, clientY);
-    //     for (let el of domElements) {
-    //       if (el.classList.contains('knob') || el.closest('.knob-container')) {
-    //         return;
-    //       }
-    //     }
-      
-    //     // 3. Otherwise allow drawing
-    //     drawing = true;
-    //     draw(e);
-    //   }
-      
-      
-      
-
-    // function endDrawing() {
-    //     drawing = false;
-    //     ctx.beginPath(); // Reset the path
-    // }
-
-    // function draw(e) {
-    //     if (!drawing) return;
-
-    //     ctx.lineWidth = 5;
-    //     ctx.lineCap = 'round';
-    //     ctx.strokeStyle = '#000';
-
-    //     ctx.lineTo(e.clientX, e.clientY);
-    //     ctx.stroke();
-    //     ctx.beginPath();
-    //     ctx.moveTo(e.clientX, e.clientY);
-    // }
-
-    // canvas.addEventListener('mousedown', startDrawing);
-    // canvas.addEventListener('mouseup', endDrawing);
-    // canvas.addEventListener('mousemove', draw);
-    // canvas.addEventListener('mouseout', endDrawing);
 
     window.addEventListener('resize', () => {
         resizeCanvas()

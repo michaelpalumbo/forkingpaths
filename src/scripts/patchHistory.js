@@ -5,7 +5,9 @@ import { uuidv7 } from "uuidv7";
 import { WebMidi } from "webmidi"; // skip this line if you're using a script tag
 import modules from '../modules/modules.json' assert { type: 'json'}
 import { marked } from 'marked'
+import { config } from '../../config/forkingPathsConfig.js';
 
+console.log(config)
 // Use the correct protocol based on your site's URL
 const VITE_WS_URL = import.meta.env.VITE_WS_URL
 // const VITE_WS_URL = "wss://historygraphrenderer.onrender.com/10000"
@@ -613,7 +615,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         // optimization settings:
         hideEdgesOnViewport: true,
         pixelRatio: 1,
-        textureOnViewport: true,
+        textureOnViewport: config.cytoscape.historyGraph.render.textureOnViewport,
 
         spacingFactor: 2, // Adjust spacing between nodes
         elements: [],
@@ -953,7 +955,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
                     sequencerData.gestures[event.data.index] = tempGestureData
-                    console.log(sequencerData.gestures)
                 break
 
                 case 'getGestureData':
@@ -1123,6 +1124,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             gestureData.branch = selectedNode.branch
             gestureData.historyID = selectedNode.id
 
+        }
+        if(selectedNode.label.split(' ')[0] === 'sequence'){
+            loadSequencerFromChangeNode(selectedNode)
         }
     }
     
@@ -2892,27 +2896,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 // we want to handle sequence nodes differently than the others (but still clear the gesture editor below)
                 if(event.target.data().label.split(' ')[0] === 'sequence'){
                     if(hid.key.cmd){
-                        // load the sequence change node into the sequencer (i.e. replace the current sequence with this sequence)
-                        event.target.data().sequencerTable.forEach((step, index) => {
-                            if (step.node) {
-                                // check if step node is a gesture, we need to hydrate the sequence first
-                                console.log(step)
-                                if(step.node.label.split(' ')[0] === 'gesture'){
-                               
-                                    sendToMainApp(
-                                        {
-                                            cmd: "hydrateGesture",
-                                            data: { hash: step.node.id, branch: step.node.branch, index: index },
-                                        }
-                                    ); 
-                                }
-                   
-                                
-                                updateStepRow(index, step.node, null, step.stepLength);
-                            } else {
-                                clearStepRow(index); // you'd need to define this if it doesn't already exist
-                            }
-                          });
+                        loadSequencerFromChangeNode(event.target.data())
                     } else {
                         // prepare the sequence to be loaded as a step in the sequencer
                     }
@@ -2929,6 +2913,29 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     })
 
+    function loadSequencerFromChangeNode(changeNode){
+                // load the sequence change node into the sequencer (i.e. replace the current sequence with this sequence)
+        changeNode.sequencerTable.forEach((step, index) => {
+            if (step.node) {
+                // check if step node is a gesture, we need to hydrate the sequence first
+                // console.log(step)
+                if(step.node.label.split(' ')[0] === 'gesture'){
+                
+                    sendToMainApp(
+                        {
+                            cmd: "hydrateGesture",
+                            data: { hash: step.node.id, branch: step.node.branch, index: index },
+                        }
+                    ); 
+                }
+    
+                
+                updateStepRow(index, step.node, null, step.stepLength);
+            } else {
+                clearStepRow(index); // you'd need to define this if it doesn't already exist
+            }
+        });
+    }
     // Remove the flag when the graph window is closed
     window.addEventListener('beforeunload', () => {
         if (historySequencerWindow) {
