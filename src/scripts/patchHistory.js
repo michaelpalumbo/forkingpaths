@@ -37,7 +37,7 @@ if(!localStorage.appSettings){
 
 let graphJSONstore
 let firstNode = null
-let emptyStepMode = 'rest'
+let emptyStepMode = 'passThrough'
 let stepLength = '4n'
 let sequencerMode = "mono";
 let polyphonicLoops = []; // Will hold individual loops for each row
@@ -1232,12 +1232,21 @@ document.addEventListener("DOMContentLoaded", async () => {
         // ✅ Set current step's duration immediately
         stepLength = storedSequencerTable[currentStepIndex].stepLength;
         loop.interval = stepLength;
-    
+        let stepsToAdvance = 1 // this could be used to randomize steps too. (i.e. if random is selected, randomize this value at each loop)
 
         // Get the current step
         const currentStep = storedSequencerTable[currentStepIndex];
 
 
+        let nextIndex = (currentStepIndex + stepsToAdvance) % storedSequencerTable.length;
+        let nextStep = storedSequencerTable[nextIndex];
+        // Count how many future steps should be skipped
+        while (emptyStepMode === 'skip' && nextStep && nextStep.status === 'Inactive') {
+            stepsToAdvance++;
+            nextIndex = (currentStepIndex + stepsToAdvance) % storedSequencerTable.length;
+            nextStep = storedSequencerTable[nextIndex];
+        }
+        
         // Highlight the current step in the table
         const tableRows = document.querySelectorAll("#dynamicTableBody2 tr");
         tableRows.forEach((row) => row.classList.remove("table-active"));
@@ -1326,7 +1335,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             // console.log(`Selected burst value: ${currentValue}`);
         } else {
             switch(emptyStepMode){
-                case 'rest':
+                case 'passThrough':
                     // do nothing, let previous step's value continue
                 break
 
@@ -1336,14 +1345,14 @@ document.addEventListener("DOMContentLoaded", async () => {
                     loadVersion(blankPatch.id, blankPatch.branch)
                 break
 
-                case 'skip':
-                    currentStepIndex = (currentStepIndex + 1) % storedSequencerTable.length
-                    return;
-                break
+                // case 'skip':
+
+
+                // break
             }
         }
 
-        currentStepIndex = (currentStepIndex + 1) % storedSequencerTable.length;
+        currentStepIndex = (currentStepIndex + stepsToAdvance) % storedSequencerTable.length;
 
     }, stepLength)
 
