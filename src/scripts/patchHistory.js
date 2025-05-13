@@ -2371,13 +2371,16 @@ document.addEventListener("DOMContentLoaded", async () => {
             break
 
             case "merge":
-                console.log(data)
+                let modulesA = stripHashes(data.mergeData.nodes[0].parents)
+                let modulesB = stripHashes(data.mergeData.nodes[1].parents)
                 overlayString = `
-                <strong>Change Node:</strong> Merge<br>    
-                <strong>Parent 1:</strong><br>
+                <strong>Change Node:</strong> Merge<br><br>    
+                <strong>Parent Change Node #1:</strong><br>
+                <strong>   Module(s):</strong> ${modulesA}<br>
                 <strong>   Change</strong> ${data.mergeData.nodes[0].label}<br>
                 <strong>   Branch</strong> ${data.mergeData.nodes[0].branch}<br><br>
-                <strong>Parent 2:</strong><br>
+                <strong>Parent Change Node #2:</strong><br>
+                <strong>   Module(s):</strong> ${modulesB}<br>
                 <strong>   Change</strong> ${data.mergeData.nodes[1].label}<br>
                 <strong>   Branch</strong> ${data.mergeData.nodes[1].branch}<br>
                 `
@@ -4230,6 +4233,17 @@ document.addEventListener("DOMContentLoaded", async () => {
         return true; // first time seeing this id, keep it
         });
     };
+
+    function stripHashes(input) {
+        return input
+            .split(' ')
+            .map(part => {
+            const segments = part.split('_');
+            return segments.slice(0, 2).join('_');
+            })
+            .join(' ');
+    }
+
     
 })
 
