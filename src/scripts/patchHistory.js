@@ -1305,67 +1305,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     embeddedPart.dispose(); // or .stop() if you want to reuse
                 }, time + outerStepDuration);
 
-                // const part = new Tone.Part((time) => {
-                //     console.log('Embedded step triggered at time:', time);
-                // }, [
-                //     [0, () => console.log('Step 1')],
-                //     [0.5, () => console.log('Step 2')],
-                //     [1, () => console.log('Step 3')]
-                // ]);
-                
-                // part.start("+0.1");
-                // Tone.Transport.start();
-
-                // const embeddedSeq = JSON.parse(targetRow.dataset.sequencerTable);
-                // const outerStepDuration = Tone.Time(loop.interval).toSeconds();
-                // const subStepDuration = outerStepDuration / embeddedSeq.length;
-            
-                // const embeddedEvents = embeddedSeq.map((row, i) => {
-                //     return [i * subStepDuration, () => {
-                //         if (row.status === "Active") {
-                //             const fakeRow = document.createElement("tr");
-                //             fakeRow.dataset = {};
-            
-                //             if (row.node) {
-                //                 fakeRow.dataset.id = row.node.id;
-                //                 fakeRow.dataset.label = row.node.label;
-                //                 fakeRow.dataset.branch = row.node.branch;
-                //             }
-            
-                //             if (row.stepChange?.startsWith("gesture")) {
-                //                 fakeRow.dataset.gesture = true;
-                //                 fakeRow.dataset.gestureData = JSON.stringify(row.gestureData || {});
-                //             }
-            
-                //             if (fakeRow.dataset.isGestureDataPoint) {
-                //                 const dataPoint = {
-                //                     parent: fakeRow.dataset.parent,
-                //                     param: fakeRow.dataset.param,
-                //                     value: fakeRow.dataset.gestureDataPointValue
-                //                 };
-                //                 loadVersionWithGestureDataPoint(row.node.id, row.node.branch, dataPoint);
-                //             } else {
-                //                 loadVersion(row.node.id, row.node.branch);
-                //                 if (fakeRow.dataset.gesture) {
-                //                     playGestureFromSequencerStep(JSON.parse(fakeRow.dataset.gestureData), `${subStepDuration}s`);
-                //                 }
-                //             }
-                //         }
-                //     }];
-                // });
-            
-                // const embeddedPart = new Tone.Part((time, callback) => {
-                //     console.log('time', time)
-                //     callback(time);
-                // }, embeddedEvents);
-            
-                // embeddedPart.start(time); // ✅ start relative to outer step's scheduled time
-                // // No need to push to polyphonicLoops unless you want to manage it later
             }
-            
-            
-            
-            
             
             else {
                 // load the version
@@ -1385,7 +1325,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             // const currentValue = burstSelect.value;
             // console.log(`Selected burst value: ${currentValue}`);
         } else {
-            console.log(emptyStepMode)
             switch(emptyStepMode){
                 case 'rest':
                     // do nothing, let previous step's value continue
@@ -1398,7 +1337,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                 break
 
                 case 'skip':
-
+                    currentStepIndex = (currentStepIndex + 1) % storedSequencerTable.length
+                    return;
                 break
             }
         }
