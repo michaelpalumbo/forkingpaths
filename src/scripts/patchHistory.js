@@ -3584,7 +3584,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     // * 
     // *
 
-    function highlightNode(target){
+    function highlightNode(target){  
+        // check if a history node was highlighted by the server
+        historyHighlightedNode = historyDAG_cy.nodes('.highlighted');
 
         if(historyHighlightedNode){
             historyHighlightedNode.removeClass('highlighted');
