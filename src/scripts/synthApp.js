@@ -480,7 +480,7 @@ document.addEventListener("DOMContentLoaded", function () {
         layout: {
             name: 'preset', // Preset layout allows manual positioning
         },
-        fit: false,
+        fit: true,
         resize: true,
         userZoomingEnabled: false, // Disable zooming
         userPanningEnabled: false,

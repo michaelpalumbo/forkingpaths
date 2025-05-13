@@ -599,7 +599,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     
 
-
+    console.log(parseFloat(localStorage.getItem('docHistoryCy_Zoom')))
     //*
     //*
     //* CONFIGURE CYTOSCAPE INSTANCES
@@ -619,13 +619,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         spacingFactor: 2, // Adjust spacing between nodes
         elements: [],
-        zoom: parseFloat(localStorage.getItem('docHistoryCy_Zoom')) || 1., 
+        zoom: 1., 
         // viewport: {
         //     zoom: parseFloat(localStorage.getItem('docHistoryCy_Zoom')) || 1.
         // },
         boxSelectionEnabled: true,
         selectionType: "single",
-        zoomingEnabled: false,
+        zoomingEnabled: true,
 
         panningEnabled: true,
         userPanningEnabled: true, // Allows user to pan with scroll gestures
@@ -2167,6 +2167,23 @@ document.addEventListener("DOMContentLoaded", async () => {
         emptyStepMode = event.target.value
     });
 
+    
+    document.getElementById("showFullGraph").addEventListener("click", (event) => {
+   
+
+        // historyDAG_cy.resize();         // Ensure it's aware of the canvas size
+        // historyDAG_cy.center();         // Center on all elements (optional)
+        historyDAG_cy.zoomingEnabled(true)
+
+        // historyDAG_cy.minZoom(0.1); // Allow zooming out further
+        // historyDAG_cy.maxZoom(3);   // Optional upper bound
+        historyDAG_cy.fit(); // Fit all elements with padding
+        historyDAG_cy.zoomingEnabled(false)
+ 
+
+
+    });
+
     // Assumes helpTexts[] is already populated via fetch + marked
 
     document.getElementById("historyGraphHelp").addEventListener("click", () => {
@@ -2363,7 +2380,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             break
 
             case "merge":
-                console.log(data)
 
                 overlayString = `
                 <strong>changeNode:</strong> Merge ${data.id.slice(0, 7)} <br><br>
