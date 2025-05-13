@@ -850,10 +850,12 @@ document.addEventListener("DOMContentLoaded", async () => {
                     })
                     
                     ws.send(update);
+                    if(patchHistory.sequencer && patchHistory.sequencer.stepLengthFunction){
+                        // sequencer settings:
+                        stepLengthFunctionSelect.value = patchHistory.sequencer.stepLengthFunction || 'fixed'
+                        setStepLengthFunction(stepLengthFunctionSelect.value)
+                    }
 
-                    // sequencer settings:
-                    stepLengthFunctionSelect.value = patchHistory.sequencer.stepLengthFunction || 'fixed'
-                    setStepLengthFunction(stepLengthFunctionSelect.value)
 
                     bpmValue.textContent = patchHistory.sequencer.bpm; // Display the current BPM
                     transport.bpm.value = patchHistory.sequencer.bpm; // Dynamically update the BPM
