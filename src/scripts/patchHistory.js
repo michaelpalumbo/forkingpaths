@@ -36,7 +36,8 @@ if(!localStorage.appSettings){
 }
 
 let graphJSONstore
-
+let firstNode = null
+let emptyStepMode = 'rest'
 let stepLength = '4n'
 let sequencerMode = "mono";
 let polyphonicLoops = []; // Will hold individual loops for each row
@@ -1094,9 +1095,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         historyDAG_cy.json(json.data)
         // disable automatic layout so your manual position values are respected
         // historyDAG_cy.layout({ name: 'preset' }).run();
-        historyDAG_cy.panBy({x: 25, y: 25 })
+        historyDAG_cy.panBy({x: 25, y: 0 })
 
         const latestNode = historyDAG_cy.nodes().last()
+        firstNode = historyDAG_cy.nodes().first()
         highlightGestureNode(latestNode)
 
         selectedNode = latestNode.data()
@@ -1382,6 +1384,23 @@ document.addEventListener("DOMContentLoaded", async () => {
             // const burstSelect = targetRow.cells[2].querySelector('select'); // adjust index as needed
             // const currentValue = burstSelect.value;
             // console.log(`Selected burst value: ${currentValue}`);
+        } else {
+            console.log(emptyStepMode)
+            switch(emptyStepMode){
+                case 'rest':
+                    // do nothing, let previous step's value continue
+                break
+
+                case 'blank':
+                    // console.log(firstNode.data())
+                    let blankPatch = firstNode.data()
+                    loadVersion(blankPatch.id, blankPatch.branch)
+                break
+
+                case 'skip':
+
+                break
+            }
         }
 
         currentStepIndex = (currentStepIndex + 1) % storedSequencerTable.length;
@@ -2190,6 +2209,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     // * EVENT HANDLERS
     // * 
     // *
+
+    document.getElementById("emptyStepMode").addEventListener("change", (event) => {
+        emptyStepMode = event.target.value
+    });
 
     // Assumes helpTexts[] is already populated via fetch + marked
 
