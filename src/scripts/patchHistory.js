@@ -403,12 +403,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     function attachSequencerListeners() {
         document.querySelectorAll(".step-length").forEach((select, i) => {
           select.addEventListener("change", () => {
+            setSequencerSaveButtonState(false)
             saveSequencerTable();
           });
         });
       
         document.querySelectorAll(".burst-select").forEach((select, i) => {
           select.addEventListener("change", () => {
+            setSequencerSaveButtonState(false)
             saveSequencerTable();
           });
         });
@@ -463,12 +465,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     // attach the event listeners for the sequencer
     attachSequencerListeners();
 
-    function updateStepRow(index, nodeData, gestureData = null) {
+    function updateStepRow(index, nodeData, gestureData = null, stepLength) {
         const row = document.querySelectorAll("#dynamicTableBody2 tr")[index];
         if (!row) return;
       
         const changeCell = row.cells[0];
         const stepLabelCell = row.cells[1];
+        const stepLengthSelect = row.cells[2].querySelector("select");
       
         // Set background color based on change node label
         const labelKey = nodeData.label.split(" ")[0];
@@ -484,26 +487,24 @@ document.addEventListener("DOMContentLoaded", async () => {
       
         // Handle gesture metadata
         if (label.startsWith("gesture")) {
-          row.dataset.gesture = true;
-          row.dataset.gestureData = JSON.stringify(gestureData);
+            row.dataset.gesture = true;
+            row.dataset.gestureData = JSON.stringify(gestureData);
 
-          // hydrate the sequencerData
-          sequencerData.gestures[index] = gestureData
-
-          console.log(sequencerData)
+            // hydrate the sequencerData
+            sequencerData.gestures[index] = gestureData
         }
       
         if (nodeData.gestureDataPoint) {
-          const abrv = `${nodeData.parents.split('_')[0]}_${nodeData.parents.split('_')[1]}`;
-          const gestureLabel = `gesturePoint: ${abrv}:${nodeData.param}:${nodeData.value}`;
-          stepLabelCell.textContent = gestureLabel;
-      
-          row.dataset.label = gestureLabel;
-          row.dataset.isGestureDataPoint = true;
-          row.dataset.gestureDataPointValue = nodeData.value;
-          row.dataset.param = nodeData.param;
-          row.dataset.parent = nodeData.parents;
-          row.dataset.id = nodeData.historyID; // override with gesture node ID
+            const abrv = `${nodeData.parents.split('_')[0]}_${nodeData.parents.split('_')[1]}`;
+            const gestureLabel = `gesturePoint: ${abrv}:${nodeData.param}:${nodeData.value}`;
+            stepLabelCell.textContent = gestureLabel;
+        
+            row.dataset.label = gestureLabel;
+            row.dataset.isGestureDataPoint = true;
+            row.dataset.gestureDataPointValue = nodeData.value;
+            row.dataset.param = nodeData.param;
+            row.dataset.parent = nodeData.parents;
+            row.dataset.id = nodeData.historyID; // override with gesture node ID
         }
 
         // handle sequence change nodes (where we set a previous sequence into the sequencer step)
@@ -511,6 +512,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             row.dataset.sequencerTable = JSON.stringify(nodeData.sequencerTable)
         }
       
+        if(stepLength){
+            stepLengthSelect.value = stepLength
+        }
         saveSequencerTable(); // Save the new state immediately
         setGestureSaveButtonState(false)
     }
@@ -1365,7 +1369,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                 loadVersion(currentStep.node.id, currentStep.node.branch)
                 
                 if(targetRow.dataset.gesture){
-                    console.log('here too')
                     playGestureFromSequencerStep(sequencerData.gestures[currentStepIndex], loop.interval)
                     // createGestureGraph(targetRow.dataset.gestureData.gesturePoints, targetRow.dataset.gestureData.range, targetRow.dataset.gestureData.min, targetRow.dataset.gestureData.max)
                 }
@@ -1480,7 +1483,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         });
 
-        console.log('tableData after saving:', tableData)
         const update = {
             cmd: 'updateSequencer',
             setting: 'tableData',
@@ -1562,7 +1564,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             
 
             // Update the 2nd column (Step Length) of the current row
-            const stepLengthCell = rows[i].cells[2].querySelector("select");; // stepLength selectmenu
+            const stepLengthCell = rows[i].cells[2].querySelector("select"); // stepLength selectmenu
             // Map a distance value to a corresponding musical note length in Tone.js based on a defined range.
             stepLengthCell.value = mapDistanceToNoteLength(distance.toFixed(2), maxDistance)
             storedSequencerTable[i].stepLength = stepLengthCell.textContent
@@ -1635,7 +1637,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     function playGestureFromSequencerStep(gesture, stepLength){
         let quantizedGesture = quantizeGesture(gesture, stepLength)
         
-        console.log('qG', quantizedGesture)
         // create the scheduler
         quantizedGesture.forEach((node) => {
             const delay = node.t * 1000; // (convert to milliseconds)
@@ -1694,7 +1695,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
     
     function quantizeGesture(gesture, stepLength) {
-        console.log(gesture)
         const duration = gesture.endTime - gesture.startTime;
         const scale = stepLength / duration;
       
@@ -2915,9 +2915,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                         event.target.data().sequencerTable.forEach((step, index) => {
                             if (step.node) {
                                 // check if step node is a gesture, we need to hydrate the sequence first
-                                console.log(step.node)
+                                console.log(step)
                                 if(step.node.label.split(' ')[0] === 'gesture'){
-                                    console.log('yeah?')
+                               
                                     sendToMainApp(
                                         {
                                             cmd: "hydrateGesture",
@@ -2926,9 +2926,10 @@ document.addEventListener("DOMContentLoaded", async () => {
                                     ); 
                                 }
                    
-                              updateStepRow(index, step.node);
+                                
+                                updateStepRow(index, step.node, null, step.stepLength);
                             } else {
-                              clearStepRow(index); // you'd need to define this if it doesn't already exist
+                                clearStepRow(index); // you'd need to define this if it doesn't already exist
                             }
                           });
                     } else {
