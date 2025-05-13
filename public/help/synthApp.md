@@ -45,7 +45,7 @@ Colour options:
 5. forest green <span style="color:#228B22">●</span> <span style="color:#228B22">●</span>
 
 
-*Coming Soon: cable colours, if set by you, will be indicated in the history graph*
+*Coming Soon: cable colours will be indicated in the history graph*
 
 **IMPORTANT** You must connect an OUT to the `AudioDestination` module to hear anything. Try Patching the **Oscillator OUT** to the **AudioDestination IN**. 
 

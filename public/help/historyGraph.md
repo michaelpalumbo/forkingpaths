@@ -17,10 +17,12 @@ The layout is organized to help you follow the flow of ideas from past to presen
 ### Actions
 
 You can:
-- 🖱 **Click a node** to instantly load that version into the synth, which you will immediately see in the synth and hear in audio. 
-- 🧩 **Click + drag one node onto another** to **merge** them  
-- 🖍 **Hover** to view tooltips showing timestamps, branch names, and module info  
-- 🖼 Zoom and pan freely with your mouse to explore the full patch history  
+- **Click a node** to instantly load that version into the synth, which you will immediately see in the synth and hear in audio. 
+- **Click + drag one node onto another** to **merge** them  
+- **Hover** to view tooltips showing timestamps, branch names, and module info  
+- **Zoom** by holding down *z* and scrolling with the mouse
+- **Pan** Up and Down using the scrollwheel
+- **Pan** Right and Left by holding *shift* and scrolling with the mouse
 
 ---
 
@@ -36,7 +38,6 @@ Here’s what the colors represent:
 - <span style="color:#b89000">●</span> `merge`: a merge between two other changeNodes was recorded  
 - <span style="color:#00806b">●</span> `sequence`: a sequence was saved  
 - <span style="color:#b85c00">●</span> `draw`: the draw canvas changed  
-- <span style="color:#000000">●</span> `clear`: patch cleared  
 - <span style="color:#ccc">●</span> `blank_patch`: a new patch was started from scratch  
 
 ---

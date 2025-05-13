@@ -625,8 +625,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         // },
         boxSelectionEnabled: true,
         selectionType: "single",
-        zoomingEnabled: true,
-
+        zoomingEnabled: false,
+        
         panningEnabled: true,
         userPanningEnabled: true, // Allows user to pan with scroll gestures
 
@@ -2157,6 +2157,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     }
 
+    function showFullGraph(){
+        historyDAG_cy.zoomingEnabled(true)
+
+        historyDAG_cy.minZoom(0.3); // Allow zooming out further
+       
+        historyDAG_cy.fit(); // Fit all elements with padding
+        historyDAG_cy.zoomingEnabled(false)
+    }
     // *
     // *
     // * EVENT HANDLERS
@@ -2169,19 +2177,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     
     document.getElementById("showFullGraph").addEventListener("click", (event) => {
-   
-
-        // historyDAG_cy.resize();         // Ensure it's aware of the canvas size
-        // historyDAG_cy.center();         // Center on all elements (optional)
-        historyDAG_cy.zoomingEnabled(true)
-
-        // historyDAG_cy.minZoom(0.1); // Allow zooming out further
-        // historyDAG_cy.maxZoom(3);   // Optional upper bound
-        historyDAG_cy.fit(); // Fit all elements with padding
-        historyDAG_cy.zoomingEnabled(false)
- 
-
-
+        showFullGraph()
     });
 
     // Assumes helpTexts[] is already populated via fetch + marked
@@ -3002,6 +2998,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             // }
             if (event.key === 'z') {
                 historyDAG_cy.zoomingEnabled(true)
+                historyDAG_cy.minZoom(0.3)
+                historyDAG_cy.maxZoom(1.3)
             }
             if (event.key === 'Meta' || event.key === 'Control') {
                 allowMultiSelect = false
@@ -3427,11 +3425,13 @@ document.addEventListener("DOMContentLoaded", async () => {
             const currentStates = uniqueById(getCheckboxStates());
             console.log(currentStates); // updated live!
             if(currentStates.length > 0){
+                
                 populateAnalysisNodeList(currentStates)
 
             }
 
         }
+        showFullGraph()
     });
 
 
