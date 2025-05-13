@@ -9,7 +9,6 @@ export const forceBundle = true;
 
 const DISABLE_HISTORY_WINDOW_CLOSE = import.meta.env.VITE_DISABLE_HISTORY_WINDOW_CLOSE
 
-console.log(typeof DISABLE_HISTORY_WINDOW_CLOSE)
 // const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
 // const ws = new WebSocket(`${wsProtocol}://${window.location.host}/ws`);
 
@@ -544,7 +543,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     'color': config.cytoscape.synthGraph.style.parentNode.textColour, // Set the label text color
                     'font-size': config.cytoscape.synthGraph.style.parentNode.fontSize, // Adjust font size if needed
                     'text-margin-y': -10, // Optional: Move the label slightly up if desired
-                    'grabbable': false // prevent modules from being moved by cursor
+                    // 'grabbable': false // prevent modules from being moved by cursor
                 
                 }
             },
@@ -1433,8 +1432,8 @@ document.addEventListener("DOMContentLoaded", function () {
         App.synth.visual.modules = forkedDoc.synth.graph.modules
         let elements = forkedDoc.elements
         peers.remote = {}
-        console.log('cmd', cmd)
         // only rebuild the UI if needed
+        console.log(cmd)
         if(cmd === 'buildUI'){
             parentNodePositions = []; // Array to store positions of all parent nodes
 
@@ -1469,6 +1468,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 
             // I do this from the synthFile because the parentNodes' dimensions respond to their childs' positioning
             synthGraphCytoscape.json(patchHistory.synthFile)
+            // synthGraphCytoscape.nodes(':parent').forEach(n => console.log(n.id())); // lock all parent nodes so they can't be dragged
             // Sync the positions in `elements`
             const syncedElements = syncPositions(forkedDoc);
             // add all cables back in with a check to make sure we don't render edges to empty parent nodes
@@ -1490,6 +1490,9 @@ document.addEventListener("DOMContentLoaded", function () {
             elements.forEach((node)=>{
                 // set module grabbable to false -- prevents module movements in main view
                 if(node.classes === ':parent'){
+                    console.log(node)
+                    // lock the module's position
+                    synthGraphCytoscape.getElementById(node.data.id).lock();
                     // synthFile.visualGraph.elements.nodes[index].grabbable = false
                 }
                 if(node.classes === 'paramAnchorNode'){
@@ -1658,11 +1661,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // grab the current hash before making the new change:
         // previousHash = Automerge.getHeads(amDoc)[0]
-
-        //! let hashes = Automerge.getHeads(mergedDoc)
+        // we previously used this to get the hashes, but it means it grabs just the leaves of both branches, when what we want are the actual parent nodes (see next line that is not commented out)
+        // let hashes = Automerge.getHeads(mergedDoc)
         let hashes = [ nodes[0].id, nodes[1].id ]
-        
-        console.log('parendIds', nodes[0].id, nodes[1].id, 'hashes', hashes)
+
         // create empty change to 'flatten' the merged Doc
         amDoc = Automerge.emptyChange(mergedDoc);
 
@@ -2289,13 +2291,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Otherwise: Check if target is something we should still block
         if (target.isNode()) {
-            console.log(target.data())
             // If you want to allow dragging from childNodes (ports), you need to allow nodes here
             return false;
         }
 
         if (target.isEdge()) {
-            console.log(target.data())
             // Hovering over an edge = don't draw
             return false;
         }
@@ -3314,6 +3314,11 @@ document.addEventListener("DOMContentLoaded", function () {
     ws.onmessage = async (event) => {
         let msg = JSON.parse(event.data)
         switch(msg.cmd){
+
+            case 'roomsInfo':
+                // ignore (meant for other ws clients)
+            break
+
             case 'newPeer':
                 const peerMessage = JSON.parse(msg.msg).msg
                 UI.panel.collaboration.remotePeerUsername.textContent = JSON.parse(msg.msg).peerID;
@@ -3350,7 +3355,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
             case 'synthTemplatesList':
                 dbSynthFiles = msg.data // store locally for when we want to filter results in the synth filebrowser panel
-                console.log(msg.data)
                 populateAuthors(msg.data);
                 populateTags(msg.data);
                 updateSynths(msg.data);
