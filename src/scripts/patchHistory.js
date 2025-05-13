@@ -2781,6 +2781,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         historyDAG_cy.nodes().not(currentNode).forEach((otherNode) => {
             if (isIntersecting(currentNode, otherNode)) {
+                console.log('true')
                 if (intersectedNode !== otherNode) {
                     // Highlight the newly intersected node
                     if (intersectedNode) removeIntersectedHighlight(intersectedNode);
@@ -3623,15 +3624,29 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     // Check intersection
-    function isIntersecting(node1, node2) {
-        const bb1 = node1.renderedBoundingBox();
-        const bb2 = node2.renderedBoundingBox();
-        return (
-            bb1.x2 > bb2.x1 &&
-            bb1.x1 < bb2.x2 &&
-            bb1.y2 > bb2.y1 &&
-            bb1.y1 < bb2.y2
-        );
+    function isIntersecting(node1, node2, minDistance = 0) {
+        // const bb1 = node1.renderedBoundingBox();
+        // const bb2 = node2.renderedBoundingBox();
+        // console.log('bb1:', node1.id(), bb1);
+        // console.log('bb2:', node2.id(), bb2);
+
+        // return (
+        //     bb1.x2 > bb2.x1 &&
+        //     bb1.x1 < bb2.x2 &&
+        //     bb1.y2 > bb2.y1 &&
+        //     bb1.y1 < bb2.y2
+        // );
+        const p1 = node1.position();
+        const p2 = node2.position();
+        const r1 = node1.width() / 2;
+        const r2 = node2.width() / 2;
+        
+        const dx = p1.x - p2.x;
+        const dy = p1.y - p2.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        return distance < (r1 + r2 + minDistance);
+    
     }
 
     // pan to new/selected branch
