@@ -2781,7 +2781,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         historyDAG_cy.nodes().not(currentNode).forEach((otherNode) => {
             if (isIntersecting(currentNode, otherNode)) {
-                console.log('true')
                 if (intersectedNode !== otherNode) {
                     // Highlight the newly intersected node
                     if (intersectedNode) removeIntersectedHighlight(intersectedNode);
@@ -2806,6 +2805,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (draggedNode === releasedNode && intersectedNode) {
             const node1 = draggedNode.data()
             const node2 = intersectedNode.data()
+            console.log(node1, node2)
             sendToMainApp({
                 cmd: 'merge',
                 nodes: [node1, node2]

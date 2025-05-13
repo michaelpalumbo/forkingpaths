@@ -1659,8 +1659,10 @@ document.addEventListener("DOMContentLoaded", function () {
         // grab the current hash before making the new change:
         // previousHash = Automerge.getHeads(amDoc)[0]
 
-        let hashes = Automerge.getHeads(mergedDoc)
-
+        //! let hashes = Automerge.getHeads(mergedDoc)
+        let hashes = [ nodes[0].id, nodes[1].id ]
+        
+        console.log('parendIds', nodes[0].id, nodes[1].id, 'hashes', hashes)
         // create empty change to 'flatten' the merged Doc
         amDoc = Automerge.emptyChange(mergedDoc);
 
@@ -1677,7 +1679,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // Initialize the branch patchHistorydata if it doesn't already exist
             if (!patchHistory.branches[newBranchName]) {
-                patchHistory.branches[newBranchName] = { head: null, parent: null, history: [] };
+                patchHistory.branches[newBranchName] = { head: null, parent: [ nodes[0].id, nodes[1].id ], history: [] };
                 
             }
 
