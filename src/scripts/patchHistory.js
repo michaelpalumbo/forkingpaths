@@ -2223,7 +2223,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Show and move the overlay
     historyDAG_cy.on('mouseover', 'node', function(evt) {
         const data = evt.target.data();
-        console.log(data)
+  
         let overlayString
         if(!data.label){
             // dealing with a node that doesn't have the info we need yet
@@ -2235,7 +2235,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             case 'loaded':
                 overlayString = `
                     <strong>Change Node:</strong> File Load<br>    
-                    <strong>File:</strong> ${labelArray[1]}<br><br>
+                    <strong>File:</strong> ${data.label.substring(data.label.indexOf(' ') + 1)}.fpsynth<br><br>
                     <strong>Branch:</strong> ${data.branch}<br>
                 `;
             break
