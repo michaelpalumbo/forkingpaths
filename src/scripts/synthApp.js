@@ -275,7 +275,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     
                     newPatchHistory: document.getElementById('newPatchHistory'),
                     loadPatchHistory: document.getElementById('loadPatchHistory'),
-                    savePatchHistory: document.getElementById("saveButton")
+                    savePatchHistory: document.getElementById("savePatchHistory")
                 },
                 view: {
                     openSynthDesigner: document.getElementById('openSynthDesigner'),
@@ -1330,24 +1330,34 @@ document.addEventListener("DOMContentLoaded", function () {
             ],
         });
         
-        // Create a Blob object for the binary data
-        const blob = new Blob([Automerge.save(patchHistory)], { type: 'application/octet-stream' });
+        // Create a writable stream
+        const writable = await fileName.createWritable();
 
-        // Create a URL for the Blob
-        const url = URL.createObjectURL(blob);
+        // Write the blob data directly
+        const binaryData = Automerge.save(patchHistory); // this is a Uint8Array
+        await writable.write(binaryData);
 
-        // Create a download link
-        const downloadLink = document.createElement('a');
-        downloadLink.href = url;
-        downloadLink.download = fileName.name;
+        // Close the file and commit the write
+        await writable.close();
 
-        // Optionally, add the link to the DOM and simulate a click
-        document.body.appendChild(downloadLink);
-        downloadLink.click();
+        // // Create a Blob object for the binary data
+        // const blob = new Blob([Automerge.save(patchHistory)], { type: 'application/octet-stream' });
+        // console.log(blob)
+        // // Create a URL for the Blob
+        // const url = URL.createObjectURL(blob);
 
-        // Clean up
-        document.body.removeChild(downloadLink);
-        URL.revokeObjectURL(url); // Release memory
+        // // Create a download link
+        // const downloadLink = document.createElement('a');
+        // downloadLink.href = url;
+        // downloadLink.download = fileName.name;
+
+        // // Optionally, add the link to the DOM and simulate a click
+        // document.body.appendChild(downloadLink);
+        // downloadLink.click();
+
+        // // Clean up
+        // document.body.removeChild(downloadLink);
+        // URL.revokeObjectURL(url); // Release memory
 
         // // Write the content to the file
         // const writable = await fileHandle.createWritable();
@@ -3824,56 +3834,86 @@ document.addEventListener("DOMContentLoaded", function () {
     });
     
     // get .forkingpaths files from user's filesystem
-    UI.menus.file.loadPatchHistory.addEventListener('change', async (event) => {
-        const file = event.target.files[0];
-    
-        if (!file) {
-            alert('No file selected');
-            return;
-        }
-    
-        // Ensure the file is a valid Automerge binary (based on extension or type)
-        if (!file.name.endsWith('.forkingpaths')) {
-            alert('Invalid file type. Please select a .forkingpaths file.');
-            return;
-        }
-    
-        const reader = new FileReader();
-    
-        // Read the file as an ArrayBuffer
-        reader.onload = function (e) {
-            const binaryData = new Uint8Array(e.target.result); // Convert to Uint8Array
-            try {
-                console.log('loading', binaryData)
-                // Load the Automerge document
-                patchHistory = Automerge.load(binaryData);
-                amDoc = Automerge.load(patchHistory.docs.main)
+    UI.menus.file.loadPatchHistory.addEventListener('click', async (event) => {
+        try {
+            // Open file picker dialog
+            const [fileHandle] = await window.showOpenFilePicker({
+                types: [
+                    {
+                        description: "Forking Paths CRDT Files",
+                        accept: { "application/x-fpsynth": [".patchhistory"] }
+                    }
+                ],
+                excludeAcceptAllOption: false,
+                multiple: false
+            });
 
-                updateCytoscapeFromDocument(amDoc, 'buildUI');
+
             
-                previousHash = patchHistory.head.hash
-                
-                reDrawHistoryGraph()
-    
-                // set the document branch (aka title)  in the editor pane
-                // document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
+            // Get the File object from the handle
+            const file = await fileHandle.getFile();
 
-                saveDocument(patchHistoryKey, Automerge.save(patchHistory));
-                // enable new history button now that a synth has been loaded
-                // UI.menus.file.newPatchHistory.disabled = false
-            } catch (err) {
-                console.error('Failed to load Automerge document:', err);
-                alert('Failed to load Automerge document. The file may be corrupted.');
+            // Manual file extension check
+            if (!file.name.endsWith('.patchhistory')) {
+                alert("Invalid file type. Please select a .patchhistory file.");
+                return;
             }
-        };
+
+            // Read file contents as an ArrayBuffer
+            const arrayBuffer = await file.arrayBuffer();
+
+            // Convert to Uint8Array (required for Automerge.load)
+            const binaryData = new Uint8Array(arrayBuffer);
+
+            // Example: Load into Automerge
+            patchHistory = Automerge.load(binaryData);
+
+            amDoc = Automerge.load(patchHistory.docs.main)
+
+            updateCytoscapeFromDocument(amDoc, 'buildUI');
+            
+            previousHash = patchHistory.head.hash
+            
+            reDrawHistoryGraph()
+
+            saveDocument(patchHistoryKey, Automerge.save(patchHistory));
+
+            
+            
+
+        } catch (err) {
+            console.error("File upload cancelled or failed:", err);
+        }
     
-        // Handle file reading errors
-        reader.onerror = function () {
-            console.error('Error reading file:', reader.error);
-            alert('Failed to read the file.');
-        };
+       // Load the Automerge document
+                // patchHistory = Automerge.load(binaryData);
+        //         amDoc = Automerge.load(patchHistory.docs.main)
+
+        //         updateCytoscapeFromDocument(amDoc, 'buildUI');
+            
+        //         previousHash = patchHistory.head.hash
+                
+        //         reDrawHistoryGraph()
     
-        reader.readAsArrayBuffer(file); // Start reading the file
+        //         // set the document branch (aka title)  in the editor pane
+        //         // document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
+
+        //         saveDocument(patchHistoryKey, Automerge.save(patchHistory));
+        //         // enable new history button now that a synth has been loaded
+        //         // UI.menus.file.newPatchHistory.disabled = false
+        //     } catch (err) {
+        //         console.error('Failed to load Automerge document:', err);
+        //         alert('Failed to load Automerge document. The file may be corrupted.');
+        //     }
+        // };
+    
+        // // Handle file reading errors
+        // reader.onerror = function () {
+        //     console.error('Error reading file:', reader.error);
+        //     alert('Failed to read the file.');
+        // };
+    
+        // reader.readAsArrayBuffer(file); // Start reading the file
     });
 
     // load the demo synth from /public/assets
@@ -4002,6 +4042,7 @@ document.addEventListener("DOMContentLoaded", function () {
             
             saveFile("filename");
         } else {
+            
             saveAutomergeDocument('session');
         }
         
