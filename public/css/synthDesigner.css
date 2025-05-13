@@ -55,7 +55,7 @@ html, body {
 .menu-buttons {
   display: flex; /* Use flexbox for buttons */
   justify-content: flex-end; /* Align buttons to the right */
-  margin-left: auto; /* Push to the far right */
+  margin-right: auto; /* Push to the far right */
   align-items: center; /* Vertical alignment */
   gap: 10px; /* Spacing between buttons */
   padding: 40px;
@@ -174,7 +174,8 @@ html, body {
 
 /* Optional: Add padding for better visuals */
 #moduleList li {
-    padding: 5px;
+    font-size: 16px !important;
+    padding: 15px;
     cursor: pointer; /* Ensures pointer cursor on hover */
 }
 
@@ -192,16 +193,19 @@ html, body {
 
 /* Inner layout: Vertical split for cy and historySequencer */
 #cy {
+  height: 100%; /* Ensure it uses full height */
+  width: 1500px;
   flex: 8; /* 55% of vertical space */
   background-color: #f0f0f0; /* Optional for visibility */
   
 }
 
 #cytoscapeTooltipContainer {
-  flex: 0.5; /* 40% of vertical space */
+  flex: 2; /* 40% of vertical space */
   display: grid;
   background-color: #f8f8f8;
   height: 100%; /* Full height of this row */
+  width: 1500px;
   text-indent: 10px; /* Shift text by 10px */
 }
 /* Container for the row with historySequencer and thirdDiv */

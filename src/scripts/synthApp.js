@@ -1213,11 +1213,16 @@ document.addEventListener("DOMContentLoaded", function () {
             }, onChange, `loaded ${synthFile.filename}`);
 
             updateSynthWorklet('loadVersion', amDoc.synth.graph, null, amDoc.changeType)
-            
+         
+            // load synth graph from file into cytoscape
+            synthGraphCytoscape.json(patchHistory.synthFile.visualGraph)
+
             synthFile.visualGraph.elements.nodes.forEach((node, index)=>{
                 // set module grabbable to false -- prevents module movements in main view
                 if(node.classes === ':parent'){
                     // synthFile.visualGraph.elements.nodes[index].grabbable = false
+                    // lock the module's position
+                    synthGraphCytoscape.getElementById(node.data.id).lock();
                 }
                 // create overlays
                 if(node.classes === 'paramAnchorNode'){
@@ -1227,8 +1232,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     // index++
                 }
             })
-            // load synth graph from file into cytoscape
-            synthGraphCytoscape.json(patchHistory.synthFile.visualGraph)
+
 
             setTimeout(() => {
                 updateKnobPositionAndScale('all');
@@ -1433,7 +1437,6 @@ document.addEventListener("DOMContentLoaded", function () {
         let elements = forkedDoc.elements
         peers.remote = {}
         // only rebuild the UI if needed
-        console.log(cmd)
         if(cmd === 'buildUI'){
             parentNodePositions = []; // Array to store positions of all parent nodes
 
@@ -1529,36 +1532,6 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             refreshParamControls(App.synth.visual.modules);
-
-            // Object.keys(synthModules).forEach((moduleID)=>{
-            //     // some nodes don't have params (like the feedbackDelayNode), so ignore them (otherwise this throws an error whenever there's a feedback cable)
-            //     if(synthModules[moduleID].params){
-            //         Object.keys(synthModules[moduleID].params).forEach((param)=>{                  
-            //             let id = `paramControl_parent:${moduleID}_param:${param}`
-                        
-            //             let paramControl = document.getElementById(id) 
-            //             if (paramControl) {
-            //                 switch(paramControl.tagName){
-            //                     case 'INPUT':
-            //                         paramControl.value = synthModules[moduleID].params[param]
-            //                         $(paramControl).knobSet(paramControl.value);
-            //                     break
-        
-            //                     case 'SELECT':
-            //                         paramControl.value = synthModules[moduleID].params[param]
-            //                     break
-    
-            //                     default: console.warn('NEW UI DETECTED, CREATE A SWITCH CASE FOR IT ABOVE THIS LINE')
-            //                 }
-            //             } else {
-            //                 console.warn(`param with id "${id}" not found.`);
-            //                 console.log(paramControl)
-            //             }               
-            //         })
-            //     }
-                
-            // })
-                
         }
         
         
@@ -1568,44 +1541,11 @@ document.addEventListener("DOMContentLoaded", function () {
             // clear 
             synthGraphCytoscape.elements().remove();
 
-            console.log(syncedElements)
             // 3. Add new elements to Cytoscape
             synthGraphCytoscape.add(syncedElements)
 
             refreshParamControls(App.synth.visual.modules);
-
-            // loop through UI, update each param
-            // const synthModules = forkedDoc.synth.graph.modules
-            // Object.keys(App.synth.visual.modules).forEach((moduleID)=>{
-            //     // some nodes don't have params (like the feedbackDelayNode), so ignore them (otherwise this throws an error whenever there's a feedback cable)
-            //     if(App.synth.visual.modules[moduleID].params){
-            //         Object.keys(App.synth.visual.modules[moduleID].params).forEach((param)=>{                  
-            //             let id = `paramControl_parent:${moduleID}_param:${param}`
-                        
-            //             let paramControl = document.getElementById(id) 
-            //             if (paramControl) {
-            //                 switch(paramControl.tagName){
-            //                     case 'INPUT':
-            //                         paramControl.value = App.synth.visual.modules[moduleID].params[param]
-            //                         $(paramControl).knobSet(paramControl.value);
-            //                     break
-        
-            //                     case 'SELECT':
-            //                         paramControl.value = App.synth.visual.modules[moduleID].params[param]
-            //                     break
-    
-            //                     default: console.warn('NEW UI DETECTED, CREATE A SWITCH CASE FOR IT ABOVE THIS LINE')
-            //                 }
-            //               } else {
-            //                 console.warn(`param with id "${id}" not found.`);
-            //               }               
-            //         })
-            //     }
-                
-            // })
         }
-
-        // detectCycles()
     }    
     
 
@@ -1767,7 +1707,6 @@ document.addEventListener("DOMContentLoaded", function () {
         const historicalView = Automerge.view(requestedDoc, [targetHash]);
 
         if(historicalView.drawing){
-            console.log(historicalView.drawing)
             loadCanvasVersion(historicalView.drawing)
         }
         // ⬇️ Optional sync logic for collaboration mode
