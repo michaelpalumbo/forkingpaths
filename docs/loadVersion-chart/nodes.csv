@@ -1,0 +1,20 @@
+ID,Text,Shape
+start,Start,ellipse
+loadHead,Get current HEAD of branch,rectangle
+loadDoc,Load Automerge doc for branch,rectangle
+viewDoc,View state at targetHash (Automerge.view),rectangle
+hasDrawing,Does historicalView.drawing exist?,diamond
+loadDrawing,Call loadCanvasVersion(),rectangle
+isHead,Is targetHash === branch HEAD?,diamond
+onHeadSteps,Set newClone=false; update worklet & Cytoscape; update patchHistory; set current doc,rectangle
+isOtherBranch,Is branch ≠ current HEAD branch?,diamond
+otherBranchSteps,Update worklet & Cytoscape; set current doc; update patchHistory; set newClone=true,rectangle
+sameBranchSteps,Update worklet & Cytoscape; clone doc; set current doc; set newClone=true,rectangle
+fromPeer,Was this called fromPeer?,diamond
+skipIfPeer,(Optional) Send message to peer,rectangle
+recallMode,Get recallMode,rectangle
+openLoadVersion,"If mode = 'openLoadVersion' && not fromPeer",diamond
+callOpenRecall,Call openVersionRecall(),rectangle
+requestLoadVersion,"If mode = 'requestOpenLoadVersion' && not fromPeer",diamond
+warnNotImplemented,Log warning (not implemented),rectangle
+end,End,ellipse
