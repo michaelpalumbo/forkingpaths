@@ -43,7 +43,8 @@ export const config = {
             }
         },
         historyGraph:{
-            render: {
+            optimizations: {
+                hideEdgesOnViewport: false,
                 textureOnViewPort: false // set to true only if dealing with very, very large graphs. I needed this before I was condensing gestures to a single node
             }
         }

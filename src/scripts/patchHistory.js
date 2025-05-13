@@ -613,9 +613,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         container: document.getElementById('docHistory-cy'),
 
         // optimization settings:
-        hideEdgesOnViewport: true,
+        hideEdgesOnViewport: config.cytoscape.historyGraph.optimizations.hideEdgesOnViewport,
         pixelRatio: 1,
-        textureOnViewport: config.cytoscape.historyGraph.render.textureOnViewport,
+        textureOnViewport: config.cytoscape.historyGraph.optimizations.textureOnViewport,
 
         spacingFactor: 2, // Adjust spacing between nodes
         elements: [],
@@ -2226,7 +2226,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         switch(data.label.split(' ')[0]){
             case 'loaded':
                 overlayString = `
-                    <strong>Change Node:</strong> File Load<br>    
+                    <strong>changeNode:</strong> File Load<br>    
                     <strong>File:</strong> ${data.label.substring(data.label.indexOf(' ') + 1)}.fpsynth<br><br>
                     <strong>Branch:</strong> ${data.branch}<br>
                 `;
@@ -2235,7 +2235,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             case 'paramUpdate':
                 // console.log(parseParamUpdate(labelArray))
                 overlayString = `
-                    <strong>Change Node:</strong> Param<br>
+                    <strong>changeNode:</strong> Param<br>
                     <strong>Module:</strong> ${parseParamUpdate(data.label)[2]}<br>
                     <strong>Parameter:</strong> ${parseParamUpdate(data.label)[0]}<br>
                     <strong>Value:</strong> ${parseParamUpdate(data.label)[1]}<br><br>
@@ -2247,7 +2247,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 const module = labelArray[labelArray.length - 1];
                 const param = labelArray.slice(1, -1).join(" ");
                 overlayString = `
-                    <strong>Change Node:</strong> Gesture<br>
+                    <strong>changeNode:</strong> Gesture<br>
                     <strong>Module:</strong> ${module}<br>
                     <strong>Parameter:</strong> ${param}<br><br>
                     <strong>Branch:</strong> ${data.branch}<br>
@@ -2261,7 +2261,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 if(labelArray[1] === 'OUT'){
                     // cable started at an out
                     overlayString = `
-                        <strong>Change Node:</strong> Connect<br><br>
+                        <strong>changeNode:</strong> Connect<br><br>
                         <strong>Output Module:</strong> ${parents[0].split('_')[0]}_${parents[0].split('_')[1]}<br>
                         <strong>Output Jack:</strong> ${labelArray[1]}<br><br>
 
@@ -2273,7 +2273,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 } else {
                     // cable started at an IN, notice that the array indeces are all inverted from the way they are above
                     overlayString = `
-                        <strong>Change Node:</strong> Connect<br><br>
+                        <strong>changeNode:</strong> Connect<br><br>
             
                         <strong>Output Module:</strong> ${parents[1].split('_')[0]}_${parents[1].split('_')[1]}<br>
                         <strong>Output Jack:</strong> ${labelArray[3]}<br><br>
@@ -2298,7 +2298,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   
                         // cable started at an out
                         overlayString = `
-                            <strong>Change Node:</strong> Disconnect<br><br>
+                            <strong>changeNode:</strong> Disconnect<br><br>
                             <strong>Output Module:</strong> ${parentss[0].split('_')[0]}_${parentss[0].split('_')[1]}<br>
                             <strong>Output Jack:</strong> ${labelArray[3]}<br><br>
     
@@ -2316,7 +2316,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                   
 
                             overlayString = `
-                                <strong>Change Node:</strong> Disconnect<br><br>
+                                <strong>changeNode:</strong> Disconnect<br><br>
 
                                 <strong>Output Module:</strong> ${parentss[0].split('_')[0]}_${parentss[0].split('_')[1]}<br>
                                 <strong>Output Jack:</strong> ${jack1}<br><br>
@@ -2329,7 +2329,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                         } else {
     
                             overlayString = `
-                                <strong>Change Node:</strong> Disconnect<br><br>
+                                <strong>changeNode:</strong> Disconnect<br><br>
 
                                 <strong>Output Module:</strong> ${parentss[0].split('_')[0]}_${parentss[0].split('_')[1]}<br>
                                 <strong>Output Jack:</strong> ${labelArray[3].split('.')[1]}<br><br>
@@ -2348,7 +2348,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             case 'sequence':
                 overlayString = `
-                <strong>Change Node:</strong> Sequence<br>    
+                <strong>changeNode:</strong> Sequence<br>    
                 <strong>Name</strong> ${labelArray[1]}<br><br>
 
                 `
@@ -2363,25 +2363,55 @@ document.addEventListener("DOMContentLoaded", async () => {
             break
 
             case "merge":
-                let modulesA = stripHashes(data.mergeData.nodes[0].parents)
-                let modulesB = stripHashes(data.mergeData.nodes[1].parents)
+                console.log(data)
+
                 overlayString = `
-                <strong>Change Node:</strong> Merge<br><br>    
-                <strong>Parent Change Node #1:</strong><br>
-                <strong>   Module(s):</strong> ${modulesA}<br>
-                <strong>   Change</strong> ${data.mergeData.nodes[0].label}<br>
-                <strong>   Branch</strong> ${data.mergeData.nodes[0].branch}<br><br>
-                <strong>Parent Change Node #2:</strong><br>
-                <strong>   Module(s):</strong> ${modulesB}<br>
-                <strong>   Change</strong> ${data.mergeData.nodes[1].label}<br>
-                <strong>   Branch</strong> ${data.mergeData.nodes[1].branch}<br>
-                `
+                <strong>changeNode:</strong> Merge ${data.id.slice(0, 7)} <br><br>
+                <strong>Parent changeNode #1:</strong>`
+
+                let modulesA, modulesB
+
+
+                if(data.mergeData.nodes[0].label === 'merge'){
+                    overlayString += `
+                    merge ${data.mergeData.parents[0].slice(0, 7)}<br> `
+                } else {
+                    
+                    modulesA = stripHashes(data.mergeData.nodes[0].parents)
+                    // set overlay string with more change details
+                    overlayString += `          
+                    <br><strong>   Module(s):</strong> ${modulesA}<br>
+                    <strong>   Change</strong> ${data.mergeData.nodes[0].label}<br>
+                    <strong>   Branch</strong> ${data.mergeData.nodes[0].branch}<br>`
+                }
+
+                overlayString += `<br>
+                    <strong>Parent changeNode #2:</strong>
+                    `
+                if(data.mergeData.nodes[1].label === 'merge'){
+                    overlayString += `
+                    merge ${data.mergeData.parents[1].slice(0, 7)}<br> `
+                } else {
+                    modulesB = stripHashes(data.mergeData.nodes[1].parents)
+                    overlayString += `<br>  
+                    <strong>   Module(s):</strong> ${modulesB}<br>
+                    <strong>   Change</strong> ${data.mergeData.nodes[1].label}<br>
+                    <strong>   Branch</strong> ${data.mergeData.nodes[1].branch}<br>
+                    `
+                }
+                
+                
+                    
+                
+
+                
+              
                 // console.warn('need to set up merge case for historyNodeOverlay')
             break
 
             case 'draw':
                 overlayString = `
-                <strong>Change Node:</strong> Draw<br>    
+                <strong>changeNode:</strong> Draw<br>    
                 <strong>Strokes:</strong> ${labelArray[2]}<br><br>
                 <strong>Branch:</strong> ${data.branch}<br>
             `;
@@ -4231,6 +4261,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     };
 
     function stripHashes(input) {
+        console.log(input)
         return input
             .split(' ')
             .map(part => {
