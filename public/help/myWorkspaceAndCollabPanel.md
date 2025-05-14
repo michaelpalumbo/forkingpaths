@@ -1,18 +1,18 @@
 # Getting Started with Forking Paths Synth
 
 ## Workspace & Collaboration Panel
--------
 
 On the right side of the screen, you'll find the **Workspace & Collaboration Panel**. It includes:
 
--   **Local tools** for managing your own patches and preferences (under the **My Workspace** section)
-
--   **Collaborative tools** for connecting and interacting with other players
+- A **menubar** for viewing other pages of the Forking Paths App, configuring settings, and accessing testing info. 
+- A **Synth Browser** for exploring and loading synthesizers from your computer or online
+- Buttons for **Clearing, Saving, and Loading Patch Histories**
+- **Collaborative tools** for connecting and interacting with other players
 
 
 ## To begin using the synth:
 
-1.  Go to **File > Load Demo Synth**\
+1.  Open the **Synth Browser**, and then click **Load Demo Synth**
     This will load a prebuilt patch and automatically open the **Patch History** window in a new tab or window.
 
 2.  **Keep the Patch History window open.**\
@@ -25,46 +25,35 @@ On the right side of the screen, you'll find the **Workspace & Collaboration Pan
 
 -------
 
-### 🔧 My Workspace (Local Tools)
+## Workspace
 
-The **My Workspace** section includes menus like **File**, **View**, **System**, and **Testing**.\
-➡️ *These actions affect only your own session* --- they won't impact your peers unless you explicitly share changes.
+The **Workspace** section includes menus like **View**, **System**, and **Testing**, along with buttons for working with patch histories and the draw tool. 
 
-#### 📁 File
+### View
 
--   **Load Demo Synth**: Load a prebuilt patch with connected history.
+- **Open Patch History**: Launch the patch timeline interface.
+- **Open Synth Designer**: Design new synth layouts from scratch.
 
--   **Load Synth from Disk**: Import a saved `.fpsynth` file.
+### System
 
--   **Save Patch History**: Save your current patch and state.
+- **Settings**: Change volume, cable spacing, and toggle RMS analysis (⚠️ CPU-heavy).
+- **Resume Audio**: Reactivate the audio engine if it's paused.
 
-#### 👁️ View
+### Audio Engine Tips
 
--   **Open Patch History**: Launch the patch timeline interface.
-
--   **Open Synth Designer**: Design new synth layouts from scratch.
-
-#### ⚙️ System
-
--   **Settings**: Change volume, cable spacing, and toggle RMS analysis (⚠️ CPU-heavy).
-
--   **Resume Audio**: Reactivate the audio engine if it's paused.
-
-### 🎚 Audio Engine Tips
-
--   If the **System** menu blinks red, audio is paused.
-
--   Click **Resume Audio** to enable DSP.
-
-    -   `Pause Audio`: DSP is running 
-
-    -   `Resume Audio` (blinking red): DSP is off
-
+- If the **System** menu blinks red, audio is paused.
+- Click **Resume Audio** to enable DSP.
+- `Pause Audio`: DSP is running 
+- `Resume Audio` (blinking red): DSP is off
 -   If you're not hearing anything, this is the first thing to try --- browsers often block audio until you interact with the page.
 
-#### 🧪 Testing
+### Testing
 
--   **Give Feedback**: [User Feedback Form](https://forms.gle/aerpRUgBR7bH1xpB9)
+- **Give Feedback**: [User Feedback Form](https://forms.gle/aerpRUgBR7bH1xpB9)
+- **Report a Bug**: [Submit a GitHub Issue](https://github.com/michaelpalumbo/forkingpaths/issues/new)
 
--   **Report a Bug**: [Submit a GitHub Issue](https://github.com/michaelpalumbo/forkingpaths/issues/new)
+----
 
+### Draw Tool
+
+You can draw anywhere within the synth view. Click and drag to do this. If you open the history window you'll see that each pen stroke is saved in the version history. To erase your drawings, click "Erase Drawing"

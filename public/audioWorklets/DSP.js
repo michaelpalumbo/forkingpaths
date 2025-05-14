@@ -1822,6 +1822,7 @@ var require_cloneDeep = __commonJS({
 
 // src/audioWorklets/DSP.js
 var import_cloneDeep = __toESM(require_cloneDeep(), 1);
+
 var DSP = class extends AudioWorkletProcessor {
   constructor() {
     super();
@@ -2667,4 +2668,3 @@ var DSP = class extends AudioWorkletProcessor {
   }
 };
 registerProcessor("DSP", DSP);
-//! maybe this is where feedback patching fails, because we're setting the signalBuffersCurrent to new arrays each time?

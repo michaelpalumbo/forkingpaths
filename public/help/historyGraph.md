@@ -19,9 +19,10 @@ The layout is organized to help you follow the flow of ideas from past to presen
 
 You can:
 - **Click a node** to instantly load that version into the synth, which you will immediately see in the synth and hear in audio. 
-- **Click + drag one node onto another** to **merge** them (this combines both versions into a new 3rd version!) 
-- **Hover** over a node with your mouse to view info about that changeNode
+- **Combine Changes:** Click + drag one node onto another** to **merge them (this combines both versions into a new 3rd version!) 
+- **View infor** by hovering over a changeNode with the mouse
 - **Zoom** by holding down *z* and scrolling with the mouse
+- **Display the Full Graph** by clicking the 'Show Full Graph' button 
 - **Pan** Up and Down using the scrollwheel
 - **Pan** Right and Left by holding *shift* and scrolling with the mouse
 

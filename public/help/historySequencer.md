@@ -10,8 +10,9 @@ The History Sequencer is an 8-step table. Each row can be assigned to a change n
 2. Next, hover over a sequencer row, specifically under the "Step" column. 
 3. While holding **Cmd (Mac)** or **Ctrl (PC)**, click that row to assign the change node to a step. The step’s background color updates to match the node type, and its metadata is stored for playback.
 4. To **clear** a step, right-click its row
+5. Click **start sequence** to start the sequencer. Click it again to stop it. 
 
-Each step can also be assigned a duration (note length)
+- To adjust the tempo, drag the BPM slider 
 
 When a step contains a gesture, it's length is automatically quantized to the step's length. 
 
