@@ -7,9 +7,10 @@ This graph shows every change you've made to the patch — like a branching vers
 ### Interface Overview
 
 Each **circle** in the graph represents a change  (e.g. parameter tweak, cable movement, or gesture) that you made to the synth.
+Each **arrow** indicates the progression from one change to the next 
 
 - The **bottom-most node** is your starting point — usually a loaded synth file or a blank patch.
-- Arrows pointing **upward** indicate newer changes that build on earlier ones.
+
 - Some changes split into multiple paths (branches), or come back together (merges).
 
 The layout is organized to help you follow the flow of ideas from past to present.
@@ -18,8 +19,8 @@ The layout is organized to help you follow the flow of ideas from past to presen
 
 You can:
 - **Click a node** to instantly load that version into the synth, which you will immediately see in the synth and hear in audio. 
-- **Click + drag one node onto another** to **merge** them  
-- **Hover** to view tooltips showing timestamps, branch names, and module info  
+- **Click + drag one node onto another** to **merge** them (this combines both versions into a new 3rd version!) 
+- **Hover** over a node with your mouse to view info about that changeNode
 - **Zoom** by holding down *z* and scrolling with the mouse
 - **Pan** Up and Down using the scrollwheel
 - **Pan** Right and Left by holding *shift* and scrolling with the mouse
@@ -31,14 +32,14 @@ You can:
 Each node is styled by its change type.  
 Here’s what the colors represent:
 
-- <span style="color:#004cb8">●</span> `connect`: cable connected  
-- <span style="color:#b8000f">●</span> `disconnect`: cable disconnected  
-- <span style="color:#6b00b8">●</span> `paramUpdate`: knob or slider changed  
-- <span style="color:#00ffff">●</span> `gesture`: a modulation gesture was recorded  
-- <span style="color:#b89000">●</span> `merge`: a merge between two other changeNodes was recorded  
-- <span style="color:#00806b">●</span> `sequence`: a sequence was saved  
-- <span style="color:#b85c00">●</span> `draw`: the draw canvas changed  
-- <span style="color:#ccc">●</span> `blank_patch`: a new patch was started from scratch  
+- <span style="color: #004cb8">●</span> `connect`: cable connected  
+- <span style="color: #b8000f">●</span> `disconnect`: cable disconnected  
+- <span style="color: #6b00b8">●</span> `paramUpdate`: knob or slider changed  
+- <span style="color: #00ffff">●</span> `gesture`: a modulation gesture was recorded  
+- <span style="color: #b89000">●</span> `merge`: a merge between two other changeNodes was recorded  
+- <span style="color: #00806b">●</span> `sequence`: a sequence was saved  
+- <span style="color: #b85c00">●</span> `draw`: the draw canvas changed  
+- <span style="color: #ccc">●</span> `blank_patch`: a new patch was started from scratch  
 
 ---
 

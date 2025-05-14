@@ -23,19 +23,7 @@ You can:
 - Filter the history graph by change type  
 - Click a result to preview that patch state and gesture  
 - Click a result and then ⌘+Click (Mac) or Ctrl+Click (PC) on a sequencer row to assign it directly to a sequencer step  
-**Multi-select filters**: e.g., show only cable disconnections from a specific module  
-
----
-
-### Coming Soon
-
-The following features are planned for future updates:
-- sort connect changeNodes by cable colour (useful for those who organize cables by colouring)
-- **Batch sequencer assignment**: assign multiple query results to different steps at once  
-- **Time filters**: show only recent edits or changes made in a specific session  
-- **Author filters**: isolate changes made by a specific peer in collaborative settings  
-- **Graph highlighting**: visually spotlight all results directly in the history graph 
-- **Peer Changes**: Get changes specific to a peer (multiplayer mode) 
+- **Select multiple filters**: e.g., display connections and gestures  
 
 ---
 
@@ -48,3 +36,14 @@ The query tool is useful for:
 - **Sequencing**: assign key moments to steps in your patch sequencer  
 - **Collaboration**: see who did what, and when (peer-based filtering support in progress)  
 
+---
+
+### Coming Soon
+
+The following features are planned for future updates:
+- sort connect changeNodes by cable colour (useful for those who organize cables by colouring)
+- **Batch sequencer assignment**: assign multiple query results to different steps at once  
+- **Time filters**: show only recent edits or changes made in a specific session  
+- **Author filters**: isolate changes made by a specific peer in collaborative settings  
+- **Graph highlighting**: visually spotlight all results directly in the history graph 
+- **Peer Changes**: Get changes specific to a peer (multiplayer mode) 

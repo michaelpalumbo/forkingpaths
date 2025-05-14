@@ -14,14 +14,14 @@ A gesture is created by clicking and dragging on a knob in the synth interface (
 - Exact values can be viewed by howvering a gesture node and viewing in the editor toolbar
 
 You can:
-- 🖱 Click or drag points to preview their value visuall and audibly (its a little clunky atm, you need to grab+drag the node from slightly above its top)
-- ▶️ Press the play button to hear the full gesture  
-- 🔁 Loop gestures during playback  
-- ✏️ Drag points vertically to adjust their value (horizontal editing is not yet supported)
+- Click or drag points to preview their value visuall and audibly (its a little clunky atm, you need to grab+drag the node from slightly above its top)
+- Press the play button to hear the full gesture  
+- Loop gestures during playback  
+- Drag points vertically to adjust their value (horizontal editing is not yet supported)
 - Zoom in using your mouse scrollwheel
 - Pan using click+drag anywhere within the whitespace
 
-No edits are committed to history until you click **Save** — allowing for free experimentation.
+No edits are saved to the Patch History until you click **Save**
 
 ---
 
@@ -30,7 +30,7 @@ No edits are committed to history until you click **Save** — allowing for free
 Using the **Assign to...** dropdown menu, you can reassign a gesture to any other parameter.
 
 - The gesture is **rescaled** to fit the new target’s range  
-- For discrete menus, the gesture sweeps through menu items in a stepped fashion  
+- For menu parameters, such as waveform selection, the gesture sweeps through menu items in a stepped fashion  
 - Click play to preview the result
 - Click save to add it to the history
 
@@ -58,10 +58,11 @@ Gestures can be added directly to sequencer steps. They play in full during each
 
 You can also:
 - Assign a single gesture **point** to a sequencer step (as a discrete change) by clicking that point and then assigning it to the step (see the History Sequencer *help* for how to assign steps)
-- Save and load gestures to/from your computer (Coming soon!)  
+
 
 ---
 
 ### Coming Soon
 
-- 🛠 Multi-point editing and segment assignment are planned for future releases  
+- Multi-point editing and segment assignment are planned for future releases  
+- Save and load gestures to/from your computer
