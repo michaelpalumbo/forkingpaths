@@ -1,18 +1,20 @@
 # Getting Started with Forking Paths Synth
 
+Help panels just like this one are available throughout the app. Just click the green *Help* button within a given section of the page. 
+
 ## Workspace & Collaboration Panel
 
 On the right side of the screen, you'll find the **Workspace & Collaboration Panel**. It includes:
 
-- A **menubar** for viewing other pages of the Forking Paths App, configuring settings, and accessing testing info. 
+- A **menubar** for viewing other pages of the Forking Paths App, configuring settings, and providing feedback to Michael (the developer). 
 - A **Synth Browser** for exploring and loading synthesizers from your computer or online
 - Buttons for **Clearing, Saving, and Loading Patch Histories**
 - **Collaborative tools** for connecting and interacting with other players
 
 
-## To begin using the synth:
+## Quick Start:
 
-1.  Open the **Synth Browser**, and then click **Load Demo Synth**
+1.  Under the Workspace title, locate the **Open Synth Browser...** button, click it, and then click **Load Demo Synth**
     This will load a prebuilt patch and automatically open the **Patch History** window in a new tab or window.
 
 2.  **Keep the Patch History window open.**\
@@ -21,7 +23,7 @@ On the right side of the screen, you'll find the **Workspace & Collaboration Pan
 3.  For the best experience, use keyboard shortcuts to switch quickly between them:
         `Cmd + \`` (Mac) or` Alt + Tab` (PC)
 
-4. You can close this Help window, and open the *Help* button at the top-left of the app to get started with sound!
+4. To begin patching, you can close this Help window, and open the *Help* button at the top-left of the app to get started with sound!
 
 -------
 
@@ -47,9 +49,10 @@ The **Workspace** section includes menus like **View**, **System**, and **Testin
 - `Resume Audio` (blinking red): DSP is off
 -   If you're not hearing anything, this is the first thing to try --- browsers often block audio until you interact with the page.
 
-### Testing
-
-- **Give Feedback**: [User Feedback Form](https://forms.gle/aerpRUgBR7bH1xpB9)
+### Playtesting
+You can also access this in the "Give Feedback" menu.
+Options:
+- **Feedback Form**: [User Feedback Form](https://forms.gle/aerpRUgBR7bH1xpB9)
 - **Report a Bug**: [Submit a GitHub Issue](https://github.com/michaelpalumbo/forkingpaths/issues/new)
 
 ----

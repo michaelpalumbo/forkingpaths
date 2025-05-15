@@ -2,13 +2,13 @@
 
 This is the modular synthesizer interface. Use it to create patches and play sounds. 
 
-**If this is your first time: Click the other HELP button to get started** (located above "My Workspace")
+**If this is your first time: Click the other HELP button to get started** (located above "Workspace")
 
 ---
 
 ### Modules
 
-The demo synth includes:
+If you've loaded the *Demo Synth* from the *Synth Browser*, it includes:
 
 - **Oscillator:** Produces tones. Try selecting different waveforms  
 - **LFO:** A low-frequency oscillator for modulation  
