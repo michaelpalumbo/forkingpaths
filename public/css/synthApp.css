@@ -288,6 +288,29 @@ ul li {
 
 
 
+.workspaceButton {
+  display: inline-block;
+  padding: 0.6em 1.2em;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+  background-color: #0074c7;
+  border: none;
+  border-radius: 0.5em;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  text-align: center;
+  text-decoration: none;
+  user-select: none;
+}
+
+.workspaceButton:hover {
+  background-color: #5b9bc8;
+}
+
+.workspaceButton:active {
+  transform: scale(0.97);
+}
 
 
 
@@ -527,11 +550,13 @@ ul li {
 
 /* Middle column */
 #synthAndHistoryController {
+  height: calc(100% - 39px); /* total screen height minus header */
+
+  margin-top: 39px; /* pushes it below the fixed header */
   /* grid-column: 2; */ /* Middle column */
   grid-row: 2; /* Full height */
   display: flex;
   flex-direction: column; /* Stack children vertically */
-  height: 100%; /* Ensure it uses full height */
   width: 100%;
 }
 
