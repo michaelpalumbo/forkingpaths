@@ -2246,7 +2246,6 @@ var DSP = class extends AudioWorkletProcessor {
 
         case 'audioStatus':
           this.audioStatus = msg.state
-          
         break
       default:
         console.log(`no switch case exists for ${msg.cmd}`);

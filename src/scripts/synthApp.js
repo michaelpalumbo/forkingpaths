@@ -1225,7 +1225,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if(!patchHistory.synthFile) { synthFile = patchHistory.synthFile }
 
             let amMsg = makeChangeMessage(config.patchHistory.firstBranchName, `loaded ${synthFile.filename}`)
-            console.log(amMsg)
+        
             // Apply initial changes to the new document
             amDoc = Automerge.change(amDoc, amMsg, (amDoc) => {
                 amDoc.title = config.patchHistory.firstBranchName;
