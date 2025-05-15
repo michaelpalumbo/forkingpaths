@@ -376,6 +376,8 @@ document.addEventListener("DOMContentLoaded", function () {
         // Close button
         UI.overlays.firstTime.close.onclick = () => {
             overlay.style.display = 'none';
+            // open the Workspace overlay now:
+            toggleWorkspaceAndCollabPanelHelp()
         };
         
     } else {
@@ -2325,18 +2327,18 @@ document.addEventListener("DOMContentLoaded", function () {
     let activeWorkspaceHelp = false;
 
     function toggleWorkspaceAndCollabPanelHelp() {
-    const overlay = UI.overlays.help.workspaceAndCollab.overlay;
-    const content = UI.overlays.help.workspaceAndCollab.content;
+        const overlay = UI.overlays.help.workspaceAndCollab.overlay;
+        const content = UI.overlays.help.workspaceAndCollab.content;
 
-    if (activeWorkspaceHelp && !overlay.classList.contains("hidden")) {
-        overlay.classList.add("hidden");
-        activeWorkspaceHelp = false;
-        return;
-    }
+        if (activeWorkspaceHelp && !overlay.classList.contains("hidden")) {
+            overlay.classList.add("hidden");
+            activeWorkspaceHelp = false;
+            return;
+        }
 
-    content.innerHTML = workspaceAndCollabPanelHelpOverlay || "<em>Help not available.</em>";
-    overlay.classList.remove("hidden");
-    activeWorkspaceHelp = true;
+        content.innerHTML = workspaceAndCollabPanelHelpOverlay || "<em>Help not available.</em>";
+        overlay.classList.remove("hidden");
+        activeWorkspaceHelp = true;
     }
 
 
