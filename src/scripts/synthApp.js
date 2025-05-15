@@ -1873,7 +1873,6 @@ document.addEventListener("DOMContentLoaded", function () {
     // 
     function openVersionRecall(hash, branch) {
         if (!syncMessageDataChannel || syncMessageDataChannel.readyState !== 'open') {
-          console.warn("Cannot send open version recall: Data channel is not open.");
           return;
         }
       
