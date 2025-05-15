@@ -410,6 +410,13 @@ document.addEventListener("DOMContentLoaded", function () {
             synthWorklet = new AudioWorkletNode(audioContext, 'DSP');
             synthWorklet.connect(audioContext.destination);
          
+            // 🔁 Send initial state
+            sendContextStateToWorklet();
+
+            // 🔁 Listen for future state changes
+            audioContext.onstatechange = () => {
+                sendContextStateToWorklet();
+            };
 
             // Set volume after the worklet is ready
             updateSynthWorklet('setOutputVolume', savedVolume);
@@ -431,6 +438,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             };
 
+
+
         } catch (error) {
             console.error("❌ Failed to initialize AudioWorklet:", error);
         }
@@ -439,6 +448,27 @@ document.addEventListener("DOMContentLoaded", function () {
     // 🚀 Call setup function
     setupAudioWorklet();
 
+    // Track context state and notify the worklet
+    let lastContextState = audioContext.state;
+
+    // Send the current context state to the worklet
+    function sendContextStateToWorklet() {
+        if (synthWorklet?.port) {
+            synthWorklet.port.postMessage({
+                cmd: 'audioStatus',
+                state: audioContext.state
+            });
+        }
+    }
+
+    // Start polling every 1000ms
+    setInterval(() => {
+        const currentState = audioContext.state;
+        if (currentState !== lastContextState) {
+            lastContextState = currentState;
+            sendContextStateToWorklet(currentState);
+        }
+    }, 1000);
 
     // on load, check if patchHistory window is already open:
     const patchHistoryWindowOpen = localStorage.getItem('patchHistoryWindowOpen');

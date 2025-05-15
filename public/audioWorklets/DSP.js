@@ -1838,6 +1838,7 @@ var DSP = class extends AudioWorkletProcessor {
     this.outputVolume = 0.5;
     this.port.onmessage = (event) => this.handleMessage(event.data);
     this.analyze = false;
+    this.audioStatus = 'suspended';
   }
   getSampleRate() {
     return sampleRate;
@@ -2235,9 +2236,18 @@ var DSP = class extends AudioWorkletProcessor {
             targetNode.baseParams[msg.data.param] = msg.data.value;
           }
         } else {
-          console.warn(`Parameter ${msg.data.param} not found for node ${msg.data.parent}`);
+          if(this.audioStatus === 'running'){
+            // only warn about unknown params if the DSP is actually running (otherwise we were getting this warning when DSP was off, which makes sense)
+            console.warn(`Parameter ${msg.data.param} not found for node ${msg.data.parent}`);
+
+          }
         }
         break;
+
+        case 'audioStatus':
+          this.audioStatus = msg.state
+          
+        break
       default:
         console.log(`no switch case exists for ${msg.cmd}`);
     }
