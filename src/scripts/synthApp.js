@@ -3178,6 +3178,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 // reader.readAsText(file);
             break
 
+            case 'forceNewPatchHistoryDueToError':
+                createNewPatchHistory()
+                showSnackbar(msg.message)
+
+            break
+
             default: console.warn('no switch case exists for message:', msg)
         }
     };
@@ -3185,7 +3191,6 @@ document.addEventListener("DOMContentLoaded", function () {
     ws.onclose = () => {
         console.log('Disconnected from WebSocket server');
     };
-
 
 
     
@@ -5226,6 +5231,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // also call it after page load:
     resizeCanvas()
+
+    function showSnackbar(message = "Something happened") {
+        const snackbar = document.getElementById("snackbar");
+        snackbar.textContent = message;
+        snackbar.classList.add("show");
+    setTimeout(() => snackbar.classList.remove("show"), 5000);
+    }
 });
 
 

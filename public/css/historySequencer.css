@@ -9,7 +9,7 @@ html, body {
 }
 
 /* Ensure #leftColumn takes full height */
-#leftColumn {
+#graphColumn {
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -96,10 +96,6 @@ html, body {
   margin-bottom: 1.2rem;
 }
 
-
-
-
-
 .help-button {
   font-size: 1.2rem;
   padding: 0.2rem 0.5rem;
@@ -109,10 +105,6 @@ html, body {
   cursor: pointer;
   background-color: #d4fcdc;
   color: #1a3a1a;
-  
-  
-  
-
 }
 
 

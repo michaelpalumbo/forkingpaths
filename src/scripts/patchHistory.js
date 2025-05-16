@@ -33,9 +33,9 @@ if(!localStorage.appSettings){
 }else {
     
     appSettings = localStorage.getItem('appSettings')
-
 }
 
+let sequenceOrder = 'player-defined'
 let graphJSONstore
 let firstNode = null
 let emptyStepMode = 'passThrough'
@@ -1050,41 +1050,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                 setGraphFromHistoryRenderer(msg)
                 
                 graphJSONstore = msg
-
-                // historyDAG_cy.json(msg.data)
-                // // disable automatic layout so your manual position values are respected
-                // // historyDAG_cy.layout({ name: 'preset' }).run();
-                // historyDAG_cy.panBy({x: 25, y: 25 })
-
-                // const latestNode = historyDAG_cy.nodes().last()
-                // highlightGestureNode(latestNode)
-
-                // selectedNode = latestNode.data()
-
-                // panToBranch(latestNode)
-
-                // if(!selectedNode.label){
-                //     // dealing with a node that doesn't have the info we need yet
-                //     console.warn('node does not have the info needed to display they hover tooltip', selectedNode)
-                //     return
-                // }
-                // if(selectedNode.label.split(' ')[0] === 'gesture'){
-
-                //     // load the gesture into the gesture viewer
-                //     sendToMainApp(
-                //         {
-                //             cmd: "getGestureData",
-                //             data: { hash: selectedNode.id, branch: selectedNode.branch },
-                //         }
-                //     ); 
-
-                //     gestureData.branch = selectedNode.branch
-                //     gestureData.historyID = selectedNode.id
-
-                // }
-
-                // graphJSONstore = msg.data
-                
             break
         }
 
@@ -1244,6 +1209,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         let nextIndex = (currentStepIndex + stepsToAdvance) % storedSequencerTable.length;
         let nextStep = storedSequencerTable[nextIndex];
+
+
         // Count how many future steps should be skipped
         while (emptyStepMode === 'skip' && nextStep && nextStep.status === 'Inactive') {
             stepsToAdvance++;
@@ -1356,7 +1323,24 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
         }
 
-        currentStepIndex = (currentStepIndex + stepsToAdvance) % storedSequencerTable.length;
+        if(sequenceOrder === 'random'){
+
+            if(emptyStepMode === 'skip'){
+                // special case. only skip to a step that is active
+                // get all indices of active steps
+                const activeStepIndices = storedSequencerTable
+                    .map((step, index) => step.status === 'Active' ? index : null)
+                    .filter(index => index !== null);
+
+                console.log(activeStepIndices)
+                currentStepIndex = activeStepIndices[Math.floor(Math.random() * activeStepIndices.length)];
+            } else {
+                currentStepIndex = Math.floor(Math.random() * storedSequencerTable.length);
+            }
+        } else {
+            currentStepIndex = (currentStepIndex + stepsToAdvance) % storedSequencerTable.length;
+        }
+        
 
     }, stepLength)
 
@@ -1478,41 +1462,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
 
-
-
-    function randomSequencerStepOrder(){
-        const tableBody = document.getElementById("dynamicTableBody2");
-        const rows = Array.from(tableBody.querySelectorAll("tr")); // Convert NodeList to Array
-
-        // Shuffle rows using Fisher-Yates algorithm
-        for (let i = rows.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [rows[i], rows[j]] = [rows[j], rows[i]];
-        }
-
-        // Clear the table body
-        tableBody.innerHTML = "";
-
-        // Append the rows in the new random order
-        rows.forEach(row => tableBody.appendChild(row));
-
-
-    }
-    function setFixedLengths(){
-    //     const tableBody = document.getElementById("dynamicTableBody");
-    //     const rows = tableBody.querySelectorAll("tr");
-
-    //     if(storedSequencerTable){
-    //         for (let i = 0; i < storedSequencerTable.length - 1; i++) { 
-    //             // Update the 2nd column (Step Length) of the current row
-    //             const stepLengthCell = rows[i].children[1]; // 2nd cell of the current row
-    //             // console.log('stepLengthCell', stepLengthCell)
-    //             stepLengthCell.textContent = "4n"
-    //             storedSequencerTable[i].stepLength = "4n"
-    //         }
-    //         saveSequencerTable()
-    //     }
-    }
     function calculateEuclideanDistances(){
         if(!storedSequencerTable){
             return
@@ -1596,17 +1545,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     function setSequenceOrder(order){
+        sequenceOrder = order
         switch(order){
-            case 'entry':
-                console.log('setSequenceOrder')
+            case 'player-defined':
                 // createSequencerTable(storedSequencerTable)
             break
             case 'topologicalSort':
 
             break
             case 'random':
-                randomSequencerStepOrder()
-
+                // shuffleSequencerStepOrder()
+                // // set menu back to user-defined
+                // sequenceOrderSelect.value = 'player-defined'
             break
             default: console.log(order)
         }
