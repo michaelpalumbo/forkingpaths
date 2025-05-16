@@ -3064,7 +3064,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     startStopSequencerButton.textContent = "Start Sequencer";
 
                     // cancel any remaining gesture playback
-                    if(gestureData.scheduler.length > 0){
+                    if(gestureData.schedule && gestureData.scheduler.length > 0){
                         // cancel any remaining gesture playback
                         gestureData.scheduler.forEach(timeoutID => clearTimeout(timeoutID));
                         // clear the list after cancelling
