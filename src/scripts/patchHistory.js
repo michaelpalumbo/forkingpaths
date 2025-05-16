@@ -39,17 +39,15 @@ if(!localStorage.appSettings){
 let sequenceOrder = 'player-defined'
 let graphJSONstore
 let firstNode = null
-let emptyStepMode = 'passThrough'
 let stepLength = '4n'
-let sequencerMode = "mono";
+
 let polyphonicLoops = []; // Will hold individual loops for each row
 
 let selectedModule = null
 // patchHistory doc
 let patchHistory;
 let gestureNodes;
-let gestureRange
-let mouseoverState = null
+
 
 let sequencerData = {}
 
@@ -59,7 +57,8 @@ function resetSequencerData(){
         modes: {
             stepLengthFunction: null, //TODO
             playBack: 'mono',
-            emptyStep: 'passThrough'
+            emptyStep: 'passThrough',
+            order: 'player-defined'
         }
     }
 }
@@ -1321,7 +1320,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
         }
         // randomize the next step
-        if(sequenceOrder === 'random'){
+        if(sequencerData.modes.order === 'random'){
             // if skip mode is activated for empty steps
             if(sequencerData.modes.emptyStep === 'skip'){
                 // special case. only skip to a step that is active
@@ -1545,7 +1544,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     function setSequenceOrder(order){
-        sequenceOrder = order
+        sequencerData.modes.order = order
         switch(order){
             case 'player-defined':
                 // createSequencerTable(storedSequencerTable)
