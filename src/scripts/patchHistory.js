@@ -514,6 +514,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
         saveSequencerTable(); // Save the new state immediately
         setGestureSaveButtonState(false)
+        if(sequencerData.modes.stepLengthFunction === 'euclideanDistance'){
+            calculateEuclideanDistances()
+        }
     }
 
     function clearStepRow(index) {
@@ -1369,7 +1372,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
     function setStepLengthFunction(func){
-
+        sequencerData.modes.stepLengthFunction = func
             // Perform actions based on the selected value
         if (func === "setAllTo4n") {
             document.querySelectorAll(".step-length").forEach((select, i) => {
@@ -1386,7 +1389,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             calculateDistancesFromTableRows()
         }
         else if (func === "euclideanDistance") {
-
             calculateEuclideanDistances()
         }
     }
