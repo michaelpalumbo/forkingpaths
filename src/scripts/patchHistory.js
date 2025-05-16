@@ -3399,40 +3399,39 @@ document.addEventListener("DOMContentLoaded", async () => {
     //     });
     // });
 
-    const listElement = document.getElementById("analysisNodeList");
+    // const listElement = document.getElementById("analysisNodeList");
 
-    // Add a single click event listener to the parent <ul>
-    listElement.addEventListener("click", (event) => {
-        const clickedItem = event.target;
-        if (clickedItem.tagName === "LI") { // Ensure the target is a list item
-            // Remove highlight from all items
-            listElement.querySelectorAll(".list-item").forEach(item => item.classList.remove("is-active"));
+    // // Add a single click event listener to the parent <ul>
+    // listElement.addEventListener("click", (event) => {
+    //     const clickedItem = event.target;
+    //     if (clickedItem.tagName === "LI") { // Ensure the target is a list item
+    //         // Remove highlight from all items
+    //         listElement.querySelectorAll(".list-item").forEach(item => item.classList.remove("is-active"));
 
-            // Highlight the clicked item
-            clickedItem.classList.add("is-active");
-            selectedNode = {
-                label: clickedItem.dataset.label, 
-                id: clickedItem.dataset.id,
-                branch: clickedItem.dataset.branch
-            }
+    //         // Highlight the clicked item
+    //         clickedItem.classList.add("is-active");
+    //         selectedNode = {
+    //             label: clickedItem.dataset.label, 
+    //             id: clickedItem.dataset.id,
+    //             branch: clickedItem.dataset.branch
+    //         }
 
-            loadVersion(clickedItem.dataset.id, clickedItem.dataset.branch)
-            // if we requested a gesture, push it to the gesture player as well
-            if(selectedNode.label.split(' ')[0] === 'gesture'){
+    //         loadVersion(clickedItem.dataset.id, clickedItem.dataset.branch)
+    //         // if we requested a gesture, push it to the gesture player as well
+    //         if(selectedNode.label.split(' ')[0] === 'gesture'){
 
-                sendToMainApp(
-                    {
-                        cmd: "getGestureData",
-                        data: { hash: clickedItem.dataset.id, branch: clickedItem.dataset.branch, cmd: 'recallGesture' },
-                    }
-                ); 
+    //             sendToMainApp(
+    //                 {
+    //                     cmd: "getGestureData",
+    //                     data: { hash: clickedItem.dataset.id, branch: clickedItem.dataset.branch, cmd: 'recallGesture' },
+    //                 }
+    //             ); 
 
-                gestureData.branch = clickedItem.dataset.branch
-                gestureData.historyID = clickedItem.dataset.id
-            }
-        }
-    });
-    const titleElement = document.getElementById("analysisResultTitle");
+    //             gestureData.branch = clickedItem.dataset.branch
+    //             gestureData.historyID = clickedItem.dataset.id
+    //         }
+    //     }
+    // });
 
     function getCheckboxStates() {
         const container = document.getElementById('getHistoryAnalysisMenuCheckboxes');
@@ -3488,7 +3487,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             const currentStates = uniqueById(getCheckboxStates());
             if(currentStates.length > 0){
                 
-                populateAnalysisNodeList(currentStates)
+                historyGraphFromQueryResults(currentStates)
 
             }
 
@@ -3496,23 +3495,75 @@ document.addEventListener("DOMContentLoaded", async () => {
         showFullGraph()
     });
 
+    function historyGraphFromQueryResults(nodes){
+        // Group connect nodes by branch
+        let nodesByBranch = {};
+        nodes.forEach(node => {
+            let branch = node.branch;
+            if (!nodesByBranch[branch]) {
+                nodesByBranch[branch] = [];
+            }
+            nodesByBranch[branch].push(node);
+        });
+
+        // For each branch...
+        let newEdges = [];
+        for (let branch in nodesByBranch) {
+            // Sort connect nodes by timestamp
+            nodesByBranch[branch].sort((a, b) => a.timestamp - b.timestamp);
+
+            // Create new edges between consecutive connect nodes
+            let nodes = nodesByBranch[branch];
+            for (let i = 0; i < nodes.length - 1; i++) {
+                newEdges.push({
+                    data: {
+                        id: `edge-${nodes[i].id}-${nodes[i+1].id}`,
+                        source: nodes[i].id,
+                        target: nodes[i+1].id,
+                        branch: branch // optional, in case you want branch info on edges too
+                    }
+                });
+            }
+        }
+
+        // Then you can create the new skeleton graph
+        let newElements = nodes.map(n => ({ data: n })).concat(newEdges);
+        
+        // Extract only the node data cleanly
+        let filteredNodes = newElements
+        .filter(el => el.data && !el.data.source && !el.data.target)
+        .map(el => ({
+            id: el.data.id,
+            label: el.data.label,
+            branch: el.data.branch,
+            parents: el.data.parents,
+            timeStamp: el.data.timeStamp
+        }));
+
+        let { nodes: reducedNodes, edges: reducedEdges } = buildReducedGraphSkeleton(patchHistory, filteredNodes, docHistoryGraphStyling);
+
+
+ 
+        historyDAG_cy.elements().remove();
+        historyDAG_cy.add(reducedNodes.concat(reducedEdges));
+    }
 
     function populateAnalysisNodeList(nodes, group) {
         
         // titleElement.textContent = group; // Update the text content
 
-        listElement.innerHTML = ""; // Clear any existing content
+        // listElement.innerHTML = ""; // Clear any existing content
     
-        // Populate the list with node IDs
-        nodes.forEach(node => {
-            const listItem = document.createElement("li");
-            listItem.classList.add("list-item"); // Optional Bulma class
-            listItem.textContent = node.label; // Add the node ID as the content
-            listItem.dataset.label = node.label
-            listItem.dataset.id = node.id
-            listItem.dataset.branch = node.branch
-            listElement.appendChild(listItem);
-        });
+        // // Populate the list with node IDs
+        // nodes.forEach(node => {
+        //     const listItem = document.createElement("li");
+        //     listItem.classList.add("list-item"); // Optional Bulma class
+        //     listItem.textContent = node.label; // Add the node ID as the content
+        //     listItem.dataset.label = node.label
+        //     listItem.dataset.id = node.id
+        //     listItem.dataset.branch = node.branch
+        //     listElement.appendChild(listItem);
+        // });
 
         //todo: move this into its own function:
         // Group connect nodes by branch
