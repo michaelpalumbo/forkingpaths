@@ -12,15 +12,6 @@ const VITE_WS_URL = import.meta.env.VITE_WS_URL
 // const VITE_WS_URL = "wss://historygraphrenderer.onrender.com/10000"
 const ws = new WebSocket(VITE_WS_URL);
 
-// const ws = new WebSocket('ws://localhost:3001');
-
-// import NanoTimer from 'nanotimer';
-
-
-// const historyGraphWorker = new Worker("./workers/historyGraphWorker.js");
-
-// App settings
-let appSettings = {}
 if(!localStorage.appSettings){
     let settings = {
         sequencer: {
@@ -32,14 +23,14 @@ if(!localStorage.appSettings){
     
 }else {
     
-    appSettings = localStorage.getItem('appSettings')
+    // appSettings = localStorage.getItem('appSettings')
 }
 
 
-let sequenceOrder = 'player-defined'
+
 let graphJSONstore
 let firstNode = null
-let stepLength = '4n'
+
 
 let polyphonicLoops = []; // Will hold individual loops for each row
 
@@ -59,7 +50,8 @@ function resetSequencerData(){
             playBack: 'mono',
             emptyStep: 'passThrough',
             order: 'player-defined'
-        }
+        },
+        stepLength: '4n'
     }
 }
 
@@ -173,7 +165,6 @@ let gestureHighlightedNode = null
 let selectedNode= null
 let storedSequencerTable = null
 // * History Graph
-let existingHistoryNodeIDs
 let historyHighlightedNode = null
 let allowMultiSelect = false;
 let allowPan = true
@@ -234,12 +225,9 @@ let docHistoryGraphStyling = {
     }
 }
 
-// * History Sequencer
-let currentIndex = 0;
 let historySequencerWindow;
 
 const transport = Tone.getTransport();
-
 
 // * INPUTS
 
@@ -863,12 +851,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                         bpmValue.textContent = patchHistory.sequencer.bpm; // Display the current BPM
                         transport.bpm.value = patchHistory.sequencer.bpm; // Dynamically update the BPM
 
-                        // if(patchHistory.sequencer.stepLengthFunction){
-                        //     // sequencer settings:
-                        //     stepLengthFunctionSelect.value = patchHistory.sequencer.stepLengthFunction || 'fixed'
-                        //     setStepLengthFunction(stepLengthFunctionSelect.value)
-                        // }
-
                     }
 
 
@@ -1340,7 +1322,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
         // update the next step's length
         loop.interval = stepLength2;
-    }, stepLength)
+    }, sequencerData.stepLength)
 
 
     //* POLYPHONIC SEQUENCER
@@ -2018,29 +2000,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     }
 
-    
-    
-    // function animateSlider(duration) {
-    //     const slider = document.getElementById('gesturePlayhead');
-    //     const startTime = performance.now();
-
-    //     function updateSlider(timestamp) {
-    //         const elapsed = timestamp - startTime;
-    //         const progress = Math.min((elapsed / duration) * 100, 100); // Calculate progress percentage
-    //         slider.value = progress; // Update the slider's position
-
-    //         if (progress < 100) {
-    //             requestAnimationFrame(updateSlider); // Continue animation
-    //         }
-    //     }
-
-    //     requestAnimationFrame(updateSlider); // Start the animation
-    // }
-
-
-    
     // function to modify selectmenu
-    function modifyGestureParamAssign(cmd, data){
+    function modifyGestureParamAssign(){
+        if(!patchHistory){
+            console.warn('patchHistory missing from app')
+            return
+        }
         assignGestureToParam.innerHTML = '';
 
         // add first option
@@ -2050,17 +2015,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         newOption.disabled = true
         newOption.selected = true
         assignGestureToParam.add(newOption);
-
-        // add option default assignment
-        // newOption = document.createElement('option');
-        // // Set the text and value of the new option
-        // newOption.text = 'default'
-        // // newOption.value = "getSelectedModule";
-        // // newOption.id = 'selectedModuleOption'
-        // // newOption.disabled = true;
-
-        // // Add the new option to the select menu
-        // assignGestureToParam.add(newOption);
         
         synthParamRanges = {
 
@@ -3083,7 +3037,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         
                     // set the interval length based on this step's note length
                     loop.interval = storedSequencerTable[0].stepLength
-                    stepLength = loop.interval
+                    sequencerData.stepLength = loop.interval
                     transport.start();
                     // sequence.start(0);
                     loop.start(0)
