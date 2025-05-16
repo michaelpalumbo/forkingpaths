@@ -349,8 +349,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         const tableBody = document.getElementById("dynamicTableBody2");
         tableBody.innerHTML = ""; // Just in case it already exists
     
-        const lengthOptions = ['32n', '16n', '8n', '4n', '2n'];
-        const burstOptions = [0, 1, 2, 3, 4, 5];
+        const lengthOptions = ['32n', '16n', '8n', '4n'];
+
     
         for (let i = 0; i < 8; i++) {
         const row = document.createElement("tr");
@@ -1192,20 +1192,19 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Set the initial BPM
     transport.bpm.value = 120;
-    let currentNode = null
 
     // MONOPHONIC SEQUENCER (Lock Step Operation through steps 1-8 linearly)
     let currentStepIndex = 0; // Tracks the current step in the table
 
     const loop = new Tone.Loop(function(time){
         // ✅ Set current step's duration immediately
-        stepLength = storedSequencerTable[currentStepIndex].stepLength;
-        loop.interval = stepLength;
+        const stepLength2 = storedSequencerTable[currentStepIndex].stepLength;
+        const stepDuration = Tone.Time(stepLength2).toSeconds();
+        
         let stepsToAdvance = 1 // this could be used to randomize steps too. (i.e. if random is selected, randomize this value at each loop)
 
         // Get the current step
         const currentStep = storedSequencerTable[currentStepIndex];
-
 
         let nextIndex = (currentStepIndex + stepsToAdvance) % storedSequencerTable.length;
         let nextStep = storedSequencerTable[nextIndex];
@@ -1244,11 +1243,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             
             } 
             else if (targetRow.dataset.sequencerTable) {
-                console.log('snared')
-
                 const embeddedSeq = JSON.parse(targetRow.dataset.sequencerTable);
                 const totalSubsteps = embeddedSeq.length;
-                const outerStepDuration = Tone.Time(loop.interval).toSeconds(); // duration of current step
+                const outerStepDuration = stepDuration; // duration of current step
                 const subStepDuration = outerStepDuration / totalSubsteps;
             
                 const embeddedEvents = embeddedSeq.map((row, i) => {
@@ -1315,33 +1312,29 @@ document.addEventListener("DOMContentLoaded", async () => {
                     let blankPatch = firstNode.data()
                     loadVersion(blankPatch.id, blankPatch.branch)
                 break
-
-                // case 'skip':
-
-
-                // break
             }
         }
-
+        // randomize the next step
         if(sequenceOrder === 'random'){
-
+            // if skip mode is activated for empty steps
             if(emptyStepMode === 'skip'){
                 // special case. only skip to a step that is active
                 // get all indices of active steps
                 const activeStepIndices = storedSequencerTable
                     .map((step, index) => step.status === 'Active' ? index : null)
                     .filter(index => index !== null);
-
-                console.log(activeStepIndices)
+                // select a random step only from active steps
                 currentStepIndex = activeStepIndices[Math.floor(Math.random() * activeStepIndices.length)];
             } else {
+                // randomiz the the next step from the entire table
                 currentStepIndex = Math.floor(Math.random() * storedSequencerTable.length);
             }
         } else {
+            // normal mode, advance or skip to next step
             currentStepIndex = (currentStepIndex + stepsToAdvance) % storedSequencerTable.length;
         }
-        
-
+        // update the next step's length
+        loop.interval = stepLength2;
     }, stepLength)
 
 
@@ -3872,14 +3865,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     function mapDistanceToNoteLength(distance, maxDistance) {
         // Note lengths array (smallest to largest)
-        const noteLengths = ["32n", "16n", "8n", "4n", "2n", "1n"];
+        const noteLengths = ["32n", "16n", "8n", "4n"];
         const minDistance = 50; // Minimum threshold for distances
     
         // If distance is less than or equal to minDistance, return smallest note length
         if (distance <= minDistance) return "32n";
     
         // If distance is greater than or equal to maxDistance, return largest note length
-        if (distance >= maxDistance) return "1n";
+        if (distance >= maxDistance) return "4n";
     
         // Map the distance to an index in the note lengths array
         const normalizedDistance = (distance - minDistance) / (maxDistance - minDistance); // Normalize to [0, 1]
