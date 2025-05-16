@@ -339,6 +339,7 @@ window.addEventListener("load", () => {
 
 document.addEventListener("DOMContentLoaded", async () => {
 
+    const selectModuleChangesCheckbox = document.getElementById("history-getSelectedModuleChanges")
 
     // disable the sequencer save button
     setGestureSaveButtonState(true)
@@ -892,16 +893,20 @@ document.addEventListener("DOMContentLoaded", async () => {
 
                     if(event.data.data === 'unselected'){
                         // clear global variable
-                        // selectedModule = null
+                        selectedModule = null
+
+                        selectModuleChangesCheckbox.disabled = true
                         // remove results in history analysis 
 
                         // remove it as an option in the selectmenu
-                        modifyHistoryAnalysisMenu('removeSelectedModule')
+                        // modifyHistoryAnalysisMenu('removeSelectedModule')
                     }else {
+                        selectModuleChangesCheckbox.disabled = false
+                        
                         // store selected node in global variable
-                        // selectedModule = event.data.data
+                        selectedModule = event.data.data
                         // set it as an option in the selectmenu
-                        modifyHistoryAnalysisMenu('setSelectedModule', event.data.data)
+                        // modifyHistoryAnalysisMenu('setSelectedModule', event.data.data)
                         // when user selects it, retrieve all changes related to that node
                     }
 
@@ -3300,39 +3305,39 @@ document.addEventListener("DOMContentLoaded", async () => {
     // });
 
     // function to modify selectmenu
-    function modifyHistoryAnalysisMenu(cmd, data){
-        const selectModuleChangesCheckbox = document.getElementById("history-getSelectedModuleChanges")
+    // function modifyHistoryAnalysisMenu(cmd, data){
+    //     const selectModuleChangesCheckbox = document.getElementById("history-getSelectedModuleChanges")
 
-        switch(cmd){
+    //     switch(cmd){
             
-            case 'setSelectedModule':
-                selectModuleChangesCheckbox.disabled = false
+    //         case 'setSelectedModule':
+    //             selectModuleChangesCheckbox.disabled = false
 
-                // if(!document.getElementById("selectedModuleOption")){
-                //     // Create a new option element
-                //     let newOption = document.createElement('option');
-                //     // Set the text and value of the new option
-                //     newOption.text = data
-                //     newOption.value = "getSelectedModule";
-                //     newOption.id = 'selectedModuleOption'
-                //     // Add the new option to the select menu
-                //     menu.add(newOption);
-                // } else {
-                //     // retrieve option element
-                //     let updateOption = document.getElementById('selectedModuleOption');
-                //     // Set the text and value of the new option
-                //     updateOption.text = data;
-                //     updateOption.value = "getSelectedModule";
-                //     updateOption.id = 'selectedModuleOption'
-                //     // Add the new option to the select menu
-                //     // menu.add(updateOption);
-                // }
-            break;
-            case 'removeSelectedModule':
-                selectModuleChangesCheckbox.disabled = true
-            break
-        }
-    }
+    //             // if(!document.getElementById("selectedModuleOption")){
+    //             //     // Create a new option element
+    //             //     let newOption = document.createElement('option');
+    //             //     // Set the text and value of the new option
+    //             //     newOption.text = data
+    //             //     newOption.value = "getSelectedModule";
+    //             //     newOption.id = 'selectedModuleOption'
+    //             //     // Add the new option to the select menu
+    //             //     menu.add(newOption);
+    //             // } else {
+    //             //     // retrieve option element
+    //             //     let updateOption = document.getElementById('selectedModuleOption');
+    //             //     // Set the text and value of the new option
+    //             //     updateOption.text = data;
+    //             //     updateOption.value = "getSelectedModule";
+    //             //     updateOption.id = 'selectedModuleOption'
+    //             //     // Add the new option to the select menu
+    //             //     // menu.add(updateOption);
+    //             // }
+    //         break;
+    //         case 'removeSelectedModule':
+    //             selectModuleChangesCheckbox.disabled = true
+    //         break
+    //     }
+    // }
     // document.getElementById("getLeavesBtn").addEventListener("click", () => {
     //     // Filter nodes with no outgoing edges
     //     const leaves = historyDAG_cy.nodes().filter(node => node.outgoers('edge').length === 0);
@@ -3443,7 +3448,12 @@ document.addEventListener("DOMContentLoaded", async () => {
                     if(checkbox.value === 'leaves'){
                         const leaves = historyDAG_cy.nodes().filter(node => node.outgoers('edge').length === 0);
                         states.push(leaves.map(node => node.data()))
-                    } else {
+                    } 
+                    if(checkbox.value === 'getSelectedModuleChanges'){
+
+                        states.push(historyDAG_cy.nodes(`[parents *= "${selectedModule}"]`).map((node) => node.data()))
+                    }
+                    else {
 
                         if(index > 0){
                             queryString += `,[label *= "${checkbox.value}"]`
