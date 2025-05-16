@@ -1952,7 +1952,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             // stop sequencer
             transport.stop();
             loop.stop()
-            startStopButton.textContent = "Start Sequencer";
+            startStopSequencerButton.textContent = "Start Sequencer";
             // Call playback with a callback to handle each scheduled node in the gesture
             playGesture();
         }
@@ -2038,7 +2038,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             
                 }
 
-                if(gestureData.loop && gestureData.length === delay){
+                if(loopGesturesButton.checked && gestureData.length === delay){
                     playGesture('repeat')
                     // setTimeout(() => {
                     //     playGesture('repeat')
@@ -2046,8 +2046,26 @@ document.addEventListener("DOMContentLoaded", async () => {
                 }
             }, delay);
 
+
+
             gestureData.scheduler.push(timeoutID)
         });
+
+        // get the end of the gesture
+        const maxDelay = Math.max(...gestureData.nodes.map(node => node.data.timestamp - gestureData.startTime));
+
+        const finalTimeoutID = setTimeout(() => {
+            console.log('✅ All gesture events have completed.');
+            gestureCy.elements().removeClass('highlighted');
+
+            // if looping is off, set the stop button back to 'play'
+            if (!loopGesturesButton.checked) {
+                playStopGestureButton.textContent = 'Play'
+            }
+        }, maxDelay + 1); // +1 to ensure it's last
+
+        gestureData.scheduler.push(finalTimeoutID);
+        
 
 
     }
@@ -2567,13 +2585,19 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
 
-    const playGestureButton = document.getElementById("playGestureButton");
+    const playStopGestureButton = document.getElementById("playStopGestureButton");
 
-    playGestureButton.addEventListener("click", async () => {
+    playStopGestureButton.addEventListener("click", async () => {
         // stop sequencer
         transport.stop();
         loop.stop()
-        startStopButton.textContent = "Start Sequencer";
+        startStopSequencerButton.textContent = "Start Sequencer";
+        console.log(playStopGestureButton.textContent)
+        // update button state
+        if(playStopGestureButton.textContent === 'Play'){
+            console.log('switch')
+            playStopGestureButton.textContent = 'Stop'
+        }
         // Call playback with a callback to handle each scheduled node in the gesture
         playGesture();
         
@@ -2582,7 +2606,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     const loopGesturesButton = document.getElementById("loopGesturesButton");
 
     loopGesturesButton.addEventListener("click", async () => {
-        gestureData.loop = !gestureData.loop
     })
 
     // update the viewport boundaries whenever the window resizes
@@ -3068,10 +3091,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     // Start/Stop Control
-    const startStopButton = document.getElementById("startStopButton");
+    const startStopSequencerButton = document.getElementById("startStopSequencerButton");
     let isPlaying = false;
 
-    startStopButton.addEventListener("click", async () => {
+    startStopSequencerButton.addEventListener("click", async () => {
         // we have this here to prevent both modes running simultaneously (which can happen if anything glitches out)
         transport.stop();
         loop.stop();
@@ -3084,7 +3107,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     transport.stop();
                     // sequence.stop(0);
                     loop.stop()
-                    startStopButton.textContent = "Start Sequencer";
+                    startStopSequencerButton.textContent = "Start Sequencer";
                 } else {
                     await Tone.start(); // Required to start audio in modern browsers
         
@@ -3094,7 +3117,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     transport.start();
                     // sequence.start(0);
                     loop.start(0)
-                    startStopButton.textContent = "Stop Sequencer";
+                    startStopSequencerButton.textContent = "Stop Sequencer";
                 }
                 isPlaying = !isPlaying;
             break
@@ -3103,13 +3126,13 @@ document.addEventListener("DOMContentLoaded", async () => {
                 if (isPlaying) {
                     transport.stop();
                     stopPolyphonicSequencer(); // kill all row loops
-                    startStopButton.textContent = "Start Sequencer";
+                    startStopSequencerButton.textContent = "Start Sequencer";
                 } else {
                     await Tone.start();
             
                     transport.start();
                     startPolyphonicSequencer(); // each row starts looping
-                    startStopButton.textContent = "Stop Sequencer";
+                    startStopSequencerButton.textContent = "Stop Sequencer";
                 }
                 isPlaying = !isPlaying;
             break
@@ -3125,7 +3148,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         // stop the sequencer
         if (isPlaying) {
             transport.stop();
-            startStopButton.textContent = "Start Sequencer";
+            startStopSequencerButton.textContent = "Start Sequencer";
             isPlaying = !isPlaying;
         }      
  
