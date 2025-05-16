@@ -35,6 +35,7 @@ if(!localStorage.appSettings){
     appSettings = localStorage.getItem('appSettings')
 }
 
+
 let sequenceOrder = 'player-defined'
 let graphJSONstore
 let firstNode = null
@@ -54,7 +55,12 @@ let sequencerData = {}
 
 function resetSequencerData(){
     sequencerData = {
-        gestures: Array(8).fill(null)
+        gestures: Array(8).fill(null),
+        modes: {
+            stepLengthFunction: null, //TODO
+            playBack: 'mono',
+            emptyStep: 'passThrough'
+        }
     }
 }
 
@@ -858,11 +864,11 @@ document.addEventListener("DOMContentLoaded", async () => {
                         bpmValue.textContent = patchHistory.sequencer.bpm; // Display the current BPM
                         transport.bpm.value = patchHistory.sequencer.bpm; // Dynamically update the BPM
 
-                        if(patchHistory.sequencer.stepLengthFunction){
-                            // sequencer settings:
-                            stepLengthFunctionSelect.value = patchHistory.sequencer.stepLengthFunction || 'fixed'
-                            setStepLengthFunction(stepLengthFunctionSelect.value)
-                        }
+                        // if(patchHistory.sequencer.stepLengthFunction){
+                        //     // sequencer settings:
+                        //     stepLengthFunctionSelect.value = patchHistory.sequencer.stepLengthFunction || 'fixed'
+                        //     setStepLengthFunction(stepLengthFunctionSelect.value)
+                        // }
 
                     }
 
@@ -1211,7 +1217,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
         // Count how many future steps should be skipped
-        while (emptyStepMode === 'skip' && nextStep && nextStep.status === 'Inactive') {
+        while (sequencerData.modes.emptyStep === 'skip' && nextStep && nextStep.status === 'Inactive') {
             stepsToAdvance++;
             nextIndex = (currentStepIndex + stepsToAdvance) % storedSequencerTable.length;
             nextStep = storedSequencerTable[nextIndex];
@@ -1302,7 +1308,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             // const currentValue = burstSelect.value;
             // console.log(`Selected burst value: ${currentValue}`);
         } else {
-            switch(emptyStepMode){
+            switch(sequencerData.modes.emptyStep){
                 case 'passThrough':
                     // do nothing, let previous step's value continue
                 break
@@ -1317,7 +1323,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         // randomize the next step
         if(sequenceOrder === 'random'){
             // if skip mode is activated for empty steps
-            if(emptyStepMode === 'skip'){
+            if(sequencerData.modes.emptyStep === 'skip'){
                 // special case. only skip to a step that is active
                 // get all indices of active steps
                 const activeStepIndices = storedSequencerTable
@@ -1399,6 +1405,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             calculateDistancesFromTableRows()
         }
         else if (func === "euclideanDistance") {
+
             calculateEuclideanDistances()
         }
     }
@@ -2132,7 +2139,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     // *
 
     document.getElementById("emptyStepMode").addEventListener("change", (event) => {
-        emptyStepMode = event.target.value
+        sequencerData.modes.emptyStep = event.target.value
     });
 
     
@@ -2164,11 +2171,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
     
     // for switching between polyphonic and monophonic sequencing modes
-    const modeSelector = document.getElementById("sequencerMode");
+    const modeSelector = document.getElementById("playbackMode");
     modeSelector.addEventListener("change", (e) => {
-        sequencerMode = e.target.value;
+        sequencerData.modes.playBack = e.target.value;
         console.warn('see this line in the code for next todo, thanks')
-        if (sequencerMode === "poly") {
+        if (sequencerData.modes.playBack === "poly") {
             // todo: if sequencer playback is active, stop whichever mode is currently running and start the selected mode
             // i.e. comment out these 2 lines:
             // loop.stop()
@@ -3055,7 +3062,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         stopPolyphonicSequencer();
 
         // start either the monophonic or polyphonic sequencer
-        switch (sequencerMode){
+        switch (sequencerData.modes.playBack){
             case 'mono':
                 if (isPlaying) {
                     transport.stop();
