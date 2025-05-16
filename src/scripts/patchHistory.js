@@ -1323,7 +1323,10 @@ document.addEventListener("DOMContentLoaded", async () => {
                 case 'blank':
                     // console.log(firstNode.data())
                     let blankPatch = firstNode.data()
+                    highlightNode(firstNode)
                     loadVersion(blankPatch.id, blankPatch.branch)
+
+                    
                 break
             }
         }
