@@ -340,16 +340,17 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
 
         }
+        // grab user's settings
+        if(localStorage.getItem('sequencerSettings')){
+            let settings = JSON.parse(localStorage.getItem('sequencerSettings'))
+            sequencerData.settings = settings
+            // loop through settings and apply to menus
+            stepLengthFunctionSelect.value = settings.modes.stepLengthFunction
+            playBackModeSelector.value = settings.modes.playBack
+            document.getElementById("emptyStepMode").value = settings.modes.emptyStep
+            sequenceOrderSelect.value = settings.modes.order
+        }
 
-        let settings = JSON.parse(localStorage.getItem('sequencerSettings'))
-        sequencerData.settings = settings
-
-
-        // loop through settings and apply to menus
-        stepLengthFunctionSelect.value = settings.modes.stepLengthFunction
-        playBackModeSelector.value = settings.modes.playBack
-        document.getElementById("emptyStepMode").value = settings.modes.emptyStep
-        sequenceOrderSelect.value = settings.modes.order
     }
 
     resetSequencerData()
