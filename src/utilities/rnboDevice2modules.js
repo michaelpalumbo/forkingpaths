@@ -21,7 +21,7 @@ async function getJsonFiles(directoryPath) {
 
 
         Object.keys(audioNodes).forEach((module) => {
-            console.log(`processed module: ${module}`)
+            // console.log(`processed module: ${module}`)
         })
         let modules = {
             webAudioNodes: audioNodes, // this is easy, just add the audioNodes directly

@@ -211,7 +211,7 @@ fetch(`/help/myWorkspaceAndCollabPanel.md`)
   });
 
 const penCursorImage = new Image();
-penCursorImage.src = './assets/pen-cursor.png';
+penCursorImage.src = './assets/pencil.png';
 
 // *
 // *
