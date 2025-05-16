@@ -2055,7 +2055,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         const maxDelay = Math.max(...gestureData.nodes.map(node => node.data.timestamp - gestureData.startTime));
 
         const finalTimeoutID = setTimeout(() => {
-            console.log('✅ All gesture events have completed.');
             gestureCy.elements().removeClass('highlighted');
 
             // if looping is off, set the stop button back to 'play'
@@ -2588,18 +2587,30 @@ document.addEventListener("DOMContentLoaded", async () => {
     const playStopGestureButton = document.getElementById("playStopGestureButton");
 
     playStopGestureButton.addEventListener("click", async () => {
-        // stop sequencer
-        transport.stop();
-        loop.stop()
-        startStopSequencerButton.textContent = "Start Sequencer";
-        console.log(playStopGestureButton.textContent)
         // update button state
         if(playStopGestureButton.textContent === 'Play'){
-            console.log('switch')
+            // stop sequencer
+            transport.stop();
+            loop.stop()
+            startStopSequencerButton.textContent = "Start Sequencer";
             playStopGestureButton.textContent = 'Stop'
+            // Call playback with a callback to handle each scheduled node in the gesture
+            playGesture();
+
+        } else {
+            if(gestureData.scheduler.length > 0){
+                // cancel any remaining gesture playback
+                gestureData.scheduler.forEach(timeoutID => clearTimeout(timeoutID));
+                // clear the list after cancelling
+                gestureData.scheduler = []; 
+                // remove all highlights
+                gestureCy.elements().removeClass('highlighted');
+                playStopGestureButton.textContent = 'Play'
+            }
+
+
         }
-        // Call playback with a callback to handle each scheduled node in the gesture
-        playGesture();
+
         
     })
 
@@ -3108,6 +3119,16 @@ document.addEventListener("DOMContentLoaded", async () => {
                     // sequence.stop(0);
                     loop.stop()
                     startStopSequencerButton.textContent = "Start Sequencer";
+
+                    // cancel any remaining gesture playback
+                    if(gestureData.scheduler.length > 0){
+                        // cancel any remaining gesture playback
+                        gestureData.scheduler.forEach(timeoutID => clearTimeout(timeoutID));
+                        // clear the list after cancelling
+                        gestureData.scheduler = []; 
+                        // remove all highlights
+                        gestureCy.elements().removeClass('highlighted');
+                    }
                 } else {
                     await Tone.start(); // Required to start audio in modern browsers
         
@@ -3127,6 +3148,16 @@ document.addEventListener("DOMContentLoaded", async () => {
                     transport.stop();
                     stopPolyphonicSequencer(); // kill all row loops
                     startStopSequencerButton.textContent = "Start Sequencer";
+
+                    // cancel any remaining gesture playback
+                    if(gestureData.scheduler.length > 0){
+                        // cancel any remaining gesture playback
+                        gestureData.scheduler.forEach(timeoutID => clearTimeout(timeoutID));
+                        // clear the list after cancelling
+                        gestureData.scheduler = []; 
+                        // remove all highlights
+                        gestureCy.elements().removeClass('highlighted');
+                    }
                 } else {
                     await Tone.start();
             
