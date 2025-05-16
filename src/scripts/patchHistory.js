@@ -40,22 +40,7 @@ let patchHistory;
 let gestureNodes;
 
 
-let sequencerData = {}
 
-function resetSequencerData(){
-    sequencerData = {
-        gestures: Array(8).fill(null),
-        modes: {
-            stepLengthFunction: null, //TODO
-            playBack: 'mono',
-            emptyStep: 'passThrough',
-            order: 'player-defined'
-        },
-        stepLength: '4n'
-    }
-}
-
-resetSequencerData()
 // gestureCy data
 let gestureData = {}
 
@@ -332,6 +317,48 @@ window.addEventListener("load", () => {
 
 document.addEventListener("DOMContentLoaded", async () => {
 
+    const assignGestureToParam = document.getElementById("assignGestureToParam")
+    // UI
+    // Get the select element by its ID
+    const stepLengthFunctionSelect = document.getElementById("stepLengthFunction");
+    const playBackModeSelector = document.getElementById("playbackMode");
+        const sequenceOrderSelect = document.getElementById("sequenceOrder");
+
+    let sequencerData = {}
+
+    function resetSequencerData(){
+        sequencerData = {
+            gestures: Array(8).fill(null),
+            settings: {
+                modes: {
+                    stepLengthFunction: 'userEditable',
+                    playBack: 'mono',
+                    emptyStep: 'passThrough',
+                    order: 'player-defined'
+                },
+                stepLength: '4n'
+            }
+
+        }
+
+        let settings = JSON.parse(localStorage.getItem('sequencerSettings'))
+        sequencerData.settings = settings
+
+
+        // loop through settings and apply to menus
+        stepLengthFunctionSelect.value = settings.modes.stepLengthFunction
+        playBackModeSelector.value = settings.modes.playBack
+        document.getElementById("emptyStepMode").value = settings.modes.emptyStep
+        sequenceOrderSelect.value = settings.modes.order
+    }
+
+    resetSequencerData()
+
+    setInterval(() => {
+        localStorage.setItem('sequencerSettings', JSON.stringify(sequencerData.settings));
+    }, 10000); // 10,000 ms = 10 seconds
+
+
     const selectModuleChangesCheckbox = document.getElementById("history-getSelectedModuleChanges")
 
     // disable the sequencer save button
@@ -514,7 +541,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
         saveSequencerTable(); // Save the new state immediately
         setGestureSaveButtonState(false)
-        if(sequencerData.modes.stepLengthFunction === 'euclideanDistance'){
+        if(sequencerData.settings.modes.stepLengthFunction === 'euclideanDistance'){
             calculateEuclideanDistances()
         }
     }
@@ -584,11 +611,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         saveSequencerTable(); // optional: refresh internal state
     }
 
-    const assignGestureToParam = document.getElementById("assignGestureToParam")
-    // UI
-    // Get the select element by its ID
-    const stepLengthFunctionSelect = document.getElementById("stepLengthFunction");
-    const sequenceOrderSelect = document.getElementById("sequenceOrder");
+
     // todo: send a message to main app to request the latest automerge doc
     // todo: note that it might be necessary to only request this later on in the script...
 
@@ -1201,7 +1224,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
         // Count how many future steps should be skipped
-        while (sequencerData.modes.emptyStep === 'skip' && nextStep && nextStep.status === 'Inactive') {
+        while (sequencerData.settings.modes.emptyStep === 'skip' && nextStep && nextStep.status === 'Inactive') {
             stepsToAdvance++;
             nextIndex = (currentStepIndex + stepsToAdvance) % storedSequencerTable.length;
             nextStep = storedSequencerTable[nextIndex];
@@ -1292,7 +1315,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             // const currentValue = burstSelect.value;
             // console.log(`Selected burst value: ${currentValue}`);
         } else {
-            switch(sequencerData.modes.emptyStep){
+            switch(sequencerData.settings.modes.emptyStep){
                 case 'passThrough':
                     // do nothing, let previous step's value continue
                 break
@@ -1305,9 +1328,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
         }
         // randomize the next step
-        if(sequencerData.modes.order === 'random'){
+        if(sequencerData.settings.modes.order === 'random'){
             // if skip mode is activated for empty steps
-            if(sequencerData.modes.emptyStep === 'skip'){
+            if(sequencerData.settings.modes.emptyStep === 'skip'){
                 // special case. only skip to a step that is active
                 // get all indices of active steps
                 const activeStepIndices = storedSequencerTable
@@ -1325,7 +1348,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
         // update the next step's length
         loop.interval = stepLength2;
-    }, sequencerData.stepLength)
+    }, sequencerData.settings.stepLength)
 
 
     //* POLYPHONIC SEQUENCER
@@ -1372,7 +1395,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
     function setStepLengthFunction(func){
-        sequencerData.modes.stepLengthFunction = func
+        sequencerData.settings.modes.stepLengthFunction = func
             // Perform actions based on the selected value
         if (func === "setAllTo4n") {
             document.querySelectorAll(".step-length").forEach((select, i) => {
@@ -1528,7 +1551,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     function setSequenceOrder(order){
-        sequencerData.modes.order = order
+        sequencerData.settings.modes.order = order
         switch(order){
             case 'player-defined':
                 // createSequencerTable(storedSequencerTable)
@@ -2094,7 +2117,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     // *
 
     document.getElementById("emptyStepMode").addEventListener("change", (event) => {
-        sequencerData.modes.emptyStep = event.target.value
+        sequencerData.settings.modes.emptyStep = event.target.value
     });
 
     
@@ -2109,7 +2132,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
     
     document.getElementById("queryToolHelp").addEventListener("click", () => {
-        toggleHelpOverlay("queryTool", "right");
+        toggleHelpOverlay("queryTool", "left");
     });
     
     document.getElementById("historySequencerHelp").addEventListener("click", () => {
@@ -2126,11 +2149,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
     
     // for switching between polyphonic and monophonic sequencing modes
-    const modeSelector = document.getElementById("playbackMode");
-    modeSelector.addEventListener("change", (e) => {
-        sequencerData.modes.playBack = e.target.value;
+
+    playBackModeSelector.addEventListener("change", (e) => {
+        sequencerData.settings.modes.playBack = e.target.value;
         console.warn('see this line in the code for next todo, thanks')
-        if (sequencerData.modes.playBack === "poly") {
+        if (sequencerData.settings.modes.playBack === "poly") {
             // todo: if sequencer playback is active, stop whichever mode is currently running and start the selected mode
             // i.e. comment out these 2 lines:
             // loop.stop()
@@ -3017,7 +3040,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         stopPolyphonicSequencer();
 
         // start either the monophonic or polyphonic sequencer
-        switch (sequencerData.modes.playBack){
+        switch (sequencerData.settings.modes.playBack){
             case 'mono':
                 if (isPlaying) {
                     transport.stop();
@@ -3039,7 +3062,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         
                     // set the interval length based on this step's note length
                     loop.interval = storedSequencerTable[0].stepLength
-                    sequencerData.stepLength = loop.interval
+                    sequencerData.settings.stepLength = loop.interval
                     transport.start();
                     // sequence.start(0);
                     loop.start(0)

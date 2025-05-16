@@ -52,7 +52,7 @@ There are 4 menus in the top-right corner of the sequencer which select differen
 **Monophonic:** Steps play one after another, in order.
 - Each step plays for a set duration (e.g., "4n", "16n").
 
-**Polyphonic:** Each step is an independent loop.
+**Polyphonic:** Each step is an independent loop. (Currently Disabled -- Fixes coming soon!)
 - Step duration determines how often it loops.
 - Steps can overlap and play asynchronously.
 
