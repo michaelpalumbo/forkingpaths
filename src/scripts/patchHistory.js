@@ -539,11 +539,16 @@ document.addEventListener("DOMContentLoaded", async () => {
         if(stepLength){
             stepLengthSelect.value = stepLength
         }
-        saveSequencerTable(); // Save the new state immediately
+
         setGestureSaveButtonState(false)
+
         if(sequencerData.settings.modes.stepLengthFunction === 'euclideanDistance'){
             calculateEuclideanDistances()
+            // that function calls saveSequencerTable() afterwards already
+        } else {
+            saveSequencerTable(); // Save the new state immediately
         }
+
     }
 
     function clearStepRow(index) {
@@ -574,7 +579,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         row.removeAttribute("data-param");
         row.removeAttribute("data-parent");
       
-        saveSequencerTable();
+        if(sequencerData.settings.modes.stepLengthFunction === 'euclideanDistance'){
+            calculateEuclideanDistances()
+            // that function calls saveSequencerTable() afterwards already
+        } else {
+            saveSequencerTable(); // Save the new state immediately
+        }
     }
 
       
@@ -1466,6 +1476,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         storedSequencerTable = tableData
 
+
         // localStorage.sequencerTable = tableData
         return tableData; // Return the table data
     }
@@ -1474,6 +1485,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     function calculateEuclideanDistances(){
         if(!storedSequencerTable){
             return
+        }
+
+        if(!hasActiveNeighbor(storedSequencerTable)){
+            showSnackbar('Tip: Euclidean mode requires at least 2 consecutive active steps.')
         }
         const maxDistance = calculateMaxEuclideanDistance()
         const tableBody = document.getElementById("dynamicTableBody2");
@@ -4334,6 +4349,29 @@ document.addEventListener("DOMContentLoaded", async () => {
             })
             .join(' ');
     }
+
+
+    function hasActiveNeighbor() {
+        return storedSequencerTable.some((step, index) => {
+            if (step.status !== "Active") return false;
+
+            const prev = storedSequencerTable[index - 1];
+            const next = storedSequencerTable[index + 1];
+
+            const hasPrevActive = prev && prev.status === "Active";
+            const hasNextActive = next && next.status === "Active";
+
+            return hasPrevActive || hasNextActive;
+        });
+    }
+
+    function showSnackbar(message = "Something happened") {
+        const snackbar = document.getElementById("snackbar");
+        snackbar.textContent = message;
+        snackbar.classList.add("show");
+    setTimeout(() => snackbar.classList.remove("show"), 3000);
+    }
+
 
     
 })
