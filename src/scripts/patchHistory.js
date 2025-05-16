@@ -7,7 +7,6 @@ import modules from '../modules/modules.json' assert { type: 'json'}
 import { marked } from 'marked'
 import { config } from '../../config/forkingPathsConfig.js';
 
-console.log(config)
 // Use the correct protocol based on your site's URL
 const VITE_WS_URL = import.meta.env.VITE_WS_URL
 // const VITE_WS_URL = "wss://historygraphrenderer.onrender.com/10000"
@@ -596,10 +595,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     // todo: send a message to main app to request the latest automerge doc
     // todo: note that it might be necessary to only request this later on in the script...
 
-
-    
-
-    console.log(parseFloat(localStorage.getItem('docHistoryCy_Zoom')))
     //*
     //*
     //* CONFIGURE CYTOSCAPE INSTANCES
@@ -3457,8 +3452,12 @@ document.addEventListener("DOMContentLoaded", async () => {
                             queryString += `[label *= "${checkbox.value}"]`
 
                         }
+                        let results = historyDAG_cy.nodes(`[label *= "${checkbox.value}"]`).map((node) => node.data())
 
-                        states.push(historyDAG_cy.nodes(`[label *= "${checkbox.value}"]`).map((node) => node.data()))
+                        const filtered = results.filter(entry => entry.label.split(' ')[0] === checkbox.value);
+
+                        console.log(checkbox.value, filtered)
+                        states.push(filtered)
                         
 
                     }
@@ -3466,7 +3465,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             //   states[checkbox.value] = checkbox.checked;
             });
 
-        
+            // console.log(states)
         return states.flat();
       }
 
@@ -3474,11 +3473,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     const container = document.getElementById('getHistoryAnalysisMenuCheckboxes');
 
     container.addEventListener('change', (event) => {
-        console.log(event.target)
         setGraphFromHistoryRenderer(graphJSONstore)
         if (event.target.matches('input[type="checkbox"]')) {
             const currentStates = uniqueById(getCheckboxStates());
-            console.log(currentStates); // updated live!
             if(currentStates.length > 0){
                 
                 populateAnalysisNodeList(currentStates)
@@ -3511,7 +3508,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         // Group connect nodes by branch
         let nodesByBranch = {};
         nodes.forEach(node => {
-            console.log(node)
             let branch = node.branch;
             if (!nodesByBranch[branch]) {
                 nodesByBranch[branch] = [];
@@ -3781,7 +3777,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         position.x < extent.x1 || position.x > extent.x2 ||
         position.y < extent.y1 || position.y > extent.y2;
 
-        console.log(historyDAG_cy.zoom())
         if (isOutsideViewport) {
             // Pan to the node
             historyDAG_cy.pan({
@@ -4339,7 +4334,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     };
 
     function stripHashes(input) {
-        console.log(input)
         return input
             .split(' ')
             .map(part => {
