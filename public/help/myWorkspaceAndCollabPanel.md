@@ -2,39 +2,26 @@
 
 Help panels just like this one are available throughout the app. Just click the green *Help* button within a given section of the page. 
 
-## Workspace & Collaboration Panel
-
-On the right side of the screen, you'll find the **Workspace & Collaboration Panel**. It includes:
-
-- A **menubar** for viewing other pages of the Forking Paths App, configuring settings, and providing feedback to Michael (the developer). 
-- A **Synth Browser** for exploring and loading synthesizers from your computer or online
-- Buttons for **Clearing, Saving, and Loading Patch Histories**
-- **Collaborative tools** for connecting and interacting with other players
-
-
 ## Quick Start:
 
 1.  Under the Workspace title, locate the **Open Synth Browser...** button, click it, and then click **Load Demo Synth**
     This will load a prebuilt patch and automatically open the **Patch History** window in a new tab or window.
 
 2.  **Keep the Patch History window open.**\
-    You'll use it for sequencing, editing gestures, and navigating your patch history. If you accidentally close it, reopen it via **View > Open Patch History**.
+    You'll use it for sequencing, editing gestures, and navigating your patch history. If you accidentally close it, reopen it by clicking the **Open Patch History**.
 
 3.  For the best experience, use keyboard shortcuts to switch quickly between them:
         `Cmd + \`` (Mac) or` Alt + Tab` (PC)
 
-4. To begin patching, you can close this Help window, and open the *Help* button at the top-left of the app to get started with sound!
+4. Check that the app's audio is turned on. In the menubar is an item called **System**. If it is flashing red, that means that DSP is disabled. Click it and then click **Resume Audio** to enable it. 
+
+5. To begin patching, you can close this Help window, and open the *Help* button at the top-left of the app to get started with sound!
 
 -------
 
 ## Workspace
 
-The **Workspace** section includes menus like **View**, **System**, and **Testing**, along with buttons for working with patch histories and the draw tool. 
-
-### View
-
-- **Open Patch History**: Launch the patch timeline interface.
-- **Open Synth Designer**: Design new synth layouts from scratch.
+The **Workspace** section includes the menus **System** and **Testing**, along with buttons for working with the draw tool. 
 
 ### System
 
