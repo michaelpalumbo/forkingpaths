@@ -316,6 +316,31 @@ window.addEventListener("load", () => {
 
 
 document.addEventListener("DOMContentLoaded", async () => {
+    let UI = null
+    function initUI(){
+        if(UI) return UI // prevents these elements from being attached twice
+        return {
+            query: {
+
+            }, 
+            history: {
+
+            },
+            sequencer: {
+
+            }, 
+            gestureEditor: {
+                assignToParam: document.getElementById("assignGestureToParam")
+            },
+            overlays: {
+                help:{
+
+                }
+            }
+        }
+    }
+
+    UI = initUI();
 
     const assignGestureToParam = document.getElementById("assignGestureToParam")
     // UI
@@ -1703,12 +1728,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         for (let i = 0; i < nodes.length; i++) {
             // set the gestureAssign menu to this param
             if(i===0){
-                // assignGestureToParam.selectedIndex = 1; // Set to the second option (index is zero-based)
-                // assignGestureToParam.dispatchEvent(new Event('change')); // Manually trigger the change event
+                // UI.gestureEditor.assignToParam.selectedIndex = 1; // Set to the second option (index is zero-based)
+                // UI.gestureEditor.assignToParam.dispatchEvent(new Event('change')); // Manually trigger the change event
 
-                for (let i = 0; i < assignGestureToParam.options.length; i++) {
-                    if (assignGestureToParam.options[i].text === nodes[0].param && assignGestureToParam.options[i].dataset.parent === nodes[0].parent) {
-                        assignGestureToParam.selectedIndex = i;
+                for (let i = 0; i < UI.gestureEditor.assignToParam.options.length; i++) {
+                    if (UI.gestureEditor.assignToParam.options[i].text === nodes[0].param && UI.gestureEditor.assignToParam.options[i].dataset.parent === nodes[0].parent) {
+                        UI.gestureEditor.assignToParam.selectedIndex = i;
 
                         gestureData.assign = {
                             parent: null,
@@ -2050,7 +2075,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             console.warn('patchHistory missing from app')
             return
         }
-        assignGestureToParam.innerHTML = '';
+        UI.gestureEditor.assignToParam.innerHTML = '';
 
         // add first option
         let newOption = document.createElement('option');
@@ -2058,7 +2083,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         newOption.text = 'Assign...'
         newOption.disabled = true
         newOption.selected = true
-        assignGestureToParam.add(newOption);
+        UI.gestureEditor.assignToParam.add(newOption);
         
         synthParamRanges = {
 
@@ -2077,7 +2102,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             newOption.disabled = true;
 
             // Add the new option to the select menu
-            assignGestureToParam.add(newOption);
+            UI.gestureEditor.assignToParam.add(newOption);
 
             synthParamRanges[module] = { }
 
@@ -2114,7 +2139,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 newOption.id = `paramAssign_${paramNames[i]}`
 
                 // Add the new option to the select menu
-                assignGestureToParam.add(newOption);
+                UI.gestureEditor.assignToParam.add(newOption);
             }
 
         })
@@ -2493,7 +2518,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
 
-    document.getElementById("assignGestureToParam").addEventListener("change", (event) => { 
+    UI.gestureEditor.assignToParam.addEventListener("change", (event) => { 
         const selected = event.target.options[event.target.selectedIndex]; // Get the selected <option>
         gestureData.assign.parent = selected.dataset.parent || null
         gestureData.assign.param = selected.text
