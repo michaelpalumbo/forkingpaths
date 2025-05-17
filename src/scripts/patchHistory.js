@@ -321,33 +321,62 @@ document.addEventListener("DOMContentLoaded", async () => {
         if(UI) return UI // prevents these elements from being attached twice
         return {
             query: {
-
+                checkboxes: document.getElementById('getHistoryAnalysisMenuCheckboxes'),
+                selectModuleChangesCheckbox: document.getElementById("history-getSelectedModuleChanges")
             }, 
-            history: {
-
+            graph: {
+                cy: document.getElementById('docHistory-cy'),
+                showFull: document.getElementById("showFullGraph"),
+                toolTip: document.getElementById('historyNodeOverlay')
             },
             sequencer: {
+                control: {
+                    bpm: document.getElementById("bpmSlider"),
+                    startStop: document.getElementById("startStopSequencerButton"),
+                    clear: document.getElementById("clearSequencerButton"),
+                    save: document.getElementById("saveSequenceButton")
+                },
+                modes: {
+                    stepLengthFunctionSelect: document.getElementById("stepLengthFunction"),
+                    sequenceOrderSelect: document.getElementById("sequenceOrder"),
+                    emptyStepMode: document.getElementById("emptyStepMode"),
+                },
+                table: {
+                    body: document.getElementById("dynamicTableBody2")
+                }
+
 
             }, 
             gestureEditor: {
-                assignToParam: document.getElementById("assignGestureToParam")
+                assignToParam: document.getElementById("assignGestureToParam"),
+                playBackModeSelector: document.getElementById("playbackMode"),
+                cy: document.getElementById('gestureCy'),
+                display: document.getElementById('displayPointValue'),
+                save: document.getElementById("saveGestureButton"),
+                play: document.getElementById("playStopGestureButton"),
+                loop: document.getElementById("loopGesturesButton"),
+                ease: document.getElementById("gestureEasing")
             },
             overlays: {
                 help:{
-
-                }
+                    // interaction
+                    overlay: document.getElementById("helpOverlay"),
+                    content: document.getElementById("helpOverlayContent"),
+                    close: document.getElementById("closeHelpOverlay"),
+                    // content
+                    historyGraph: document.getElementById("historyGraphHelp"),
+                    queryTool: document.getElementById("queryToolHelp"),
+                    historySequencer: document.getElementById("historySequencerHelp"),
+                    gestureEditor: document.getElementById("gestureEditorHelp")
+                },
+                snackbar: document.getElementById("snackbar")
             }
         }
     }
 
     UI = initUI();
 
-    const assignGestureToParam = document.getElementById("assignGestureToParam")
-    // UI
-    // Get the select element by its ID
-    const stepLengthFunctionSelect = document.getElementById("stepLengthFunction");
-    const playBackModeSelector = document.getElementById("playbackMode");
-        const sequenceOrderSelect = document.getElementById("sequenceOrder");
+
 
     let sequencerData = {}
 
@@ -370,10 +399,10 @@ document.addEventListener("DOMContentLoaded", async () => {
             let settings = JSON.parse(localStorage.getItem('sequencerSettings'))
             sequencerData.settings = settings
             // loop through settings and apply to menus
-            stepLengthFunctionSelect.value = settings.modes.stepLengthFunction
-            playBackModeSelector.value = settings.modes.playBack
-            document.getElementById("emptyStepMode").value = settings.modes.emptyStep
-            sequenceOrderSelect.value = settings.modes.order
+            UI.sequencer.modes.stepLengthFunctionSelect.value = settings.modes.stepLengthFunction
+            UI.gestureEditor.playBackModeSelector.value = settings.modes.playBack
+            UI.sequencer.modes.emptyStepMode.value = settings.modes.emptyStep
+            UI.sequencer.modes.sequenceOrderSelect.value = settings.modes.order
         }
 
     }
@@ -385,15 +414,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     }, 10000); // 10,000 ms = 10 seconds
 
 
-    const selectModuleChangesCheckbox = document.getElementById("history-getSelectedModuleChanges")
 
     // disable the sequencer save button
     setGestureSaveButtonState(true)
 
     // setup sequencer table
     function generateSequencerTable() {
-        const tableBody = document.getElementById("dynamicTableBody2");
-        tableBody.innerHTML = ""; // Just in case it already exists
+        UI.sequencer.table.body.innerHTML = ""; // Just in case it already exists
     
         const lengthOptions = ['32n', '16n', '8n', '4n'];
 
@@ -442,7 +469,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         row.appendChild(burstCell);
     
         // Append the row
-        tableBody.appendChild(row);
+        UI.sequencer.table.body.appendChild(row);
         }
     }
     // create the sequencer table
@@ -452,7 +479,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     function attachSequencerListeners() {
         document.querySelectorAll(".step-length").forEach((select, i) => {
           select.addEventListener("change", () => {
-            stepLengthFunctionSelect.value = "userEditable"
+            UI.sequencer.modes.stepLengthFunctionSelect.value = "userEditable"
             setSequencerSaveButtonState(false)
             saveSequencerTable();
           });
@@ -466,8 +493,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
 
         // prevent right-click context menu popup on sequencer
-        const table = document.getElementById("dynamicTableBody2");
-        table.addEventListener("contextmenu", (e) => {
+
+        UI.sequencer.table.body.addEventListener("contextmenu", (e) => {
             e.preventDefault();
         });
 
@@ -661,7 +688,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     */
     cytoscape.use( dagre );
     const historyDAG_cy = cytoscape({
-        container: document.getElementById('docHistory-cy'),
+        container: UI.graph.cy,
 
         // optimization settings:
         hideEdgesOnViewport: config.cytoscape.historyGraph.optimizations.hideEdgesOnViewport,
@@ -785,7 +812,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     const gestureCy = cytoscape({
-        container: document.getElementById('gestureCy'), // Container ID
+        container: UI.gestureEditor.cy, // Container ID
 
         elements: [ ],
 
@@ -944,13 +971,13 @@ document.addEventListener("DOMContentLoaded", async () => {
                         // clear global variable
                         selectedModule = null
 
-                        selectModuleChangesCheckbox.disabled = true
+                        UI.query.selectModuleChangesCheckbox.disabled = true
                         // remove results in history analysis 
 
                         // remove it as an option in the selectmenu
                         // modifyHistoryAnalysisMenu('removeSelectedModule')
                     }else {
-                        selectModuleChangesCheckbox.disabled = false
+                        UI.query.selectModuleChangesCheckbox.disabled = false
                         
                         // store selected node in global variable
                         selectedModule = event.data.data
@@ -1160,75 +1187,20 @@ document.addEventListener("DOMContentLoaded", async () => {
     let activeHelpKey = null;
 
     function toggleHelpOverlay(key, columnSide = "left") {
-        const overlay = document.getElementById("helpOverlay");
-        const content = document.getElementById("helpOverlayContent");
         
-        if (activeHelpKey === key && !overlay.classList.contains("hidden")) {
-            overlay.classList.add("hidden");
+        if (activeHelpKey === key && !UI.overlays.help.overlay.classList.contains("hidden")) {
+            UI.overlays.help.overlay.classList.add("hidden");
             
             activeHelpKey = null;
             return;
         }
         // console.log(key, columnSide, helpTexts[key])
-        content.innerHTML = helpTexts[key] || "<em>Help not available.</em>";
-        // document.getElementById('helpOverlayContent').innerHTML = "<h3>Hello</h3><p>This is a test.</p>";
+        UI.overlays.help.content.innerHTML = helpTexts[key] || "<em>Help not available.</em>";
 
-
-        overlay.style.left = columnSide === "left" ? "50%" : "0%";
-        overlay.classList.remove("hidden");
+        UI.overlays.help.overlay.style.left = columnSide === "left" ? "50%" : "0%";
+        UI.overlays.help.overlay.classList.remove("hidden");
         activeHelpKey = key;
     }
-    
-
-
-    
-    // const helpOverlay = document.getElementById("helpOverlay");
-    // const helpOverlayContent = document.getElementById("helpOverlayContent");
-    // const closeHelpButton = document.getElementById("closeHelpOverlay");
-    
-    // let activeHelpKey = null; // Tracks which help section is open
-    
-    // document.querySelectorAll(".help-button").forEach(button => {
-    //     button.addEventListener("click", () => {
-    //         const helpKey = button.dataset.help; // e.g., "gestureEditor"
-    //         const mdPath = `/help/${helpKey}.md`; // markdown file path
-    //         const sectionEl = button.closest(".column"); // which side the button is on
-        
-    //         // Case 1: Opening new help or switching help content
-    //         if (helpOverlay.classList.contains("hidden") || activeHelpKey !== helpKey) {
-    //             fetch(mdPath)
-    //                 .then(res => {
-    //                     if (!res.ok) throw new Error(`Missing help file: ${mdPath}`);
-    //                     return res.text();
-    //                 })
-    //                 .then(md => {
-    //                     helpOverlayContent.innerHTML = marked.parse(md);
-    //                     helpOverlay.classList.remove("hidden");
-    //                     helpOverlay.style.left = sectionEl.classList.contains("left") ? "50%" : "0%";
-    //                     activeHelpKey = helpKey;
-    //                 })
-    //                 .catch(err => {
-    //                     helpOverlayContent.innerHTML = `<p><em>Help not available.</em></p>`;
-    //                     console.warn(`Could not load help overlay: ${mdPath}`, err);
-    //                     helpOverlay.classList.remove("hidden");
-    //                 });
-            
-    //             // Case 2: Clicking the same help button again → close overlay
-    //             } else {
-    //                 helpOverlay.classList.add("hidden");
-    //                 activeHelpKey = null;
-    //             }
-    //         });
-    //     });
-    
-    //     closeHelpButton.addEventListener("click", () => {
-    //     helpOverlay.classList.add("hidden");
-    //     activeHelpKey = null;
-    // });
-    
-
-
-
 
     // do this once:
     historyDAG_cy.panBy({x: 25, y: 0 })
@@ -1461,9 +1433,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Function to save the table's contents as a JS object
     function saveSequencerTable() {
 
-
-        const tableBody = document.getElementById("dynamicTableBody2");
-        const rows = tableBody.querySelectorAll("tr");
+        const rows = UI.sequencer.table.body.querySelectorAll("tr");
 
         // Extract the contents of each row into an array of objects
         const tableData = Array.from(rows).map(row => {
@@ -1517,8 +1487,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             showSnackbar('Tip: Euclidean mode requires at least 2 consecutive active steps.')
         }
         const maxDistance = calculateMaxEuclideanDistance()
-        const tableBody = document.getElementById("dynamicTableBody2");
-        const rows = tableBody.querySelectorAll("tr");
+
+        const rows = UI.sequencer.table.body.querySelectorAll("tr");
 
 
         for (let i = 0; i < storedSequencerTable.length - 1; i++) {
@@ -1557,8 +1527,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         if(!storedSequencerTable){
             return
         }
-        const tableBody = document.getElementById("dynamicTableBody2");
-        const rows = tableBody.querySelectorAll("tr");
+
+        const rows = UI.sequencer.table.body.querySelectorAll("tr");
         
         for (let i = 0; i < storedSequencerTable.length - 1; i++) {
             const currentNodeID = storedSequencerTable[i].node.id;
@@ -1606,7 +1576,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             case 'random':
                 // shuffleSequencerStepOrder()
                 // // set menu back to user-defined
-                // sequenceOrderSelect.value = 'player-defined'
+                // UI.sequencer.UI.sequencer.modes.sequenceOrderSelect.value = 'player-defined'
             break
             default: console.log(order)
         }
@@ -1952,7 +1922,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             // stop sequencer
             transport.stop();
             loop.stop()
-            startStopSequencerButton.textContent = "Start Sequencer";
+            UI.sequencer.control.startStop.textContent = "Start Sequencer";
             // Call playback with a callback to handle each scheduled node in the gesture
             playGesture();
         }
@@ -2038,7 +2008,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             
                 }
 
-                if(loopGesturesButton.checked && gestureData.length === delay){
+                if(UI.gestureEditor.loop.checked && gestureData.length === delay){
                     playGesture('repeat')
                     // setTimeout(() => {
                     //     playGesture('repeat')
@@ -2058,8 +2028,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             gestureCy.elements().removeClass('highlighted');
 
             // if looping is off, set the stop button back to 'play'
-            if (!loopGesturesButton.checked) {
-                playStopGestureButton.textContent = 'Play'
+            if (!UI.gestureEditor.loop.checked) {
+                UI.gestureEditor.play.textContent = 'Play'
             }
         }, maxDelay + 1); // +1 to ensure it's last
 
@@ -2160,41 +2130,41 @@ document.addEventListener("DOMContentLoaded", async () => {
     // * 
     // *
 
-    document.getElementById("emptyStepMode").addEventListener("change", (event) => {
+    UI.sequencer.modes.emptyStepMode.addEventListener("change", (event) => {
         sequencerData.settings.modes.emptyStep = event.target.value
     });
 
     
-    document.getElementById("showFullGraph").addEventListener("click", (event) => {
+    UI.graph.showFull.addEventListener("click", (event) => {
         showFullGraph()
     });
 
     // Assumes helpTexts[] is already populated via fetch + marked
 
-    document.getElementById("historyGraphHelp").addEventListener("click", () => {
+    UI.overlays.help.historyGraph.addEventListener("click", () => {
         toggleHelpOverlay("historyGraph", "left");
     });
     
-    document.getElementById("queryToolHelp").addEventListener("click", () => {
+    UI.overlays.help.queryTool.addEventListener("click", () => {
         toggleHelpOverlay("queryTool", "left");
     });
     
-    document.getElementById("historySequencerHelp").addEventListener("click", () => {
+    UI.overlays.help.historySequencer.addEventListener("click", () => {
         toggleHelpOverlay("historySequencer", "right");
     });
     
-    document.getElementById("gestureEditorHelp").addEventListener("click", () => {
+    UI.overlays.help.gestureEditor.addEventListener("click", () => {
         toggleHelpOverlay("gestureEditor", "right");
     });
     
-    document.getElementById("closeHelpOverlay").addEventListener("click", () => {
-        document.getElementById("helpOverlay").classList.add("hidden");
+    UI.overlays.help.close.addEventListener("click", () => {
+        UI.overlays.help.overlay.classList.add("hidden");
         activeHelpKey = null;
     });
     
     // for switching between polyphonic and monophonic sequencing modes
 
-    playBackModeSelector.addEventListener("change", (e) => {
+    UI.gestureEditor.playBackModeSelector.addEventListener("change", (e) => {
         sequencerData.settings.modes.playBack = e.target.value;
         console.warn('see this line in the code for next todo, thanks')
         if (sequencerData.settings.modes.playBack === "poly") {
@@ -2212,7 +2182,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
 
-    const overlay = document.getElementById('historyNodeOverlay');
 
     // Show and move the overlay
     historyDAG_cy.on('mouseover', 'node', function(evt) {
@@ -2422,23 +2391,22 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         
-        overlay.innerHTML = overlayString
-        overlay.style.display = 'block';
+        UI.graph.toolTip.innerHTML = overlayString
+        UI.graph.toolTip.style.display = 'block';
     });
 
     historyDAG_cy.on('mousemove', 'node', function(evt) {
-        overlay.style.left = `${evt.originalEvent.pageX + 15}px`;
-        overlay.style.top = `${evt.originalEvent.pageY + 10}px`;
+        UI.graph.toolTip.style.left = `${evt.originalEvent.pageX + 15}px`;
+        UI.graph.toolTip.style.top = `${evt.originalEvent.pageY + 10}px`;
     });
 
     historyDAG_cy.on('mouseout', 'node', function() {
-        overlay.style.display = 'none';
+        UI.graph.toolTip.style.display = 'none';
     });
       
 
-    const saveGestureButton = document.getElementById("saveGestureButton");
 
-    saveGestureButton.addEventListener("click", async () => {
+    UI.gestureEditor.save.addEventListener("click", async () => {
         // re-disable the save button
         setGestureSaveButtonState(true)
         // we need this parentNode to know where to create a new branch from for the cloned gesture
@@ -2554,18 +2522,14 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     })
 
-
-
-    const playStopGestureButton = document.getElementById("playStopGestureButton");
-
-    playStopGestureButton.addEventListener("click", async () => {
+    UI.gestureEditor.play.addEventListener("click", async () => {
         // update button state
-        if(playStopGestureButton.textContent === 'Play'){
+        if(UI.gestureEditor.play.textContent === 'Play'){
             // stop sequencer
             transport.stop();
             loop.stop()
-            startStopSequencerButton.textContent = "Start Sequencer";
-            playStopGestureButton.textContent = 'Stop'
+            UI.sequencer.control.startStop.textContent = "Start Sequencer";
+            UI.gestureEditor.play.textContent = 'Stop'
             // Call playback with a callback to handle each scheduled node in the gesture
             playGesture();
 
@@ -2577,18 +2541,13 @@ document.addEventListener("DOMContentLoaded", async () => {
                 gestureData.scheduler = []; 
                 // remove all highlights
                 gestureCy.elements().removeClass('highlighted');
-                playStopGestureButton.textContent = 'Play'
+                UI.gestureEditor.play.textContent = 'Play'
             }
 
 
         }
 
         
-    })
-
-    const loopGesturesButton = document.getElementById("loopGesturesButton");
-
-    loopGesturesButton.addEventListener("click", async () => {
     })
 
     // update the viewport boundaries whenever the window resizes
@@ -2616,10 +2575,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     // get node mouseovers for displaying the value
     gestureCy.on('mouseover', 'node', (event)=>{
         const node = event.target.data()
-
-        const displayValue = document.getElementById('displayPointValue');
-        displayValue.textContent = `${node.param}: ${node.value.toFixed(2)}`;
-
+        // assign the value
+        UI.gestureEditor.display.textContent = `${node.param}: ${node.value.toFixed(2)}`;
+        // highlight the gesture data point in graph
         highlightGestureNode(event.target)
 
     })
@@ -2721,10 +2679,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         })
 
         // set displayPointValue in gesture editor toolbar
-        const displayValue = document.getElementById('displayPointValue');
-        displayValue.textContent = `${gestureNode.param}: ${updatedValue.toFixed(2)}`;
+        UI.gestureEditor.display.textContent = `${gestureNode.param}: ${updatedValue.toFixed(2)}`;
 
-        if(document.getElementById("saveGestureButton").disabled){
+        if(UI.gestureEditor.save.disabled){
             // enable the gesture clone button
             setGestureSaveButtonState(false)
         }
@@ -2749,7 +2706,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     })
 
 
-    document.getElementById("gestureEasing").addEventListener("change", (event) => { 
+    UI.gestureEditor.ease.addEventListener("change", (event) => { 
 
         // set easeFunction
         gestureData.easeFunction = event.target.value
@@ -3053,9 +3010,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     // });
 
     // BPM Slider Control
-    const bpmSlider = document.getElementById("bpmSlider");
+
     // Listen for slider changes
-    bpmSlider.addEventListener('input', (event) => {
+    UI.sequencer.control.bpm.addEventListener('input', (event) => {
         let bpm = parseInt(event.target.value, 10)
 
         const update = {
@@ -3073,11 +3030,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     });
 
-    // Start/Stop Control
-    const startStopSequencerButton = document.getElementById("startStopSequencerButton");
     let isPlaying = false;
 
-    startStopSequencerButton.addEventListener("click", async () => {
+    UI.sequencer.control.startStop.addEventListener("click", async () => {
         // we have this here to prevent both modes running simultaneously (which can happen if anything glitches out)
         transport.stop();
         loop.stop();
@@ -3090,7 +3045,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     transport.stop();
                     // sequence.stop(0);
                     loop.stop()
-                    startStopSequencerButton.textContent = "Start Sequencer";
+                    UI.sequencer.control.startStop.textContent = "Start Sequencer";
 
                     // cancel any remaining gesture playback
                     if(gestureData.schedule && gestureData.scheduler.length > 0){
@@ -3110,7 +3065,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     transport.start();
                     // sequence.start(0);
                     loop.start(0)
-                    startStopSequencerButton.textContent = "Stop Sequencer";
+                    UI.sequencer.control.startStop.textContent = "Stop Sequencer";
                 }
                 isPlaying = !isPlaying;
             break
@@ -3119,7 +3074,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 if (isPlaying) {
                     transport.stop();
                     stopPolyphonicSequencer(); // kill all row loops
-                    startStopSequencerButton.textContent = "Start Sequencer";
+                    UI.sequencer.control.startStop.textContent = "Start Sequencer";
 
                     // cancel any remaining gesture playback
                     if(gestureData.scheduler.length > 0){
@@ -3135,7 +3090,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             
                     transport.start();
                     startPolyphonicSequencer(); // each row starts looping
-                    startStopSequencerButton.textContent = "Stop Sequencer";
+                    UI.sequencer.control.startStop.textContent = "Stop Sequencer";
                 }
                 isPlaying = !isPlaying;
             break
@@ -3143,317 +3098,68 @@ document.addEventListener("DOMContentLoaded", async () => {
         
     });
 
-    // Clear sequencer button
-    const clearSequencerButton = document.getElementById("clearSequencerButton");
-
-
-    clearSequencerButton.addEventListener("click", async () => {
+    // Clear sequencer
+    UI.sequencer.control.clear.addEventListener("click", async () => {
         // stop the sequencer
         if (isPlaying) {
             transport.stop();
-            startStopSequencerButton.textContent = "Start Sequencer";
+            UI.sequencer.control.startStop.textContent = "Start Sequencer";
             isPlaying = !isPlaying;
         }      
  
         resetSequencerTable()
     });
 
-    // document.getElementById('dynamicTableBody').addEventListener('mouseover', (event) => {
-    //     // Find the closest table row from the event target
-    //     const row = event.target.closest('tr');
-    //     // Ensure the row is within the dynamicTableBody
-    //     if (row && document.getElementById('dynamicTableBody').contains(row) && hid.key.cmd) {
-    //         // You can perform your desired actions here
-
-    //         // Highlight the current step in the table
-    //         const tableRows = document.querySelectorAll("#dynamicTableBody tr");
-    //         tableRows.forEach((row) => row.classList.remove("table-set-step"));
-         
-    //         row.classList.add("table-set-step");
-            
-    //     }
-    // });
-
-
-
-    // Listen for the select event on nodes
-    // let historyBoxSelect = true // this is necessary because this event listener fires many times otherwise
-    // historyDAG_cy.on("boxselect", "node", () => {
-    //     if(historyBoxSelect){
-
-    //         historyBoxSelect = false
-
-
-    //         // first remove the highlighting of any earlier selected nodes:
-    //         const sequencerNodes = historyDAG_cy.nodes('.sequencerNode');
-    //         if(sequencerNodes.length > 0){
-    //             sequencerNodes.forEach((node) => {
-    //                 node.removeClass("sequencerNode");
-    //             });
-    //         }
-
-
-    //         let selected = historyDAG_cy.$("node:selected"); // Get all selected nodes
-            
-            
-    //         historyDAG_cy.edges().removeClass("sequencerEdge");
-
-    //         if (selected.length > 1) {
-    //             selected.addClass("sequencerNode");
-
-    //             if(hid.key.cmd){
-    //                 // if the cmd key was held during selection, set these nodes as a gesture
-    //                 // createGestureGraph(selected)
-    //             }else {
-    //                 // if just shift was held down, update the sequencer table
-    //                 // update sequencer table
-    //                 // replaceStepSequencerTable(selected)
-    //             }
-
-
-    //         }
-
-    //         // Reset the historyBoxSelect flag after a short delay
-    //         setTimeout(() => {
-    //             historyDAG_cy.$('node:selected').unselect();
-    //             historyBoxSelect = true;
-    //         }, 50); // Adjust the delay as needed to debounce the event
-    //     }
-    // });
-
-
-
-
     // *
     // *
     // * HISTORY GRAPH ANALYSIS
     // * 
     // *
-    // Add an event listener for the 'change' event
-    // document.getElementById("getHistoryAnalysisMenu").addEventListener("change", (event) => {
-    //     const selected = event.target.value; // Get the selected option's value
-
-    //     switch(selected){
-
-    //         case 'getLeaves':
-    //             // Filter nodes with no outgoing edges
-    //             const leaves = historyDAG_cy.nodes().filter(node => node.outgoers('edge').length === 0);
-    //             const leafNodes = leaves.map(node => node.data());
-
-    //             populateAnalysisNodeList(leafNodes, 'Leaf Nodes')
-    //         break
-
-    //         case 'paramUpdate':
-    //             populateAnalysisNodeList(historyDAG_cy.nodes(`[label *= "paramUpdate"]`).map((node) => node.data()), 'All Param Changes')
-
-    //         break
-
-    //         case 'getGestures':
-    //             populateAnalysisNodeList(historyDAG_cy.nodes(`[label *= "gesture"]`).map((node) => node.data()), 'All Gestures')
-
-    //         break
-
-    //         case 'getCables':
-    //             populateAnalysisNodeList(historyDAG_cy.nodes(`[label *= "connect"]`).map((node) => node.data()), 'All Cable Changes: Connections')
-    //         break
-
-    //         case 'getMerges':
-    //             populateAnalysisNodeList(historyDAG_cy.nodes(`[label *= "merge"]`).map((node) => node.data()), 'All Merges')
-    //         break
-
-    //         case 'getSelectedModule':
-    //             const option = document.getElementById("selectedModuleOption")
-    //             const matchingChanges = historyDAG_cy.nodes().filter((node) => {
-    //                 const parentString = node.data().parents; // Access the 'parent' field in data
-    //                 return parentString.includes(option.text);
-    //             }).map((node) => node.data())
-    //             populateAnalysisNodeList(matchingChanges, option.text.split('_')[0] + '_' + option.text.split('_')[1])
-    //         break
-
-    //         default: console.warn('no switch case exists for analysis type of ', selected)
-    //     }
-
-        
-    // });
-
-    // function to modify selectmenu
-    // function modifyHistoryAnalysisMenu(cmd, data){
-    //     const selectModuleChangesCheckbox = document.getElementById("history-getSelectedModuleChanges")
-
-    //     switch(cmd){
-            
-    //         case 'setSelectedModule':
-    //             selectModuleChangesCheckbox.disabled = false
-
-    //             // if(!document.getElementById("selectedModuleOption")){
-    //             //     // Create a new option element
-    //             //     let newOption = document.createElement('option');
-    //             //     // Set the text and value of the new option
-    //             //     newOption.text = data
-    //             //     newOption.value = "getSelectedModule";
-    //             //     newOption.id = 'selectedModuleOption'
-    //             //     // Add the new option to the select menu
-    //             //     menu.add(newOption);
-    //             // } else {
-    //             //     // retrieve option element
-    //             //     let updateOption = document.getElementById('selectedModuleOption');
-    //             //     // Set the text and value of the new option
-    //             //     updateOption.text = data;
-    //             //     updateOption.value = "getSelectedModule";
-    //             //     updateOption.id = 'selectedModuleOption'
-    //             //     // Add the new option to the select menu
-    //             //     // menu.add(updateOption);
-    //             // }
-    //         break;
-    //         case 'removeSelectedModule':
-    //             selectModuleChangesCheckbox.disabled = true
-    //         break
-    //     }
-    // }
-    // document.getElementById("getLeavesBtn").addEventListener("click", () => {
-    //     // Filter nodes with no outgoing edges
-    //     const leaves = historyDAG_cy.nodes().filter(node => node.outgoers('edge').length === 0);
-    //     const leafNodes = leaves.map(node => node.data());
-
-    //     populateAnalysisNodeList(leafNodes, 'Leaf Nodes')
-    // });
-
-    // document.getElementById("dijkstraBtn").addEventListener("click", () => {
-    //     const sourceNodeID = topologicalSort(historyDAG_cy)[0].data().id
-    //     const dijkstra = historyDAG_cy.elements().dijkstra({
-    //         root: historyDAG_cy.$(`#${sourceNodeID}`),
-    //         directed: true
-    //     });
-    // });
-
-    // document.getElementById("topologicalSortBtn").addEventListener("click", () => {
-
-    //     const sortedNodes = topologicalSort(historyDAG_cy);
-    // });
-
-    // document.getElementById("dependenciesBtn").addEventListener("click", () => {
-    //     const selectedNode = historyDAG_cy.$("node:selected");
-    //     const dependencies = selectedNode.outgoers("node");
-    // });
-
-    // document.getElementById("prerequisitesBtn").addEventListener("click", () => {
-    //     const selectedNode = historyDAG_cy.$("node:selected");
-    //     const prerequisites = selectedNode.incomers("node");
-    // });
-
-    // document.getElementById("connectedComponentsBtn").addEventListener("click", () => {
-    //     const components = historyDAG_cy.elements().connectedComponents();
-    // });
-
-    // document.getElementById("bfsBtn").addEventListener("click", () => {
-    //     const bfs = historyDAG_cy.elements().bfs({
-    //         roots: historyDAG_cy.$("#sourceNodeID"),
-    //         directed: true
-    //     });
-    // });
-
-    // document.getElementById("dfsBtn").addEventListener("click", () => {
-    //     const dfs = historyDAG_cy.elements().dfs({
-    //         roots: historyDAG_cy.$("#sourceNodeID"),
-    //         directed: true
-    //     });
-    // });
-
-    // document.getElementById("pageRankBtn").addEventListener("click", () => {
-    //     const pageRank = historyDAG_cy.elements().pageRank();
-    //     historyDAG_cy.nodes().forEach(node => {
-    //     });
-    // });
-
-    // document.getElementById("closenessCentralityBtn").addEventListener("click", () => {
-    //     const closeness = historyDAG_cy.elements().closenessCentralityNormalized();
-    //     historyDAG_cy.nodes().forEach(node => {
-    //     });
-    // });
-
-    // const listElement = document.getElementById("analysisNodeList");
-
-    // // Add a single click event listener to the parent <ul>
-    // listElement.addEventListener("click", (event) => {
-    //     const clickedItem = event.target;
-    //     if (clickedItem.tagName === "LI") { // Ensure the target is a list item
-    //         // Remove highlight from all items
-    //         listElement.querySelectorAll(".list-item").forEach(item => item.classList.remove("is-active"));
-
-    //         // Highlight the clicked item
-    //         clickedItem.classList.add("is-active");
-    //         selectedNode = {
-    //             label: clickedItem.dataset.label, 
-    //             id: clickedItem.dataset.id,
-    //             branch: clickedItem.dataset.branch
-    //         }
-
-    //         loadVersion(clickedItem.dataset.id, clickedItem.dataset.branch)
-    //         // if we requested a gesture, push it to the gesture player as well
-    //         if(selectedNode.label.split(' ')[0] === 'gesture'){
-
-    //             sendToMainApp(
-    //                 {
-    //                     cmd: "getGestureData",
-    //                     data: { hash: clickedItem.dataset.id, branch: clickedItem.dataset.branch, cmd: 'recallGesture' },
-    //                 }
-    //             ); 
-
-    //             gestureData.branch = clickedItem.dataset.branch
-    //             gestureData.historyID = clickedItem.dataset.id
-    //         }
-    //     }
-    // });
 
     function getCheckboxStates() {
-        const container = document.getElementById('getHistoryAnalysisMenuCheckboxes');
-        const checkboxes = container.querySelectorAll('input[type="checkbox"]');
+        // get the checkboxes
+        const checkboxes = UI.query.checkboxes.querySelectorAll('input[type="checkbox"]');
       
         const states = [];
         let queryString = ``
 
+        checkboxes.forEach((checkbox, index) => {
+            if(checkbox.checked){
+                if(checkbox.value === 'leaves'){
+                    const leaves = historyDAG_cy.nodes().filter(node => node.outgoers('edge').length === 0);
+                    states.push(leaves.map(node => node.data()))
+                } 
+                if(checkbox.value === 'getSelectedModuleChanges'){
 
-            
-            checkboxes.forEach((checkbox, index) => {
-                if(checkbox.checked){
-                    if(checkbox.value === 'leaves'){
-                        const leaves = historyDAG_cy.nodes().filter(node => node.outgoers('edge').length === 0);
-                        states.push(leaves.map(node => node.data()))
-                    } 
-                    if(checkbox.value === 'getSelectedModuleChanges'){
-
-                        states.push(historyDAG_cy.nodes(`[parents *= "${selectedModule}"]`).map((node) => node.data()))
-                    }
-                    else {
-
-                        if(index > 0){
-                            queryString += `,[label *= "${checkbox.value}"]`
-
-                        } else {
-                            queryString += `[label *= "${checkbox.value}"]`
-
-                        }
-                        let results = historyDAG_cy.nodes(`[label *= "${checkbox.value}"]`).map((node) => node.data())
-
-                        const filtered = results.filter(entry => entry.label.split(' ')[0] === checkbox.value);
-
-                        console.log(checkbox.value, filtered)
-                        states.push(filtered)
-                        
-
-                    }
+                    states.push(historyDAG_cy.nodes(`[parents *= "${selectedModule}"]`).map((node) => node.data()))
                 }
-            //   states[checkbox.value] = checkbox.checked;
-            });
+                else {
 
-            // console.log(states)
+                    if(index > 0){
+                        queryString += `,[label *= "${checkbox.value}"]`
+
+                    } else {
+                        queryString += `[label *= "${checkbox.value}"]`
+
+                    }
+                    let results = historyDAG_cy.nodes(`[label *= "${checkbox.value}"]`).map((node) => node.data())
+
+                    const filtered = results.filter(entry => entry.label.split(' ')[0] === checkbox.value);
+
+                    console.log(checkbox.value, filtered)
+                    states.push(filtered)
+                    
+
+                }
+            }
+        //   states[checkbox.value] = checkbox.checked;
+        });
+
+        // console.log(states)
         return states.flat();
       }
 
-
-    const container = document.getElementById('getHistoryAnalysisMenuCheckboxes');
-
-    container.addEventListener('change', (event) => {
+    UI.query.checkboxes.addEventListener('change', (event) => {
         setGraphFromHistoryRenderer(graphJSONstore)
         if (event.target.matches('input[type="checkbox"]')) {
             const currentStates = uniqueById(getCheckboxStates());
@@ -3601,91 +3307,23 @@ document.addEventListener("DOMContentLoaded", async () => {
     
     function setSequencerSaveButtonState(state){
         // enable the gesture clone button
-        document.getElementById("saveSequenceButton").disabled = state;
+         UI.sequencer.control.save.disabled = state;
     }
 
-    const saveSequenceButton = document.getElementById("saveSequenceButton");
-
-    saveSequenceButton.addEventListener("click", async () => {
+    UI.sequencer.control.save.addEventListener("click", async () => {
         // re-disable the save button
         setSequencerSaveButtonState(true)
-        let data = 'test'
+
         sendToMainApp(
             {
                 cmd: "saveSequence",
                 data: storedSequencerTable
             }
         );
-        // we need this parentNode to know where to create a new branch from for the cloned gesture
-        // let sourceGestureNode = historyDAG_cy.getElementById(gestureData.historyID)
-        // let parentNode = sourceGestureNode.incomers('node').data();
-        
-        // let scaledValues = []        
-        // let targetParam 
-        // let data
-
-        
-        
-        // if(gestureData.assign.param === 'default'){
-        //     // in this case, we have simply modified the gesture and want to save it in the history graph
-        //     // so just grab all the values as they are currently
-        //     gestureData.gesturePoints.forEach((point)=>{
-        //         let value = point.value
-        //         scaledValues.push(value)
-        //     })
-        //     // load into obj
-        //     data = { 
-        //         parentNode: parentNode, 
-        //         assignTo: {
-        //             parent: gestureData.gesturePoints[0].parent,
-        //             param: gestureData.gesturePoints[0].param,
-        //             // range: null // not needed for this operation
-        //         },
-        //         scaledValues: scaledValues,
-        //         timestamps: gestureData.timestamps
-        //     } 
-       
-        
-        // } else {
-        //     // we are cloning the gesture onto a different param, so we now we need to map the values
-        //     targetParam = gestureData.assign
-
-        //     // if(gestureData.assign.kind === 'menu') {
-        //     //     // we need to handle menu param conversion differently
-        //     //     gestureData.gesturePoints.forEach((point)=>{
-        //     //         let storedParam = meta.synthFile.audioGraph.modules[point.parent].moduleSpec.parameters[point.param]
-        //     //         let value = point.value
-        //     //         convertParams(storedParam, targetParam, value).value
-        //     //     })
-
-
-        //     // } else {
-        //         // dealing with a knob
-        //         // get the updated param value (user may have made edits to gesture)
-        //         // scale it to the range of the newly assigned param
-        //         gestureData.gesturePoints.forEach((point)=>{
-        //             let storedParam = meta.synthFile.audioGraph.modules[point.parent].moduleSpec.parameters[point.param]
-        //             let value = point.value
-        //             scaledValues.push(convertParams(storedParam, targetParam, value).value)
-        //         })
-
-            
-        
-        //         data = { 
-        //             parentNode: parentNode, 
-        //             assignTo: gestureData.assign,
-        //             scaledValues: scaledValues,
-        //             timestamps: gestureData.timestamps
-        //         }
-        //     // }
-            
-        // }
-
-
     })
     
     // Add an event listener for the 'change' event
-    sequenceOrderSelect.addEventListener("change", (event) => {
+    UI.sequencer.modes.sequenceOrderSelect.addEventListener("change", (event) => {
         const selectedValue = event.target.value; // Get the selected option's value
         setSequenceOrder(selectedValue)
         const update = {
@@ -3702,7 +3340,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     
 
     // Add an event listener for the 'change' event
-    stepLengthFunctionSelect.addEventListener("change", (event) => {
+    UI.sequencer.modes.stepLengthFunctionSelect.addEventListener("change", (event) => {
         const selectedValue = event.target.value; // Get the selected option's value
         setStepLengthFunction(selectedValue)
         const update = {
@@ -4031,7 +3669,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     function setGestureSaveButtonState(state){
         // enable the gesture clone button
-        document.getElementById("saveGestureButton").disabled = state;
+        UI.gestureEditor.save.disabled = state;
     }
 
     const clamp01 = (value) => Math.max(0, Math.min(1, value));
@@ -4392,10 +4030,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     function showSnackbar(message = "Something happened") {
-        const snackbar = document.getElementById("snackbar");
-        snackbar.textContent = message;
-        snackbar.classList.add("show");
-    setTimeout(() => snackbar.classList.remove("show"), 3000);
+        UI.overlays.snackbar.textContent = message;
+        UI.overlays.snackbar.classList.add("show");
+    setTimeout(() => UI.overlays.snackbar.classList.remove("show"), 3000);
     }
 
 
