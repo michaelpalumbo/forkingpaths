@@ -22,109 +22,124 @@
             <!-- Left Column (File/Database, Peer Stuff, & Query Tool) -->
             <div class="col-2 border-end p-2" id="databasePeersAndQueries">
             
-                <div id="patchHistoryDatabaseAndFiles">
-                    <h1>Patch Histories</h1>
-                    <button class=workspaceButton id="newPatchHistory">New Patch History</button> 
-                    <!-- <input type="file" id="loadPatchHistoryButton" accept=".forkingpaths" /> -->
-
-                    <hr>
-                     <button class=workspaceButton id="savePatchHistory">Save Patch History</button>
-                     <button class=workspaceButton id="loadPatchHistory">Load Patch History</button> 
-                    <br>
-                   
-                </div>
-                <hr>
-                <div id="historyAnalysis" class="p-3" style="height: 100%;">
+                <div class="row h-50">
                     <div class="row">
                         <div class="col-9">
-                            <label class="form-label"><h3>History Query Tool</h3></label>
+                            <label class="form-label"><h2>Patch Histories</h2></label>
                         </div>
                         <div class="col-1">
-                            <button class="help-button" id="queryToolHelp">Help</button>
+                            <button class="help-button" id="patchHistoryToolHelp">Help</button>
                         </div>
-                    </div>
+                        
+                        <div id="patchHistoryDatabaseAndFiles">
+                            
+                            <button class=workspaceButton id="newPatchHistory">New Patch History</button> 
+                            <!-- <input type="file" id="loadPatchHistoryButton" accept=".forkingpaths" /> -->
 
-
-                    <div id="getHistoryAnalysisMenuCheckboxes" class="mb-3">
-                        <h5>Change-Based</h5>
-                        
-                        <div class="form-check">
-                            <input
-                                class="form-check-input"
-                                type="checkbox"
-                                id="history-paramUpdate"
-                                name="getHistoryAnalysisMenu"
-                                value="paramUpdate"
-                            >
-                            <label class="form-check-label" for="history-paramUpdate">
-                                Param Changes
-                            </label>
+                            <hr>
+                            <button class=workspaceButton id="savePatchHistory">Save Patch History</button>
+                            <button class=workspaceButton id="loadPatchHistory">Load Patch History</button> 
+                            <br>
+                    
                         </div>
-                        
-                        <div class="form-check">
-                            <input
-                                class="form-check-input"
-                                type="checkbox"
-                                id="history-getGestures"
-                                name="getHistoryAnalysisMenu"
-                                value="gesture"
-                            >
-                            <label class="form-check-label" for="history-getGestures">
-                                Gestures
-                            </label>
-                        </div>
-                        
-                        <div class="form-check">
-                            <input
-                                class="form-check-input"
-                                type="checkbox"
-                                id="history-connect"
-                                name="getHistoryAnalysisMenu"
-                                value="connect"
-                            >
-                            <label class="form-check-label" for="history-connect">
-                                Connect Changes
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            <input
-                                class="form-check-input"
-                                type="checkbox"
-                                id="history-disconnect"
-                                name="getHistoryAnalysisMenu"
-                                value="disconnect"
-                            >
-                            <label class="form-check-label" for="history-disconnect">
-                                Disconnect Changes
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            <input disabled
-                                class="form-check-input"
-                                type="checkbox"
-                                id="history-getSelectedModuleChanges"
-                                name="getHistoryAnalysisMenu"
-                                value="getSelectedModuleChanges"
-                            >
-                            <label class="form-check-label" for="history-getSelectedModuleChanges">
-                                Selected Module Changes
-                            </label>
-                        </div>
-                        <h5>Graph-Based</h5>
-                        <div class="form-check">
-                            <input
-                            class="form-check-input"
-                            type="checkbox"
-                            id="history-getLeaves"
-                            name="getHistoryAnalysisMenu"
-                            value="leaves"
-                            >
-                            <label class="form-check-label" for="history-getLeaves">
-                            Leaves (Latest Change per Branch)
-                            </label>
-                        </div>           
                     </div>
                 </div>
+                
+                <hr>
+                <div class="row h-50">
+                    <div id="historyAnalysis" class="p-3" style="height: 100%;">
+                        <div class="row">
+                            <div class="col-9">
+                                <label class="form-label"><h3>History Query Tool</h3></label>
+                            </div>
+                            <div class="col-1">
+                                <button class="help-button" id="queryToolHelp">Help</button>
+                            </div>
+                        </div>
+
+
+                        <div id="getHistoryAnalysisMenuCheckboxes" class="mb-3">
+                            <h5>Change-Based</h5>
+                            
+                            <div class="form-check">
+                                <input
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    id="history-paramUpdate"
+                                    name="getHistoryAnalysisMenu"
+                                    value="paramUpdate"
+                                >
+                                <label class="form-check-label" for="history-paramUpdate">
+                                    Param Changes
+                                </label>
+                            </div>
+                            
+                            <div class="form-check">
+                                <input
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    id="history-getGestures"
+                                    name="getHistoryAnalysisMenu"
+                                    value="gesture"
+                                >
+                                <label class="form-check-label" for="history-getGestures">
+                                    Gestures
+                                </label>
+                            </div>
+                            
+                            <div class="form-check">
+                                <input
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    id="history-connect"
+                                    name="getHistoryAnalysisMenu"
+                                    value="connect"
+                                >
+                                <label class="form-check-label" for="history-connect">
+                                    Connect Changes
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    id="history-disconnect"
+                                    name="getHistoryAnalysisMenu"
+                                    value="disconnect"
+                                >
+                                <label class="form-check-label" for="history-disconnect">
+                                    Disconnect Changes
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input disabled
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    id="history-getSelectedModuleChanges"
+                                    name="getHistoryAnalysisMenu"
+                                    value="getSelectedModuleChanges"
+                                >
+                                <label class="form-check-label" for="history-getSelectedModuleChanges">
+                                    Selected Module Changes
+                                </label>
+                            </div>
+                            <h5>Graph-Based</h5>
+                            <div class="form-check">
+                                <input
+                                class="form-check-input"
+                                type="checkbox"
+                                id="history-getLeaves"
+                                name="getHistoryAnalysisMenu"
+                                value="leaves"
+                                >
+                                <label class="form-check-label" for="history-getLeaves">
+                                Leaves (Latest Change per Branch)
+                                </label>
+                            </div>           
+                        </div>
+                    </div>
+                </div>
+                
             </div>
 
             <!-- Middle Column (Cytoscape History Graph) -->

@@ -239,7 +239,7 @@ let midiValues = {
 }
 
 const helpTexts = {};
-const helpKeys = ['gestureEditor', 'historyGraph', 'historySequencer', 'queryTool'];
+const helpKeys = ['gestureEditor', 'historyGraph', 'historySequencer', 'queryTool', 'patchHistory'];
 
 helpKeys.forEach(key => {
   fetch(`/help/${key}.md`)
@@ -378,6 +378,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     content: document.getElementById("helpOverlayContent"),
                     close: document.getElementById("closeHelpOverlay"),
                     // content
+                    patchHistory: document.getElementById("patchHistoryToolHelp"),
                     historyGraph: document.getElementById("historyGraphHelp"),
                     queryTool: document.getElementById("queryToolHelp"),
                     historySequencer: document.getElementById("historySequencerHelp"),
@@ -2345,6 +2346,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     // Assumes helpTexts[] is already populated via fetch + marked
+
+    UI.overlays.help.patchHistory.addEventListener("click", () => {
+        toggleHelpOverlay("patchHistory", "left");
+    });
 
     UI.overlays.help.historyGraph.addEventListener("click", () => {
         toggleHelpOverlay("historyGraph", "left");
