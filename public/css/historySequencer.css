@@ -254,3 +254,27 @@ section.section.is-fullheight {
   opacity: 1;
   bottom: 250px;
 }
+
+.workspaceButton {
+  display: inline-block;
+  padding: 0.6em 1.2em;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+  background-color: #0074c7;
+  border: none;
+  border-radius: 0.5em;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  text-align: center;
+  text-decoration: none;
+  user-select: none;
+}
+
+.workspaceButton:hover {
+  background-color: #5b9bc8;
+}
+
+.workspaceButton:active {
+  transform: scale(0.97);
+}
