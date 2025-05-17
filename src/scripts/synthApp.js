@@ -273,8 +273,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     loadSynthFile: document.getElementById('loadSynthButton'), 
                     openSynthBrowser: document.getElementById('openSynthBrowser'),
                     
-                    newPatchHistory: document.getElementById('newPatchHistory'),
-                    loadPatchHistory: document.getElementById('loadPatchHistory'),
+                    // newPatchHistory: document.getElementById('newPatchHistory'), // moved to history window
+                    // loadPatchHistory: document.getElementById('loadPatchHistory'),
                     savePatchHistory: document.getElementById("savePatchHistory")
                 },
                 view: {
@@ -796,7 +796,6 @@ document.addEventListener("DOMContentLoaded", function () {
         // if patchHistory doesn't contain a document, create a new one
         if (!patchHistory.docs[patchHistory.head.branch]) {
 
-            console.log('starting from blank patch')
             amDoc = Automerge.init();
 
             // load synthFile from indexedDB
@@ -1398,13 +1397,13 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
 
-    function branchManagement(cmd, ){
-        switch(cmd){
+    // function branchManagement(cmd, ){
+    //     switch(cmd){
 
-        }
+    //     }
 
 
-    }
+    // }
     /* 
 
         SYNTH CYTOSCAPE
@@ -3253,6 +3252,15 @@ document.addEventListener("DOMContentLoaded", function () {
                 })
                 
             break
+
+            case 'newPatchHistory':
+                createNewPatchHistory()
+            break
+            case 'loadPatchHistory':
+                
+                loadPatchHistory(event.data.arrayBuffer)
+
+            break
             case 'loadVersion':
                 loadVersion(event.data.data.hash, event.data.data.branch, event.data.data.gestureDataPoint)
             break
@@ -3662,46 +3670,23 @@ document.addEventListener("DOMContentLoaded", function () {
 
     });
     
-    // get .forkingpaths files from user's filesystem
-    UI.menus.file.loadPatchHistory.addEventListener('click', async (event) => {
-        try {
-            // Open file picker dialog
-            const [fileHandle] = await window.showOpenFilePicker({
-                types: [
-                    {
-                        description: "Forking Paths CRDT Files",
-                        accept: { "application/x-fpsynth": [".patchhistory"] }
-                    }
-                ],
-                excludeAcceptAllOption: false,
-                multiple: false
-            });
+   
 
-
-            
-            // Get the File object from the handle
-            const file = await fileHandle.getFile();
-
-            // Manual file extension check
-            if (!file.name.endsWith('.patchhistory')) {
-                alert("Invalid file type. Please select a .patchhistory file.");
-                return;
-            }
+    function loadPatchHistory(arrayBuffer){
 
             ws.send(JSON.stringify({
                 cmd: 'clearHistoryGraph'
             }))
             // clear the sequences
-            // sendMsgToHistoryApp({
-            //     appID: 'forkingPathsMain',
-            //     cmd: 'newPatchHistory'
+            console.warn('now that history window is issuing the loadPatchHistory logic, consider having this next step be client-side (i.e. no need to wait for main app to send the message on the next line here:')
+            sendMsgToHistoryApp({
+                appID: 'forkingPathsMain',
+                cmd: 'newPatchHistory'
                     
-            // })
+            })
 
+            
             resetDrawing()
-
-            // Read file contents as an ArrayBuffer
-            const arrayBuffer = await file.arrayBuffer();
 
             // Convert to Uint8Array (required for Automerge.load)
             const binaryData = new Uint8Array(arrayBuffer);
@@ -3709,12 +3694,9 @@ document.addEventListener("DOMContentLoaded", function () {
             // Example: Load into Automerge
             patchHistory = Automerge.load(binaryData);
 
-            console.log(patchHistory)
-
             // get latest branch
             let latestBranch = patchHistory.branchOrder[patchHistory.branchOrder.length - 1]
 
-            console.log(latestBranch)
             amDoc = Automerge.load(patchHistory.docs[latestBranch])
 
             updateSynthWorklet('loadVersion', amDoc.synth.graph)
@@ -3726,46 +3708,10 @@ document.addEventListener("DOMContentLoaded", function () {
             reDrawHistoryGraph()
 
             saveDocument(patchHistoryKey, Automerge.save(patchHistory));
-
-            
-            
-
-        } catch (err) {
-            console.error("File upload cancelled or failed:", err);
-        }
+    }
+        
     
-       // Load the Automerge document
-                // patchHistory = Automerge.load(binaryData);
-        //         amDoc = Automerge.load(patchHistory.docs.main)
-
-        //         updateCytoscapeFromDocument(amDoc, 'buildUI');
-            
-        //         previousHash = patchHistory.head.hash
-                
-        //         reDrawHistoryGraph()
-    
-        //         // set the document branch (aka title)  in the editor pane
-        //         // document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
-
-        //         saveDocument(patchHistoryKey, Automerge.save(patchHistory));
-        //         // enable new history button now that a synth has been loaded
-        //         // UI.menus.file.newPatchHistory.disabled = false
-        //     } catch (err) {
-        //         console.error('Failed to load Automerge document:', err);
-        //         alert('Failed to load Automerge document. The file may be corrupted.');
-        //     }
-        // };
-    
-        // // Handle file reading errors
-        // reader.onerror = function () {
-        //     console.error('Error reading file:', reader.error);
-        //     alert('Failed to read the file.');
-        // };
-    
-        // reader.readAsArrayBuffer(file); // Start reading the file
-    });
-
-    // load the demo synth from /public/assets
+      
     
 
     function toggleSynthBrowserOverlay(){
@@ -3885,17 +3831,17 @@ document.addEventListener("DOMContentLoaded", function () {
     
     
     // save forking paths files to user's file system
-    UI.menus.file.savePatchHistory.addEventListener("click", () => {
-        // check if browser supports the File System Access API
-        if(!!window.showSaveFilePicker){
+    // UI.menus.file.savePatchHistory.addEventListener("click", () => {
+    //     // check if browser supports the File System Access API
+    //     if(!!window.showSaveFilePicker){
             
-            saveFile("filename");
-        } else {
+    //         saveFile("filename");
+    //     } else {
             
-            saveAutomergeDocument('session');
-        }
+    //         saveAutomergeDocument('session');
+    //     }
         
-    });
+    // });
 
 
     // Listen for changes to the radio buttons
@@ -4591,14 +4537,14 @@ document.addEventListener("DOMContentLoaded", function () {
  
 
     // open a new session (with empty document)
-    UI.menus.file.newPatchHistory.addEventListener('click', function() {
+    // UI.menus.file.newPatchHistory.addEventListener('click', function() {
 
         
-        createNewPatchHistory()
+    //     createNewPatchHistory()
 
-        // Reload the page with the new URL
-        // window.location.href = window.location.origin
-    });
+    //     // Reload the page with the new URL
+    //     // window.location.href = window.location.origin
+    // });
 
     
 

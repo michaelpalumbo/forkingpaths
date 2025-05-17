@@ -316,10 +316,24 @@ window.addEventListener("load", () => {
 
 
 document.addEventListener("DOMContentLoaded", async () => {
+    let Automerge
+    // import automerge for access to .save and .load of binary blobs
+    (async () => {
+        // Load Automerge asynchronously and assign it to the global variable
+        Automerge = await import('@automerge/automerge');
+        patchHistory = Automerge.init()
+        
+    })()
+
     let UI = null
     function initUI(){
         if(UI) return UI // prevents these elements from being attached twice
         return {
+            history: {
+                newPatchHistory: document.getElementById('newPatchHistory'),
+                loadPatchHistory: document.getElementById('loadPatchHistory'),
+                savePatchHistory: document.getElementById("savePatchHistory")
+            },
             query: {
                 checkboxes: document.getElementById('getHistoryAnalysisMenuCheckboxes'),
                 selectModuleChangesCheckbox: document.getElementById("history-getSelectedModuleChanges")
@@ -2129,6 +2143,197 @@ document.addEventListener("DOMContentLoaded", async () => {
     // * EVENT HANDLERS
     // * 
     // *
+
+    UI.history.newPatchHistory.addEventListener('click', ()=>{
+                sendToMainApp(
+            {
+                cmd: "newPatchHistory",
+            }
+        );
+    })
+
+    UI.history.savePatchHistory.addEventListener('click', async ()=>{
+        // save patchHistory to user's computer as .patchhistory
+
+        // check if browser supports the File System Access API
+        if(!!window.showSaveFilePicker){
+            
+            // Show the file save dialog
+            const fileName = await window.showSaveFilePicker({
+                suggestedName: "filename.patchhistory",
+                types: [
+                    {
+                        description: "Forking Paths CRDT Files",
+                        accept: { "application/x-fpsynth": [".patchhistory"] }
+                    },
+                ],
+            });
+            
+            // Create a writable stream
+            const writable = await fileName.createWritable();
+
+            // Write the blob data directly
+            const binaryData = Automerge.save(Automerge.from(patchHistory)); // this is a Uint8Array
+            await writable.write(binaryData);
+
+            // Close the file and commit the write
+            await writable.close();
+
+        } else {
+            
+            // Generate the binary format of the Automerge document
+            const binaryData = Automerge.save(patchHistory);
+
+            // Create a Blob object for the binary data
+            const blob = new Blob([binaryData], { type: 'application/octet-stream' });
+
+            // Create a URL for the Blob
+            const url = URL.createObjectURL(blob);
+
+            // Create a download link
+            const downloadLink = document.createElement('a');
+            downloadLink.href = url;
+            downloadLink.download = "forkingPathsSave.patchHistory";
+
+            // Optionally, add the link to the DOM and simulate a click
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+
+            // Clean up
+            document.body.removeChild(downloadLink);
+            URL.revokeObjectURL(url); // Release memory
+        }
+
+        
+        // // Create a Blob object for the binary data
+        // const blob = new Blob([Automerge.save(patchHistory)], { type: 'application/octet-stream' });
+        // console.log(blob)
+        // // Create a URL for the Blob
+        // const url = URL.createObjectURL(blob);
+
+        // // Create a download link
+        // const downloadLink = document.createElement('a');
+        // downloadLink.href = url;
+        // downloadLink.download = fileName.name;
+
+        // // Optionally, add the link to the DOM and simulate a click
+        // document.body.appendChild(downloadLink);
+        // downloadLink.click();
+
+        // // Clean up
+        // document.body.removeChild(downloadLink);
+        // URL.revokeObjectURL(url); // Release memory
+
+        // // Write the content to the file
+        // const writable = await fileHandle.createWritable();
+        // await writable.write(Automerge.save(patchHistory));
+        // await writable.close();
+        
+    })
+    UI.history.loadPatchHistory.addEventListener('click', async ()=>{
+
+
+        try {
+            // Open file picker dialog
+            const [fileHandle] = await window.showOpenFilePicker({
+                types: [
+                    {
+                        description: "Forking Paths CRDT Files",
+                        accept: { "application/x-fpsynth": [".patchhistory"] }
+                    }
+                ],
+                excludeAcceptAllOption: false,
+                multiple: false
+            });
+
+
+            
+            // Get the File object from the handle
+            const file = await fileHandle.getFile();
+
+            // Manual file extension check
+            if (!file.name.endsWith('.patchhistory')) {
+                alert("Invalid file type. Please select a .patchhistory file.");
+                return;
+            }
+
+
+
+            // Read file contents as an ArrayBuffer
+            const arrayBuffer = await file.arrayBuffer();
+
+            let msg = {
+                cmd: "loadPatchHistory",
+                arrayBuffer: arrayBuffer
+            }
+
+            // send to main app using a 3rd argument as opposed to sendToMainApp()
+            window.opener?.postMessage(msg, '*', [arrayBuffer])
+
+            // // Convert to Uint8Array (required for Automerge.load)
+            // const binaryData = new Uint8Array(arrayBuffer);
+
+            // // Example: Load into Automerge
+            // patchHistory = Automerge.load(binaryData);
+
+            // console.log(patchHistory)
+
+            // // get latest branch
+            // let latestBranch = patchHistory.branchOrder[patchHistory.branchOrder.length - 1]
+
+            // console.log(latestBranch)
+            // amDoc = Automerge.load(patchHistory.docs[latestBranch])
+
+            // updateSynthWorklet('loadVersion', amDoc.synth.graph)
+
+            // updateCytoscapeFromDocument(amDoc, 'buildUI');
+            
+            // previousHash = patchHistory.head.hash
+            
+            // reDrawHistoryGraph()
+
+            // saveDocument(patchHistoryKey, Automerge.save(patchHistory));
+
+            
+            
+
+        } catch (err) {
+            console.error("File upload cancelled or failed:", err);
+        }
+    
+        // Load the Automerge document
+                // patchHistory = Automerge.load(binaryData);
+        //         amDoc = Automerge.load(patchHistory.docs.main)
+
+        //         updateCytoscapeFromDocument(amDoc, 'buildUI');
+            
+        //         previousHash = patchHistory.head.hash
+                
+        //         reDrawHistoryGraph()
+    
+        //         // set the document branch (aka title)  in the editor pane
+        //         // document.getElementById('documentName').textContent = `Current Branch:\n${amDoc.title}`;
+
+        //         saveDocument(patchHistoryKey, Automerge.save(patchHistory));
+        //         // enable new history button now that a synth has been loaded
+        //         // UI.menus.file.newPatchHistory.disabled = false
+        //     } catch (err) {
+        //         console.error('Failed to load Automerge document:', err);
+        //         alert('Failed to load Automerge document. The file may be corrupted.');
+        //     }
+        // };
+    
+        // // Handle file reading errors
+        // reader.onerror = function () {
+        //     console.error('Error reading file:', reader.error);
+        //     alert('Failed to read the file.');
+        // };
+    
+        // reader.readAsArrayBuffer(file); // Start reading the file
+
+
+    })
+
 
     UI.sequencer.modes.emptyStepMode.addEventListener("change", (event) => {
         sequencerData.settings.modes.emptyStep = event.target.value
