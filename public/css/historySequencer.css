@@ -213,6 +213,20 @@ html, body {
   right: 10px;
 }
 
+#historyListTooltip {
+  position: absolute;
+  background: #333;
+  color: #fff;
+  padding: 6px 10px;
+  font-size: 18px;
+  border-radius: 4px;
+  pointer-events: none;
+  white-space: normal;         /* Allow text wrapping */
+  word-wrap: break-word;       /* Wrap long words if needed */
+  max-width: 250px;            /* Set a reasonable width limit */
+  z-index: 10000;
+  display: none;
+}
 
 /* Highlight styling for the active list item */
 .is-active {

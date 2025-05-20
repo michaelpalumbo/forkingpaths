@@ -62,7 +62,7 @@ You can choose how the sequencer advances through steps:
 
 - **Manual:** Plays steps 1 to 8 in order (like a traditional step sequencer).
 - **Topological Sort:** Follows the version history graph’s order (based on patch change relationships) (Currently Disabled -- Fixes coming soon!)
-- **Random:** Chooses a new random step each time
+- **Random:** Chooses a new random step each tick
 
 
 ### Step Length

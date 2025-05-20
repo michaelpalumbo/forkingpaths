@@ -30,7 +30,7 @@ if(!localStorage.appSettings){
 
 let graphJSONstore
 let firstNode = null
-
+let dbHistoryFiles
 
 let polyphonicLoops = []; // Will hold individual loops for each row
 
@@ -391,7 +391,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                     // lists
                     authorList: document.getElementById('authorList'),
                     tagList: document.getElementById('tagList'),
-                    synthList: document.getElementById('synthList'),
+                    historyList: document.getElementById('patchHistoryList'),
+                    historyListTooltip: document.getElementById('historyListTooltip'),
                 
                 },
                 snackbar: document.getElementById("snackbar")
@@ -1152,6 +1153,18 @@ document.addEventListener("DOMContentLoaded", async () => {
                 
                 graphJSONstore = msg
             break
+
+            case 'patchHistoriesList':
+                dbHistoryFiles = msg.data // store locally for when we want to filter results in the synth filebrowser panel
+                populateAuthors(msg.data);
+                populateTags(msg.data);
+                updateHistories(msg.data);
+            break
+
+            case 'retrievedPatchHistory':
+                console.log(msg.data)
+            break
+            default: console.log('no switch case exists for ', msg.cmd)
         }
 
         
@@ -1207,7 +1220,119 @@ document.addEventListener("DOMContentLoaded", async () => {
     // * 
     // *
 
+    // Patch History Browser
+    function populateAuthors(histories) {
+        const uniqueAuthors = [...new Set(histories.map(t => t.authors))].sort();
+        const authorList = UI.overlays.historyBrowser.authorList;
+        authorList.innerHTML = '';
+        const allItem = document.createElement('li');
+        allItem.textContent = 'All';
+        allItem.dataset.value = 'all';
+        allItem.classList.add('selected');
+        allItem.onclick = () => onAuthorClick('all');
+        authorList.appendChild(allItem);
+      
+        uniqueAuthors.forEach(author => {
+          const li = document.createElement('li');
+          li.textContent = author;
+          li.dataset.value = author;
+          li.onclick = () => onAuthorClick(author);
+          authorList.appendChild(li);
+        });
+      }
 
+    function populateTags(synthFiles) {
+
+        //! this below works for tags, just uncomment if you decide to use tags for patch histories
+        /*
+        const tagSet = new Set();
+        synthFiles.forEach(t => (t.tags || []).forEach(tag => tagSet.add(tag)));
+        const tags = Array.from(tagSet).sort();
+        const tagList = UI.overlays.synthBrowser.tagList;
+        tagList.innerHTML = '';
+      
+        const allItem = document.createElement('li');
+        allItem.textContent = 'All';
+        allItem.dataset.value = 'all';
+        allItem.classList.add('selected');
+        allItem.onclick = () => onTagClick('all');
+        tagList.appendChild(allItem);
+      
+        tags.forEach(tag => {
+          const li = document.createElement('li');
+          li.textContent = tag;
+          li.dataset.value = tag;
+          li.onclick = () => onTagClick(tag);
+          tagList.appendChild(li);
+        });
+        */
+      }
+      
+    function updateHistories(patchHistories, selectedAuthor = 'all', selectedTag = 'all') {
+        const synthList = UI.overlays.historyBrowser.historyList
+        const tooltip = UI.overlays.historyBrowser.historyListTooltip
+        synthList.innerHTML = '';
+      
+        const filtered = patchHistories.filter(t => {
+            const matchAuthor = selectedAuthor === 'all' || t.author === selectedAuthor;
+            const matchTag = selectedTag === 'all' || (t.tags || []).includes(selectedTag);
+            return matchAuthor && matchTag;
+        });
+      
+        if (filtered.length === 0) {
+            const li = document.createElement('li');
+            li.textContent = '(no matching histories)';
+            li.style.fontStyle = 'italic';
+            synthList.appendChild(li);
+            return;
+        }
+      
+        filtered.forEach(t => {
+            const li = document.createElement('li');
+            li.textContent = t.name;
+            li.dataset.id = t.id;
+            li.onmouseenter = (e) => {
+                    tooltip.textContent = t.description || '(no description)';
+                    tooltip.style.display = 'block';
+            };
+            li.onmousemove = (e) => {
+                    tooltip.style.left = e.pageX + 10 + 'px';
+                    tooltip.style.top = e.pageY + 10 + 'px';
+            };
+            li.onmouseleave = () => {
+                tooltip.style.display = 'none';
+            };
+            li.onclick = () => onHistoryClick(t.id);
+            synthList.appendChild(li);
+        });
+    }
+      
+
+    function onHistoryClick(id){
+        console.log(id)
+        ws.send(JSON.stringify({
+            cmd: 'getPatchHistory',
+            id: id
+        }))
+    }
+
+    function onTagClick(tag){
+        if(tag ==='all'){
+            ws.send(JSON.stringify({ cmd: 'getSynthTemplates'}));
+        } else {
+            ws.send(JSON.stringify({ cmd: 'getSynthTemplates', filter: 'tags', query: tag }));
+        }
+
+    }
+
+    function onAuthorClick(author){
+        if(author ==='all'){
+            ws.send(JSON.stringify({ cmd: 'getSynthTemplates'}));
+        } else {
+            ws.send(JSON.stringify({ cmd: 'getSynthTemplates', filter: 'authors', query: author }));
+        }
+
+    }
     // * HELP OVERLAYS
     let activeHelpKey = null;
 

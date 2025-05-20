@@ -769,7 +769,7 @@ document.addEventListener("DOMContentLoaded", function () {
             } else {
                 patchHistory = Automerge.from({
                     title: "Forking Paths Synth",
-                    forked_from_id: 'root', // used by the database to either determine this as the root of a tree of patch histories, or a fork from a stored history 
+                    forked_from_id: null, // used by the database to either determine this as the root of a tree of patch histories, or a fork from a stored history 
                     branches: {},
                     branchOrder: [],
                     docs: {},
@@ -1194,7 +1194,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         let patchHistoryJSON = {
             title: "Forking Paths Patch History",
-            forked_from_id: 'root', // used by the database to either determine this as the root of a tree of patch histories, or a fork from a stored history 
+            forked_from_id: null, // used by the database to either determine this as the root of a tree of patch histories, or a fork from a stored history 
             branches: {},
             branchOrder: [],
             docs: {},
