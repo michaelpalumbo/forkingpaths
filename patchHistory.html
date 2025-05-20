@@ -38,8 +38,8 @@
 
                             <hr>
                             <button class=workspaceButton id="savePatchHistory">Save Patch History</button>
-                            <button class=workspaceButton id="loadPatchHistory">Load Patch History</button> 
-                            <br>
+                            <br><br>
+                            <button class=workspaceButton id="openHistoryBrowser">Open Patch History Browser...</button>
                     
                         </div>
                     </div>
@@ -325,7 +325,32 @@
     <div id="helpOverlay" class="hidden">
         <button id="closeHelpOverlay">×</button>
         <div id="helpOverlayContent"></div>
-      </div>
+    </div>
+
+    <div id="historyBrowserOverlay" class="hidden">
+        <button id="closeHistoryBrowserOverlay">×</button>
+        <div id="browserContent">
+
+            <button class=workspaceButton id="loadPatchHistory">Load from Disk...</button>   
+            
+            <h2>Browse Patch Histories</h2>
+
+            <div>         
+                <h3>Authors</h3>
+                <ul id="authorList"></ul>
+            </div>
+
+            <div>
+            <h3>Modules</h3>
+            <ul id="moduleList"></ul>
+            </div>
+
+            <div>
+            <h3>Patch Histories</h3>
+            <ul id="patchHistoryList"></ul>
+            </div>
+        </div>
+    </div>
     
     <script type="module" src="/src/scripts/patchHistory.js">
  

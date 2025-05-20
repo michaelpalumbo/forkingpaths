@@ -332,7 +332,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             history: {
                 newPatchHistory: document.getElementById('newPatchHistory'),
                 loadPatchHistory: document.getElementById('loadPatchHistory'),
-                savePatchHistory: document.getElementById("savePatchHistory")
+                savePatchHistory: document.getElementById("savePatchHistory"),
+                openHistoryBrowser: document.getElementById('openHistoryBrowser'),
             },
             query: {
                 checkboxes: document.getElementById('getHistoryAnalysisMenuCheckboxes'),
@@ -383,6 +384,15 @@ document.addEventListener("DOMContentLoaded", async () => {
                     queryTool: document.getElementById("queryToolHelp"),
                     historySequencer: document.getElementById("historySequencerHelp"),
                     gestureEditor: document.getElementById("gestureEditorHelp")
+                },
+                historyBrowser: {
+                    overlay: document.getElementById("historyBrowserOverlay"),
+                    close: document.getElementById("closeHistoryBrowserOverlay"),
+                    // lists
+                    authorList: document.getElementById('authorList'),
+                    tagList: document.getElementById('tagList'),
+                    synthList: document.getElementById('synthList'),
+                
                 },
                 snackbar: document.getElementById("snackbar")
             }
@@ -2144,6 +2154,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     // * EVENT HANDLERS
     // * 
     // *
+
+
+    function toggleHistoryBrowserOverlay(){
+        console.log('efef')
+        UI.overlays.historyBrowser.overlay.style.display = UI.overlays.historyBrowser.overlay.style.display === 'flex' ? 'none' : 'flex';
+    }
+
+    UI.overlays.historyBrowser.close.addEventListener('click', toggleHistoryBrowserOverlay);
+    
+    UI.history.openHistoryBrowser.addEventListener('click', toggleHistoryBrowserOverlay)
 
     UI.history.newPatchHistory.addEventListener('click', ()=>{
                 sendToMainApp(

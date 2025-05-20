@@ -300,7 +300,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     close: document.getElementById('closeOverlayButton'),
                     displaySignalAnalysisButton: document.getElementById('displaySignalAnalysisButton'),
                     volumeSlider: document.getElementById('volumeSlider'),
-                    volumeValue: document.getElementById('volumeValue')
+                    volumeValue: document.getElementById('volumeValue'),
+                    cableTension: document.getElementById('settings_controlPointDistance')
                 },
                 help: {
                     synth:{
@@ -319,7 +320,14 @@ document.addEventListener("DOMContentLoaded", function () {
                 synthBrowser: {
                     
                     overlay: document.getElementById("synthBrowserOverlay"),
-                    close: document.getElementById("closeSynthBrowserOverlay")
+                    close: document.getElementById("closeSynthBrowserOverlay"),
+                    // lists
+                    authorList: document.getElementById('authorList'),
+                    tagList: document.getElementById('tagList'),
+                    synthList: document.getElementById('synthList'),
+                    synthListTooltip: document.getElementById('synthListTooltip')
+
+                    
                 }
             }
         }
@@ -354,7 +362,6 @@ document.addEventListener("DOMContentLoaded", function () {
     UI.panel.collaboration.roomInfo.textContent = room;
 
     // set text in panel
-    // document.getElementById("roomInfo").textContent = room;
     const peerCount = parseInt(params.get('peerCount') || '0');
     let patchHistoryKey = room ? `patchHistory-${room}` : 'patchHistory';
 
@@ -2217,12 +2224,12 @@ document.addEventListener("DOMContentLoaded", function () {
     //* BROWSERS
 
     // synth file browser
-    document.getElementById('authorList').addEventListener('change', updateSynths);
-    document.getElementById('tagList').addEventListener('change', updateSynths);
+    UI.overlays.synthBrowser.authorList.addEventListener('change', updateSynths);
+    UI.overlays.synthBrowser.tagList.addEventListener('change', updateSynths);
 
     function populateAuthors(synthFiles) {
         const uniqueAuthors = [...new Set(synthFiles.map(t => t.author))].sort();
-        const authorList = document.getElementById('authorList');
+        const authorList = UI.overlays.synthBrowser.authorList;
         authorList.innerHTML = '';
       
         const allItem = document.createElement('li');
@@ -2245,7 +2252,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const tagSet = new Set();
         synthFiles.forEach(t => (t.tags || []).forEach(tag => tagSet.add(tag)));
         const tags = Array.from(tagSet).sort();
-        const tagList = document.getElementById('tagList');
+        const tagList = UI.overlays.synthBrowser.tagList;
         tagList.innerHTML = '';
       
         const allItem = document.createElement('li');
@@ -2265,8 +2272,8 @@ document.addEventListener("DOMContentLoaded", function () {
       }
       
       function updateSynths(synthFiles, selectedAuthor = 'all', selectedTag = 'all') {
-        const synthList = document.getElementById('synthList');
-        const tooltip = document.getElementById('synthListTooltip');
+        const synthList = UI.overlays.synthBrowser.synthList
+        const tooltip = UI.overlays.synthBrowser.synthListTooltip
         synthList.innerHTML = '';
       
         const filtered = synthFiles.filter(t => {
@@ -2345,7 +2352,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         // console.log(key, columnSide, helpTexts[key])
         content.innerHTML = synthAppHelpOverlay || "<em>Help not available.</em>";
-        // document.getElementById('synthAppHelpOverlayContent').innerHTML = "<h3>Hello</h3><p>This is a test.</p>";
 
 
         overlay.style.left = columnSide === "left" ? "50%" : "0%";
@@ -3059,14 +3065,6 @@ document.addEventListener("DOMContentLoaded", function () {
         sendSignalingMessage(offer);
     }
     
-    // // Attach the initiation to a button click (ensure the button exists in your HTML)
-    // document.getElementById("startConnectionButton").addEventListener("click", () => {
-    //     initiateConnection().catch(err => console.error("Error initiating connection:", err));
-    // });
-
-
-
-
 //*
 //*
 //* SERVER COMMUNICATION
@@ -3683,12 +3681,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     synthGraphCytoscape.on('mouseover', 'node', (event) => {
         const node = event.target;
-        // Add hover behavior, e.g., change style or show tooltip
-        // node.style('background-color', 'red');
-
-        // Get the element by its ID
-        // const element = document.getElementById('cytoscapeTooltipText');
-        // let toolTip ='';
 
         if (node.data().description){
             setSynthToolTip(node.data().description)
@@ -4583,20 +4575,20 @@ document.addEventListener("DOMContentLoaded", function () {
     
 
     // modify graph edge control point distance
-    const CPDslider = document.getElementById('settings_controlPointDistance')
     
-    CPDslider.addEventListener('input', function() {
+    
+    UI.overlays.settings.cableTension.addEventListener('input', function() {
         let x = this.value
         let y = this.value * -1
         updateCableControlPointDistances(x, y)
 
-        localStorage.setItem('sliderValue', CPDslider.value);
+        localStorage.setItem('sliderValue', UI.overlays.settings.cableTension.value);
     });
 
     // Retrieve the saved slider value from localStorage and set it
     const savedValue = localStorage.getItem('sliderValue');
     if (savedValue !== null) {
-        CPDslider.value = savedValue;
+        UI.overlays.settings.cableTension.value = savedValue;
         let x = savedValue
         let y = x * -1 
         updateCableControlPointDistances(x, y)
