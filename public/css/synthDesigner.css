@@ -362,15 +362,3 @@ input[type="text"] {
   font-size: 14px;
   box-sizing: border-box;
 }
-
-/* Improve visibility for text inputs and textarea in the overlay */
-#saveOverlay input[type="text"],
-#saveOverlay textarea {
-  width: 100%;
-  padding: 8px;
-  margin-bottom: 10px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 14px;
-  box-sizing: border-box;
-}

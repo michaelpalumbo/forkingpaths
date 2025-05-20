@@ -37,9 +37,23 @@
                             <!-- <input type="file" id="loadPatchHistoryButton" accept=".forkingpaths" /> -->
 
                             <hr>
-                            <button class=workspaceButton id="savePatchHistory">Save Patch History</button>
-                            <br><br>
+                            <!-- <button class=workspaceButton id="savePatchHistory">Save Patch History</button> -->
+                            <!-- <br><br> -->
+                            <!-- <br><br> -->
+                            <button class=workspaceButton id="importPatchHistory">Import...</button>
+
+                            <button class=workspaceButton id="exportPatchHistory">Export...</button><br><br>
                             <button class=workspaceButton id="openHistoryBrowser">Open Patch History Browser...</button>
+                            <p></p>
+                            <hr>
+                            <H3>History Metadata</H3>
+                            <input type="text" id="patchHistoryName" placeholder="Patch History Name...">
+                            <!-- <input type="text" id="synthAuthor" placeholder="Author"> -->
+                            <input type="text" id="patchHistoryTags" placeholder="Enter Tags (comma-separated)">
+                            <textarea id="patchHistoryDescription" placeholder="Description"></textarea>
+                            <!-- <button onclick="uploadSynth()">Upload Synth Template</button> -->
+                            <button id="storePatchHistoryButton" class="done-overlay" >Update</button>
+                            <button class="close-overlay" id="closeSaveOverlayButton">Cancel</button>
                     
                         </div>
                     </div>
@@ -331,7 +345,6 @@
         <button id="closeHistoryBrowserOverlay">×</button>
         <div id="browserContent">
 
-            <button class=workspaceButton id="loadPatchHistory">Load from Disk...</button>   
             
             <h2>Browse Patch Histories</h2>
 
@@ -352,6 +365,22 @@
         </div>
     </div>
     <div id="historyListTooltip"></div>
+
+    <!-- <div id="saveOverlay" class="overlay">
+        <div class="overlay-content">
+            <h2>Save Patch History</h2>
+            <hr>
+            <div class="save-options">
+                <input type="text" id="patchHistoryName" placeholder="Enter Patch History Name..."> -->
+                <!-- <input type="text" id="synthAuthor" placeholder="Author"> -->
+                <!-- <input type="text" id="patchHistoryTags" placeholder="Enter Tags (comma-separated)">
+                <textarea id="patchHistoryDesc" placeholder="Description"></textarea> -->
+                <!-- <button onclick="uploadSynth()">Upload Synth Template</button> -->
+                <!-- <button id="storePatchHistoryButton" class="done-overlay" >Done</button><button class="close-overlay" id="closeSaveOverlayButton">Cancel</button> -->
+            <!-- </div>
+        </div>
+    </div> -->
+
     <script type="module" src="/src/scripts/patchHistory.js">
     
     </script>

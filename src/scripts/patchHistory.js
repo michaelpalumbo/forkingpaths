@@ -330,10 +330,17 @@ document.addEventListener("DOMContentLoaded", async () => {
         if(UI) return UI // prevents these elements from being attached twice
         return {
             history: {
-                newPatchHistory: document.getElementById('newPatchHistory'),
-                loadPatchHistory: document.getElementById('loadPatchHistory'),
-                savePatchHistory: document.getElementById("savePatchHistory"),
+                new: document.getElementById('newPatchHistory'),
+                import: document.getElementById('importPatchHistory'),
+                export: document.getElementById("exportPatchHistory"),
                 openHistoryBrowser: document.getElementById('openHistoryBrowser'),
+
+                // metadata fields
+                name: document.getElementById('patchHistoryName'),
+                tags: document.getElementById('patchHistoryTags'),
+                description: document.getElementById('patchHistoryDescription'),
+
+                
             },
             query: {
                 checkboxes: document.getElementById('getHistoryAnalysisMenuCheckboxes'),
@@ -394,6 +401,16 @@ document.addEventListener("DOMContentLoaded", async () => {
                     historyList: document.getElementById('patchHistoryList'),
                     historyListTooltip: document.getElementById('historyListTooltip'),
                 
+                },
+                save: {
+                    openOverlay: document.getElementById('saveOverlay'),
+                    close: document.getElementById('closeSaveOverlayButton'),
+                    store: document.getElementById("storePatchHistoryButton"),
+
+                    // fields
+                    historyName: document.getElementById('patchHistoryName'),
+                    description: document.getElementById('patchHistoryDesc')
+
                 },
                 snackbar: document.getElementById("snackbar")
             }
@@ -1162,9 +1179,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             break
 
             case 'retrievedPatchHistory':
-
-
-
                 // send to main app using a 3rd argument as opposed to sendToMainApp()
                 sendToMainApp({
                     cmd: "loadPatchHistory",
@@ -1175,6 +1189,10 @@ document.addEventListener("DOMContentLoaded", async () => {
                 resetSequencerTable() 
                 createGestureGraph()
 
+                console.log(msg.data)
+
+                UI.history.name.value = msg.data.name
+                UI.history.description.value = msg.data.description
                 
             break
             default: console.log('no switch case exists for ', msg.cmd)
@@ -2294,6 +2312,53 @@ document.addEventListener("DOMContentLoaded", async () => {
     // *
 
 
+
+    async function storePatchHistory() {  
+            
+        const payload = {
+            name: UI.overlays.save.historyName.value || `patchHistory_${uuidv7().split('-')[0]}`,
+            author: urlParams.get('username') || 'anonymous',
+            description: UI.overlays.save.description.value,
+            tags: UI.overlays.save.historyTags.value.split(',').map(t => t.trim()),
+            synth_json: {
+                filename: UI.overlays.save.historyName.value,
+                visualGraph: cy.json(),
+                paramUIOverlays: paramUIOverlays,
+                audioGraph: synthGraph
+            }
+        };
+    
+        // sendMsgToServer(JSON.stringify({
+        //     cmd: 'saveSynth',
+        //     data: payload
+        // }))
+
+        // save patchHistory to user's computer as .patchhistory
+        sendToMainApp({
+            cmd: "savePatchHistory"
+        })
+
+        toggleSaveOverlay()
+        // const res = await fetch('/api/synthFiles', {
+        //   method: 'POST',
+        //   headers: { 'Content-Type': 'application/json' },
+        //   body: JSON.stringify(payload)
+        // });
+    
+        // const data = await res.json();
+        // alert('Saved with ID: ' + data.synthFileId);
+    }
+
+    function toggleSaveOverlay() { 
+        UI.overlays.save.openOverlay.style.display = UI.overlays.save.openOverlay.style.display === 'flex' ? 'none' : 'flex';
+    }
+
+     UI.overlays.save.close.addEventListener('click', toggleSaveOverlay);
+
+    // // save forking paths files to user's file system
+    UI.overlays.save.store.addEventListener("click", storePatchHistory);
+
+    
     function toggleHistoryBrowserOverlay(){
         UI.overlays.historyBrowser.overlay.style.display = UI.overlays.historyBrowser.overlay.style.display === 'flex' ? 'none' : 'flex';
     }
@@ -2302,7 +2367,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     
     UI.history.openHistoryBrowser.addEventListener('click', toggleHistoryBrowserOverlay)
 
-    UI.history.newPatchHistory.addEventListener('click', ()=>{
+    UI.history.new.addEventListener('click', ()=>{
                 sendToMainApp(
             {
                 cmd: "newPatchHistory",
@@ -2310,13 +2375,15 @@ document.addEventListener("DOMContentLoaded", async () => {
         );
     })
 
-    UI.history.savePatchHistory.addEventListener('click', async ()=>{
+    UI.history.export.addEventListener('click', async ()=>{
+
+        // toggleSaveOverlay()
         // save patchHistory to user's computer as .patchhistory
-        sendToMainApp({
-            cmd: "savePatchHistory"
-        })
-        console.warn('remember to remove the "return" statement below this message once saving patch histories to db is working!')
-        return
+        // sendToMainApp({
+        //     cmd: "savePatchHistory"
+        // })
+        // console.warn('remember to remove the "return" statement below this message once saving patch histories to db is working!')
+
         // check if browser supports the File System Access API
         if(!!window.showSaveFilePicker){
             
@@ -2392,7 +2459,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         // await writable.close();
         
     })
-    UI.history.loadPatchHistory.addEventListener('click', async ()=>{
+    UI.history.import.addEventListener('click', async ()=>{
 
 
         try {
