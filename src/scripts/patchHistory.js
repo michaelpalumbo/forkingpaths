@@ -334,13 +334,13 @@ document.addEventListener("DOMContentLoaded", async () => {
                 import: document.getElementById('importPatchHistory'),
                 export: document.getElementById("exportPatchHistory"),
                 openHistoryBrowser: document.getElementById('openHistoryBrowser'),
-
+                metadata:  document.getElementById('openHistoryBrowser'),
+                update: document.getElementById("updatePatchHistoryButton"),
                 // metadata fields
+                id: document.getElementById('databaseEntryID'),
                 name: document.getElementById('patchHistoryName'),
                 tags: document.getElementById('patchHistoryTags'),
                 description: document.getElementById('patchHistoryDescription'),
-
-                
             },
             query: {
                 checkboxes: document.getElementById('getHistoryAnalysisMenuCheckboxes'),
@@ -403,13 +403,13 @@ document.addEventListener("DOMContentLoaded", async () => {
                 
                 },
                 save: {
-                    openOverlay: document.getElementById('saveOverlay'),
-                    close: document.getElementById('closeSaveOverlayButton'),
+                    // openOverlay: document.getElementById('saveOverlay'),
+                    // close: document.getElementById('closeSaveOverlayButton'),
                     store: document.getElementById("storePatchHistoryButton"),
 
-                    // fields
-                    historyName: document.getElementById('patchHistoryName'),
-                    description: document.getElementById('patchHistoryDesc')
+                    // // fields
+                    // historyName: document.getElementById('patchHistoryName'),
+                    // description: document.getElementById('patchHistoryDesc')
 
                 },
                 snackbar: document.getElementById("snackbar")
@@ -1190,7 +1190,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 createGestureGraph()
 
                 console.log(msg.data)
-
+                UI.history.id.textContent = msg.data.id
                 UI.history.name.value = msg.data.name
                 UI.history.description.value = msg.data.description
                 
@@ -2313,50 +2313,39 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
 
-    async function storePatchHistory() {  
+    async function updatePatchHistoryMetadata() {  
             
         const payload = {
-            name: UI.overlays.save.historyName.value || `patchHistory_${uuidv7().split('-')[0]}`,
-            author: urlParams.get('username') || 'anonymous',
-            description: UI.overlays.save.description.value,
-            tags: UI.overlays.save.historyTags.value.split(',').map(t => t.trim()),
-            synth_json: {
-                filename: UI.overlays.save.historyName.value,
-                visualGraph: cy.json(),
-                paramUIOverlays: paramUIOverlays,
-                audioGraph: synthGraph
-            }
+            name: UI.history.name.value || `patchHistory_${uuidv7().split('-')[0]}`,
+            id: parseInt(UI.history.id.textContent),
+            description: UI.history.description.value,
+            tags: UI.history.tags.value.split(',').map(t => t.trim()),
+            // 
         };
-    
-        // sendMsgToServer(JSON.stringify({
-        //     cmd: 'saveSynth',
-        //     data: payload
-        // }))
+        // send metadata to server to db
+        ws.send(JSON.stringify({
+            cmd: "updatePatchHistoryMetadata",
+            data: payload
+        }))
 
-        // save patchHistory to user's computer as .patchhistory
-        sendToMainApp({
-            cmd: "savePatchHistory"
-        })
-
-        toggleSaveOverlay()
+        // toggleSaveOverlay()
         // const res = await fetch('/api/synthFiles', {
         //   method: 'POST',
         //   headers: { 'Content-Type': 'application/json' },
-        //   body: JSON.stringify(payload)
         // });
     
         // const data = await res.json();
         // alert('Saved with ID: ' + data.synthFileId);
     }
 
-    function toggleSaveOverlay() { 
-        UI.overlays.save.openOverlay.style.display = UI.overlays.save.openOverlay.style.display === 'flex' ? 'none' : 'flex';
-    }
+    // function toggleSaveOverlay() { 
+    //     UI.overlays.save.openOverlay.style.display = UI.overlays.save.openOverlay.style.display === 'flex' ? 'none' : 'flex';
+    // }
 
-     UI.overlays.save.close.addEventListener('click', toggleSaveOverlay);
+    //  UI.overlays.save.close.addEventListener('click', toggleSaveOverlay);
 
     // // save forking paths files to user's file system
-    UI.overlays.save.store.addEventListener("click", storePatchHistory);
+    UI.history.update.addEventListener("click", updatePatchHistoryMetadata);
 
     
     function toggleHistoryBrowserOverlay(){

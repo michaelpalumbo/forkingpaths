@@ -46,15 +46,19 @@
                             <button class=workspaceButton id="openHistoryBrowser">Open Patch History Browser...</button>
                             <p></p>
                             <hr>
-                            <H3>History Metadata</H3>
-                            <input type="text" id="patchHistoryName" placeholder="Patch History Name...">
-                            <!-- <input type="text" id="synthAuthor" placeholder="Author"> -->
-                            <input type="text" id="patchHistoryTags" placeholder="Enter Tags (comma-separated)">
-                            <textarea id="patchHistoryDescription" placeholder="Description"></textarea>
-                            <!-- <button onclick="uploadSynth()">Upload Synth Template</button> -->
-                            <button id="storePatchHistoryButton" class="done-overlay" >Update</button>
-                            <button class="close-overlay" id="closeSaveOverlayButton">Cancel</button>
-                    
+                            <div id="historyMetadata">
+
+                           
+                                <H3>Current History Metadata</H3>
+                                <p>Database ID: <span id="databaseEntryID"></span></p>
+                                <input type="text" id="patchHistoryName" placeholder="Patch History Name...">
+                                <!-- <input type="text" id="synthAuthor" placeholder="Author"> -->
+                                <input type="text" id="patchHistoryTags" placeholder="Enter Tags (comma-separated)">
+                                <textarea id="patchHistoryDescription" placeholder="Description"></textarea>
+                                <!-- <button onclick="uploadSynth()">Upload Synth Template</button> -->
+                                <button id="updatePatchHistoryButton" class="done-overlay" >Update</button>
+                                <!-- <button class="close-overlay" id="closeSaveOverlayButton">Cancel</button> -->
+                            </div>
                         </div>
                     </div>
                 </div>
