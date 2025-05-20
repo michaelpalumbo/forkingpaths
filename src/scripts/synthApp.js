@@ -24,6 +24,8 @@ import { marked } from 'marked'
 import 'jquery-knob';   // Import jQuery Knob plugin
 import { computePosition, flip, shift } from '@floating-ui/dom';
 import { config } from '../../config/forkingPathsConfig.js';
+import { fromByteArray, toByteArray } from 'base64-js';
+
 
 // TODO: look for comments with this: //* old -repo version 
 // TODO: when new automerge implementation is working, remove their related code sections
@@ -272,10 +274,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     loadDemoSynth: document.getElementById('loadDemoSynthButton'),
                     loadSynthFile: document.getElementById('loadSynthButton'), 
                     openSynthBrowser: document.getElementById('openSynthBrowser'),
-                    
-                    // newPatchHistory: document.getElementById('newPatchHistory'), // moved to history window
-                    // loadPatchHistory: document.getElementById('loadPatchHistory'),
-                    // savePatchHistory: document.getElementById("savePatchHistory")
+                
                 },
                 view: {
                     openSynthDesigner: document.getElementById('openSynthDesigner'),
@@ -3259,9 +3258,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
             case 'savePatchHistory':
 
-                const binary = Automerge.save(patchHistory); // Returns a Uint8Array
-                const patch_binary = btoa(String.fromCharCode(...binary));
+                const patch_binary = fromByteArray(Automerge.save(patchHistory))
 
+                console.log(patch_binary)
                 ws.send(JSON.stringify({
                     cmd: 'savePatchHistory',
                     data: {
@@ -3276,15 +3275,17 @@ document.addEventListener("DOMContentLoaded", function () {
                 }))
             break
             case 'loadPatchHistory':
-                
+    
                 if(event.data.source === 'file'){
                     loadPatchHistory(event.data.arrayBuffer)
                 } else {
                     // load it from the database
-                    console.warn('when ready to work on this, follow the code below to ensure that the forkedID is stored in the patchHistory obj')
-                    patchHistory = Automerge.change(patchHistory, d => {
-                        d.forked_from_id = entryFromDatabase.forked_from_id; // numeric DB ID of the parent
-                    });
+                    let entry = event.data.data
+                    console.log(entry)
+
+                    // const historyFromDB = Automerge.load(binary);
+
+                    loadPatchHistory(entry.patch_binary.data, entry.id)
                     
                 }
 
@@ -3698,28 +3699,32 @@ document.addEventListener("DOMContentLoaded", function () {
     
    
 
-    function loadPatchHistory(arrayBuffer){
+    function loadPatchHistory(arrayBuffer, forkedFromID){
 
             ws.send(JSON.stringify({
                 cmd: 'clearHistoryGraph'
             }))
             // clear the sequences
-            console.warn('now that history window is issuing the loadPatchHistory logic, consider having this next step be client-side (i.e. no need to wait for main app to send the message on the next line here:')
-            sendMsgToHistoryApp({
-                appID: 'forkingPathsMain',
-                cmd: 'newPatchHistory'
+            // console.warn('now that history window is issuing the loadPatchHistory logic, consider having this next step be client-side (i.e. no need to wait for main app to send the message on the next line here:')
+            // sendMsgToHistoryApp({
+            //     appID: 'forkingPathsMain',
+            //     cmd: 'newPatchHistory'
                     
-            })
+            // })
 
             
             resetDrawing()
 
-            // Convert to Uint8Array (required for Automerge.load)
-            const binaryData = new Uint8Array(arrayBuffer);
+
 
             // Example: Load into Automerge
+
+            // Convert to Uint8Array (required for Automerge.load)
+            const binaryData = new Uint8Array(arrayBuffer);
             patchHistory = Automerge.load(binaryData);
 
+       
+            
             // get latest branch
             let latestBranch = patchHistory.branchOrder[patchHistory.branchOrder.length - 1]
 
@@ -3733,6 +3738,11 @@ document.addEventListener("DOMContentLoaded", function () {
             
             reDrawHistoryGraph()
 
+            if(forkedFromID){
+                patchHistory = Automerge.change(patchHistory, d => {
+                    d.forked_from_id = forkedFromID; // numeric DB ID of the parent
+                });
+            }
             saveDocument(patchHistoryKey, Automerge.save(patchHistory));
     }
         
@@ -5210,6 +5220,10 @@ document.addEventListener("DOMContentLoaded", function () {
         snackbar.classList.add("show");
     setTimeout(() => snackbar.classList.remove("show"), 5000);
     }
+
+
+
+
 });
 
 

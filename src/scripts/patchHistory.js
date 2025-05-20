@@ -268,42 +268,42 @@ window.addEventListener("load", () => {
     .then(() => {
         midiInput = WebMidi.inputs[0]; // select your MIDI device
   
-      if (!midiInput) {
-        console.log("No MIDI input devices found.");
-        return;
-      }
-  
-      // Log available controls
-      console.log("Listening to MIDI device:", midiInput.name);
-  
-      // Listen to control change (knobs/faders usually send these)
-      midiInput.addListener("controlchange", (e) => {
-        console.log(`Control Change on CC#${e.controller.number}: ${e.value}`);
-        // cycle through graph
-        if (e.controller.number === 8) {
-            
-            if(!midiValues.controllers[e.controller.number]){
-                midiValues.controllers[e.controller.number] = {value: null}
-            }
-
-            const scaled = scaleMidiValue(e.rawValue, 0, 127, 0, historyGraphNodesArray.length - 1);
-            if(midiValues.controllers[e.controller.number].value != scaled){
-
-                // console.log(historyGraphNodesArray[scaled]); // ~251.97
-                let n = historyGraphNodesArray[scaled].data
-                loadVersion(n.id, n.branch)
-
-                let historyNode = historyDAG_cy.getElementById(n.id)
-                highlightNode(historyNode)
-
-
-                midiValues.controllers[e.controller.number].value = scaled
-
-
-            }
-
+        if (!midiInput) {
+            console.log("No MIDI input devices found.");
+            return;
         }
-      });
+    
+        // Log available controls
+        console.log("Listening to MIDI device:", midiInput.name);
+    
+        // Listen to control change (knobs/faders usually send these)
+        midiInput.addListener("controlchange", (e) => {
+            console.log(`Control Change on CC#${e.controller.number}: ${e.value}`);
+            // cycle through graph
+            if (e.controller.number === 8) {
+                
+                if(!midiValues.controllers[e.controller.number]){
+                    midiValues.controllers[e.controller.number] = {value: null}
+                }
+
+                const scaled = scaleMidiValue(e.rawValue, 0, 127, 0, historyGraphNodesArray.length - 1);
+                if(midiValues.controllers[e.controller.number].value != scaled){
+
+                    // console.log(historyGraphNodesArray[scaled]); // ~251.97
+                    let n = historyGraphNodesArray[scaled].data
+                    loadVersion(n.id, n.branch)
+
+                    let historyNode = historyDAG_cy.getElementById(n.id)
+                    highlightNode(historyNode)
+
+
+                    midiValues.controllers[e.controller.number].value = scaled
+
+
+                }
+
+            }
+        });
     })
     .catch((err) => console.error("WebMidi could not be enabled:", err));
 
@@ -980,12 +980,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                     panToBranch(event.data.data)
                 break
 
-                case 'newPatchHistory':
-
-                    resetSequencerTable() 
-                    createGestureGraph()
-                break
-
                 case 'sequencerUpdate': 
 
                 break
@@ -1162,7 +1156,20 @@ document.addEventListener("DOMContentLoaded", async () => {
             break
 
             case 'retrievedPatchHistory':
-                console.log(msg.data)
+
+
+
+                // send to main app using a 3rd argument as opposed to sendToMainApp()
+                sendToMainApp({
+                    cmd: "loadPatchHistory",
+                    data: msg.data,
+                    source: 'database'
+                })
+
+                resetSequencerTable() 
+                createGestureGraph()
+
+                
             break
             default: console.log('no switch case exists for ', msg.cmd)
         }
