@@ -769,6 +769,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 patchHistory = Automerge.from({
                     title: "Forking Paths Synth",
                     forked_from_id: null, // used by the database to either determine this as the root of a tree of patch histories, or a fork from a stored history 
+                    authors: [], // this will get added to as the doc is forked from the database
                     branches: {},
                     branchOrder: [],
                     docs: {},
@@ -1194,6 +1195,7 @@ document.addEventListener("DOMContentLoaded", function () {
         let patchHistoryJSON = {
             title: "Forking Paths Patch History",
             forked_from_id: null, // used by the database to either determine this as the root of a tree of patch histories, or a fork from a stored history 
+            authors: [], // this will get added to as the doc is forked from the database
             branches: {},
             branchOrder: [],
             docs: {},
@@ -3261,11 +3263,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 const patch_binary = fromByteArray(Automerge.save(patchHistory))
 
                 console.log(patch_binary)
+
                 ws.send(JSON.stringify({
                     cmd: 'savePatchHistory',
                     data: {
                         name: 'my new patch history',
-                        authors: ['michael-93ea2'],
+                        authors: [ ...patchHistory.authors, thisPeerID ],
                         description: 'Created during a jam with PeerX',
                         modules: ['Oscillator_Lemur', 'Filter_Antique'], // can be pulled from your patch graph
                         synth_template: patchHistory.synthFile, // JSON object
@@ -3737,10 +3740,10 @@ document.addEventListener("DOMContentLoaded", function () {
             previousHash = patchHistory.head.hash
             
             reDrawHistoryGraph()
-
             if(forkedFromID){
                 patchHistory = Automerge.change(patchHistory, d => {
                     d.forked_from_id = forkedFromID; // numeric DB ID of the parent
+                    d.authors = [ ...patchHistory.authors, thisPeerID ]
                 });
             }
             saveDocument(patchHistoryKey, Automerge.save(patchHistory));
