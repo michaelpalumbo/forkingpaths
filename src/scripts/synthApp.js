@@ -275,7 +275,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     
                     // newPatchHistory: document.getElementById('newPatchHistory'), // moved to history window
                     // loadPatchHistory: document.getElementById('loadPatchHistory'),
-                    savePatchHistory: document.getElementById("savePatchHistory")
+                    // savePatchHistory: document.getElementById("savePatchHistory")
                 },
                 view: {
                     openSynthDesigner: document.getElementById('openSynthDesigner'),
@@ -762,6 +762,7 @@ document.addEventListener("DOMContentLoaded", function () {
             } else {
                 patchHistory = Automerge.from({
                     title: "Forking Paths Synth",
+                    forked_from_id: 'root', // used by the database to either determine this as the root of a tree of patch histories, or a fork from a stored history 
                     branches: {},
                     branchOrder: [],
                     docs: {},
@@ -1186,6 +1187,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         let patchHistoryJSON = {
             title: "Forking Paths Patch History",
+            forked_from_id: 'root', // used by the database to either determine this as the root of a tree of patch histories, or a fork from a stored history 
             branches: {},
             branchOrder: [],
             docs: {},
@@ -3256,9 +3258,41 @@ document.addEventListener("DOMContentLoaded", function () {
             case 'newPatchHistory':
                 createNewPatchHistory()
             break
+
+            case 'savePatchHistory':
+
+                const binary = Automerge.save(patchHistory); // Returns a Uint8Array
+                const patch_binary = btoa(String.fromCharCode(...binary));
+
+                ws.send(JSON.stringify({
+                    cmd: 'savePatchHistory',
+                    data: {
+                        name: 'my new patch history',
+                        authors: ['michael-93ea2'],
+                        description: 'Created during a jam with PeerX',
+                        modules: ['Oscillator_Lemur', 'Filter_Antique'], // can be pulled from your patch graph
+                        synth_template: patchHistory.synthFile, // JSON object
+                        patch_binary: patch_binary, // base64-encoded string
+                        forked_from_id: patchHistory.forked_from_id, // or null if this is a root version
+                    }
+                }))
+            break
             case 'loadPatchHistory':
                 
-                loadPatchHistory(event.data.arrayBuffer)
+                if(event.data.source === 'file'){
+                    loadPatchHistory(event.data.arrayBuffer)
+                } else {
+                    // load it from the database
+                    console.warn('when ready to work on this, follow the code below to ensure that the forkedID is stored in the patchHistory obj')
+                    patchHistory = Automerge.change(patchHistory, d => {
+                        d.forked_from_id = entryFromDatabase.forked_from_id; // numeric DB ID of the parent
+                    });
+                    
+                }
+
+
+
+
 
             break
             case 'loadVersion':

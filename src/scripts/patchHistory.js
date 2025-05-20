@@ -2155,7 +2155,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     UI.history.savePatchHistory.addEventListener('click', async ()=>{
         // save patchHistory to user's computer as .patchhistory
-
+        sendToMainApp({
+            cmd: "savePatchHistory"
+        })
+        console.warn('remember to remove the "return" statement below this message once saving patch histories to db is working!')
+        return
         // check if browser supports the File System Access API
         if(!!window.showSaveFilePicker){
             
@@ -2265,7 +2269,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             let msg = {
                 cmd: "loadPatchHistory",
-                arrayBuffer: arrayBuffer
+                arrayBuffer: arrayBuffer,
+                source: 'file'
             }
 
             // send to main app using a 3rd argument as opposed to sendToMainApp()
