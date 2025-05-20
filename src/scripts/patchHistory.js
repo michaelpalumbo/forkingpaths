@@ -1140,6 +1140,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     
         const msg = JSON.parse(event.data)
         switch(msg.cmd){
+            // cmds to ignore
+            case 'synthTemplatesList':
+
+            break
+
+
             case 'historyGraphRenderUpdate':
                 historyGraphNodesArray = msg.data.elements.nodes
 
@@ -2289,7 +2295,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
     function toggleHistoryBrowserOverlay(){
-        console.log('efef')
         UI.overlays.historyBrowser.overlay.style.display = UI.overlays.historyBrowser.overlay.style.display === 'flex' ? 'none' : 'flex';
     }
 

@@ -228,6 +228,37 @@ html, body {
   display: none;
 }
 
+#authorList, #tagList, #patchHistoryList {
+  max-height: calc(6 * 2.2em);
+  overflow-y: auto;
+  display: block;
+  border: 1px solid #ccc;
+}
+
+/* Fallback if above fails, use a pixel-based height */
+#authorList, #tagList, #patchHistoryList {
+  height: 13.2em; /* fallback height */
+}
+
+
+#authorList li:nth-child(odd),
+#tagList li:nth-child(odd),
+#patchHistoryList li:nth-child(odd) {
+  background-color: #f9f9f9; /* light gray */
+}
+
+#authorList li:nth-child(even),
+#tagList li:nth-child(even),
+#patchHistoryList li:nth-child(even) {
+  background-color: #ffffff; /* white */
+}
+
+#authorList li,
+#tagList li,
+#patchHistoryList li {
+  padding: 6px 10px;
+  border-bottom: 1px solid #ddd;
+}
 /* Highlight styling for the active list item */
 .is-active {
   background-color: #23dbbf; /* Bulma's primary color */
