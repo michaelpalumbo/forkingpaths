@@ -1172,6 +1172,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             break
 
             case 'patchHistoriesList':
+
+                console.log(msg.data)
                 dbHistoryFiles = msg.data // store locally for when we want to filter results in the synth filebrowser panel
                 populateAuthors(msg.data);
                 populateTags(msg.data);

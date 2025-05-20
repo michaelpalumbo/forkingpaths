@@ -954,6 +954,13 @@ document.addEventListener("DOMContentLoaded", function () {
                 
                 patchHistory = Automerge.change(patchHistory, (patchHistory) => {
 
+                    // if the current patchHistory was loaded from the database, then we need to create a fork for this new change
+                    if (patchHistory.hasBeenModified === false) {
+                        console.log('ready to fork')
+                        patchHistory.forked_from_id = patchHistory.databaseID
+                        patchHistory.hasBeenModified = true
+                        forkHistoryInDatabase(patchHistory.databaseID)
+                    }
                     // Initialize the branch patchHistorydata if it doesn't already exist
                     if (!patchHistory.branches[patchHistory.head.branch]) {
                         patchHistory.branches[patchHistory.head.branch] = { head: null, history: [] };
@@ -1033,6 +1040,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     // store the branch name so that we can ensure its ordering later on
                     patchHistory.branchOrder.push(newBranchName)
+
+                    // if the current patchHistory was loaded from the database, then we need to create a fork for this new change
+                    if (patchHistory.hasBeenModified === false) {
+                        console.log('ready to fork')
+                        patchHistory.forked_from_id = patchHistory.databaseID
+                        patchHistory.hasBeenModified = true
+                        forkHistoryInDatabase(patchHistory.databaseID)
+                    }
                 });
                
                 // makeBranch(changeMessage, Automerge.getHeads(newDoc)[0])
@@ -3701,6 +3716,16 @@ document.addEventListener("DOMContentLoaded", function () {
     });
     
    
+    function forkHistoryInDatabase(id){
+        console.log('sending fork to db')
+        ws.send(JSON.stringify({
+            cmd: 'newFork',
+            data: {
+                forked_from_id: id,
+                author: thisPeerID
+            }
+        }))
+    }
 
     function loadPatchHistory(arrayBuffer, forkedFromID){
 
@@ -3725,8 +3750,6 @@ document.addEventListener("DOMContentLoaded", function () {
             // Convert to Uint8Array (required for Automerge.load)
             const binaryData = new Uint8Array(arrayBuffer);
             patchHistory = Automerge.load(binaryData);
-
-       
             
             // get latest branch
             let latestBranch = patchHistory.branchOrder[patchHistory.branchOrder.length - 1]
@@ -3740,11 +3763,17 @@ document.addEventListener("DOMContentLoaded", function () {
             previousHash = patchHistory.head.hash
             
             reDrawHistoryGraph()
+
             if(forkedFromID){
+                console.log('forked', forkedFromID)
                 patchHistory = Automerge.change(patchHistory, d => {
-                    d.forked_from_id = forkedFromID; // numeric DB ID of the parent
-                    d.authors = [ ...patchHistory.authors, thisPeerID ]
+                    d.databaseID = forkedFromID
+                    // d.forked_from_id = forkedFromID; // numeric DB ID of the parent
+                    // d.authors = [ ...patchHistory.authors, thisPeerID ]
+                    d.hasBeenModified = false
                 });
+
+                console.log(patchHistory)
             }
             saveDocument(patchHistoryKey, Automerge.save(patchHistory));
     }
