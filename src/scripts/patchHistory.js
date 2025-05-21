@@ -949,6 +949,69 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     });
 
+
+    const historyNetworkCy = cytoscape({
+        container: document.getElementById('historyNetworkCy'), // your container DOM element
+        elements: [  // Nodes
+                    { data: { id: '1', label: 'Root Patch' } },
+                    { data: { id: '2', label: 'Fork A' } },
+                    { data: { id: '3', label: 'Fork B' } },
+                    { data: { id: '4', label: 'Fork A1' } },
+
+                    // Edges
+                    { data: { id: 'e1-2', source: '1', target: '2' } },
+                    { data: { id: 'e1-3', source: '1', target: '3' } },
+                    { data: { id: 'e2-4', source: '2', target: '4' } }],
+        style: [      // required for things to show up!
+            {
+            selector: 'node',
+            style: {
+                'background-color': '#666',
+                'label': 'data(label)',
+                'text-valign': 'center',
+                'color': '#fff',
+                'text-outline-width': 2,
+                'text-outline-color': '#666',
+                'width': 40,
+                'height': 40
+            }
+            },
+            {
+            selector: 'edge',
+            style: {
+                'width': 3,
+                'line-color': '#ccc',
+                'target-arrow-color': '#ccc',
+                'target-arrow-shape': 'triangle'
+            }
+            }
+        ]
+    });
+
+    // Apply the layout separately:
+    historyNetworkCy.layout({
+        name: 'breadthfirst',
+        fit: true,
+        directed: false,
+        padding: 30,
+        circle: false,
+        grid: false,
+        spacingFactor: 1.75,
+        boundingBox: undefined,
+        avoidOverlap: true,
+        nodeDimensionsIncludeLabels: false,
+        roots: undefined,
+        depthSort: undefined,
+        animate: false,
+        animationDuration: 500,
+        animationEasing: undefined,
+        animateFilter: (node, i) => true,
+        ready: undefined,
+        stop: undefined,
+        transform: (node, position) => position
+    }).run();
+
+  
     // *
     // *
     // * COMMUNICATIONS WITH MAIN APP
@@ -2376,6 +2439,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     
     function toggleHistoryBrowserOverlay(){
         UI.overlays.historyBrowser.overlay.style.display = UI.overlays.historyBrowser.overlay.style.display === 'flex' ? 'none' : 'flex';
+
+        setTimeout(() => {
+            historyNetworkCy.resize();
+            historyNetworkCy.fit();
+            console.log('resize')
+        }, 1000); // small delay to let DOM render first
     }
 
     UI.overlays.historyBrowser.close.addEventListener('click', toggleHistoryBrowserOverlay);

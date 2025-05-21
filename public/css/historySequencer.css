@@ -272,6 +272,21 @@ html, body {
   box-sizing: border-box;
 }
 
+#historyNetworkCyContainer {
+  height: 100%; /* Ensures it takes up the full height of the .row.h-25 */
+  display: flex;
+  justify-content: center; /* Optional: Center content horizontally */
+  align-items: center; /* Optional: Center content vertically */
+  overflow: hidden; /* Prevent content overflow */
+  background: transparent;
+}
+
+#historyNetworkCy {
+  width: 100%;   /* Set width */
+  height: 100%; /* Set height */
+  border: 1px solid #ccc;
+}
+
 /* Full-page overlay */
 .overlay {
   display: none; /* Hidden by default */
