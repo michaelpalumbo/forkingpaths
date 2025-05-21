@@ -1267,6 +1267,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Patch History Browser
     function populateAuthors(histories) {
         const uniqueAuthors = [...new Set(histories.map(t => t.authors))].sort();
+        // filter out repeated authornames
+        const seen = new Set();
+        const uniqueNested = [];
+
+        for (const entry of uniqueAuthors) {
+            const value = entry[0];
+            if (!seen.has(value)) {
+                seen.add(value);
+                uniqueNested.push(entry);
+            }
+        }
         const authorList = UI.overlays.historyBrowser.authorList;
         authorList.innerHTML = '';
         const allItem = document.createElement('li');
@@ -1276,7 +1287,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         allItem.onclick = () => onAuthorClick('all');
         authorList.appendChild(allItem);
       
-        uniqueAuthors.forEach(author => {
+        uniqueNested.forEach(author => {
           const li = document.createElement('li');
           li.textContent = author;
           li.dataset.value = author;
@@ -1364,18 +1375,20 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     function onTagClick(tag){
         if(tag ==='all'){
-            ws.send(JSON.stringify({ cmd: 'getSynthTemplates'}));
+            ws.send(JSON.stringify({ cmd: 'getPatchHistories'}));
         } else {
-            ws.send(JSON.stringify({ cmd: 'getSynthTemplates', filter: 'tags', query: tag }));
+            ws.send(JSON.stringify({ cmd: 'getPatchHistories', filter: 'tags', query: tag }));
         }
 
     }
 
     function onAuthorClick(author){
         if(author ==='all'){
-            ws.send(JSON.stringify({ cmd: 'getSynthTemplates'}));
+            ws.send(JSON.stringify({ cmd: 'getPatchHistories'}));
         } else {
-            ws.send(JSON.stringify({ cmd: 'getSynthTemplates', filter: 'authors', query: author }));
+
+            console.log(author)
+            ws.send(JSON.stringify({ cmd: 'getPatchHistories', filter: 'authors', query: author }));
         }
 
     }
@@ -4475,6 +4488,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         UI.overlays.snackbar.classList.add("show");
     setTimeout(() => UI.overlays.snackbar.classList.remove("show"), 3000);
     }
+
 
 
     
