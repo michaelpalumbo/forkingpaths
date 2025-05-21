@@ -184,7 +184,7 @@ html, body {
   top: 0;
   left: auto;
   right: 0;
-  width: 40%;
+  width: 20%;
   height: 100%;
   background: rgba(255, 255, 255, 0.95);
   color: #111;
@@ -259,88 +259,6 @@ html, body {
   padding: 6px 10px;
   border-bottom: 1px solid #ddd;
 }
-
-/* Improve visibility for text inputs and textarea in the overlay */
-#saveOverlay input[type="text"],
-#saveOverlay textarea {
-  width: 100%;
-  padding: 8px;
-  margin-bottom: 10px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 14px;
-  box-sizing: border-box;
-}
-
-#historyNetworkCyContainer {
-  height: 100%; /* Ensures it takes up the full height of the .row.h-25 */
-  display: flex;
-  justify-content: center; /* Optional: Center content horizontally */
-  align-items: center; /* Optional: Center content vertically */
-  overflow: hidden; /* Prevent content overflow */
-  background: transparent;
-}
-
-#historyNetworkCy {
-  width: 100%;   /* Set width */
-  height: 100%; /* Set height */
-  border: 1px solid #ccc;
-}
-
-/* Full-page overlay */
-.overlay {
-  display: none; /* Hidden by default */
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent background */
-  z-index: 2000; /* Above other content */
-  justify-content: center;
-  align-items: center;
-}
-
-/* Content inside the overlay */
-.overlay-content {
-  background: white;
-  padding: 20px;
-  border-radius: 10px;
-  width: 80%; /* Width of the settings modal */
-  max-width: 600px;
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
-  text-align: center;
-}
-
-.done-overlay {
-  background: #00aaff;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  cursor: pointer;
-  border-radius: 5px;
-  font-size: 16px;
-}
-
-.done-overlay:hover {
-  background: #555;
-}
-/* Close button */
-.close-overlay {
-  background: #333;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  cursor: pointer;
-  border-radius: 5px;
-  font-size: 16px;
-}
-
-.close-overlay:hover {
-  background: #555;
-}
-
-
 /* Highlight styling for the active list item */
 .is-active {
   background-color: #23dbbf; /* Bulma's primary color */
