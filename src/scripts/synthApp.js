@@ -25,7 +25,8 @@ import 'jquery-knob';   // Import jQuery Knob plugin
 import { computePosition, flip, shift } from '@floating-ui/dom';
 import { config } from '../../config/forkingPathsConfig.js';
 import { fromByteArray, toByteArray } from 'base64-js';
-
+import Chance from 'chance';
+const chance = new Chance();
 
 // TODO: look for comments with this: //* old -repo version 
 // TODO: when new automerge implementation is working, remove their related code sections
@@ -985,8 +986,11 @@ document.addEventListener("DOMContentLoaded", function () {
                     //? patchHistory.head.branch = amDoc.title
                     
                 });
+
+
                 
-                
+                updatePatchHistoryDatabase()
+
                 onChangeCallback(amDoc);
             }
             return amDoc;
@@ -1052,6 +1056,8 @@ document.addEventListener("DOMContentLoaded", function () {
                
                 // makeBranch(changeMessage, Automerge.getHeads(newDoc)[0])
                 onChangeCallback(amDoc);
+
+                updatePatchHistoryDatabase()
                 automergeDocuments.newClone = false
 
             }
@@ -1346,8 +1352,51 @@ document.addEventListener("DOMContentLoaded", function () {
         // send doc to history app
         reDrawHistoryGraph()
 
+        // store it in the database
+        const patch_binary = fromByteArray(Automerge.save(patchHistory))
+        ws.send(JSON.stringify({
+            cmd: 'newPatchHistory',
+            data: {
+                name: `${chance.animal()} ${uuidv7().split('-')[2]}`,
+                authors: [ thisPeerID ],
+                description: null,
+                modules: ['test'], // can be pulled from your patch graph
+                synth_template: patchHistory.synthFile, // JSON object
+                patch_binary: patch_binary, // base64-encoded string
+                forked_from_id: patchHistory.forked_from_id, // or null if this is a root version
+            }
+        }))
         // addSpeaker()
     }
+
+    
+    
+    async function updatePatchHistoryDatabase() {  
+        console.warn('need to add thisPeerID to current list of authors instead of replacing it (as is currently being done, see authors prop below this line)')
+        const payload = {
+            patch_binary: fromByteArray(Automerge.save(patchHistory)),
+            authors: [ thisPeerID ],
+            forked_from_id: patchHistory.forked_from_id,
+            id: patchHistory.databaseID,
+
+            // 
+        };
+        // send metadata to server to db
+        ws.send(JSON.stringify({
+            cmd: "updatePatchHistoryEntry",
+            data: payload
+        }))
+
+        // toggleSaveOverlay()
+        // const res = await fetch('/api/synthFiles', {
+        //   method: 'POST',
+        //   headers: { 'Content-Type': 'application/json' },
+        // });
+    
+        // const data = await res.json();
+        // alert('Saved with ID: ' + data.synthFileId);
+    }
+    
     // save forking paths doc (patchHistory) to disk
     function saveAutomergeDocument(fileName) {
         // Generate the binary format of the Automerge document
@@ -1616,7 +1665,6 @@ document.addEventListener("DOMContentLoaded", function () {
     
 
     /*
-
         DOCUMENT HISTORY CYTOSCAPE (DAG)
     */
  
@@ -1632,6 +1680,7 @@ document.addEventListener("DOMContentLoaded", function () {
         //     })
         //     throttleSend = true
         // }
+
    
         sendMsgToHistoryApp({
             appID: 'forkingPathsMain',
@@ -3105,6 +3154,26 @@ document.addEventListener("DOMContentLoaded", function () {
     ws.onmessage = async (event) => {
         let msg = JSON.parse(event.data)
         switch(msg.cmd){
+
+            // cases to ignore (destined for other clients)
+            case 'patchHistoriesList':
+                //ignore
+            break
+            case 'newPatchHistoryDatabaseID':
+
+                patchHistory = Automerge.change(patchHistory, (patchHistory) => {
+                    patchHistory.databaseID = msg.patchHistoryId
+                })
+
+               
+                sendMsgToHistoryApp({
+                    appID: 'forkingPathsMain',
+                    cmd: msg.cmd,
+                    data: msg
+                        
+                })
+          
+            break
 
             case 'roomsInfo':
                 // ignore (meant for other ws clients)

@@ -366,8 +366,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                 table: {
                     body: document.getElementById("dynamicTableBody2")
                 }
-
-
             }, 
             gestureEditor: {
                 assignToParam: document.getElementById("assignGestureToParam"),
@@ -967,8 +965,21 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (event.data && event.data.appID === 'forkingPathsMain') {
             // console.log(event.data)
             switch (event.data.cmd){
+                case 'newPatchHistoryDatabaseID':
+                    console.log(event.data.data)
+                    UI.history.id.textContent = event.data.data.patchHistoryId
+                    UI.history.name.value = event.data.data.name
+                    // UI.history.description.value = event.data.data.description
+                    
+                break
+
                 case 'reDrawHistoryGraph':
+                    if(!event.data.data){
+                        return
+                    }
                     patchHistory = event.data.data
+
+                    
                     // reDrawHistoryGraph(patchHistory)
                             // Send the elements to the server for rendering
                     const update = JSON.stringify({
@@ -1173,7 +1184,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             case 'patchHistoriesList':
 
-                console.log(msg.data)
+    
                 dbHistoryFiles = msg.data // store locally for when we want to filter results in the synth filebrowser panel
                 populateAuthors(msg.data);
                 populateTags(msg.data);
@@ -1191,7 +1202,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 resetSequencerTable() 
                 createGestureGraph()
 
-                console.log(msg.data)
+     
                 UI.history.id.textContent = msg.data.id
                 UI.history.name.value = msg.data.name
                 UI.history.description.value = msg.data.description
@@ -1347,6 +1358,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             cmd: 'getPatchHistory',
             id: id
         }))
+
+
     }
 
     function onTagClick(tag){
@@ -2312,8 +2325,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     // * EVENT HANDLERS
     // * 
     // *
-
-
 
     async function updatePatchHistoryMetadata() {  
             
