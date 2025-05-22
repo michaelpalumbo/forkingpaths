@@ -1235,7 +1235,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     const loop = new Tone.Loop(function(time){
         // ✅ Set current step's duration immediately
         const stepLength2 = storedSequencerTable[currentStepIndex].stepLength;
+        console.log(stepLength2)
         const stepDuration = Tone.Time(stepLength2).toSeconds();
+        console.log(stepDuration)
         
         let stepsToAdvance = 1 // this could be used to randomize steps too. (i.e. if random is selected, randomize this value at each loop)
 
@@ -1283,7 +1285,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 const totalSubsteps = embeddedSeq.length;
                 const outerStepDuration = stepDuration; // duration of current step
                 const subStepDuration = outerStepDuration / totalSubsteps;
-            
+                console.log(subStepDuration)
                 const embeddedEvents = embeddedSeq.map((row, i) => {
                     return [i * subStepDuration, () => {
                       if (row.status === "Active") {
@@ -1325,7 +1327,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                 loadVersion(currentStep.node.id, currentStep.node.branch)
                 
                 if(targetRow.dataset.gesture){
-                    playGestureFromSequencerStep(sequencerData.gestures[currentStepIndex], loop.interval)
+         
+                    playGestureFromSequencerStep(sequencerData.gestures[currentStepIndex], stepDuration)
                     // createGestureGraph(targetRow.dataset.gestureData.gesturePoints, targetRow.dataset.gestureData.range, targetRow.dataset.gestureData.min, targetRow.dataset.gestureData.max)
                 }
             }
@@ -1402,6 +1405,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 } else {
                     loadVersion(step.node.id, step.node.branch);
                     if (targetRow.dataset.gesture) {
+                        console.log(step.stepLength)
                     playGestureFromSequencerStep(sequencerData.gestures[index], step.stepLength);
                     }
                 }
@@ -1601,8 +1605,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // playback a stored gesture from a sequencer step
     function playGestureFromSequencerStep(gesture, stepLength){
+
+        console.log(gesture, stepLength)
         let quantizedGesture = quantizeGesture(gesture, stepLength)
         
+        console.log(quantizedGesture)
         // create the scheduler
         quantizedGesture.forEach((node) => {
             const delay = node.t * 1000; // (convert to milliseconds)
