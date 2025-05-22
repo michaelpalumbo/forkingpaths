@@ -1,5 +1,15 @@
-### Patch Histories
+## Patch Histories Panel Overview
 
-This panel contains buttons for making/saving/loading patch histories. 
+Use the Patch Histories panel to manage your current patch history, import from disk or export it to disk
+---
 
-(more description coming soon!)
+### Buttons
+
+- **New Patch History**  
+  Clears your session and starts a new patch + empty history.
+
+- **Import...**  
+  Load a `.patchhistory` file from your computer.
+
+- **Export...**  
+  Download your current Patch History as a `.patchhistory` file.

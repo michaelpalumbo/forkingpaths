@@ -4245,7 +4245,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     setTimeout(() => UI.overlays.snackbar.classList.remove("show"), 3000);
     }
 
-
+    setTimeout(() => {
+        console.log('test')
+        setStepLengthFunction('userEditable')
+        UI.sequencer.modes.stepLengthFunctionSelect.value = 'userEditable'
+    }, 1500);
     
 })
 
