@@ -33,7 +33,7 @@
                         
                         <div id="patchHistoryDatabaseAndFiles">
                             
-                            <button class=workspaceButton id="newPatchHistory">New Patch History</button> 
+                            <button class=workspaceButton2 id="newPatchHistory">New Patch History</button> 
                             <!-- <input type="file" id="loadPatchHistoryButton" accept=".forkingpaths" /> -->
 
                             <hr>
@@ -54,9 +54,9 @@
                                 Name:<input type="text" id="patchHistoryName" placeholder="Patch History Name..."><br>
                                 <!-- <input type="text" id="synthAuthor" placeholder="Author"> -->
                                 Tags:<input type="text" id="patchHistoryTags" placeholder="Enter Tags (comma-separated)"><br>
-                                Description:<textarea id="patchHistoryDescription" placeholder="Description"></textarea>
+                                Description:<textarea id="patchHistoryDescription" placeholder="Description"></textarea><br>
                                 <!-- <button onclick="uploadSynth()">Upload Synth Template</button> -->
-                                <button id="updatePatchHistoryButton" class="done-overlay" >Update</button>
+                                <button id="updatePatchHistoryButton" class="workspaceButton" >Update</button>
                                 <!-- <button class="close-overlay" id="closeSaveOverlayButton">Cancel</button> -->
                             </div>
                         </div>
@@ -351,7 +351,7 @@
 
             
             <h2>Browse Patch Histories</h2>
-
+            These are histories made by all forking paths users. To load a patch history click on a history name below. You can also filter results based on author name
             <div>         
                 <h3>Authors</h3>
                 <ul id="authorList"></ul>
@@ -370,6 +370,8 @@
             <div id="historyNetworkCyContainer" class="flex-grow-1 border overflow-hidden mt-0">
                 <div id="historyNetworkCy"></div>
             </div>
+
+            
         </div>
     </div>
     <div id="historyListTooltip"></div>

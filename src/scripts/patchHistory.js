@@ -1029,7 +1029,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             // console.log(event.data)
             switch (event.data.cmd){
                 case 'newPatchHistoryDatabaseID':
-                    console.log(event.data.data)
+            
                     UI.history.id.textContent = event.data.data.patchHistoryId
                     UI.history.name.value = event.data.data.name
                     // UI.history.description.value = event.data.data.description
@@ -1063,6 +1063,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
                     modifyGestureParamAssign() 
+                    console.log(patchHistory, parseInt(UI.history.id.textContent), patchHistory.databaseID)
+                    if(patchHistory.databaseId && UI.history.id.textContent != patchHistory.databaseID){
+                        console.log('ouw')
+                        UI.history.id.textContent = patchHistory.databaseId
+                        UI.history.name.value = patchHistory.name
+                        UI.history.description.value = patchHistory.description
+                    }
+
 
 
                 break
@@ -1396,6 +1404,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             const matchTag = selectedTag === 'all' || (t.tags || []).includes(selectedTag);
             return matchAuthor && matchTag;
         });
+        // // set histories in reverse order for list display (newest first)
+        // filtered.reverse()
       
         if (filtered.length === 0) {
             const li = document.createElement('li');
@@ -2460,7 +2470,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     })
 
     UI.history.export.addEventListener('click', async ()=>{
-
+        console.log(patchHistory)
         // toggleSaveOverlay()
         // save patchHistory to user's computer as .patchhistory
         // sendToMainApp({
@@ -2481,12 +2491,20 @@ document.addEventListener("DOMContentLoaded", async () => {
                     },
                 ],
             });
-            
+
+            console.log(fileName)
+            let toSave = Automerge.from(patchHistory)
+            // set the filename, tags, and description
+            toSave = Automerge.change(toSave, (toSave) => {
+                toSave.name = fileName.name.split('.')[0]
+                patchHistory.description = UI.history.description.value
+                patchHistory.tags = UI.history.tags.value
+            })
             // Create a writable stream
             const writable = await fileName.createWritable();
 
             // Write the blob data directly
-            const binaryData = Automerge.save(Automerge.from(patchHistory)); // this is a Uint8Array
+            const binaryData = Automerge.save(toSave); // this is a Uint8Array
             await writable.write(binaryData);
 
             // Close the file and commit the write
@@ -2494,8 +2512,17 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         } else {
             
-            // Generate the binary format of the Automerge document
-            const binaryData = Automerge.save(patchHistory);
+
+            let toSave = Automerge.from(patchHistory)
+            // set the filename, tags, and description
+            toSave = Automerge.change(toSave, (toSave) => {
+                toSave.name = `${UI.history.name.value}.patchhistory` || "forkingPathsSave.patchhistory"
+                patchHistory.description = UI.history.description.value
+                patchHistory.tags = UI.history.tags.value
+            })
+
+            // Write the blob data directly
+            const binaryData = Automerge.save(toSave); // this is a Uint8Array
 
             // Create a Blob object for the binary data
             const blob = new Blob([binaryData], { type: 'application/octet-stream' });
@@ -2506,7 +2533,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             // Create a download link
             const downloadLink = document.createElement('a');
             downloadLink.href = url;
-            downloadLink.download = "forkingPathsSave.patchHistory";
+            downloadLink.download = toSave.name;
 
             // Optionally, add the link to the DOM and simulate a click
             document.body.appendChild(downloadLink);
@@ -2583,6 +2610,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             // send to main app using a 3rd argument as opposed to sendToMainApp()
             window.opener?.postMessage(msg, '*', [arrayBuffer])
+
+
 
             // // Convert to Uint8Array (required for Automerge.load)
             // const binaryData = new Uint8Array(arrayBuffer);
