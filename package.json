@@ -11,6 +11,7 @@
     "server": "node ../historyGraphRenderer/server.js",
     "start": "npx serve dist -l ${PORT:-3000}",
     "dev": "npm run rnboDevice2modules && concurrently \"npm run server\" \"vite\"",
+    "serverless": "vite",
     "build": "npm run rnboDevice2modules && npm run build:worklet && vite build",
     "preview": "vite preview",
     "runBuild": "npx serv dist",

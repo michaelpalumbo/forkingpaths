@@ -10,7 +10,7 @@ import { config } from '../../config/forkingPathsConfig.js';
 // Use the correct protocol based on your site's URL
 const VITE_WS_URL = import.meta.env.VITE_WS_URL
 // const VITE_WS_URL = "wss://historygraphrenderer.onrender.com/10000"
-const ws = new WebSocket(VITE_WS_URL);
+// const ws = new WebSocket(VITE_WS_URL);
 
 if(!localStorage.appSettings){
     let settings = {
@@ -1121,33 +1121,91 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     }
 
-    ws.onopen = () => {
-        console.log('Connected to WebSocket server at ', VITE_WS_URL);
-        // ws.send('Hello, server!');
-        sendToMainApp({
-            cmd: 'historySequencerReady'
-        })
+    // ws.onopen = () => {
+    //     console.log('Connected to WebSocket server at ', VITE_WS_URL);
+    //     // ws.send('Hello, server!');
+    //     sendToMainApp({
+    //         cmd: 'historySequencerReady'
+    //     })
 
-    };
+    // };
     
-    ws.onmessage = (event) => {
-        // console.log('Message from server:', event.data);
+    // ws.onmessage = (event) => {
+    //     // console.log('Message from server:', event.data);
     
-        const msg = JSON.parse(event.data)
-        switch(msg.cmd){
-            case 'historyGraphRenderUpdate':
-                historyGraphNodesArray = msg.data.elements.nodes
+    //     const msg = JSON.parse(event.data)
+    //     switch(msg.cmd){
+    //         case 'historyGraphRenderUpdate':
+    //             historyGraphNodesArray = msg.data.elements.nodes
 
-                setGraphFromHistoryRenderer(msg)
+    //             setGraphFromHistoryRenderer(msg)
                 
-                graphJSONstore = msg
-            break
-        }
+    //             graphJSONstore = msg
+    //         break
+    //     }
 
         
-    };
+    // };
+    
+    // ws.onclose = () => {
+    //     console.log('Disconnected from WebSocket server');
+    // };
 
-    async function setGraphFromHistoryRenderer(json){
+    
+    let ws
+    let reconnectInterval = 1000;
+    let retryAttempts = 0
+    function connectWebSocket() {
+        ws = new WebSocket(VITE_WS_URL);
+
+        ws.onopen = () => {
+            console.log('Connected to WebSocket server at', VITE_WS_URL);
+            reconnectInterval = 1000; // reset interval on successful reconnect
+            retryAttempts = 0
+            sendToMainApp({
+                cmd: 'historySequencerReady'
+            });
+        };
+
+        ws.onmessage = (event) => {
+            const msg = JSON.parse(event.data);
+            switch (msg.cmd) {
+                case 'historyGraphRenderUpdate':
+                    historyGraphNodesArray = msg.data.elements.nodes;
+                    setGraphFromHistoryRenderer(msg);
+                    graphJSONstore = msg;
+                    break;
+            }
+        };
+
+        ws.onclose = () => {
+            console.log('WebSocket disconnected. Attempting to reconnect...');
+            setTimeout(connectWebSocket, reconnectInterval);
+        };
+
+        ws.onerror = (err) => {
+            retryAttempts++
+            if(retryAttempts === 3){
+                 showSnackbar('Server connection error. History graph updates paused. Entered Offline Mode', 10000)
+            }
+            console.error('WebSocket error:', err.message);
+            ws.close(); // Triggers onclose for reconnect
+        };
+    }
+
+    // Call this once to start the connection
+    connectWebSocket();
+
+
+
+
+    // *
+    // *
+    // * UI UPDATES
+    // * 
+    // *
+
+       async function setGraphFromHistoryRenderer(json){
         historyGraphNodesArray = json.data.elements.nodes
         historyDAG_cy.json(json.data)
         // disable automatic layout so your manual position values are respected
@@ -1185,17 +1243,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             loadSequencerFromChangeNode(selectedNode)
         }
     }
-    
-    ws.onclose = () => {
-        console.log('Disconnected from WebSocket server');
-    };
-
-
-    // *
-    // *
-    // * UI UPDATES
-    // * 
-    // *
 
 
     // * HELP OVERLAYS
@@ -4246,10 +4293,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     }
 
-    function showSnackbar(message = "Something happened") {
+    function showSnackbar(message = "Something happened", duration = 3000) {
         UI.overlays.snackbar.textContent = message;
         UI.overlays.snackbar.classList.add("show");
-    setTimeout(() => UI.overlays.snackbar.classList.remove("show"), 3000);
+    setTimeout(() => UI.overlays.snackbar.classList.remove("show"), duration);
     }
 
     setTimeout(() => {
