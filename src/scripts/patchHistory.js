@@ -1160,8 +1160,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         ws.onopen = () => {
             console.log('Connected to WebSocket server at', VITE_WS_URL);
+
+            if(retryAttempts > 0){
+                showSnackbar('Server connection successful. Resuming history graph updates', 10000)
+                retryAttempts = 0
+            }
             reconnectInterval = 1000; // reset interval on successful reconnect
-            retryAttempts = 0
+           
             sendToMainApp({
                 cmd: 'historySequencerReady'
             });
@@ -1185,7 +1190,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         ws.onerror = (err) => {
             retryAttempts++
-            if(retryAttempts === 3){
+            if(retryAttempts === 2){
                  showSnackbar('Server connection error. History graph updates paused. Entered Offline Mode', 10000)
             }
             console.error('WebSocket error:', err.message);

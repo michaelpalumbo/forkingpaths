@@ -14,7 +14,7 @@ import { uuidv7 } from "uuidv7";
 // Use the correct protocol based on your site's URL
 const VITE_WS_URL = import.meta.env.VITE_WS_URL
 // const VITE_WS_URL = "wss://historygraphrenderer.onrender.com/10000"
-const ws = new WebSocket(VITE_WS_URL);
+
 
 // * UI
 const baseKnobSize = config.UI.knob.baseKnobSize; // Default size in pixels
@@ -64,14 +64,44 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const urlParams = new URLSearchParams(window.location.search);
 
-    ws.addEventListener('open', () => {
-        console.log('Connected to WS server');
-    });
-      
-    ws.addEventListener('message', (event) => {
-        const data = JSON.parse(event.data);
-        console.log('Message from server:', data);
-    });
+    let ws
+    let reconnectInterval = 1000;
+    let retryAttempts = 0
+    function connectWebSocket() {
+        ws = new WebSocket(VITE_WS_URL);
+
+        ws.onopen = () => {
+            console.log('Connected to WebSocket server at', VITE_WS_URL);
+
+            if(retryAttempts > 0){
+                showSnackbar('Server connection successful and can accept synth designer saves', 10000)
+                retryAttempts = 0
+            }
+            reconnectInterval = 1000; // reset interval on successful reconnect
+           
+        };
+
+        ws.onmessage = (event) => {
+           
+        };
+
+        ws.onclose = () => {
+            console.log('WebSocket disconnected. Attempting to reconnect...');
+            setTimeout(connectWebSocket, reconnectInterval);
+        };
+
+        ws.onerror = (err) => {
+            retryAttempts++
+            if(retryAttempts === 2){
+                 showSnackbar('Server connection error. Cannot accept synth saves. Please wait until reconnection', 10000)
+            }
+            console.error('WebSocket error:', err.message);
+            ws.close(); // Triggers onclose for reconnect
+        };
+    }
+
+    // Call this once to start the connection
+    connectWebSocket();
     
     function sendMsgToServer(msg){
         // send a message
@@ -1165,7 +1195,12 @@ document.addEventListener("DOMContentLoaded", function () {
         matchingDivs.forEach(div => div.remove());
     }
 
-
+    function showSnackbar(message = "Something happened", duration = 5000) {
+        const snackbar = document.getElementById("snackbar");
+        snackbar.textContent = message;
+        snackbar.classList.add("show");
+        setTimeout(() => snackbar.classList.remove("show"), duration);
+    }
 
 });
 

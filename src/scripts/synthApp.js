@@ -15,7 +15,7 @@ const DISABLE_HISTORY_WINDOW_CLOSE = import.meta.env.VITE_DISABLE_HISTORY_WINDOW
 // Use the correct protocol based on your site's URL
 const VITE_WS_URL = import.meta.env.VITE_WS_URL
 // const VITE_WS_URL = "wss://historygraphrenderer.onrender.com/10000"
-const ws = new WebSocket(VITE_WS_URL);
+// const ws = new WebSocket(VITE_WS_URL);
 
 import { uuidv7 } from "uuidv7";
 import randomColor from 'randomcolor';
@@ -24,6 +24,9 @@ import { marked } from 'marked'
 import 'jquery-knob';   // Import jQuery Knob plugin
 import { computePosition, flip, shift } from '@floating-ui/dom';
 import { config } from '../../config/forkingPathsConfig.js';
+import { fromByteArray, toByteArray } from 'base64-js';
+import Chance from 'chance';
+const chance = new Chance();
 
 // TODO: look for comments with this: //* old -repo version 
 // TODO: when new automerge implementation is working, remove their related code sections
@@ -272,10 +275,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     loadDemoSynth: document.getElementById('loadDemoSynthButton'),
                     loadSynthFile: document.getElementById('loadSynthButton'), 
                     openSynthBrowser: document.getElementById('openSynthBrowser'),
-                    
-                    // newPatchHistory: document.getElementById('newPatchHistory'), // moved to history window
-                    // loadPatchHistory: document.getElementById('loadPatchHistory'),
-                    savePatchHistory: document.getElementById("savePatchHistory")
+                
                 },
                 view: {
                     openSynthDesigner: document.getElementById('openSynthDesigner'),
@@ -300,7 +300,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     close: document.getElementById('closeOverlayButton'),
                     displaySignalAnalysisButton: document.getElementById('displaySignalAnalysisButton'),
                     volumeSlider: document.getElementById('volumeSlider'),
-                    volumeValue: document.getElementById('volumeValue')
+                    volumeValue: document.getElementById('volumeValue'),
+                    cableTension: document.getElementById('settings_controlPointDistance')
                 },
                 help: {
                     synth:{
@@ -319,7 +320,14 @@ document.addEventListener("DOMContentLoaded", function () {
                 synthBrowser: {
                     
                     overlay: document.getElementById("synthBrowserOverlay"),
-                    close: document.getElementById("closeSynthBrowserOverlay")
+                    close: document.getElementById("closeSynthBrowserOverlay"),
+                    // lists
+                    authorList: document.getElementById('authorList'),
+                    tagList: document.getElementById('tagList'),
+                    synthList: document.getElementById('synthList'),
+                    synthListTooltip: document.getElementById('synthListTooltip')
+
+                    
                 }
             }
         }
@@ -354,7 +362,6 @@ document.addEventListener("DOMContentLoaded", function () {
     UI.panel.collaboration.roomInfo.textContent = room;
 
     // set text in panel
-    // document.getElementById("roomInfo").textContent = room;
     const peerCount = parseInt(params.get('peerCount') || '0');
     let patchHistoryKey = room ? `patchHistory-${room}` : 'patchHistory';
 
@@ -762,6 +769,8 @@ document.addEventListener("DOMContentLoaded", function () {
             } else {
                 patchHistory = Automerge.from({
                     title: "Forking Paths Synth",
+                    forked_from_id: null, // used by the database to either determine this as the root of a tree of patch histories, or a fork from a stored history 
+                    authors: [], // this will get added to as the doc is forked from the database
                     branches: {},
                     branchOrder: [],
                     docs: {},
@@ -946,6 +955,13 @@ document.addEventListener("DOMContentLoaded", function () {
                 
                 patchHistory = Automerge.change(patchHistory, (patchHistory) => {
 
+                    // if the current patchHistory was loaded from the database, then we need to create a fork for this new change
+                    if (patchHistory.hasBeenModified === false) {
+                        console.log('ready to fork')
+                        patchHistory.forked_from_id = patchHistory.databaseID
+                        patchHistory.hasBeenModified = true
+                        forkHistoryInDatabase(patchHistory.databaseID)
+                    }
                     // Initialize the branch patchHistorydata if it doesn't already exist
                     if (!patchHistory.branches[patchHistory.head.branch]) {
                         patchHistory.branches[patchHistory.head.branch] = { head: null, history: [] };
@@ -970,8 +986,11 @@ document.addEventListener("DOMContentLoaded", function () {
                     //? patchHistory.head.branch = amDoc.title
                     
                 });
+
+
                 
-                
+                updatePatchHistoryDatabase()
+
                 onChangeCallback(amDoc);
             }
             return amDoc;
@@ -1025,10 +1044,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     // store the branch name so that we can ensure its ordering later on
                     patchHistory.branchOrder.push(newBranchName)
+
+                    // if the current patchHistory was loaded from the database, then we need to create a fork for this new change
+                    if (patchHistory.hasBeenModified === false) {
+                        console.log('ready to fork')
+                        patchHistory.forked_from_id = patchHistory.databaseID
+                        patchHistory.hasBeenModified = true
+                        forkHistoryInDatabase(patchHistory.databaseID)
+                    }
                 });
                
                 // makeBranch(changeMessage, Automerge.getHeads(newDoc)[0])
                 onChangeCallback(amDoc);
+
+                updatePatchHistoryDatabase()
                 automergeDocuments.newClone = false
 
             }
@@ -1186,6 +1215,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
         let patchHistoryJSON = {
             title: "Forking Paths Patch History",
+            forked_from_id: null, // used by the database to either determine this as the root of a tree of patch histories, or a fork from a stored history 
+            authors: [], // this will get added to as the doc is forked from the database
             branches: {},
             branchOrder: [],
             docs: {},
@@ -1321,8 +1352,51 @@ document.addEventListener("DOMContentLoaded", function () {
         // send doc to history app
         reDrawHistoryGraph()
 
+        // store it in the database
+        const patch_binary = fromByteArray(Automerge.save(patchHistory))
+        ws.send(JSON.stringify({
+            cmd: 'newPatchHistory',
+            data: {
+                name: `${chance.animal()} ${uuidv7().split('-')[2]}`,
+                authors: [ thisPeerID ],
+                description: null,
+                modules: ['test'], // can be pulled from your patch graph
+                synth_template: patchHistory.synthFile, // JSON object
+                patch_binary: patch_binary, // base64-encoded string
+                forked_from_id: patchHistory.forked_from_id, // or null if this is a root version
+            }
+        }))
         // addSpeaker()
     }
+
+    
+    
+    async function updatePatchHistoryDatabase() {  
+        console.warn('need to add thisPeerID to current list of authors instead of replacing it (as is currently being done, see authors prop below this line)')
+        const payload = {
+            patch_binary: fromByteArray(Automerge.save(patchHistory)),
+            authors: [ thisPeerID ],
+            forked_from_id: patchHistory.forked_from_id,
+            id: patchHistory.databaseID,
+
+            // 
+        };
+        // send metadata to server to db
+        ws.send(JSON.stringify({
+            cmd: "updatePatchHistoryEntry",
+            data: payload
+        }))
+
+        // toggleSaveOverlay()
+        // const res = await fetch('/api/synthFiles', {
+        //   method: 'POST',
+        //   headers: { 'Content-Type': 'application/json' },
+        // });
+    
+        // const data = await res.json();
+        // alert('Saved with ID: ' + data.synthFileId);
+    }
+    
     // save forking paths doc (patchHistory) to disk
     function saveAutomergeDocument(fileName) {
         // Generate the binary format of the Automerge document
@@ -1591,7 +1665,6 @@ document.addEventListener("DOMContentLoaded", function () {
     
 
     /*
-
         DOCUMENT HISTORY CYTOSCAPE (DAG)
     */
  
@@ -1607,6 +1680,7 @@ document.addEventListener("DOMContentLoaded", function () {
         //     })
         //     throttleSend = true
         // }
+
    
         sendMsgToHistoryApp({
             appID: 'forkingPathsMain',
@@ -2215,12 +2289,12 @@ document.addEventListener("DOMContentLoaded", function () {
     //* BROWSERS
 
     // synth file browser
-    document.getElementById('authorList').addEventListener('change', updateSynths);
-    document.getElementById('tagList').addEventListener('change', updateSynths);
+    UI.overlays.synthBrowser.authorList.addEventListener('change', updateSynths);
+    UI.overlays.synthBrowser.tagList.addEventListener('change', updateSynths);
 
     function populateAuthors(synthFiles) {
         const uniqueAuthors = [...new Set(synthFiles.map(t => t.author))].sort();
-        const authorList = document.getElementById('authorList');
+        const authorList = UI.overlays.synthBrowser.authorList;
         authorList.innerHTML = '';
       
         const allItem = document.createElement('li');
@@ -2243,7 +2317,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const tagSet = new Set();
         synthFiles.forEach(t => (t.tags || []).forEach(tag => tagSet.add(tag)));
         const tags = Array.from(tagSet).sort();
-        const tagList = document.getElementById('tagList');
+        const tagList = UI.overlays.synthBrowser.tagList;
         tagList.innerHTML = '';
       
         const allItem = document.createElement('li');
@@ -2263,8 +2337,8 @@ document.addEventListener("DOMContentLoaded", function () {
       }
       
       function updateSynths(synthFiles, selectedAuthor = 'all', selectedTag = 'all') {
-        const synthList = document.getElementById('synthList');
-        const tooltip = document.getElementById('synthListTooltip');
+        const synthList = UI.overlays.synthBrowser.synthList
+        const tooltip = UI.overlays.synthBrowser.synthListTooltip
         synthList.innerHTML = '';
       
         const filtered = synthFiles.filter(t => {
@@ -2343,7 +2417,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         // console.log(key, columnSide, helpTexts[key])
         content.innerHTML = synthAppHelpOverlay || "<em>Help not available.</em>";
-        // document.getElementById('synthAppHelpOverlayContent').innerHTML = "<h3>Hello</h3><p>This is a test.</p>";
 
 
         overlay.style.left = columnSide === "left" ? "50%" : "0%";
@@ -3057,140 +3130,178 @@ document.addEventListener("DOMContentLoaded", function () {
         sendSignalingMessage(offer);
     }
     
-    // // Attach the initiation to a button click (ensure the button exists in your HTML)
-    // document.getElementById("startConnectionButton").addEventListener("click", () => {
-    //     initiateConnection().catch(err => console.error("Error initiating connection:", err));
-    // });
-
-
-
-
 //*
 //*
 //* SERVER COMMUNICATION
 //* Functions that communicate between main app and server
 //*
 
-    ws.onopen = () => {
-        // console.log('Connected to WebSocket server');
-        ws.send(JSON.stringify({
-            cmd: 'joinRoom',
-            peerID: thisPeerID,
-            room: room
-        }));
+    let ws
+    let reconnectInterval = 1000;
+    let retryAttempts = 0
+    function connectWebSocket() {
+        ws = new WebSocket(VITE_WS_URL);
 
-        ws.send(JSON.stringify({
-            cmd: 'getRooms'
-        }))
+        ws.onopen = () => {
+            console.log('Connected to WebSocket server at', VITE_WS_URL);
 
-        initiateConnection().catch(err => console.error("Error initiating connection:", err))
-    };
-    
-    ws.onmessage = async (event) => {
-        let msg = JSON.parse(event.data)
-        switch(msg.cmd){
+            if(retryAttempts > 0){
+                showSnackbar('Server connection successful. Resuming history graph updates', 10000)
+                retryAttempts = 0
+            }
+            reconnectInterval = 1000; // reset interval on successful reconnect
+            // console.log('Connected to WebSocket server');
+            ws.send(JSON.stringify({
+                cmd: 'joinRoom',
+                peerID: thisPeerID,
+                room: room
+            }));
 
-            case 'roomsInfo':
-                // ignore (meant for other ws clients)
-            break
+            ws.send(JSON.stringify({
+                cmd: 'getRooms'
+            }))
 
-            case 'newPeer':
-                const peerMessage = JSON.parse(msg.msg).msg
-                UI.panel.collaboration.remotePeerUsername.textContent = JSON.parse(msg.msg).peerID;
+            initiateConnection().catch(err => console.error("Error initiating connection:", err))
+        };
+        
+        ws.onmessage = async (event) => {
+            let msg = JSON.parse(event.data)
+            switch(msg.cmd){
 
-                // Process the signaling message based on its type.
-                if (peerMessage.type === 'offer') {
-                    // Received an offer: set it as the remote description.
-                    await peerConnection.setRemoteDescription(new RTCSessionDescription(peerMessage));
-                    // Create an answer and set as local description.
-                    const answer = await peerConnection.createAnswer();
-                    await peerConnection.setLocalDescription(answer);
-                    // Send the answer via the signaling channel.
-                    sendSignalingMessage(answer);
-                } else if (peerMessage.type === 'answer') {
+                // cases to ignore (destined for other clients)
+                case 'patchHistoriesList':
+                    //ignore
+                break
+                case 'newPatchHistoryDatabaseID':
 
-                    // Received an answer for our offer.
-                    await peerConnection.setRemoteDescription(new RTCSessionDescription(peerMessage));
-                } else if (peerMessage.candidate) {
-                    // Received an ICE candidate.
-                    try {
-                    await peerConnection.addIceCandidate(peerMessage.candidate);
-                    } catch (err) {
-                    console.error("Error adding ICE candidate:", err);
+                    patchHistory = Automerge.change(patchHistory, (patchHistory) => {
+                        patchHistory.databaseID = msg.patchHistoryId
+                    })
+
+                
+                    sendMsgToHistoryApp({
+                        appID: 'forkingPathsMain',
+                        cmd: msg.cmd,
+                        data: msg
+                            
+                    })
+            
+                break
+
+                case 'roomsInfo':
+                    // ignore (meant for other ws clients)
+                break
+
+                case 'newPeer':
+                    const peerMessage = JSON.parse(msg.msg).msg
+                    UI.panel.collaboration.remotePeerUsername.textContent = JSON.parse(msg.msg).peerID;
+
+                    // Process the signaling message based on its type.
+                    if (peerMessage.type === 'offer') {
+                        // Received an offer: set it as the remote description.
+                        await peerConnection.setRemoteDescription(new RTCSessionDescription(peerMessage));
+                        // Create an answer and set as local description.
+                        const answer = await peerConnection.createAnswer();
+                        await peerConnection.setLocalDescription(answer);
+                        // Send the answer via the signaling channel.
+                        sendSignalingMessage(answer);
+                    } else if (peerMessage.type === 'answer') {
+
+                        // Received an answer for our offer.
+                        await peerConnection.setRemoteDescription(new RTCSessionDescription(peerMessage));
+                    } else if (peerMessage.candidate) {
+                        // Received an ICE candidate.
+                        try {
+                        await peerConnection.addIceCandidate(peerMessage.candidate);
+                        } catch (err) {
+                        console.error("Error adding ICE candidate:", err);
+                        }
                     }
-                }
-            break
+                break
 
-            case 'roomInfo':
-                console.log('roomsInfo', msg)
-            break
-            case 'roomFull':
-                alert('cannot connect to room, too many peers are active. please choose another room in the lobby')
-            break
+                case 'roomInfo':
+                    console.log('roomsInfo', msg)
+                break
+                case 'roomFull':
+                    alert('cannot connect to room, too many peers are active. please choose another room in the lobby')
+                break
 
-            case 'synthTemplatesList':
-                dbSynthFiles = msg.data // store locally for when we want to filter results in the synth filebrowser panel
-                populateAuthors(msg.data);
-                populateTags(msg.data);
-                updateSynths(msg.data);
+                case 'synthTemplatesList':
+                    dbSynthFiles = msg.data // store locally for when we want to filter results in the synth filebrowser panel
+                    populateAuthors(msg.data);
+                    populateTags(msg.data);
+                    updateSynths(msg.data);
 
-            break
+                break
 
-            case 'retrievedSynthFile':
-                const file = msg.data.rows[0].synth_json
-                if (!file) {
-                    alert('No file selected');
-                    return;
-                }
-            
-                localStorage.setItem('synthFile', file);
+                case 'retrievedSynthFile':
+                    const file = msg.data.rows[0].synth_json
+                    if (!file) {
+                        alert('No file selected');
+                        return;
+                    }
+                
+                    localStorage.setItem('synthFile', file);
 
-                // Parse the JSON data
-                // const jsonData = JSON.parse(reader.result);
-                createNewPatchHistory(file)
-                // Ensure the file is a valid Automerge binary (based on extension or type)
-                // if (!file.name.endsWith('.fpsynth')) {
-                //     alert('Invalid file type. Please select a .fpsynth file.');
-                //     return;
-                // }
-            
-                // const reader = new FileReader();
-            
-                // reader.onload = () => {
-                //     try {
+                    // Parse the JSON data
+                    // const jsonData = JSON.parse(reader.result);
+                    createNewPatchHistory(file)
+                    // Ensure the file is a valid Automerge binary (based on extension or type)
+                    // if (!file.name.endsWith('.fpsynth')) {
+                    //     alert('Invalid file type. Please select a .fpsynth file.');
+                    //     return;
+                    // }
+                
+                    // const reader = new FileReader();
+                
+                    // reader.onload = () => {
+                    //     try {
 
-                //         localStorage.setItem('synthFile', reader.result);
+                    //         localStorage.setItem('synthFile', reader.result);
 
-                //         // Parse the JSON data
-                //         const jsonData = JSON.parse(reader.result);
-                //         createNewPatchHistory(jsonData)
+                    //         // Parse the JSON data
+                    //         const jsonData = JSON.parse(reader.result);
+                    //         createNewPatchHistory(jsonData)
 
-                //     } catch (error) {
-                //         console.error("Failed to parse JSON:", error);
-                //     }
-                // };
-                // reader.onerror = () => {
-                //     console.error("Error reading the file:", reader.error);
-                // };
+                    //     } catch (error) {
+                    //         console.error("Failed to parse JSON:", error);
+                    //     }
+                    // };
+                    // reader.onerror = () => {
+                    //     console.error("Error reading the file:", reader.error);
+                    // };
 
-                // // Start reading the file
-                // reader.readAsText(file);
-            break
+                    // // Start reading the file
+                    // reader.readAsText(file);
+                break
 
-            case 'forceNewPatchHistoryDueToError':
-                createNewPatchHistory()
-                showSnackbar(msg.message)
+                case 'forceNewPatchHistoryDueToError':
+                    createNewPatchHistory()
+                    showSnackbar(msg.message)
 
-            break
+                break
 
-            default: console.warn('no switch case exists for message:', msg)
+                default: console.warn('no switch case exists for message:', msg)
+            }
         }
-    };
-    
-    ws.onclose = () => {
-        console.log('Disconnected from WebSocket server');
-    };
 
+        ws.onclose = () => {
+            console.log('WebSocket disconnected. Attempting to reconnect...');
+            setTimeout(connectWebSocket, reconnectInterval);
+        };
+
+        ws.onerror = (err) => {
+            retryAttempts++
+            if(retryAttempts === 2){
+                showSnackbar('Server connection error. History graph updates paused. Entered Offline Mode', 10000)
+            }
+            console.error('WebSocket error:', err.message);
+            ws.close(); // Triggers onclose for reconnect
+        };
+
+    }
+
+    connectWebSocket()
 
     
 //*
@@ -3256,9 +3367,43 @@ document.addEventListener("DOMContentLoaded", function () {
             case 'newPatchHistory':
                 createNewPatchHistory()
             break
+
+            case 'savePatchHistory':
+
+                const patch_binary = fromByteArray(Automerge.save(patchHistory))
+
+                console.log(patch_binary)
+
+                ws.send(JSON.stringify({
+                    cmd: 'savePatchHistory',
+                    data: {
+                        name: 'my new patch history',
+                        authors: [ ...patchHistory.authors, thisPeerID ],
+                        description: 'Created during a jam with PeerX',
+                        modules: ['Oscillator_Lemur', 'Filter_Antique'], // can be pulled from your patch graph
+                        synth_template: patchHistory.synthFile, // JSON object
+                        patch_binary: patch_binary, // base64-encoded string
+                        forked_from_id: patchHistory.forked_from_id, // or null if this is a root version
+                    }
+                }))
+            break
             case 'loadPatchHistory':
-                
-                loadPatchHistory(event.data.arrayBuffer)
+    
+                if(event.data.source === 'file'){
+                    loadPatchHistory(event.data.arrayBuffer)
+                } else {
+                    // load it from the database
+                    let entry = event.data.data
+
+                    // const historyFromDB = Automerge.load(binary);
+
+                    loadPatchHistory(entry.patch_binary.data, entry.id)
+                    
+                }
+
+
+
+
 
             break
             case 'loadVersion':
@@ -3649,12 +3794,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     synthGraphCytoscape.on('mouseover', 'node', (event) => {
         const node = event.target;
-        // Add hover behavior, e.g., change style or show tooltip
-        // node.style('background-color', 'red');
-
-        // Get the element by its ID
-        // const element = document.getElementById('cytoscapeTooltipText');
-        // let toolTip ='';
 
         if (node.data().description){
             setSynthToolTip(node.data().description)
@@ -3671,29 +3810,41 @@ document.addEventListener("DOMContentLoaded", function () {
     });
     
    
+    function forkHistoryInDatabase(id){
+        console.log('sending fork to db')
+        ws.send(JSON.stringify({
+            cmd: 'newFork',
+            data: {
+                forked_from_id: id,
+                author: thisPeerID
+            }
+        }))
+    }
 
-    function loadPatchHistory(arrayBuffer){
+    function loadPatchHistory(arrayBuffer, forkedFromID){
 
             ws.send(JSON.stringify({
                 cmd: 'clearHistoryGraph'
             }))
             // clear the sequences
-            console.warn('now that history window is issuing the loadPatchHistory logic, consider having this next step be client-side (i.e. no need to wait for main app to send the message on the next line here:')
-            sendMsgToHistoryApp({
-                appID: 'forkingPathsMain',
-                cmd: 'newPatchHistory'
+            // console.warn('now that history window is issuing the loadPatchHistory logic, consider having this next step be client-side (i.e. no need to wait for main app to send the message on the next line here:')
+            // sendMsgToHistoryApp({
+            //     appID: 'forkingPathsMain',
+            //     cmd: 'newPatchHistory'
                     
-            })
+            // })
 
             
             resetDrawing()
 
-            // Convert to Uint8Array (required for Automerge.load)
-            const binaryData = new Uint8Array(arrayBuffer);
+
 
             // Example: Load into Automerge
-            patchHistory = Automerge.load(binaryData);
 
+            // Convert to Uint8Array (required for Automerge.load)
+            const binaryData = new Uint8Array(arrayBuffer);
+            patchHistory = Automerge.load(binaryData);
+            
             // get latest branch
             let latestBranch = patchHistory.branchOrder[patchHistory.branchOrder.length - 1]
 
@@ -3707,7 +3858,20 @@ document.addEventListener("DOMContentLoaded", function () {
             
             reDrawHistoryGraph()
 
+            if(forkedFromID){
+
+                patchHistory = Automerge.change(patchHistory, d => {
+                    d.databaseID = forkedFromID
+                    // d.forked_from_id = forkedFromID; // numeric DB ID of the parent
+                    // d.authors = [ ...patchHistory.authors, thisPeerID ]
+                    d.hasBeenModified = false
+                });
+
+                console.log(patchHistory)
+            }
             saveDocument(patchHistoryKey, Automerge.save(patchHistory));
+
+            // store history in database??
     }
         
     
@@ -4549,20 +4713,20 @@ document.addEventListener("DOMContentLoaded", function () {
     
 
     // modify graph edge control point distance
-    const CPDslider = document.getElementById('settings_controlPointDistance')
     
-    CPDslider.addEventListener('input', function() {
+    
+    UI.overlays.settings.cableTension.addEventListener('input', function() {
         let x = this.value
         let y = this.value * -1
         updateCableControlPointDistances(x, y)
 
-        localStorage.setItem('sliderValue', CPDslider.value);
+        localStorage.setItem('sliderValue', UI.overlays.settings.cableTension.value);
     });
 
     // Retrieve the saved slider value from localStorage and set it
     const savedValue = localStorage.getItem('sliderValue');
     if (savedValue !== null) {
-        CPDslider.value = savedValue;
+        UI.overlays.settings.cableTension.value = savedValue;
         let x = savedValue
         let y = x * -1 
         updateCableControlPointDistances(x, y)
@@ -5178,12 +5342,16 @@ document.addEventListener("DOMContentLoaded", function () {
     // also call it after page load:
     resizeCanvas()
 
-    function showSnackbar(message = "Something happened") {
+    function showSnackbar(message = "Something happened", duration = 5000) {
         const snackbar = document.getElementById("snackbar");
         snackbar.textContent = message;
         snackbar.classList.add("show");
-    setTimeout(() => snackbar.classList.remove("show"), 5000);
+    setTimeout(() => snackbar.classList.remove("show"), duration);
     }
+
+
+
+
 });
 
 
