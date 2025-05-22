@@ -1063,7 +1063,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
                     modifyGestureParamAssign() 
-                    console.log(patchHistory, parseInt(UI.history.id.textContent), patchHistory.databaseID)
                     if(patchHistory.databaseId && UI.history.id.textContent != patchHistory.databaseID){
                         console.log('ouw')
                         UI.history.id.textContent = patchHistory.databaseId
@@ -1754,7 +1753,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         storedSequencerTable = tableData
 
-
+        console.log(storedSequencerTable)
         // localStorage.sequencerTable = tableData
         return tableData; // Return the table data
     }
