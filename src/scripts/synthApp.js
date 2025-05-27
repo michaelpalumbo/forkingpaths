@@ -1856,7 +1856,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 doc: requestedDoc
             }
 
-            return
+            
         } 
 
         // this is necessary for loading a hash on another branch that ISN'T the head
@@ -1904,6 +1904,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const recallMode = getVersionRecallMode();
         // ensure that loadVersion calls from the peer don't make past this point, becuase otherwise they'd send it back and forth forever 
         if (recallMode === 'openLoadVersion' && !fromPeer) {
+            console.log('openVersionRecall')
             openVersionRecall(targetHash, branch);
         }
 
