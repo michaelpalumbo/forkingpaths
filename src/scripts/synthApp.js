@@ -1939,10 +1939,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function updateFromSyncMessage(branch, hash){
         if(!branch){
+            console.log('no branch')
             branch = patchHistory.head.branch
         }
 
         if(!hash){
+            console.log('no hash')
             hash = patchHistory.head.hash
         }
         // set docUpdated so that indexedDB will save it

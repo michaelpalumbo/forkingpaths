@@ -274,7 +274,7 @@ window.addEventListener("load", () => {
       }
   
       // Log available controls
-      console.log("Listening to MIDI device:", midiInput.name);
+    //   console.log("Listening to MIDI device:", midiInput.name);
   
       // Listen to control change (knobs/faders usually send these)
       midiInput.addListener("controlchange", (e) => {
@@ -941,7 +941,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             switch (event.data.cmd){
 
                 case 'highlightHistoryNode':
-                    let historyNode = historyDAG_cy.getElementById(event.data.data.hash)
+                    let historyNode = historyDAG_cy.getElementById(event.data.data)
                     console.log(event.data.data)
                     highlightNode(historyNode)
                 break
@@ -1166,7 +1166,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         ws = new WebSocket(VITE_WS_URL);
 
         ws.onopen = () => {
-            console.log('Connected to WebSocket server at', VITE_WS_URL);
+            // console.log('Connected to WebSocket server at', VITE_WS_URL);
 
             if(retryAttempts > 0){
                 showSnackbar('Server connection successful. Resuming history graph updates', 10000)
@@ -1495,7 +1495,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             setSequencerSaveButtonState(false)
             saveSequencerTable();
         } else if (func === "userEditable") {
-            console.log("Step Length Function set to: User Editable");
             // Add logic for user-editable step length
         } else if (func === "closenessCentrality") {
             calculateDistancesFromTableRows()
@@ -2123,7 +2122,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     // function to modify selectmenu
     function modifyGestureParamAssign(){
         if(!patchHistory){
-            console.warn('patchHistory missing from app')
             return
         }
         UI.gestureEditor.assignToParam.innerHTML = '';
@@ -3639,6 +3637,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     // *
 
     function highlightNode(target){  
+        console.log(target.data())
         // check if a history node was highlighted by the server
         historyHighlightedNode = historyDAG_cy.nodes('.highlighted');
 
@@ -4312,7 +4311,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     setTimeout(() => {
-        console.log('test')
         setStepLengthFunction('userEditable')
         UI.sequencer.modes.stepLengthFunctionSelect.value = 'userEditable'
     }, 1500);
