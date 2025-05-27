@@ -939,6 +939,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (event.data && event.data.appID === 'forkingPathsMain') {
             // console.log(event.data)
             switch (event.data.cmd){
+
+                case 'highlightHistoryNode':
+                    let historyNode = historyDAG_cy.getElementById(event.data.data.hash)
+                    console.log(event.data.data)
+                    highlightNode(historyNode)
+                break
+
                 case 'reDrawHistoryGraph':
                     patchHistory = event.data.data
                     // reDrawHistoryGraph(patchHistory)

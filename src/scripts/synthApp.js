@@ -396,8 +396,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     // Get the saved volume level from localStorage, default to 0.5 (50%)
-    const savedVolume = parseFloat(localStorage.getItem('volume')) || config.audio.initialVolume;
+    const savedVolume = parseFloat(localStorage.getItem('volume')) // || config.audio.initialVolume;
 
+    console.log(savedVolume, parseFloat(localStorage.getItem('volume')))
     // Audio context
     const audioContext = new window.AudioContext();
 
@@ -1976,14 +1977,14 @@ document.addEventListener("DOMContentLoaded", function () {
     // 
     function openVersionRecall(hash, branch) {
         if (!syncMessageDataChannel || syncMessageDataChannel.readyState !== 'open') {
-          return;
+            return;
         }
       
         const message = {
-          cmd: 'version_recall_open',
-          hash,
-          branch,
-          from: thisPeerID
+            cmd: 'version_recall_open',
+            hash,
+            branch,
+            from: thisPeerID
         };
       
         syncMessageDataChannel.send(JSON.stringify(message));
@@ -3033,6 +3034,13 @@ document.addEventListener("DOMContentLoaded", function () {
                         switch (msg.cmd) {
                             case 'version_recall_open': 
                                 loadVersion(msg.hash, msg.branch, 'fromPeer');
+                                // highlight the version's node in the history graph
+                                console.log(msg.hash)
+                                sendMsgToHistoryApp({
+                                    appID: 'forkingPathsMain',
+                                    cmd: 'highlightHistoryNode',
+                                    data: msg.hash
+                                })
                             break;
                         
                         
@@ -5346,7 +5354,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const snackbar = document.getElementById("snackbar");
         snackbar.textContent = message;
         snackbar.classList.add("show");
-    setTimeout(() => snackbar.classList.remove("show"), duration);
+        setTimeout(() => snackbar.classList.remove("show"), duration);
     }
 
 
