@@ -1869,8 +1869,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // this is necessary for loading a hash on another branch that ISN'T the head
         else if (branch != patchHistory.head.branch) {
-            // send the synth graph from this point in the history to the DSP worklet first
-            updateSynthWorklet('loadVersion', historicalView.synth.graph, null, historicalView.changeType)
+
+            console.log(historicalView)
+            // if we are dealing with a blank patch, then clear the audio graph
+            if(!historicalView.synth){
+                updateSynthWorklet('clearGraph')
+            } else {
+                // send the synth graph from this point in the history to the DSP worklet first
+                updateSynthWorklet('loadVersion', historicalView.synth.graph, null, historicalView.changeType)
+            }
+
             // send the visual graph from this point in the history to the synth cytoscape
             updateCytoscapeFromDocument(historicalView);
             // set global var for easy checking
