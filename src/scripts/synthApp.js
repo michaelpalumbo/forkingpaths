@@ -1193,7 +1193,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function createNewPatchHistory(synthFile){
         resetDrawing()
         // deletes the document in the indexedDB instance
-        deleteDocument(docID)
+        // deleteDocument(docID)
         deleteDocument('patchHistory')
         updateSynthWorklet('clearGraph')
         // ensure their container divs are removed too
@@ -1370,6 +1370,8 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }))
         // addSpeaker()
+
+        sendSyncMessage()
     }
 
     
@@ -1816,8 +1818,8 @@ document.addEventListener("DOMContentLoaded", function () {
     async function loadVersion(targetHash, branch, fromPeer) {
 
         // store the hash and branch for if a new peer joins
-        newPeerHash = targetHash
-        newPeerBranch = branch
+        // newPeerHash = targetHash
+        // newPeerBranch = branch
 
         // get the head from this branch
         let head = patchHistory.branches[branch].head
@@ -1981,6 +1983,9 @@ document.addEventListener("DOMContentLoaded", function () {
         // if(audioGraphDirty){
         //     audioGraphDirty = false
         // }
+
+        console.log('1')
+
     }
 
     function getVersionRecallMode() {
@@ -3123,12 +3128,15 @@ document.addEventListener("DOMContentLoaded", function () {
                 // newPeerHash = null
 
                 if (syncBranch && syncHash && patchHistory.docs?.[syncBranch]) {
-                  updateFromSyncMessage(syncBranch, syncHash);
+                    updateFromSyncMessage(syncBranch, syncHash);
+
+                    // After processing, check if there is an outgoing sync message to send.
+                    sendSyncMessage();
+
                 } else {
                   console.warn("Sync message received but state incomplete — skipping update.");
                 }
-                // After processing, check if there is an outgoing sync message to send.
-                sendSyncMessage();
+
             } catch (error) {
                 console.error("Error processing sync message:", error);
             }

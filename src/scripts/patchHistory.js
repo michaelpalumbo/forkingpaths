@@ -1186,6 +1186,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                     historyGraphNodesArray = msg.data.elements.nodes;
                     setGraphFromHistoryRenderer(msg);
                     graphJSONstore = msg;
+
+                    console.log('2')
                     break;
             }
         };
@@ -1224,10 +1226,18 @@ document.addEventListener("DOMContentLoaded", async () => {
         // historyDAG_cy.layout({ name: 'preset' }).run();
         historyDAG_cy.panBy({x: 25, y: 0 })
 
-        const latestNode = historyDAG_cy.nodes().last()
+        // const latestNode = historyDAG_cy.nodes().last()
         firstNode = historyDAG_cy.nodes().first()
-        highlightGestureNode(latestNode)
+        // highlightGestureNode(latestNode)
 
+        // selectedNode = latestNode.data()
+
+
+        // should load the changeNode from the current state
+        let latestNode = historyDAG_cy.getElementById(patchHistory.head.hash)
+        highlightNode(latestNode)
+
+        // highlightGestureNode(latestNode)
         selectedNode = latestNode.data()
 
         panToBranch(latestNode)
