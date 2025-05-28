@@ -1190,7 +1190,9 @@ document.addEventListener("DOMContentLoaded", function () {
         */
     }
     
-    function createNewPatchHistory(synthFile){
+    function createNewPatchHistory(synthFile, fromPeer){
+
+        
         resetDrawing()
         // deletes the document in the indexedDB instance
         // deleteDocument(docID)
@@ -1204,10 +1206,15 @@ document.addEventListener("DOMContentLoaded", function () {
             cmd: 'newPatchHistory'
                 
         })
+
+
         ws.send(JSON.stringify({
             cmd: 'clearHistoryGraph'
         }))
 
+
+
+        
         // Clear existing elements from Cytoscape instance
         synthGraphCytoscape.elements().remove();
         
@@ -1370,8 +1377,9 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }))
         // addSpeaker()
-
-        sendSyncMessage()
+        // if(fromPeer){
+        //     sendSyncMessage()
+        // }
     }
 
     
@@ -1945,6 +1953,8 @@ document.addEventListener("DOMContentLoaded", function () {
             // syncState = newSyncState; // update sync state with any changes from generating a message
             
             if(msg != null){
+                console.log('sending sync message')
+                console.trace()
                 syncMessageDataChannel.send(msg)
     
             }
@@ -3059,10 +3069,14 @@ document.addEventListener("DOMContentLoaded", function () {
             if (typeof event.data === "string") {
                 try {
                     const msg = JSON.parse(event.data);
-        
+                    console.log(msg)
                     // console.log(msg)
                     try {
                         switch (msg.cmd) {
+                            case 'newPatchHistory':
+                                createNewPatchHistory(null, 'fromPeer')
+                            break
+
                             case 'version_recall_open': 
                                 loadVersion(msg.hash, msg.branch, 'fromPeer');
                                 // highlight the version's node in the history graph
@@ -3420,6 +3434,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
             case 'newPatchHistory':
                 createNewPatchHistory()
+                //? send a message to peer(s) to clear their patch history
+                // if createNewPatchHistory() was called from the syncMessageDataChannel, don't send out the message (aka, another peer already initiated the new patchHistory)
+            
+                console.log('sending new patchHistory')
+                const message = {
+                    cmd: 'newPatchHistory',
+                    from: thisPeerID
+                };
+            
+                syncMessageDataChannel.send(JSON.stringify(message));
+              
             break
 
             case 'savePatchHistory':
