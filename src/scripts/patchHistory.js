@@ -3648,7 +3648,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     // *
 
     function highlightNode(target){  
-        console.log(target.data())
         // check if a history node was highlighted by the server
         historyHighlightedNode = historyDAG_cy.nodes('.highlighted');
 

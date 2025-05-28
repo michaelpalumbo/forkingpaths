@@ -2068,10 +2068,34 @@ document.addEventListener("DOMContentLoaded", function () {
         // Use `Automerge.view()` to view the state at this specific point in history
         const updatedView = Automerge.view(requestedDoc, [hash]);
         
-        updateSynthWorklet('loadVersion', updatedView.synth.graph, null, updatedView.changeType)
 
-        
-        updateCytoscapeFromDocument(updatedView, 'buildFromSyncMessage')
+
+        console.log(syncMessageDataChannel.readyState)
+
+        console.log(updatedView.changeType, room, peerCount)
+        // IMPORTANT: when more than 1 peer is in room, gesture changes will cause the first gesture value to appear instead of the last due to sync states bouncing around
+        if(updatedView.changeType && updatedView.changeType.msg === 'gesture' && syncMessageDataChannel.readyState === 'open'){
+            console.log('snared')
+            // get the last value of the gesture
+            let lastValue = updatedView.changeType.values[updatedView.changeType.values.length - 1]
+            let param = updatedView.changeType.param
+            let parent = updatedView.changeType.parent
+
+            console.log(lastValue)
+            // send as paramUpdate to audio worklet
+            updateSynthWorklet('paramChange', {
+                parent: parent,
+                param: param,
+                value: lastValue,
+            });
+            // send as update to knob overlay
+        } else {
+            console.log('here')
+            // update them as normal
+            updateSynthWorklet('loadVersion', updatedView.synth.graph, null, updatedView.changeType)
+
+            updateCytoscapeFromDocument(updatedView, 'buildFromSyncMessage')
+        }
 
         // update the historyGraph
         reDrawHistoryGraph()
@@ -2082,7 +2106,7 @@ document.addEventListener("DOMContentLoaded", function () {
         //     audioGraphDirty = false
         // }
 
-        console.log('1')
+
 
     }
 
@@ -3128,6 +3152,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     };
     
+
     // Function to set up the data channel events.
     function setupDataChannel() {
         syncMessageDataChannel.onopen = () => {
