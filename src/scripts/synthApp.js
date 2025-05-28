@@ -76,6 +76,8 @@ let amDoc = null
 let docID = null
 let onChange; // my custom automerge callback for changes made to the doc
 
+let newPeerHash, newPeerBranch
+
 let automergeDocuments = {
     newClone: false,
     newMerge: false,
@@ -1813,6 +1815,10 @@ document.addEventListener("DOMContentLoaded", function () {
     // Load a version from the DAG
     async function loadVersion(targetHash, branch, fromPeer) {
 
+        // store the hash and branch for if a new peer joins
+        newPeerHash = targetHash
+        newPeerBranch = branch
+
         // get the head from this branch
         let head = patchHistory.branches[branch].head
         // get the automerge doc associated with the requested hash
@@ -1895,6 +1901,13 @@ document.addEventListener("DOMContentLoaded", function () {
             }
             // set newClone to true
             automergeDocuments.newClone = true
+
+            // update patchHistory to set the current head and change hash
+            patchHistory = Automerge.change(patchHistory, (patchHistory) => {
+                // store the HEAD info (the most recent HEAD and branch that were viewed or operated on)
+                patchHistory.head.hash = targetHash
+                patchHistory.head.branch = branch
+            });
         }
 
         if(fromPeer){
@@ -3023,22 +3036,31 @@ document.addEventListener("DOMContentLoaded", function () {
             };
             syncMessageDataChannel.send(JSON.stringify(message));
 
+            // ensure that new peer loads the current state. 
+            // const msg = {
+            //     cmd: 'currentState',
+            //     from: thisPeerID,
+            //     data: [newPeerHash, newPeerBranch]
+            // };
+            // syncMessageDataChannel.send(JSON.stringify(msg));
+
+
             sendSyncMessage()
         };
         syncMessageDataChannel.onmessage = event => {
+            console.log('received sync msg')
             let incomingData;
             // handle Custom JSON messages (like version recalls, merge requests, etc.)
             if (typeof event.data === "string") {
                 try {
                     const msg = JSON.parse(event.data);
         
-                    console.log(msg)
+                    // console.log(msg)
                     try {
                         switch (msg.cmd) {
                             case 'version_recall_open': 
                                 loadVersion(msg.hash, msg.branch, 'fromPeer');
                                 // highlight the version's node in the history graph
-                                console.log(msg.hash)
                                 sendMsgToHistoryApp({
                                     appID: 'forkingPathsMain',
                                     cmd: 'highlightHistoryNode',
@@ -3058,6 +3080,13 @@ document.addEventListener("DOMContentLoaded", function () {
                             case 'remotePeerCollaborationSettings':
                                 collaborationSettings.remotePeer.versionRecallMode = msg.data.local.versionRecallMode
                                 UI.panel.collaboration.recallMode.remote.innerText = `Remote peer mode: ${msg.data.local.versionRecallMode}`;
+                            break
+
+                            case 'currentState':
+                                newPeerHash =  msg.data[0]
+                                newPeerBranch =  msg.data[1]
+
+                                console.log('newPeer Hash and Branch', msg.data)
                             break
                   
                         default:
@@ -3086,7 +3115,13 @@ document.addEventListener("DOMContentLoaded", function () {
                 
                 const syncBranch = patchHistory.head?.branch;
                 const syncHash = patchHistory.head?.hash;
+                // const syncBranch = newPeerBranch || patchHistory.head?.branch;
+                // const syncHash = newPeerHash || patchHistory.head?.hash;
                 
+                // clear newPeer branch and Hash
+                // newPeerBranch = null
+                // newPeerHash = null
+
                 if (syncBranch && syncHash && patchHistory.docs?.[syncBranch]) {
                   updateFromSyncMessage(syncBranch, syncHash);
                 } else {
