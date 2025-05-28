@@ -1189,8 +1189,9 @@ document.addEventListener("DOMContentLoaded", function () {
         synthGraphCytoscape.edges().remove();
         */
     }
-    
-    function createNewPatchHistory(synthFile){
+
+    // a peer has created a new patch history, so update our patch history from that one and do all the same synth building stuff as createNewPatchHistory
+    function replacePatchHistory(newDocBinary){
         resetDrawing()
         // deletes the document in the indexedDB instance
         // deleteDocument(docID)
@@ -1204,10 +1205,88 @@ document.addEventListener("DOMContentLoaded", function () {
             cmd: 'newPatchHistory'
                 
         })
+        // tell server renderer to clear the history graph
         ws.send(JSON.stringify({
             cmd: 'clearHistoryGraph'
         }))
 
+        // Clear existing elements from Cytoscape instance
+        synthGraphCytoscape.elements().remove();
+        
+        // remove all dynamicly generated UI overlays (knobs, umenus, etc)
+        removeUIOverlay('allNodes')
+        // ensure their container divs are removed too
+        clearparamContainerDivs()
+        
+        patchHistory = Automerge.load(newDocBinary);
+        // Also reset syncState with this new doc
+        syncState = Automerge.initSyncState();
+        console.log('Patch history replaced');
+
+        // load synth graph from file into cytoscape
+        synthGraphCytoscape.json(patchHistory.synthFile.visualGraph)
+
+        patchHistory.synthFile.visualGraph.elements.nodes.forEach((node, index)=>{
+            // set module grabbable to false -- prevents module movements in main view
+            if(node.classes === ':parent'){
+                // synthFile.visualGraph.elements.nodes[index].grabbable = false
+                // lock the module's position
+                synthGraphCytoscape.getElementById(node.data.id).lock();
+            }
+            // create overlays
+            if(node.classes === 'paramAnchorNode'){
+                let value = patchHistory.synthFile.audioGraph.modules[node.data.parent].params[node.data.label]
+                createFloatingOverlay(node.data.parent, node, index, value)
+        
+                // index++
+            }
+        })
+
+
+        setTimeout(() => {
+            updateKnobPositionAndScale('all');
+            // Make all nodes non-draggable
+            
+        }, 10); // Wait for the current rendering cycle to complete
+
+
+        // send doc to history app
+        reDrawHistoryGraph()
+
+
+        // update the historyGraph
+        reDrawHistoryGraph()
+        // load the new state (which should always just be the blank patch)
+        // send 'fromPeer' so we don't trigger a version recall on the other peers 
+        loadVersion(patchHistory.head.hash, patchHistory.head.branch, 'fromPeer')
+
+
+    }
+    function createNewPatchHistory(synthFile, fromPeer){
+
+        
+        resetDrawing()
+        // deletes the document in the indexedDB instance
+        // deleteDocument(docID)
+        deleteDocument('patchHistory')
+        updateSynthWorklet('clearGraph')
+        // ensure their container divs are removed too
+        clearparamContainerDivs()
+        // clear the sequences
+        sendMsgToHistoryApp({
+            appID: 'forkingPathsMain',
+            cmd: 'newPatchHistory'
+                
+        })
+
+
+        ws.send(JSON.stringify({
+            cmd: 'clearHistoryGraph'
+        }))
+
+
+
+        
         // Clear existing elements from Cytoscape instance
         synthGraphCytoscape.elements().remove();
         
@@ -1370,8 +1449,20 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }))
         // addSpeaker()
+        // if(fromPeer){
+        //     sendSyncMessage()
+        // }
+        // sendSyncMessage()
 
-        sendSyncMessage()
+        // get a binary from the new patchHistory
+        const fullBinary = Automerge.save(patchHistory);
+        // send it to any connected peer(s)
+        let message = {
+            cmd: 'replacePatchHistory',
+            data: fromByteArray(fullBinary)  // base64 encoded or send as Uint8Array directly if channel supports it
+        }
+
+        syncMessageDataChannel.send(JSON.stringify(message));
     }
 
     
@@ -1951,8 +2042,10 @@ document.addEventListener("DOMContentLoaded", function () {
             // Generate a sync message from the current doc and sync state.
             ;[syncState, msg] = Automerge.generateSyncMessage(patchHistory, syncState);
             // syncState = newSyncState; // update sync state with any changes from generating a message
-            
+            console.log('sending sync message:', msg)
             if(msg != null){
+                console.log('sending sync message')
+                console.trace()
                 syncMessageDataChannel.send(msg)
     
             }
@@ -3067,10 +3160,21 @@ document.addEventListener("DOMContentLoaded", function () {
             if (typeof event.data === "string") {
                 try {
                     const msg = JSON.parse(event.data);
-        
+                    console.log(msg)
                     // console.log(msg)
                     try {
                         switch (msg.cmd) {
+
+
+                            case 'replacePatchHistory':
+                                const newDocBinary = toByteArray(msg.data);
+
+                                replacePatchHistory(newDocBinary)
+                            break
+                            case 'newPatchHistory':
+                                createNewPatchHistory(null, 'fromPeer')
+                            break
+
                             case 'version_recall_open': 
                                 loadVersion(msg.hash, msg.branch, 'fromPeer');
                                 // highlight the version's node in the history graph
@@ -3105,9 +3209,9 @@ document.addEventListener("DOMContentLoaded", function () {
                         default:
                             console.warn("Unknown custom message cmd:", msg.cmd);
                         }
-                      } catch (err) {
+                    } catch (err) {
                         console.error("Error handling JSON message:", err);
-                      }
+                    }
                 } catch (err) {
                     console.error("Failed to parse custom JSON message:", event.data);
                 }
@@ -3428,6 +3532,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
             case 'newPatchHistory':
                 createNewPatchHistory()
+                //? send a message to peer(s) to clear their patch history
+                // if createNewPatchHistory() was called from the syncMessageDataChannel, don't send out the message (aka, another peer already initiated the new patchHistory)
+            
+                // console.log('sending new patchHistory')
+                // const message = {
+                //     cmd: 'newPatchHistory',
+                //     from: thisPeerID
+                // };
+            
+                // syncMessageDataChannel.send(JSON.stringify(message));
+              
             break
 
             case 'savePatchHistory':
