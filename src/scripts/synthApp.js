@@ -3186,7 +3186,17 @@ document.addEventListener("DOMContentLoaded", function () {
                     // console.log(msg)
                     try {
                         switch (msg.cmd) {
+                            case 'startRemoteGhostCable':
+                            case "updateRemoteGhostCable":
 
+
+                                handleRemoteCables(msg.cmd,  msg.data.peerID, msg.data.sourceID, msg.data.position)
+
+                            break
+
+                            case 'finishRemoteGhostCable':
+                                handleRemoteCables(msg.cmd,  msg.data.peerID)
+                            break
 
                             case 'replacePatchHistory':
                                 const newDocBinary = toByteArray(msg.data);
@@ -4271,6 +4281,16 @@ document.addEventListener("DOMContentLoaded", function () {
                     //         peer: peers.local.id
                     //     }
                     // })
+
+                    const message = {
+                        cmd: 'startRemoteGhostCable',
+                        data: {
+                            sourceID: e.data().id,
+                            position: p,
+                            peerID: thisPeerID
+                        }
+                    };
+                    syncMessageDataChannel.send(JSON.stringify(message));
                 } else if (event.target.isParent()){
                     
                     heldModule = event.target
@@ -4365,6 +4385,16 @@ document.addEventListener("DOMContentLoaded", function () {
                         //         peer: peers.local.id
                         //     }
                         // })
+                        const message = {
+                            cmd: 'startRemoteGhostCable',
+                            data: {
+                                sourceID: e.data().id,
+                                position: p,
+                                peerID: thisPeerID
+                            }
+                        };
+
+                        syncMessageDataChannel.send(JSON.stringify(message));
 
                     } else if (isNearEndpoint(mousePos, targetPos)) {
                         let cableSource =  edge.data().source
@@ -4434,6 +4464,16 @@ document.addEventListener("DOMContentLoaded", function () {
                         //     }
                         // })
 
+                        const message = {
+                            cmd: 'startRemoteGhostCable',
+                            data: {
+                                sourceID: e.data().id,
+                                position: p,
+                                peerID: thisPeerID
+                            }
+                        };
+                        syncMessageDataChannel.send(JSON.stringify(message));
+
                     } else {
                         // Remove highlight from any previously highlighted edge
                         if (highlightedEdge) {
@@ -4483,6 +4523,16 @@ document.addEventListener("DOMContentLoaded", function () {
             //         peer: peers.local.id
             //     }
             // })
+
+            const message = {
+                cmd: 'updateRemoteGhostCable',
+                data: {
+                    sourceID: temporaryCables.local.ghostNode.data().id,
+                    position: mousePos,
+                    peerID: thisPeerID
+                }
+            };
+            syncMessageDataChannel.send(JSON.stringify(message));
             // Reset temporaryCables.local.targetNode before checking for intersections
             temporaryCables.local.targetNode = null;
 
@@ -4680,6 +4730,14 @@ document.addEventListener("DOMContentLoaded", function () {
             //         peer: peers.local.id
             //     }
             // })
+
+            const message = {
+                cmd: 'finishRemoteGhostCable',
+                data: {
+                    peerID: thisPeerID
+                }
+            };
+            syncMessageDataChannel.send(JSON.stringify(message));            
 
             // Clean up by removing ghost node and highlights
             synthGraphCytoscape.remove(temporaryCables.local.ghostNode);
