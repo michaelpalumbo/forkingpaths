@@ -2075,23 +2075,22 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log(updatedView.changeType, room, peerCount)
         // IMPORTANT: when more than 1 peer is in room, gesture changes will cause the first gesture value to appear instead of the last due to sync states bouncing around
         if(updatedView.changeType && updatedView.changeType.msg === 'gesture' && syncMessageDataChannel.readyState === 'open'){
-            console.log('snared')
+            console.log(updatedView.synth.graph)
             // get the last value of the gesture
-            
- 
             let lastValue = {
                 parent: updatedView.changeType.parent,
                 param: updatedView.changeType.param,
                 value: updatedView.changeType.values[updatedView.changeType.values.length - 1],
             }
-            console.log(lastValue)
-            // send as paramUpdate to audio worklet
-            updateSynthWorklet('paramChange', lastValue);
-            // send as update to knob overlay
 
+            let tempGraph = updatedView.synth.graph
+
+            tempGraph.modules[lastValue.parent].params[lastValue.param][0] = lastValue.value
+            // send as paramUpdate to audio worklet
+            updateSynthWorklet('loadVersion', tempGraph);
+            // send as update to knob overlay
             updateCytoscapeFromDocument(updatedView, 'buildFromSyncMessage', lastValue)
         } else {
-            console.log('here')
             // update them as normal
             updateSynthWorklet('loadVersion', updatedView.synth.graph, null, updatedView.changeType)
 
@@ -5505,11 +5504,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // 4 Update only the cached controls
     function refreshParamControls(ignore, lastGestureValue) {
-        console.log(lastGestureValue)
         Object.entries(UI.synth.visual.paramControls).forEach(
         ([moduleID, params]) => {
-
-            console.log(moduleID)
             const values = App.synth.visual.modules[moduleID].params;
             Object.entries(params).forEach(([paramName, el]) => {
             let val = values[paramName];
