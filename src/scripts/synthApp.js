@@ -1189,7 +1189,79 @@ document.addEventListener("DOMContentLoaded", function () {
         synthGraphCytoscape.edges().remove();
         */
     }
-    
+
+    // a peer has created a new patch history, so update our patch history from that one and do all the same synth building stuff as createNewPatchHistory
+    function replacePatchHistory(newDocBinary){
+        resetDrawing()
+        // deletes the document in the indexedDB instance
+        // deleteDocument(docID)
+        deleteDocument('patchHistory')
+        updateSynthWorklet('clearGraph')
+        // ensure their container divs are removed too
+        clearparamContainerDivs()
+        // clear the sequences
+        sendMsgToHistoryApp({
+            appID: 'forkingPathsMain',
+            cmd: 'newPatchHistory'
+                
+        })
+        // tell server renderer to clear the history graph
+        ws.send(JSON.stringify({
+            cmd: 'clearHistoryGraph'
+        }))
+
+        // Clear existing elements from Cytoscape instance
+        synthGraphCytoscape.elements().remove();
+        
+        // remove all dynamicly generated UI overlays (knobs, umenus, etc)
+        removeUIOverlay('allNodes')
+        // ensure their container divs are removed too
+        clearparamContainerDivs()
+        
+        patchHistory = Automerge.load(newDocBinary);
+        // Also reset syncState with this new doc
+        syncState = Automerge.initSyncState();
+        console.log('Patch history replaced');
+
+        // load synth graph from file into cytoscape
+        synthGraphCytoscape.json(patchHistory.synthFile.visualGraph)
+
+        patchHistory.synthFile.visualGraph.elements.nodes.forEach((node, index)=>{
+            // set module grabbable to false -- prevents module movements in main view
+            if(node.classes === ':parent'){
+                // synthFile.visualGraph.elements.nodes[index].grabbable = false
+                // lock the module's position
+                synthGraphCytoscape.getElementById(node.data.id).lock();
+            }
+            // create overlays
+            if(node.classes === 'paramAnchorNode'){
+                let value = patchHistory.synthFile.audioGraph.modules[node.data.parent].params[node.data.label]
+                createFloatingOverlay(node.data.parent, node, index, value)
+        
+                // index++
+            }
+        })
+
+
+        setTimeout(() => {
+            updateKnobPositionAndScale('all');
+            // Make all nodes non-draggable
+            
+        }, 10); // Wait for the current rendering cycle to complete
+
+
+        // send doc to history app
+        reDrawHistoryGraph()
+
+
+        // update the historyGraph
+        reDrawHistoryGraph()
+        // load the new state (which should always just be the blank patch)
+        // send 'fromPeer' so we don't trigger a version recall on the other peers 
+        loadVersion(patchHistory.head.hash, patchHistory.head.branch, 'fromPeer')
+
+
+    }
     function createNewPatchHistory(synthFile, fromPeer){
 
         
@@ -1381,8 +1453,10 @@ document.addEventListener("DOMContentLoaded", function () {
         //     sendSyncMessage()
         // }
         // sendSyncMessage()
-        const fullBinary = Automerge.save(patchHistory);
 
+        // get a binary from the new patchHistory
+        const fullBinary = Automerge.save(patchHistory);
+        // send it to any connected peer(s)
         let message = {
             cmd: 'replacePatchHistory',
             data: fromByteArray(fullBinary)  // base64 encoded or send as Uint8Array directly if channel supports it
@@ -3086,10 +3160,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
                             case 'replacePatchHistory':
                                 const newDocBinary = toByteArray(msg.data);
-                                patchHistory = Automerge.load(newDocBinary);
-                                // Also reset syncState with this new doc
-                                syncState = Automerge.initSyncState();
-                                console.log('Patch history replaced');
+
+                                replacePatchHistory(newDocBinary)
                             break
                             case 'newPatchHistory':
                                 createNewPatchHistory(null, 'fromPeer')
