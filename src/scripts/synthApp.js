@@ -762,7 +762,7 @@ document.addEventListener("DOMContentLoaded", function () {
             patchHistory = Automerge.init();
             syncState = Automerge.initSyncState(); // ✅ this must exist here
             console.log("Joining active room. Waiting for sync.");
-
+            holdSnackbar('Syncing with peers, please wait...')
             return
         } else {
             const saved = await loadDocument(patchHistoryKey);
@@ -2042,12 +2042,9 @@ document.addEventListener("DOMContentLoaded", function () {
             // Generate a sync message from the current doc and sync state.
             ;[syncState, msg] = Automerge.generateSyncMessage(patchHistory, syncState);
             // syncState = newSyncState; // update sync state with any changes from generating a message
-            console.log('sending sync message:', msg)
-            if(msg != null){
-                console.log('sending sync message')
-                console.trace()
-                syncMessageDataChannel.send(msg)
     
+            if(msg != null){
+                syncMessageDataChannel.send(msg)
             }
         }
 
@@ -3150,7 +3147,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // };
             // syncMessageDataChannel.send(JSON.stringify(msg));
 
-
+            holdSnackbar(null, false)
             sendSyncMessage()
         };
         syncMessageDataChannel.onmessage = event => {
@@ -5526,7 +5523,17 @@ document.addEventListener("DOMContentLoaded", function () {
         setTimeout(() => snackbar.classList.remove("show"), duration);
     }
 
+    function holdSnackbar(message = "Something happened", status=true) {
+        
+        const snackbar = document.getElementById("snackbar");
+        if(status){
+            snackbar.textContent = message;
+            snackbar.classList.add("show");
+        } else {
+            snackbar.classList.remove("show")
+        }
 
+    }
 
 
 });
