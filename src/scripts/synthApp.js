@@ -400,7 +400,6 @@ document.addEventListener("DOMContentLoaded", function () {
     // Get the saved volume level from localStorage, default to 0.5 (50%)
     const savedVolume = parseFloat(localStorage.getItem('volume')) // || config.audio.initialVolume;
 
-    console.log(savedVolume, parseFloat(localStorage.getItem('volume')))
     // Audio context
     const audioContext = new window.AudioContext();
 
@@ -757,7 +756,6 @@ document.addEventListener("DOMContentLoaded", function () {
         // Forking Paths patchHistory document:
         // contains all branches and branch history
         // will probably eventually contain user preferences, etc. 
-        console.log('peercount', peerCount)
         if (room && peerCount > 0) {
             patchHistory = Automerge.init();
             syncState = Automerge.initSyncState(); // ✅ this must exist here
@@ -814,7 +812,6 @@ document.addEventListener("DOMContentLoaded", function () {
             // let synthFile = JSON.parse(localStorage.getItem('synthFile'))
             // console.log('synthFile', synthFile)
             if (patchHistory.synthFile) {
-                console.log('here')
                
                 createNewPatchHistory(patchHistory.synthFile)
                 // const firstChangeLabel = synthFile.name
@@ -960,7 +957,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     // if the current patchHistory was loaded from the database, then we need to create a fork for this new change
                     if (patchHistory.hasBeenModified === false) {
-                        console.log('ready to fork')
                         patchHistory.forked_from_id = patchHistory.databaseID
                         patchHistory.hasBeenModified = true
                         forkHistoryInDatabase(patchHistory.databaseID)
@@ -1050,7 +1046,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     // if the current patchHistory was loaded from the database, then we need to create a fork for this new change
                     if (patchHistory.hasBeenModified === false) {
-                        console.log('ready to fork')
                         patchHistory.forked_from_id = patchHistory.databaseID
                         patchHistory.hasBeenModified = true
                         forkHistoryInDatabase(patchHistory.databaseID)
@@ -1101,9 +1096,20 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
         if(hid.mouse.left === true){
-            
+            // this is a gesture
             groupChange.values.push(value),
             groupChange.timestamps.push(new Date().getTime())
+            
+            // send value update to peers so that they hear the gesture being made in real time
+            const message = {
+                cmd: 'newKnobTurnValue',
+                data: {
+                    value: value,
+                    parent: parentNode,
+                    param: paramLabel
+                }
+            };
+            syncMessageDataChannel.send(JSON.stringify(message));
             
         }
         else {
@@ -1221,7 +1227,6 @@ document.addEventListener("DOMContentLoaded", function () {
         patchHistory = Automerge.load(newDocBinary);
         // Also reset syncState with this new doc
         syncState = Automerge.initSyncState();
-        console.log('Patch history replaced');
 
         // load synth graph from file into cytoscape
         synthGraphCytoscape.json(patchHistory.synthFile.visualGraph)
@@ -1791,7 +1796,6 @@ document.addEventListener("DOMContentLoaded", function () {
         let doc1 = nodes[0]
         let doc2 = nodes[1]
 
-        console.log(doc1, doc2)
         // load historical views of both docs
 
         let head1 = patchHistory.branches[doc1.branch].head
@@ -1818,11 +1822,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // create empty change to 'flatten' the merged Doc
         amDoc = Automerge.emptyChange(mergedDoc);
-
-        console.log('mergedDoc w/empty change: ', mergedDoc);
-        // -> "mergedDoc w/empty change:  { key1: 'Value from doc1', key2: 'Value from doc2' }"
-        console.log('mergedDoc heads w/empty change: ', Automerge.getHeads(mergedDoc));
-        // -> "mergedDoc heads w/empty change:  [ 'f4bef4aa01db0967714c5d8909310376f0e4fd72ab6ce4d477e00ae62a1683de' ]"
 
         let hash = Automerge.getHeads(amDoc)[0]
 
@@ -1961,7 +1960,6 @@ document.addEventListener("DOMContentLoaded", function () {
         // this is necessary for loading a hash on another branch that ISN'T the head
         else if (branch != patchHistory.head.branch) {
 
-            console.log(historicalView)
             // if we are dealing with a blank patch, then clear the audio graph
             if(!historicalView.synth){
                 updateSynthWorklet('clearGraph')
@@ -2067,15 +2065,10 @@ document.addEventListener("DOMContentLoaded", function () {
         let requestedDoc = loadAutomergeDoc(branch)
         // Use `Automerge.view()` to view the state at this specific point in history
         const updatedView = Automerge.view(requestedDoc, [hash]);
-        
 
-
-        console.log(syncMessageDataChannel.readyState)
-
-        console.log(updatedView.changeType, room, peerCount)
         // IMPORTANT: when more than 1 peer is in room, gesture changes will cause the first gesture value to appear instead of the last due to sync states bouncing around
         if(updatedView.changeType && updatedView.changeType.msg === 'gesture' && syncMessageDataChannel.readyState === 'open'){
-            console.log(updatedView.synth.graph)
+
             // get the last value of the gesture
             let lastValue = {
                 parent: updatedView.changeType.parent,
@@ -2993,14 +2986,12 @@ document.addEventListener("DOMContentLoaded", function () {
             // Remove the container div
             if (containerDiv.parentNode) {
                 containerDiv.parentNode.removeChild(containerDiv);
-                console.log('Knob container removed');
             }
 
             // Nullify the virtual element
             // virtualElement.getBoundingClientRect = null;
             
             virtualElement = null
-            console.log('Knob and virtual element removed');
 
         }
 
@@ -3132,7 +3123,6 @@ document.addEventListener("DOMContentLoaded", function () {
     // --- ICE Candidate Handling ---
     peerConnection.onicecandidate = event => {
         if (event.candidate) {
-            // console.log("Sending ICE candidate:", event.candidate);
             sendSignalingMessage({ candidate: event.candidate });
         }
     };
@@ -3176,26 +3166,27 @@ document.addEventListener("DOMContentLoaded", function () {
             sendSyncMessage()
         };
         syncMessageDataChannel.onmessage = event => {
-            console.log('received sync msg')
             let incomingData;
             // handle Custom JSON messages (like version recalls, merge requests, etc.)
             if (typeof event.data === "string") {
                 try {
                     const msg = JSON.parse(event.data);
-                    console.log(msg)
-                    // console.log(msg)
                     try {
                         switch (msg.cmd) {
+                            // when remote peer is making a new cable, we need to draw and update it here
                             case 'startRemoteGhostCable':
                             case "updateRemoteGhostCable":
-
-
                                 handleRemoteCables(msg.cmd,  msg.data.peerID, msg.data.sourceID, msg.data.position)
 
                             break
-
+                            // remove the ghost cable now that peer has either finished it or abandoned it
                             case 'finishRemoteGhostCable':
                                 handleRemoteCables(msg.cmd,  msg.data.peerID)
+                            break
+
+                            // handle remote peer new gestures
+                            case 'newKnobTurnValue':
+                                handleRemoteGestures(msg.cmd, msg.data.parent, msg.data.param, msg.data.value)
                             break
 
                             case 'replacePatchHistory':
@@ -3234,8 +3225,6 @@ document.addEventListener("DOMContentLoaded", function () {
                             case 'currentState':
                                 newPeerHash =  msg.data[0]
                                 newPeerBranch =  msg.data[1]
-
-                                console.log('newPeer Hash and Branch', msg.data)
                             break
                   
                         default:
@@ -3348,7 +3337,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 retryAttempts = 0
             }
             reconnectInterval = 1000; // reset interval on successful reconnect
-            // console.log('Connected to WebSocket server');
             ws.send(JSON.stringify({
                 cmd: 'joinRoom',
                 peerID: thisPeerID,
@@ -3418,7 +3406,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 break
 
                 case 'roomInfo':
-                    console.log('roomsInfo', msg)
                 break
                 case 'roomFull':
                     alert('cannot connect to room, too many peers are active. please choose another room in the lobby')
@@ -3581,8 +3568,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 const patch_binary = fromByteArray(Automerge.save(patchHistory))
 
-                console.log(patch_binary)
-
                 ws.send(JSON.stringify({
                     cmd: 'savePatchHistory',
                     data: {
@@ -3625,7 +3610,6 @@ document.addEventListener("DOMContentLoaded", function () {
             
             case 'saveSequence':
 
-                console.log('received sequence for saving:', event.data)
                 amDoc = applyChange(amDoc, (amDoc) => {
                     // set the sequencer table data
                     if(!amDoc.sequencer){
@@ -4076,7 +4060,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     d.hasBeenModified = false
                 });
 
-                console.log(patchHistory)
             }
             saveDocument(patchHistoryKey, Automerge.save(patchHistory));
 
@@ -5100,6 +5083,31 @@ document.addEventListener("DOMContentLoaded", function () {
 
     } 
 
+    function handleRemoteGestures(cmd, parent, param, value){
+        switch (cmd){
+            case 'newKnobTurnValue':
+                // update the audio    
+                updateSynthWorklet('paramChange', {
+                    parent: parent,
+                    param: param,
+                    value: value,
+                });
+
+                // update the visual too
+                // let element = `paramControl_parent:${parent}_param:${param}`
+                // $(element).knobSet(value);
+
+                const paramElement = UI.synth.visual.paramControls[parent][param];
+                paramElement.value = value;
+                // for all non-menu UIs
+
+                    $(paramElement).val(value).trigger('change');
+                
+
+                // console.log(App.synth.visual.modules[parent].params)
+            break
+        }
+    }
 
     function displayPeerPointers(peer, position){
         if(!peers.remote[peer]){
