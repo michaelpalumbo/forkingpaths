@@ -1642,8 +1642,8 @@ document.addEventListener("DOMContentLoaded", function () {
     //     }, 10); // Wait for the current rendering cycle to complete
     // } 
     
-        // Function to update Cytoscape with the state from forkedDoc
-    function updateCytoscapeFromDocument(forkedDoc, cmd) {
+    // Function to update Cytoscape with the state from forkedDoc
+    function updateCytoscapeFromDocument(forkedDoc, cmd, lastGestureValue) {
         App.synth.visual.modules = forkedDoc.synth.graph.modules
         let elements = forkedDoc.elements
         peers.remote = {}
@@ -1742,7 +1742,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 return; // skip the rest, since buildUI handles everything
             }
 
-            refreshParamControls(App.synth.visual.modules);
+            refreshParamControls(App.synth.visual.modules, lastGestureValue);
         }
         
         
@@ -2077,18 +2077,19 @@ document.addEventListener("DOMContentLoaded", function () {
         if(updatedView.changeType && updatedView.changeType.msg === 'gesture' && syncMessageDataChannel.readyState === 'open'){
             console.log('snared')
             // get the last value of the gesture
-            let lastValue = updatedView.changeType.values[updatedView.changeType.values.length - 1]
-            let param = updatedView.changeType.param
-            let parent = updatedView.changeType.parent
-
+            
+ 
+            let lastValue = {
+                parent: updatedView.changeType.parent,
+                param: updatedView.changeType.param,
+                value: updatedView.changeType.values[updatedView.changeType.values.length - 1],
+            }
             console.log(lastValue)
             // send as paramUpdate to audio worklet
-            updateSynthWorklet('paramChange', {
-                parent: parent,
-                param: param,
-                value: lastValue,
-            });
+            updateSynthWorklet('paramChange', lastValue);
             // send as update to knob overlay
+
+            updateCytoscapeFromDocument(updatedView, 'buildFromSyncMessage', lastValue)
         } else {
             console.log('here')
             // update them as normal
@@ -5503,14 +5504,21 @@ document.addEventListener("DOMContentLoaded", function () {
     
 
     // 4 Update only the cached controls
-    function refreshParamControls() {
+    function refreshParamControls(ignore, lastGestureValue) {
+        console.log(lastGestureValue)
         Object.entries(UI.synth.visual.paramControls).forEach(
         ([moduleID, params]) => {
+
+            console.log(moduleID)
             const values = App.synth.visual.modules[moduleID].params;
             Object.entries(params).forEach(([paramName, el]) => {
-            const val = values[paramName];
+            let val = values[paramName];
             switch (el.tagName) {
                 case 'INPUT':
+                    // special case for gestures
+                    if(lastGestureValue && moduleID === lastGestureValue.parent && paramName === lastGestureValue.param){
+                        val = lastGestureValue.value
+                    }
                 el.value = val;
                 $(el).knobSet(val);
                 break;
