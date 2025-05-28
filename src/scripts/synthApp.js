@@ -1380,6 +1380,15 @@ document.addEventListener("DOMContentLoaded", function () {
         // if(fromPeer){
         //     sendSyncMessage()
         // }
+        // sendSyncMessage()
+        const fullBinary = Automerge.save(patchHistory);
+
+        let message = {
+            cmd: 'replacePatchHistory',
+            data: fromByteArray(fullBinary)  // base64 encoded or send as Uint8Array directly if channel supports it
+        }
+
+        syncMessageDataChannel.send(JSON.stringify(message));
     }
 
     
@@ -1951,7 +1960,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // Generate a sync message from the current doc and sync state.
             ;[syncState, msg] = Automerge.generateSyncMessage(patchHistory, syncState);
             // syncState = newSyncState; // update sync state with any changes from generating a message
-            
+            console.log('sending sync message:', msg)
             if(msg != null){
                 console.log('sending sync message')
                 console.trace()
@@ -3073,6 +3082,15 @@ document.addEventListener("DOMContentLoaded", function () {
                     // console.log(msg)
                     try {
                         switch (msg.cmd) {
+
+
+                            case 'replacePatchHistory':
+                                const newDocBinary = toByteArray(msg.data);
+                                patchHistory = Automerge.load(newDocBinary);
+                                // Also reset syncState with this new doc
+                                syncState = Automerge.initSyncState();
+                                console.log('Patch history replaced');
+                            break
                             case 'newPatchHistory':
                                 createNewPatchHistory(null, 'fromPeer')
                             break
@@ -3111,9 +3129,9 @@ document.addEventListener("DOMContentLoaded", function () {
                         default:
                             console.warn("Unknown custom message cmd:", msg.cmd);
                         }
-                      } catch (err) {
+                    } catch (err) {
                         console.error("Error handling JSON message:", err);
-                      }
+                    }
                 } catch (err) {
                     console.error("Failed to parse custom JSON message:", event.data);
                 }
@@ -3437,13 +3455,13 @@ document.addEventListener("DOMContentLoaded", function () {
                 //? send a message to peer(s) to clear their patch history
                 // if createNewPatchHistory() was called from the syncMessageDataChannel, don't send out the message (aka, another peer already initiated the new patchHistory)
             
-                console.log('sending new patchHistory')
-                const message = {
-                    cmd: 'newPatchHistory',
-                    from: thisPeerID
-                };
+                // console.log('sending new patchHistory')
+                // const message = {
+                //     cmd: 'newPatchHistory',
+                //     from: thisPeerID
+                // };
             
-                syncMessageDataChannel.send(JSON.stringify(message));
+                // syncMessageDataChannel.send(JSON.stringify(message));
               
             break
 

@@ -6,6 +6,7 @@ import { WebMidi } from "webmidi"; // skip this line if you're using a script ta
 import modules from '../modules/modules.json' assert { type: 'json'}
 import { marked } from 'marked'
 import { config } from '../../config/forkingPathsConfig.js';
+import { toByteArray, fromByteArray } from 'base64-js';
 
 // Use the correct protocol based on your site's URL
 const VITE_WS_URL = import.meta.env.VITE_WS_URL
