@@ -358,13 +358,13 @@ document.addEventListener("DOMContentLoaded", function () {
     // Parse the query parameter to get the room name.
     const params = new URLSearchParams(window.location.search);
     const room = params.get('room');
-
+    let roomDetails = {room: room, peer1: null, peer2: null}
 
     // set room info in collab panel
     UI.panel.collaboration.roomInfo.textContent = room;
 
     // set text in panel
-    const peerCount = parseInt(params.get('peerCount') || '0');
+    let peerCount = parseInt(params.get('peerCount') || '0');
     let patchHistoryKey = room ? `patchHistory-${room}` : 'patchHistory';
 
 
@@ -761,6 +761,8 @@ document.addEventListener("DOMContentLoaded", function () {
             syncState = Automerge.initSyncState(); // ✅ this must exist here
             console.log("Joining active room. Waiting for sync.");
             holdSnackbar('Syncing with peers, please wait...')
+            // arm the reload function. if peer connection takes too long, it will reload the page
+            forceReload(true)
             return
         } else {
             const saved = await loadDocument(patchHistoryKey);
@@ -1109,7 +1111,9 @@ document.addEventListener("DOMContentLoaded", function () {
                     param: paramLabel
                 }
             };
-            syncMessageDataChannel.send(JSON.stringify(message));
+
+            
+            sendDataChannelMessage(message)
             
         }
         else {
@@ -1467,13 +1471,13 @@ document.addEventListener("DOMContentLoaded", function () {
             data: fromByteArray(fullBinary)  // base64 encoded or send as Uint8Array directly if channel supports it
         }
 
-        syncMessageDataChannel.send(JSON.stringify(message));
+        sendDataChannelMessage(message)
     }
 
     
     
     async function updatePatchHistoryDatabase() {  
-        console.warn('need to add thisPeerID to current list of authors instead of replacing it (as is currently being done, see authors prop below this line)')
+        // console.warn('need to add thisPeerID to current list of authors instead of replacing it (as is currently being done, see authors prop below this line)')
         const payload = {
             patch_binary: fromByteArray(Automerge.save(patchHistory)),
             authors: [ thisPeerID ],
@@ -1691,19 +1695,34 @@ document.addEventListener("DOMContentLoaded", function () {
             // Sync the positions in `elements`
             const syncedElements = syncPositions(forkedDoc);
             // add all cables back in with a check to make sure we don't render edges to empty parent nodes
-            syncedElements.forEach((el) => {
+            for (let i = 0; i < syncedElements.length; i++) {
+                const el = syncedElements[i];
                 if (el.type === 'edge') {
-                  const sourceExists = synthGraphCytoscape.getElementById(el.data.source).length > 0;
-                  const targetExists = synthGraphCytoscape.getElementById(el.data.target).length > 0;
-              
-                  if (!sourceExists || !targetExists) {
-                    console.warn(`Skipping edge: ${el.data.id} due to missing source or target`);
-                    return;
-                  }
+                    const sourceExists = synthGraphCytoscape.getElementById(el.data.source).length > 0;
+                    const targetExists = synthGraphCytoscape.getElementById(el.data.target).length > 0;
+
+                    if (!sourceExists || !targetExists) {
+                        console.warn(`Skipping edge: ${el.data.id} due to missing source or target`);
+                        continue; // Skip this iteration and move to the next element
+                    }
                 }
-              
+
                 synthGraphCytoscape.add(el);
-              });
+            }
+
+            // syncedElements.forEach((el) => {
+            //     if (el.type === 'edge') {
+            //       const sourceExists = synthGraphCytoscape.getElementById(el.data.source).length > 0;
+            //       const targetExists = synthGraphCytoscape.getElementById(el.data.target).length > 0;
+              
+            //       if (!sourceExists || !targetExists) {
+            //         console.warn(`Skipping edge: ${el.data.id} due to missing source or target`);
+            //         return;
+            //       }
+            //     }
+              
+            //     synthGraphCytoscape.add(el);
+            //   });
             
             let index = 0
             elements.forEach((node)=>{
@@ -2027,11 +2046,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
     } 
 
+
+    function sendDataChannelMessage(message){
+        if(syncMessageDataChannel.readyState === 'open'){
+            syncMessageDataChannel.send(JSON.stringify(message));
+        }
+    }
     //*
     //*
     //* SYNCHRONIZATION
     //* Functions related to custom network and sync handling.
     //*
+    
 
     function sendSyncMessage() {
         if (syncMessageDataChannel && syncMessageDataChannel.readyState === "open") {
@@ -2123,7 +2149,7 @@ document.addEventListener("DOMContentLoaded", function () {
             from: thisPeerID
         };
       
-        syncMessageDataChannel.send(JSON.stringify(message));
+        sendDataChannelMessage(message)
       
     }
       
@@ -2297,22 +2323,43 @@ document.addEventListener("DOMContentLoaded", function () {
         UI.draw.canvas.style.pointerEvents = 'none';
     }
 
-    function draw(e) {
+    function draw(e, remotePos) {
         const rect = UI.draw.canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-  
         UI.draw.ctx.lineWidth = 5;
         UI.draw.ctx.lineCap = 'round';
         UI.draw.ctx.strokeStyle = '#000';
+        let x, y
+
+  
+
         
+
+        // if draw action is coming from local peer:
+        if(!remotePos){
+            x = e.clientX - rect.left;
+            y = e.clientY - rect.top;
+
+            // apply points to temp array for storing in automerge on mouseup
+            UI.draw.currentStrokePoints.push({ x, y });
+
+            // send value update to peers so that they hear the gesture being made in real time
+            const message = {
+                cmd: 'newRemoteDraw',
+                position: [x, y] 
+            };
+
+            
+            sendDataChannelMessage(message)
+        } else {
+            x = remotePos[0]
+            y = remotePos[1]
+        }
+
         UI.draw.ctx.lineTo(x, y);
         UI.draw.ctx.stroke();
         UI.draw.ctx.beginPath();
         UI.draw.ctx.moveTo(x, y);
-
-        // apply points to temp array for storing in automerge on mouseup
-        UI.draw.currentStrokePoints.push({ x, y });
+        
     }
 
     UI.draw.eraser.addEventListener("click", async () => {
@@ -3146,13 +3193,15 @@ document.addEventListener("DOMContentLoaded", function () {
     // Function to set up the data channel events.
     function setupDataChannel() {
         syncMessageDataChannel.onopen = () => {
-
+            console.log('connected with peer')
             const message = {
                 cmd: 'remotePeerCollaborationSettings',
                 from: thisPeerID,
                 data: collaborationSettings
             };
-            syncMessageDataChannel.send(JSON.stringify(message));
+            sendDataChannelMessage(message)
+
+            
 
             // ensure that new peer loads the current state. 
             // const msg = {
@@ -3163,6 +3212,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // syncMessageDataChannel.send(JSON.stringify(msg));
 
             holdSnackbar(null, false)
+            forceReload(false)
             sendSyncMessage()
         };
         syncMessageDataChannel.onmessage = event => {
@@ -3173,6 +3223,11 @@ document.addEventListener("DOMContentLoaded", function () {
                     const msg = JSON.parse(event.data);
                     try {
                         switch (msg.cmd) {
+
+                            // when remote peer is drawing, update the canvas in real time with their pen stroke
+                            case 'newRemoteDraw':
+                                draw(null, msg.position)
+                            break
                             // when remote peer is making a new cable, we need to draw and update it here
                             case 'startRemoteGhostCable':
                             case "updateRemoteGhostCable":
@@ -3220,6 +3275,8 @@ document.addEventListener("DOMContentLoaded", function () {
                             case 'remotePeerCollaborationSettings':
                                 collaborationSettings.remotePeer.versionRecallMode = msg.data.local.versionRecallMode
                                 UI.panel.collaboration.recallMode.remote.innerText = `Remote peer mode: ${msg.data.local.versionRecallMode}`;
+
+                                showSnackbar(`Peer ${msg.from} joined this session`, 3000)
                             break
 
                             case 'currentState':
@@ -3268,6 +3325,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 } else {
                   console.warn("Sync message received but state incomplete — skipping update.");
+                //   location.reload()
                 }
 
             } catch (error) {
@@ -3375,7 +3433,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 break
 
                 case 'roomsInfo':
+                    // console.log(msg.rooms)
                     // ignore (meant for other ws clients)
+                    roomDetails = msg.rooms[parseInt(room.split('-')[1] - 1)]
+                    // peerCount = 0
                 break
 
                 case 'newPeer':
@@ -3560,7 +3621,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 //     from: thisPeerID
                 // };
             
-                // syncMessageDataChannel.send(JSON.stringify(message));
+                // sendDataChannelMessage(message)
               
             break
 
@@ -3754,14 +3815,16 @@ document.addEventListener("DOMContentLoaded", function () {
         collaborationSettings.local.versionRecallMode = e.target.value
       
         // Send to peer
-        if (syncMessageDataChannel?.readyState === "open") {
-            const message = {
-                cmd: 'version_recall_mode_announcement',
-                from: thisPeerID,
-                mode: e.target.value
-            };
-            syncMessageDataChannel.send(JSON.stringify(message));
-        }
+        const message = {
+            cmd: 'version_recall_mode_announcement',
+            from: thisPeerID,
+            mode: e.target.value
+        };
+        sendDataChannelMessage(message)
+        // if (syncMessageDataChannel?.readyState === "open") {
+
+        //     syncMessageDataChannel.send(JSON.stringify(message));
+        // }
         
 
     });
@@ -4273,7 +4336,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             peerID: thisPeerID
                         }
                     };
-                    syncMessageDataChannel.send(JSON.stringify(message));
+                    sendDataChannelMessage(message)
                 } else if (event.target.isParent()){
                     
                     heldModule = event.target
@@ -4377,7 +4440,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             }
                         };
 
-                        syncMessageDataChannel.send(JSON.stringify(message));
+                        sendDataChannelMessage(message)
 
                     } else if (isNearEndpoint(mousePos, targetPos)) {
                         let cableSource =  edge.data().source
@@ -4455,7 +4518,7 @@ document.addEventListener("DOMContentLoaded", function () {
                                 peerID: thisPeerID
                             }
                         };
-                        syncMessageDataChannel.send(JSON.stringify(message));
+                        sendDataChannelMessage(message)
 
                     } else {
                         // Remove highlight from any previously highlighted edge
@@ -4515,7 +4578,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     peerID: thisPeerID
                 }
             };
-            syncMessageDataChannel.send(JSON.stringify(message));
+            sendDataChannelMessage(message)
             // Reset temporaryCables.local.targetNode before checking for intersections
             temporaryCables.local.targetNode = null;
 
@@ -4720,7 +4783,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     peerID: thisPeerID
                 }
             };
-            syncMessageDataChannel.send(JSON.stringify(message));            
+            sendDataChannelMessage(message)            
 
             // Clean up by removing ghost node and highlights
             synthGraphCytoscape.remove(temporaryCables.local.ghostNode);
@@ -5618,18 +5681,41 @@ document.addEventListener("DOMContentLoaded", function () {
         setTimeout(() => snackbar.classList.remove("show"), duration);
     }
 
+    let forceReloadTimeoutID
+
     function holdSnackbar(message = "Something happened", status=true) {
         
         const snackbar = document.getElementById("snackbar");
         if(status){
             snackbar.textContent = message;
             snackbar.classList.add("show");
+            forceReloadTimeoutID = setTimeout(() => {
+         
+                forceReloadTimeoutID = null
+                location.reload()
+            }, 4000);
+
         } else {
             snackbar.classList.remove("show")
+            if(forceReloadTimeoutID){
+                clearTimeout(forceReloadTimeoutID)
+
+                forceReloadTimeoutID = null
+            }
+
         }
 
     }
 
+   
+    function forceReload(boolean){
+        if(boolean){
+
+        } else {
+
+
+        }
+    }
 
 });
 
