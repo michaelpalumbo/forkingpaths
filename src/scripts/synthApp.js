@@ -756,7 +756,9 @@ document.addEventListener("DOMContentLoaded", function () {
         // Forking Paths patchHistory document:
         // contains all branches and branch history
         // will probably eventually contain user preferences, etc. 
-        if (room && peerCount > 0) {
+        console.log(room)
+        // if (room && peerCount > 0) {
+        if(room && roomDetails.peer1 && roomDetails.peer1){
             patchHistory = Automerge.init();
             syncState = Automerge.initSyncState(); // ✅ this must exist here
             console.log("Joining active room. Waiting for sync.");
