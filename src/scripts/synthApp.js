@@ -2060,6 +2060,10 @@ document.addEventListener("DOMContentLoaded", function () {
     
 
     function sendSyncMessage() {
+        if(!roomDetails.peer1 || !roomDetails.peer2){
+            console.log('not connected to a peer, holding syncMessage transmission')
+            return
+        }
         if (syncMessageDataChannel && syncMessageDataChannel.readyState === "open") {
             // syncState = Automerge.initSyncState();
             let msg = Uint8Array | null
