@@ -745,10 +745,11 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 
-
+    let automergeRunning = false
  
     //* AUTOMERGE IMPLEMENTATION
     async function startAutomerge () {
+        automergeRunning = true
         // Load Automerge asynchronously and assign it to the global variable
         Automerge = await import('@automerge/automerge');
         
@@ -757,7 +758,8 @@ document.addEventListener("DOMContentLoaded", function () {
         // will probably eventually contain user preferences, etc. 
         console.log(room)
         // if (room && peerCount > 0) {
-        if(room && roomDetails.peer1 && roomDetails.peer1){
+        if(room && roomDetails.peer1 && roomDetails.peer2){
+
             patchHistory = Automerge.init();
             syncState = Automerge.initSyncState(); // ✅ this must exist here
             console.log("Joining active room. Waiting for sync.");
@@ -5728,14 +5730,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function setRoomInfo(){
         room = roomDetails.room
-        // set room info in collab panel
-        UI.panel.collaboration.roomInfo.textContent = room;
+        // get automerge running!
+        if(!automergeRunning){
+            // set room info in collab panel
+            UI.panel.collaboration.roomInfo.textContent = room;
 
-        // patchHistoryKey
-        patchHistoryKey = room ? `patchHistory-${room}` : 'patchHistory';
+            // patchHistoryKey
+            patchHistoryKey = room ? `patchHistory-${room}` : 'patchHistory';
+            // startup automerge 
+            startAutomerge()
+        }
 
-        
-        startAutomerge()
     }
 
     
