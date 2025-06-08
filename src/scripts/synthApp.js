@@ -356,16 +356,15 @@ document.addEventListener("DOMContentLoaded", function () {
     
 
     // Parse the query parameter to get the room name.
-    const params = new URLSearchParams(window.location.search);
-    const room = params.get('room');
-    let roomDetails = {room: room, peer1: null, peer2: null}
+    // const params = new URLSearchParams(window.location.search);
+    let room
+    let roomDetails = {room: null, peer1: null, peer2: null}
 
-    // set room info in collab panel
-    UI.panel.collaboration.roomInfo.textContent = room;
+
 
     // set text in panel
-    let peerCount = parseInt(params.get('peerCount') || '0');
-    let patchHistoryKey = room ? `patchHistory-${room}` : 'patchHistory';
+    // let peerCount = parseInt(params.get('peerCount') || '0');
+    let patchHistoryKey
 
 
     // get username
@@ -749,7 +748,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
  
     //* AUTOMERGE IMPLEMENTATION
-    (async () => {
+    async function startAutomerge () {
         // Load Automerge asynchronously and assign it to the global variable
         Automerge = await import('@automerge/automerge');
         
@@ -925,7 +924,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
         }
-    })();
+    }
     
     // Set an interval to periodically save patchHistory to IndexedDB
     setInterval(async () => {
@@ -3439,9 +3438,13 @@ document.addEventListener("DOMContentLoaded", function () {
                 break
 
                 case 'roomsInfo':
+                    // console.log('roomname', room, 'msg.rooms', msg.rooms)
                     // console.log(msg.rooms)
                     // ignore (meant for other ws clients)
-                    roomDetails = msg.rooms[parseInt(room.split('-')[1] - 1)]
+                    roomDetails = msg.rooms.find(roomObj => roomObj.peer1 === thisPeerID || roomObj.peer2 === thisPeerID)
+
+                    setRoomInfo()
+
                     // peerCount = 0
                 break
 
@@ -5723,6 +5726,19 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    function setRoomInfo(){
+        room = roomDetails.room
+        // set room info in collab panel
+        UI.panel.collaboration.roomInfo.textContent = room;
+
+        // patchHistoryKey
+        patchHistoryKey = room ? `patchHistory-${room}` : 'patchHistory';
+
+        
+        startAutomerge()
+    }
+
+    
 });
 
 
