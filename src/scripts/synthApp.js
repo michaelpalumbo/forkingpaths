@@ -3286,6 +3286,15 @@ document.addEventListener("DOMContentLoaded", function () {
                                 newPeerHash =  msg.data[0]
                                 newPeerBranch =  msg.data[1]
                             break
+
+                            case 'syncPeerSequencer':
+                                // relay the message to the history app
+                                sendMsgToHistoryApp({
+                                    appID: 'forkingPathsMain',
+                                    cmd: msg.cmd,
+                                    data: msg
+                                })
+                            break
                   
                         default:
                             console.warn("Unknown custom message cmd:", msg.cmd);
@@ -3607,6 +3616,10 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         switch(event.data.cmd){
 
+            case 'syncPeerSequencer':
+                // send the sequencer update to remote peer
+                sendDataChannelMessage(event.data)
+            break
             case 'historySequencerReady':
                 sendMsgToHistoryApp({
                     appID: 'forkingPathsMain',

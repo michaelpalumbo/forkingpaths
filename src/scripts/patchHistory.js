@@ -558,7 +558,24 @@ document.addEventListener("DOMContentLoaded", async () => {
     // attach the event listeners for the sequencer
     attachSequencerListeners();
 
-    function updateStepRow(index, nodeData, gestureData = null, stepLength) {
+    function updateStepRow(index, nodeData, gestureData = null, stepLength, fromRemote = false) {
+
+        // first send update to any remote peer
+        if(!fromRemote){
+            sendToMainApp({  
+                cmd: 'syncPeerSequencer', 
+                action: 'updateStepRow',
+                payload: {
+                    index: index,
+                    nodeData: nodeData,
+                    gestureData: gestureData,
+                    stepLength: stepLength
+                }
+            })
+        }
+
+
+
         const row = document.querySelectorAll("#dynamicTableBody2 tr")[index];
         if (!row) return;
       
@@ -941,6 +958,16 @@ document.addEventListener("DOMContentLoaded", async () => {
             // console.log(event.data)
             switch (event.data.cmd){
 
+                case 'syncPeerSequencer':
+                    
+                    switch(event.data.data.action){
+                        case 'updateStepRow':
+                            console.log(event.data.data.payload)
+                            let stepRow = event.data.data.payload
+                            updateStepRow(stepRow.index, stepRow.nodeData, stepRow.gestureData, stepRow.stepLength, true)
+                        break
+                    }
+                break
                 case 'highlightHistoryNode':
                     let historyNode = historyDAG_cy.getElementById(event.data.data)
                     console.log(event.data.data)
@@ -4325,6 +4352,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         UI.sequencer.modes.stepLengthFunctionSelect.value = 'userEditable'
     }, 1500);
     
+    function syncPeerSequencer(cmd, data){
+        //! remember on the remote peer, when receiving any updates that modify the sequence, to also call setSequencerSaveButtonState(false)
+        // switch(cmd){
+        //     case ''
+        // }
+        
+    }
 })
 
 
