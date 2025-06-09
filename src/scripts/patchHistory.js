@@ -708,9 +708,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                 action: 'clearSequencer'
             })
         }
-
+        // disable the save button 
         setSequencerSaveButtonState(true)
-        
+
         const tableRows = document.querySelectorAll("#dynamicTableBody2 tr");
       
         tableRows.forEach(row => {
@@ -1197,12 +1197,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
 
-    function loadVersion(nodeID, branch, gestureDataPoint){
+    function loadVersion(nodeID, branch, gestureDataPoint, fromSequencer){
         // Perform your action with the step data
         sendToMainApp(
             {
                 cmd: "loadVersion",
-                data: { hash: nodeID, branch: branch },
+                data: { hash: nodeID, branch: branch, fromSequencer: fromSequencer },
             }
         );
     }
@@ -1394,9 +1394,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     const loop = new Tone.Loop(function(time){
         // ✅ Set current step's duration immediately
         const stepLength2 = storedSequencerTable[currentStepIndex].stepLength;
-        console.log(stepLength2)
+
         const stepDuration = Tone.Time(stepLength2).toSeconds();
-        console.log(stepDuration)
         
         let stepsToAdvance = 1 // this could be used to randomize steps too. (i.e. if random is selected, randomize this value at each loop)
 
@@ -1420,9 +1419,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         const targetRow = tableRows[currentStepIndex];
 
         if (targetRow) targetRow.classList.add("table-active");
-
-        
-        
 
         // if step is active, send request to load the version
         if (currentStep.status == "Active"){
@@ -1454,9 +1450,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                             param: row.param,
                             value: row.value
                           };
-                          loadVersionWithGestureDataPoint(row.node.id, row.node.branch, dataPoint);
+                          loadVersionWithGestureDataPoint(row.node.id, row.node.branch, dataPoint, true);
                         } else {
-                          loadVersion(row.node.id, row.node.branch);
+                          loadVersion(row.node.id, row.node.branch, null, true);
                   
                           if (row.stepChange?.startsWith("gesture") && row.gestureData) {
                             
@@ -1483,7 +1479,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             
             else {
                 // load the version
-                loadVersion(currentStep.node.id, currentStep.node.branch)
+                loadVersion(currentStep.node.id, currentStep.node.branch, null, true)
                 
                 if(targetRow.dataset.gesture){
          

@@ -1923,8 +1923,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     }
     // Load a version from the DAG
-    async function loadVersion(targetHash, branch, fromPeer) {
-
+    async function loadVersion(targetHash, branch, fromPeer, fromPeerSequencer) {
+        
         // store the hash and branch for if a new peer joins
         // newPeerHash = targetHash
         // newPeerBranch = branch
@@ -2033,7 +2033,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // ⬇️ Optional sync/permission handling AFTER local load
         const recallMode = getVersionRecallMode();
         // ensure that loadVersion calls from the peer don't make past this point, becuase otherwise they'd send it back and forth forever 
-        if (recallMode === 'openLoadVersion' && !fromPeer) {
+        if (recallMode === 'openLoadVersion' && !fromPeer && !fromPeerSequencer) {
             console.log('openVersionRecall')
             openVersionRecall(targetHash, branch);
         }
@@ -3682,7 +3682,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             break
             case 'loadVersion':
-                loadVersion(event.data.data.hash, event.data.data.branch, event.data.data.gestureDataPoint)
+                loadVersion(event.data.data.hash, event.data.data.branch, event.data.data.gestureDataPoint, event.data.data.fromSequencer)
             break
 
             case 'loadVersionWithGestureDataPoint':
