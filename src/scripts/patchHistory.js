@@ -711,6 +711,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         // disable the save button 
         setSequencerSaveButtonState(true)
 
+        // disable the start/stop button
+        UI.sequencer.control.startStop.disabled = true
+
         const tableRows = document.querySelectorAll("#dynamicTableBody2 tr");
       
         tableRows.forEach(row => {
@@ -739,7 +742,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           row.removeAttribute("data-parent");
         });
       
-        saveSequencerTable(); // optional: refresh internal state
+        saveSequencerTable(); // refresh internal state
     }
 
 
@@ -1027,6 +1030,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
 
+                        break
+
+                        case 'startStopSequencer':
+                            // set the state of the sequencer
+                            UI.sequencer.control.startStop.click()
                         break
                     }
                 break
@@ -1607,13 +1615,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     function saveSequencerTable() {
 
         const rows = UI.sequencer.table.body.querySelectorAll("tr");
-
+  
+        let areAllInactive = true
         // Extract the contents of each row into an array of objects
         const tableData = Array.from(rows).map(row => {
             const cells = row.querySelectorAll("td");
 
             if(row.dataset.id){
-                
+                if(areAllInactive){
+                    // we use this later in the function to determine if the startStop button should be disabled
+                    areAllInactive = false
+                }
+
                 return {
                     stepChange: cells[1].textContent, // Step (Change) cell content
                     stepLength: cells[2].querySelector('select').value, // Step Length selectmenu content
@@ -1636,6 +1649,14 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
 
         });
+
+        if(areAllInactive){
+            // if this is still true disable the start/stop button
+            UI.sequencer.control.startStop.disabled = true
+        } else {
+            // if this is false (at least one step is active), then enable the start/stop button
+            UI.sequencer.control.startStop.disabled = false
+        }
 
         const update = {
             cmd: 'updateSequencer',
@@ -3403,7 +3424,15 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     let isPlaying = false;
 
-    UI.sequencer.control.startStop.addEventListener("click", async () => {
+    UI.sequencer.control.startStop.addEventListener("click", async (event) => {
+        // use the event.isTrusted to ensure that the click came from a user click (since we also programmatically cause a click when a remote peer starts the sequencer -- search for 'UI.sequencer.control.startStop.click()' to see where/why)
+        if(event.isTrusted){
+            sendToMainApp({  
+                cmd: 'syncPeerSequencer', 
+                action: 'startStopSequencer'
+            })
+        }
+
         // we have this here to prevent both modes running simultaneously (which can happen if anything glitches out)
         transport.stop();
         loop.stop();
