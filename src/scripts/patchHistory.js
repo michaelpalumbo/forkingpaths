@@ -495,9 +495,21 @@ document.addEventListener("DOMContentLoaded", async () => {
     function attachSequencerListeners() {
         document.querySelectorAll(".step-length").forEach((select, i) => {
           select.addEventListener("change", () => {
+            console.log(select.value, i)
             UI.sequencer.modes.stepLengthFunctionSelect.value = "userEditable"
             setSequencerSaveButtonState(false)
             saveSequencerTable();
+
+            // update the remote:
+            sendToMainApp({  
+                cmd: 'syncPeerSequencer', 
+                action: 'updateStepLength',
+                payload: {
+                    index: i,
+                    stepLength: select.value
+                }
+            })
+
           });
         });
       
@@ -637,7 +649,19 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     }
 
-    function clearStepRow(index) {
+    function clearStepRow(index, fromRemote = false) {
+
+        // first send update to any remote peer
+        if(!fromRemote){
+            sendToMainApp({  
+                cmd: 'syncPeerSequencer', 
+                action: 'clearStepRow',
+                payload: {
+                    index: index,
+                }
+            })
+        }
+
         const row = document.querySelectorAll("#dynamicTableBody2 tr")[index];
         if (!row) return;
       
@@ -675,7 +699,18 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       
     // use this to clear the sequencer
-    function resetSequencerTable() {
+    function resetSequencerTable(fromRemote = false) {
+        
+        // first send update to any remote peer
+        if(!fromRemote){
+            sendToMainApp({  
+                cmd: 'syncPeerSequencer', 
+                action: 'clearSequencer'
+            })
+        }
+
+        setSequencerSaveButtonState(true)
+        
         const tableRows = document.querySelectorAll("#dynamicTableBody2 tr");
       
         tableRows.forEach(row => {
@@ -959,12 +994,39 @@ document.addEventListener("DOMContentLoaded", async () => {
             switch (event.data.cmd){
 
                 case 'syncPeerSequencer':
-                    
+                    console.log(event.data.data)
                     switch(event.data.data.action){
                         case 'updateStepRow':
-                            console.log(event.data.data.payload)
+                            
                             let stepRow = event.data.data.payload
                             updateStepRow(stepRow.index, stepRow.nodeData, stepRow.gestureData, stepRow.stepLength, true)
+                            setSequencerSaveButtonState(false)
+                        break
+
+                        case 'clearStepRow':
+                            
+                            clearStepRow(event.data.data.payload.index, true)
+                            setSequencerSaveButtonState(false)
+                        break
+
+                        case 'clearSequencer':
+                            resetSequencerTable(true)
+                            setSequencerSaveButtonState(true)
+
+                        break
+
+                        case 'updateStepLength':
+                            let payload = event.data.data.payload
+
+                            console.log(payload)
+                            // get the row that was changed by the remote peer
+                            const row = document.querySelectorAll("#dynamicTableBody2 tr")[payload.index];
+                            // set the new stepLength for that row
+                            row.cells[2].querySelector("select").value = payload.stepLength;
+                            setSequencerSaveButtonState(false)
+
+
+
                         break
                     }
                 break
@@ -1555,6 +1617,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             const cells = row.querySelectorAll("td");
 
             if(row.dataset.id){
+                
                 return {
                     stepChange: cells[1].textContent, // Step (Change) cell content
                     stepLength: cells[2].querySelector('select').value, // Step Length selectmenu content
