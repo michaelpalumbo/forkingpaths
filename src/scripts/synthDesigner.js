@@ -316,7 +316,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // Create a download link
         const downloadLink = document.createElement('a');
         downloadLink.href = url;
-        downloadLink.download = fileName;
+        downloadLink.download = `${fileName}.fpsynth`;
 
         // Optionally, add the link to the DOM and simulate a click
         document.body.appendChild(downloadLink);
@@ -945,16 +945,16 @@ document.addEventListener("DOMContentLoaded", function () {
     //     reader.readAsText(file);
         
     // });
-
+    
     async function storeFPSYNTH() {  
-        
+        let savedSynthName = document.getElementById('synthName').value || `synth_${uuidv7().split('-')[0]}`
         const payload = {
-            name: document.getElementById('synthName').value || `synth_${uuidv7().split('-')[0]}`,
+            name: savedSynthName,
             author: urlParams.get('username') || 'anonymous',
             description: document.getElementById('synthDesc').value,
             tags: document.getElementById('synthTags').value.split(',').map(t => t.trim()),
             synth_json: {
-                filename: document.getElementById('synthName').value,
+                filename: savedSynthName,
                 visualGraph: cy.json(),
                 paramUIOverlays: paramUIOverlays,
                 audioGraph: synthGraph
@@ -967,6 +967,8 @@ document.addEventListener("DOMContentLoaded", function () {
         }))
 
         toggleSaveOverlay()
+
+        saveSynth(savedSynthName)
         // const res = await fetch('/api/synthFiles', {
         //   method: 'POST',
         //   headers: { 'Content-Type': 'application/json' },

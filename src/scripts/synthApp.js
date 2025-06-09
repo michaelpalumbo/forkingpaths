@@ -753,10 +753,6 @@ document.addEventListener("DOMContentLoaded", function () {
         // Load Automerge asynchronously and assign it to the global variable
         Automerge = await import('@automerge/automerge');
         
-        // Forking Paths patchHistory document:
-        // contains all branches and branch history
-        // will probably eventually contain user preferences, etc. 
-        console.log(room)
         // if (room && peerCount > 0) {
         if(room && roomDetails.peer1 && roomDetails.peer2){
 
@@ -4155,7 +4151,7 @@ document.addEventListener("DOMContentLoaded", function () {
     UI.menus.file.loadDemoSynth.addEventListener('click', async (event) => {
         try {
             // Fetch the JSON file (with a custom extension)
-          const response = await fetch(`/assets/synths/demoApril2025.fpsynth`);
+          const response = await fetch(`/assets/synths/demo.fpsynth`);
           
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
