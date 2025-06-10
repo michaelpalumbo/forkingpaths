@@ -993,6 +993,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     // *
 
     function sendToMainApp(msg){
+        console.log('sending message', msg.cmd, Date.now())
         window.opener?.postMessage(msg, '*');
     }
     
@@ -1022,7 +1023,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                                 isPlaying: isPlaying,
                             }
                         }
-                        console.log(msg)
+                        
                         sendToMainApp(msg)
 
                         // send back to main app to be sent to remote peer
@@ -1343,7 +1344,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     graphJSONstore = msg;
 
                     
-                    break;
+                break;
             }
         };
 
@@ -1374,7 +1375,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     // * 
     // *
 
-       async function setGraphFromHistoryRenderer(json){
+    async function setGraphFromHistoryRenderer(json){
         historyGraphNodesArray = json.data.elements.nodes
         historyDAG_cy.json(json.data)
         // disable automatic layout so your manual position values are respected
@@ -1391,6 +1392,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         console.log('patchHistory', patchHistory)
         if(!patchHistory.head){
             console.log('cancelling history graph build. should send new request to main app for updated patch history')
+            sendToMainApp({
+                cmd: 'requestCurrentPatchHistory',
+            })
             return
         }
         console.log('patchHistory.head', patchHistory.head)
@@ -2516,7 +2520,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 arrayBuffer: arrayBuffer
             }
 
-            console.log(msg)
+            
             // send to main app using a 3rd argument as opposed to sendToMainApp()
             window.opener?.postMessage(msg, '*', [arrayBuffer])
 

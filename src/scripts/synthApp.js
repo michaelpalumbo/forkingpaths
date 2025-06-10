@@ -3654,7 +3654,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // console.log('missing cmd from:', event.data)
             return
         }
-        console.log(event.data.cmd)
+        console.log(event.data.cmd, Date.now())
         switch(event.data.cmd){
 
             case 'requestCurrentPatchHistory':
