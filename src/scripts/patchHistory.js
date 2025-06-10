@@ -1391,7 +1391,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         console.log('before error?')
         console.log('patchHistory', patchHistory)
         if(!patchHistory.head){
-            console.log('cancelling history graph build. should send new request to main app for updated patch history')
             sendToMainApp({
                 cmd: 'requestCurrentPatchHistory',
             })
@@ -4570,6 +4569,16 @@ document.addEventListener("DOMContentLoaded", async () => {
         // }
         
     }
+
+    // ensure history graph is always rendered (sometimes it doesn't render on page load, due to race conditions. see issue #90 in repo)
+    setInterval(() => {
+        if(historyDAG_cy && historyDAG_cy.nodes().length < 1){
+            sendToMainApp({
+                cmd: 'requestCurrentPatchHistory',
+            })
+        }
+    }, 1000);
+
 })
 
 
