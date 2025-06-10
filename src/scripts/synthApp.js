@@ -3374,8 +3374,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     sendSyncMessage();
 
                 } else {
-                  console.warn("Sync message received but state incomplete — skipping update.");
-                //   location.reload()
+                    console.warn("Sync message received but state incomplete — skipping update.");
+                      location.reload()
                 }
 
             } catch (error) {
@@ -3392,8 +3392,23 @@ document.addEventListener("DOMContentLoaded", function () {
         };
         channel.onmessage = event => {
             let msg = JSON.parse(event.data)
+            switch(msg.viewport){
+                case 'synthGraph':
+                    displayPeerPointers(msg.peerID, msg.mousePointer)
+                break
+
+                case 'patchHistoryWindow':
+                    // console.log('remote peer mouse pos in patchHistory window', msg.payload)
+
+                    sendMsgToHistoryApp({
+                        appID: 'forkingPathsMain',
+                        cmd: 'remotePeerHistoryMousePosition',
+                        data: msg
+                    })
+                    
+                break
+            }
             
-            displayPeerPointers(msg.peerID, msg.mousePointer)
             // if (event.data instanceof ArrayBuffer) {
             //     incomingData = new Uint8Array(event.data);
             //     // Process pointer messages accordingly.
@@ -3653,8 +3668,16 @@ document.addEventListener("DOMContentLoaded", function () {
             // console.log('missing cmd from:', event.data)
             return
         }
-        console.log(event.data.cmd, Date.now())
+        
         switch(event.data.cmd){
+
+            case 'remotePeerHistoryMousePosition':
+                peerPointerDataChannel.send(JSON.stringify({
+                    viewport: 'patchHistoryWindow',
+                    peerID: thisPeerID,
+                    payload: event.data.payload
+                }))
+            break
 
             case 'requestCurrentPatchHistory':
                 sendMsgToHistoryApp({
@@ -4052,6 +4075,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // if(msg != null){
                 peerPointerDataChannel.send(JSON.stringify({
+                    viewport: 'synthGraph',
                     peerID: thisPeerID,
                     mousePointer: { x: x, y: y }
                 }))

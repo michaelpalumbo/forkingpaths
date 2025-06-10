@@ -388,6 +388,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                     gestureEditor: document.getElementById("gestureEditorHelp")
                 },
                 snackbar: document.getElementById("snackbar")
+            },
+            remote: {
+                canvas: document.getElementById('peerCursorsCanvas')
             }
         }
     }
@@ -1003,6 +1006,10 @@ document.addEventListener("DOMContentLoaded", async () => {
             // console.log(event.data)
             switch (event.data.cmd){
 
+                case 'remotePeerHistoryMousePosition':
+                    console.log(event.data)
+                    updatePeerCursor(event.data.data)
+                break
                 case "sequencerModificationCheck":
                     
                     if(sequencerHasBeenModified){
@@ -4568,6 +4575,74 @@ document.addEventListener("DOMContentLoaded", async () => {
             })
         }
     }, 1000);
+
+    document.addEventListener('mousemove', (event) => {
+        const x = event.clientX
+        const y = event.clientY
+        // console.log(x, y)
+        sendToMainApp({  
+            cmd: 'remotePeerHistoryMousePosition', 
+            payload: {
+                x: x,
+                y: y,
+                dimensions: [window.innerWidth, window.innerHeight],
+                windowZoom: null // if needed for calculations
+            }
+        })
+    })
+
+
+    const ctx = UI.remote.canvas.getContext('2d')
+
+    UI.remote.canvas.width = window.innerWidth * window.devicePixelRatio;
+    UI.remote.canvas.height = window.innerHeight * window.devicePixelRatio;
+    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+    // Current peer pointer state
+    const peerPointers = {};
+    function updatePeerCursor(data) {
+        let remotePeerID = data.peerID
+        let payload = data.payload
+        console.log(payload.x, payload.y);
+        // Scale to local window
+        const localX = (payload.x / payload.dimensions[0]) * window.innerWidth;
+        const localY = (payload.y / payload.dimensions[1]) * window.innerHeight;
+
+        // Store state
+        peerPointers[remotePeerID] = { x: localX, y: localY, name: remotePeerID, color: 'red' };
+
+        // Redraw
+        redrawPeerCursors();
+    }
+
+    function redrawPeerCursors() {
+        ctx.clearRect(0, 0,  UI.remote.canvas.width,  UI.remote.canvas.height);
+
+        for (const peerId in peerPointers) {
+            const p = peerPointers[peerId];
+
+            // Draw dot
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
+            ctx.fillStyle = p.color || 'red';
+            ctx.fill();
+
+            // Draw name
+            ctx.font = '12px sans-serif';
+            ctx.fillStyle = 'white';
+            ctx.fillText(p.name, p.x + 8, p.y - 8);
+        }
+    }
+
+
+    function showPeerClick(peerId) {
+        // const dot = document.querySelector(`#peer-cursor .cursor-dot`);
+        // dot.classList.add('clicked');
+        // setTimeout(() => {
+        //     dot.classList.remove('clicked');
+        // }, 400);
+    }
+
 
 })
 
