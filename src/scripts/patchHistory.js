@@ -1387,9 +1387,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         // selectedNode = latestNode.data()
 
-
+        console.log('before error?')
         // should load the changeNode from the current state
         let latestNode = historyDAG_cy.getElementById(patchHistory.head.hash)
+        console.log('after error?')
         highlightNode(latestNode)
 
         // highlightGestureNode(latestNode)
