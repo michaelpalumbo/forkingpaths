@@ -3656,6 +3656,7 @@ document.addEventListener("DOMContentLoaded", function () {
         switch(event.data.cmd){
 
             case 'requestCurrentPatchHistory':
+                console.log(event.data.cmd)
                 sendMsgToHistoryApp({
                     appID: 'forkingPathsMain',
                     cmd: 'reDrawHistoryGraph',
