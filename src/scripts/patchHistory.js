@@ -4656,8 +4656,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             const localX = (p.remoteX / p.remoteW) * window.innerWidth;
             const localY = (p.remoteY / p.remoteH) * window.innerHeight;
 
-            console.log(`localY=${localY}, window.innerHeight=${window.innerHeight}`);
-
             // Draw dot
             ctx.beginPath();
             ctx.arc(localX, localY, 10, 0, Math.PI * 2);
