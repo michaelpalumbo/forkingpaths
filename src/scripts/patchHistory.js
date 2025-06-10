@@ -414,6 +414,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         // grab user's settings
         if(localStorage.getItem('sequencerSettings')){
             let settings = JSON.parse(localStorage.getItem('sequencerSettings'))
+        
             sequencerData.settings = settings
             // loop through settings and apply to menus
             UI.sequencer.modes.stepLengthFunctionSelect.value = settings.modes.stepLengthFunction
@@ -3510,7 +3511,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                     }
                 } else {
                     await Tone.start(); // Required to start audio in modern browsers
-        
                     // set the interval length based on this step's note length
                     loop.interval = storedSequencerTable[0].stepLength
                     sequencerData.settings.stepLength = loop.interval
