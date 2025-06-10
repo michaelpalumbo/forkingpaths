@@ -1388,6 +1388,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         // selectedNode = latestNode.data()
 
         console.log('before error?')
+        console.log('patchHistory', patchHistory)
+        console.log('patchHistory.head', patchHistory.head)
+        console.log('patchHistory.head.hash', patchHistory.head.hash)
         // should load the changeNode from the current state
         let latestNode = historyDAG_cy.getElementById(patchHistory.head.hash)
         console.log('after error?')
