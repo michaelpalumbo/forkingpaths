@@ -2508,6 +2508,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 arrayBuffer: arrayBuffer
             }
 
+            console.log(msg)
             // send to main app using a 3rd argument as opposed to sendToMainApp()
             window.opener?.postMessage(msg, '*', [arrayBuffer])
 
