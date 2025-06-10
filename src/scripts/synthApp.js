@@ -3730,8 +3730,10 @@ document.addEventListener("DOMContentLoaded", function () {
             case 'loadPatchHistory':
     
                 if(event.data.source === 'file'){
+                    console.log('loading patchHistory from file', event.data)
                     loadPatchHistory(event.data.arrayBuffer)
                 } else {
+                    console.log('trying to load patchHistory from database', event.data)
                     // load it from the database
                     let entry = event.data.data
 
