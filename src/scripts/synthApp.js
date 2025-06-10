@@ -3655,7 +3655,13 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         switch(event.data.cmd){
 
-
+            case 'requestCurrentPatchHistory':
+                sendMsgToHistoryApp({
+                    appID: 'forkingPathsMain',
+                    cmd: 'reDrawHistoryGraph',
+                    data: patchHistory
+                })
+            break
 
             case 'syncPeerSequencer':
                 // send the sequencer update to remote peer
@@ -3668,6 +3674,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             break
             case 'historySequencerReady':
+                console.log('patchHistory @ historySequencerReady', patchHistory)
                 sendMsgToHistoryApp({
                     appID: 'forkingPathsMain',
                     cmd: 'reDrawHistoryGraph',
