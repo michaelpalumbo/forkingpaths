@@ -3651,6 +3651,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Listen for messages from the history window
     window.addEventListener('message', (event) => {
         if(!event.data.cmd){
+            // console.log('missing cmd from:', event.data)
             return
         }
         switch(event.data.cmd){
