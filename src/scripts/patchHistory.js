@@ -355,6 +355,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     stepLengthFunctionSelect: document.getElementById("stepLengthFunction"),
                     sequenceOrderSelect: document.getElementById("sequenceOrder"),
                     emptyStepMode: document.getElementById("emptyStepMode"),
+                    playBackModeSelector: document.getElementById("playbackMode")
                 },
                 table: {
                     body: document.getElementById("dynamicTableBody2")
@@ -364,7 +365,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             }, 
             gestureEditor: {
                 assignToParam: document.getElementById("assignGestureToParam"),
-                playBackModeSelector: document.getElementById("playbackMode"),
+                
                 cy: document.getElementById('gestureCy'),
                 display: document.getElementById('displayPointValue'),
                 save: document.getElementById("saveGestureButton"),
@@ -416,7 +417,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             sequencerData.settings = settings
             // loop through settings and apply to menus
             UI.sequencer.modes.stepLengthFunctionSelect.value = settings.modes.stepLengthFunction
-            UI.gestureEditor.playBackModeSelector.value = settings.modes.playBack
+            UI.sequencer.modes.playBackModeSelector.value = settings.modes.playBack
             UI.sequencer.modes.emptyStepMode.value = settings.modes.emptyStep
             UI.sequencer.modes.sequenceOrderSelect.value = settings.modes.order
         }
@@ -997,7 +998,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             switch (event.data.cmd){
 
                 case 'syncPeerSequencer':
-                    console.log(event.data.data)
                     switch(event.data.data.action){
                         case 'updateStepRow':
                             
@@ -1036,6 +1036,21 @@ document.addEventListener("DOMContentLoaded", async () => {
                             // set the state of the sequencer
                             UI.sequencer.control.startStop.click()
                         break
+
+                        case 'stepLengthFunctionSelect':
+                        case 'sequenceOrderSelect':
+                        case 'playBackModeSelector':
+                        case 'emptyStepMode':
+
+                            // console.log(event.data.data.payload)
+                            UI.sequencer.modes[event.data.data.action].value = event.data.data.payload
+
+                            // create a change event to force element to update sequencer setting
+                            UI.sequencer.modes[event.data.data.action].dispatchEvent(new Event('change', { bubbles: true }))
+
+
+                        break
+
                     }
                 break
                 case 'highlightHistoryNode':
@@ -2518,9 +2533,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     })
 
 
-    UI.sequencer.modes.emptyStepMode.addEventListener("change", (event) => {
-        sequencerData.settings.modes.emptyStep = event.target.value
-    });
+
 
     
     UI.graph.showFull.addEventListener("click", (event) => {
@@ -2556,7 +2569,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     
     // for switching between polyphonic and monophonic sequencing modes
 
-    UI.gestureEditor.playBackModeSelector.addEventListener("change", (e) => {
+    UI.sequencer.modes.playBackModeSelector.addEventListener("change", (e) => {
         sequencerData.settings.modes.playBack = e.target.value;
         console.warn('see this line in the code for next todo, thanks')
         if (sequencerData.settings.modes.playBack === "poly") {
@@ -2571,9 +2584,30 @@ document.addEventListener("DOMContentLoaded", async () => {
             // currentStepIndex = 0;
             // loop.start(0); // your global mono loop
         }
+        // send to remote
+        if(e.isTrusted){
+            sendToMainApp({  
+                cmd: 'syncPeerSequencer', 
+                action: 'playBackModeSelector',
+                payload: e.target.value
+            })
+        }
+
     });
 
 
+    UI.sequencer.modes.emptyStepMode.addEventListener("change", (event) => {
+        sequencerData.settings.modes.emptyStep = event.target.value
+
+        // send to remote
+        if(event.isTrusted){
+            sendToMainApp({  
+                cmd: 'syncPeerSequencer', 
+                action: 'emptyStepMode',
+                payload: event.target.value
+            })
+        }
+    });
 
     // Show and move the overlay
     historyDAG_cy.on('mouseover', 'node', function(evt) {
@@ -3733,6 +3767,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
         sendToMainApp(update)
 
+        if(event.isTrusted){
+            sendToMainApp({  
+                cmd: 'syncPeerSequencer', 
+                action: 'sequenceOrderSelect',
+                payload: selectedValue
+            })
+        }
         
 
     });
@@ -3750,7 +3791,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
         sendToMainApp(update)
  
-
+        if(event.isTrusted){
+            sendToMainApp({  
+                cmd: 'syncPeerSequencer', 
+                action: 'stepLengthFunctionSelect',
+                payload: selectedValue
+            })
+        }
         
     });
 
