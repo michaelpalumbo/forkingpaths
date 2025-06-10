@@ -2504,6 +2504,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             let msg = {
                 cmd: "loadPatchHistory",
+                source: 'file',
                 arrayBuffer: arrayBuffer
             }
 
