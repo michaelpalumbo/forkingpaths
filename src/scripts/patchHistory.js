@@ -1052,7 +1052,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
                 // this is part of the relay pipeline between this history window and the remote peer's history window
                 case 'syncPeerSequencer':
-                    
+                    console.log(event.data)
                     switch(event.data.data.action){
 
                         case 'syncSequencerOnNewPeerConnection':
