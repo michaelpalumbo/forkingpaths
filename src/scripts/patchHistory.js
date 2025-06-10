@@ -1342,7 +1342,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     setGraphFromHistoryRenderer(msg);
                     graphJSONstore = msg;
 
-                    console.log('2')
+                    
                     break;
             }
         };
@@ -1389,6 +1389,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         console.log('before error?')
         console.log('patchHistory', patchHistory)
+        if(!patchHistory.head){
+            console.log('cancelling history graph build. should send new request to main app for updated patch history')
+            return
+        }
         console.log('patchHistory.head', patchHistory.head)
         console.log('patchHistory.head.hash', patchHistory.head.hash)
         // should load the changeNode from the current state
