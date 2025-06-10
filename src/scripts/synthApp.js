@@ -71,13 +71,7 @@ let currentIndex = 0;
 let patchHistoryWindow;
 
 // shared sequencer settings (shared between peers)
-let sharedSequencerState = {
-    tableData: [],
-    modes: {},
-    bpm: null,
-    isPlaying: null,
-    modified: false
-}
+let sharedSequencerState = null
 
 // * new automerge implementation
 let Automerge;
@@ -3212,29 +3206,28 @@ document.addEventListener("DOMContentLoaded", function () {
             };
             sendDataChannelMessage(message)
 
-            // ask history app if sequencer has been modified at all in this session, if it has, it will bundle the state and send back here to be passed along to the peer
-
-            sendMsgToHistoryApp({
-                appID: 'forkingPathsMain',
-                cmd: 'sequencerModificationCheck' 
-            })
-
-
             // also send the current sharedSequencerState to the remote peer
-            // if(sharedSequencerState.modified){
-            //     console.log('\n\nsending sharedSequencerState to remote peer')
-            //     console.log(sharedSequencerState)
-            //     sendDataChannelMessage({
-            //         cmd: 'sharedSequencerState',
-            //         payload: sharedSequencerState
-            //     })
-            //     // sendMsgToHistoryApp({
-            //     //     appID: 'forkingPathsMain',
-            //     //     cmd: 'syncPeerSequencer',
-            //     //     action: 'sharedSequencerState',
-            //     //     data: sharedSequencerState
-            //     // })
-            // }
+            if(sharedSequencerState){
+                console.log('synthapp fun fun')
+                // console.log('\n\nsending sharedSequencerState to remote peer')
+                // console.log(sharedSequencerState)
+                // sendDataChannelMessage({
+                //     cmd: 'sharedSequencerState',
+                //     payload: sharedSequencerState
+                // })
+                sendMsgToHistoryApp({
+                    appID: 'forkingPathsMain',
+                    cmd: 'syncPeerSequencer',
+                    action: 'syncSequencerOnNewPeerConnection',
+                    payload: sharedSequencerState
+                })
+            } else {
+                // ask history app if sequencer has been modified at all in this session, if it has, it will bundle the state and send back here to be passed along to the peer
+                sendMsgToHistoryApp({
+                    appID: 'forkingPathsMain',
+                    cmd: 'sequencerModificationCheck' 
+                })
+            }
 
 
             // ensure that new peer loads the current state. 
@@ -3328,19 +3321,19 @@ document.addEventListener("DOMContentLoaded", function () {
                                 })
                             break
 
-                            case 'sharedSequencerState':
-                                // store the sequencer state
-                                sharedSequencerState = msg.payload
+                            // case 'sharedSequencerState':
+                            //     // store the sequencer state
+                            //     sharedSequencerState = msg.payload
 
-                                // if history window is open, send the sequencer state
-                                sendMsgToHistoryApp({
-                                    appID: 'forkingPathsMain',
-                                    cmd: 'syncPeerSequencer',
-                                    action: 'sharedSequencerState',
-                                    data: sharedSequencerState
-                                })
+                            //     // if history window is open, send the sequencer state
+                            //     sendMsgToHistoryApp({
+                            //         appID: 'forkingPathsMain',
+                            //         cmd: 'syncPeerSequencer',
+                            //         action: 'sharedSequencerState',
+                            //         data: sharedSequencerState
+                            //     })
 
-                            break
+                            // break
                   
                         default:
                             console.warn("Unknown custom message cmd:", msg.cmd);
@@ -3662,9 +3655,16 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         switch(event.data.cmd){
 
+
+
             case 'syncPeerSequencer':
                 // send the sequencer update to remote peer
                 sendDataChannelMessage(event.data)
+
+                if(event.data.action === 'syncSequencerOnNewPeerConnection'){
+                    console.log('snared!!!')
+                    sharedSequencerState = event.data.payload
+                }
 
             break
             case 'historySequencerReady':
@@ -3674,13 +3674,20 @@ document.addEventListener("DOMContentLoaded", function () {
                     data: patchHistory
                         
                 })
+
+                // sendMsgToHistoryApp({
+                //     appID: 'forkingPathsMain',
+                //     cmd: 'syncPeerSequencer',
+                //     action: 'syncSequencerOnNewPeerConnection',
+                //     payload: sharedSequencerState
+                // })
                 
                 // if we have a remote peer and that peer has a sequencer state, send it to the local history window
                 if(sharedSequencerState){
                     sendMsgToHistoryApp({
                         appID: 'forkingPathsMain',
                         cmd: 'syncPeerSequencer',
-                        action: 'sharedSequencerState',
+                        action: 'syncSequencerOnNewPeerConnection',
                         data: sharedSequencerState
                     })
                 }
@@ -3772,7 +3779,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
 
                 console.log(event.data.data)
-                sharedSequencerState = event.data.data
+                // sharedSequencerState = event.data.data
 
             break
 
