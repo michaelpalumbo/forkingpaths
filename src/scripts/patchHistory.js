@@ -498,7 +498,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     function attachSequencerListeners() {
         document.querySelectorAll(".step-length").forEach((select, i) => {
           select.addEventListener("change", () => {
-            console.log(select.value, i)
+            
             UI.sequencer.modes.stepLengthFunctionSelect.value = "userEditable"
             setSequencerSaveButtonState(false)
             saveSequencerTable();
@@ -993,7 +993,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     // *
 
     function sendToMainApp(msg){
-        console.log('sending message', msg.cmd, Date.now())
         window.opener?.postMessage(msg, '*');
     }
     
@@ -1032,7 +1031,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
                 // this is part of the relay pipeline between this history window and the remote peer's history window
                 case 'syncPeerSequencer':
-                    console.log('snared yayyy')
+                    
                     switch(event.data.data.action){
 
                         case 'syncSequencerOnNewPeerConnection':
@@ -1098,7 +1097,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 break
                 case 'highlightHistoryNode':
                     let historyNode = historyDAG_cy.getElementById(event.data.data)
-                    console.log(event.data.data)
+                    
                     highlightNode(historyNode)
                 break
 
@@ -1388,19 +1387,15 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         // selectedNode = latestNode.data()
 
-        console.log('before error?')
-        console.log('patchHistory', patchHistory)
         if(!patchHistory.head){
             sendToMainApp({
                 cmd: 'requestCurrentPatchHistory',
             })
             return
         }
-        console.log('patchHistory.head', patchHistory.head)
-        console.log('patchHistory.head.hash', patchHistory.head.hash)
         // should load the changeNode from the current state
         let latestNode = historyDAG_cy.getElementById(patchHistory.head.hash)
-        console.log('after error?')
+
         highlightNode(latestNode)
 
         // highlightGestureNode(latestNode)
@@ -1516,7 +1511,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                 const totalSubsteps = embeddedSeq.length;
                 const outerStepDuration = stepDuration; // duration of current step
                 const subStepDuration = outerStepDuration / totalSubsteps;
-                console.log(subStepDuration)
                 const embeddedEvents = embeddedSeq.map((row, i) => {
                     return [i * subStepDuration, () => {
                       if (row.status === "Active") {
@@ -1540,7 +1534,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 });
             
                 const embeddedPart = new Tone.Part((t, eventCallback) => {
-                    console.log('test')
+                   
                     eventCallback(t);
                 }, embeddedEvents);
             
@@ -1636,7 +1630,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 } else {
                     loadVersion(step.node.id, step.node.branch);
                     if (targetRow.dataset.gesture) {
-                        console.log(step.stepLength)
+                        
                     playGestureFromSequencerStep(sequencerData.gestures[index], step.stepLength);
                     }
                 }
@@ -1849,11 +1843,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // playback a stored gesture from a sequencer step
     function playGestureFromSequencerStep(gesture, stepLength){
-
-        console.log(gesture, stepLength)
+        
         let quantizedGesture = quantizeGesture(gesture, stepLength)
         
-        console.log(quantizedGesture)
         // create the scheduler
         quantizedGesture.forEach((node) => {
             const delay = node.t * 1000; // (convert to milliseconds)
@@ -1867,7 +1859,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                         param: node.param,
                         value: node.value
                     }
-                    // console.log(data)
                     
                     //! uncomment this when in patcHistory Script
                     sendToMainApp({
@@ -3298,7 +3289,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (draggedNode === releasedNode && intersectedNode) {
             const node1 = draggedNode.data()
             const node2 = intersectedNode.data()
-            console.log(node1, node2)
             sendToMainApp({
                 cmd: 'merge',
                 nodes: [node1, node2]
@@ -3653,7 +3643,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
                     const filtered = results.filter(entry => entry.label.split(' ')[0] === checkbox.value);
 
-                    console.log(checkbox.value, filtered)
+                    
                     states.push(filtered)
                     
 

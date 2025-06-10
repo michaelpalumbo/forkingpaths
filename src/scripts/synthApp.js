@@ -3208,7 +3208,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // also send the current sharedSequencerState to the remote peer
             if(sharedSequencerState){
-                console.log('synthapp fun fun')
                 // console.log('\n\nsending sharedSequencerState to remote peer')
                 // console.log(sharedSequencerState)
                 // sendDataChannelMessage({
@@ -3658,7 +3657,6 @@ document.addEventListener("DOMContentLoaded", function () {
         switch(event.data.cmd){
 
             case 'requestCurrentPatchHistory':
-                console.log(event.data.cmd)
                 sendMsgToHistoryApp({
                     appID: 'forkingPathsMain',
                     cmd: 'reDrawHistoryGraph',
@@ -3671,13 +3669,13 @@ document.addEventListener("DOMContentLoaded", function () {
                 sendDataChannelMessage(event.data)
 
                 if(event.data.action === 'syncSequencerOnNewPeerConnection'){
-                    console.log('snared!!!')
+                 
                     sharedSequencerState = event.data.payload
                 }
 
             break
             case 'historySequencerReady':
-                console.log('patchHistory @ historySequencerReady', patchHistory)
+                
                 sendMsgToHistoryApp({
                     appID: 'forkingPathsMain',
                     cmd: 'reDrawHistoryGraph',
@@ -3740,7 +3738,7 @@ document.addEventListener("DOMContentLoaded", function () {
             case 'loadPatchHistory':
     
                 if(event.data.source === 'file'){
-                    console.log('loading patchHistory from file', event.data)
+                    
                     loadPatchHistory(event.data.arrayBuffer)
                 } else {
                     console.log('trying to load patchHistory from database', event.data)
@@ -3790,7 +3788,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     patchHistory.sequencer = event.data.data
                 });
 
-                console.log(event.data.data)
                 // sharedSequencerState = event.data.data
 
             break
