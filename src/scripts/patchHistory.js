@@ -4626,30 +4626,46 @@ document.addEventListener("DOMContentLoaded", async () => {
         let payload = data.payload
         
         // Scale to local window
-        const localX = (payload.x / payload.dimensions[0]) * window.innerWidth;
-        const localY = (payload.y / payload.dimensions[1]) * window.innerHeight;
+        // const localX = (payload.x / payload.dimensions[0]) * window.innerWidth;
+        // const localY = (payload.y / payload.dimensions[1]) * window.innerHeight;
 
         // Store state
-        peerPointers[remotePeerID] = { x: localX, y: localY, name: remotePeerID, color: 'red' };
+        // peerPointers[remotePeerID] = { x: localX, y: localY, name: remotePeerID, color: 'red' };
+
+        peerPointers[remotePeerID] = {
+            remoteX: payload.x,
+            remoteY: payload.y,
+            remoteW: payload.dimensions[0],
+            remoteH: payload.dimensions[1],
+            name: remotePeerID,
+            color: 'red'
+        };
 
         // Redraw
         redrawPeerCursors();
     }
 
     let remoteClick = false
-    function redrawPeerCursors(click) {
+    function redrawPeerCursors() {
         ctx.clearRect(0, 0,  UI.remote.canvas.width,  UI.remote.canvas.height);
 
         for (const peerId in peerPointers) {
             const p = peerPointers[peerId];
 
+            // scale remote window to local window and place mousePos within
+            const localX = (p.remoteX / p.remoteW) * window.innerWidth;
+            const localY = (p.remoteY / p.remoteH) * window.innerHeight;
+
+            console.log(`localY=${localY}, window.innerHeight=${window.innerHeight}`);
+
             // Draw dot
             ctx.beginPath();
-            ctx.arc(p.x, p.y, 10, 0, Math.PI * 2);
+            ctx.arc(localX, localY, 10, 0, Math.PI * 2);
             ctx.fillStyle = 'red';
+            // if remote peer clicked the mouse, show a border
             if(remoteClick){
-                ctx.lineWidth = 10;       // thickness of border
-                ctx.strokeStyle = 'black'; // border color
+                ctx.lineWidth = 10;       
+                ctx.strokeStyle = 'black'; 
                 ctx.stroke();
             }
             ctx.fill();
@@ -4657,7 +4673,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             // Draw name
             ctx.font = '16px sans-serif';
             ctx.fillStyle = 'black';
-            ctx.fillText(p.name, p.x + 8, p.y - 8);
+            ctx.fillText(p.name, localX + 8, localY - 8);
         }
     }
 
