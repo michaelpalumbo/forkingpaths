@@ -2412,12 +2412,15 @@ document.addEventListener("DOMContentLoaded", function () {
             return
         };
 
+        UI.draw.canvasStrokes = strokes 
+
         const ctx = UI.draw.ctx; // Your canvas 2D context
         const canvas = UI.draw.canvas;
 
         // 1. Clear the canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+        console.log(strokes)
         // 2. Loop through each stroke
         for (const stroke of strokes) {
             if (!stroke.points || stroke.points.length < 2) continue;
@@ -3671,20 +3674,25 @@ document.addEventListener("DOMContentLoaded", function () {
         switch(event.data.cmd){
 
             case 'remotePeerHistoryMousePosition':
-                peerPointerDataChannel.send(JSON.stringify({
-                    viewport: 'patchHistoryWindow',
-                    peerID: thisPeerID,
-                    action: 'position',
-                    payload: event.data.payload
-                }))
+                if (peerPointerDataChannel && peerPointerDataChannel.readyState === "open") {
+                    peerPointerDataChannel.send(JSON.stringify({
+                        viewport: 'patchHistoryWindow',
+                        peerID: thisPeerID,
+                        action: 'position',
+                        payload: event.data.payload
+                    }))
+                }
             break
 
             case 'remotePeerHistoryMouseClick':
-                peerPointerDataChannel.send(JSON.stringify({
+                if (peerPointerDataChannel && peerPointerDataChannel.readyState === "open") {
+                    peerPointerDataChannel.send(JSON.stringify({
                     viewport: 'patchHistoryWindow',
                     peerID: thisPeerID,
                     action: 'click',
                 }))
+                }
+
             break
 
             
