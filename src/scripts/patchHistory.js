@@ -1007,8 +1007,22 @@ document.addEventListener("DOMContentLoaded", async () => {
             switch (event.data.cmd){
 
                 case 'remotePeerHistoryMousePosition':
-                    console.log(event.data)
-                    updatePeerCursor(event.data.data)
+                    switch(event.data.data.action){
+
+                        case 'position':
+                            updatePeerCursor(event.data.data)
+                        break
+
+                        case 'click':
+                            remoteClick = true
+                            redrawPeerCursors()
+                            // remove the cursor's clicked indicator after timeout
+                            setTimeout(() => {
+                                remoteClick = false
+                                redrawPeerCursors()
+                            }, 400);
+                        break
+                    }
                 break
                 case "sequencerModificationCheck":
                     
@@ -4591,6 +4605,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         })
     })
 
+    document.addEventListener('click', (event) => {
+        // console.log(x, y)
+        sendToMainApp({  
+            cmd: 'remotePeerHistoryMouseClick', 
+        })
+    })
+
 
     const ctx = UI.remote.canvas.getContext('2d')
 
@@ -4603,7 +4624,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     function updatePeerCursor(data) {
         let remotePeerID = data.peerID
         let payload = data.payload
-        console.log(payload.x, payload.y);
+        
         // Scale to local window
         const localX = (payload.x / payload.dimensions[0]) * window.innerWidth;
         const localY = (payload.y / payload.dimensions[1]) * window.innerHeight;
@@ -4615,7 +4636,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         redrawPeerCursors();
     }
 
-    function redrawPeerCursors() {
+    let remoteClick = false
+    function redrawPeerCursors(click) {
         ctx.clearRect(0, 0,  UI.remote.canvas.width,  UI.remote.canvas.height);
 
         for (const peerId in peerPointers) {
@@ -4623,25 +4645,22 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             // Draw dot
             ctx.beginPath();
-            ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
-            ctx.fillStyle = p.color || 'red';
+            ctx.arc(p.x, p.y, 10, 0, Math.PI * 2);
+            ctx.fillStyle = 'red';
+            if(remoteClick){
+                ctx.lineWidth = 10;       // thickness of border
+                ctx.strokeStyle = 'black'; // border color
+                ctx.stroke();
+            }
             ctx.fill();
 
             // Draw name
-            ctx.font = '12px sans-serif';
-            ctx.fillStyle = 'white';
+            ctx.font = '16px sans-serif';
+            ctx.fillStyle = 'black';
             ctx.fillText(p.name, p.x + 8, p.y - 8);
         }
     }
 
-
-    function showPeerClick(peerId) {
-        // const dot = document.querySelector(`#peer-cursor .cursor-dot`);
-        // dot.classList.add('clicked');
-        // setTimeout(() => {
-        //     dot.classList.remove('clicked');
-        // }, 400);
-    }
 
 
 })

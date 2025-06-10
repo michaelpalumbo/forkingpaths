@@ -3375,7 +3375,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 } else {
                     console.warn("Sync message received but state incomplete — skipping update.");
-                      location.reload()
+                    location.reload()
                 }
 
             } catch (error) {
@@ -3399,7 +3399,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 case 'patchHistoryWindow':
                     // console.log('remote peer mouse pos in patchHistory window', msg.payload)
-
                     sendMsgToHistoryApp({
                         appID: 'forkingPathsMain',
                         cmd: 'remotePeerHistoryMousePosition',
@@ -3675,9 +3674,20 @@ document.addEventListener("DOMContentLoaded", function () {
                 peerPointerDataChannel.send(JSON.stringify({
                     viewport: 'patchHistoryWindow',
                     peerID: thisPeerID,
+                    action: 'position',
                     payload: event.data.payload
                 }))
             break
+
+            case 'remotePeerHistoryMouseClick':
+                peerPointerDataChannel.send(JSON.stringify({
+                    viewport: 'patchHistoryWindow',
+                    peerID: thisPeerID,
+                    action: 'click',
+                }))
+            break
+
+            
 
             case 'requestCurrentPatchHistory':
                 sendMsgToHistoryApp({
