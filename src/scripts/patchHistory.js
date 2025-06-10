@@ -1051,6 +1051,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
                         break
 
+                        case 'bpmUpdate':
+                            setBPM(event.data.data.payload)
+                            UI.sequencer.control.bpm.value = event.data.data.payload
+                        break
+
                     }
                 break
                 case 'highlightHistoryNode':
@@ -3439,8 +3444,21 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Listen for slider changes
     UI.sequencer.control.bpm.addEventListener('input', (event) => {
-        let bpm = parseInt(event.target.value, 10)
+        
+        setBPM(event.target.value)
 
+        // send to remote
+        if(event.isTrusted){
+            sendToMainApp({  
+                cmd: 'syncPeerSequencer', 
+                action: 'bpmUpdate',
+                payload: event.target.value
+            })
+        }
+    });
+
+    function setBPM(rawValue){
+        let bpm = parseInt(rawValue, 10)
         const update = {
             cmd: 'updateSequencer',
             setting: 'bpm',
@@ -3454,7 +3472,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         bpmValue.textContent = bpm; // Display the current BPM
         transport.bpm.value = bpm; // Dynamically update the BPM
 
-    });
+    }
 
     let isPlaying = false;
 
