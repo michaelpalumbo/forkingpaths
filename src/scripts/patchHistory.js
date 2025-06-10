@@ -1077,11 +1077,11 @@ document.addEventListener("DOMContentLoaded", async () => {
                     })
                     
                     ws.send(update);
-                    if(patchHistory && patchHistory.sequencer){
-                        bpmValue.textContent = patchHistory.sequencer.bpm; // Display the current BPM
-                        transport.bpm.value = patchHistory.sequencer.bpm; // Dynamically update the BPM
+                    // if(patchHistory && patchHistory.sequencer){
+                    //     bpmValue.textContent = patchHistory.sequencer.bpm; // Display the current BPM
+                    //     transport.bpm.value = patchHistory.sequencer.bpm; // Dynamically update the BPM
 
-                    }
+                    // }
 
 
 
@@ -2260,7 +2260,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // function to modify selectmenu
     function modifyGestureParamAssign(){
-        if(!patchHistory){
+        if(!patchHistory || !patchHistory.synthFile){
             return
         }
         UI.gestureEditor.assignToParam.innerHTML = '';

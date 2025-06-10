@@ -70,6 +70,15 @@ let virtualElements = {}
 let currentIndex = 0;
 let patchHistoryWindow;
 
+// shared sequencer settings (shared between peers)
+let sharedSequencerState = {
+    tableData: [],
+    modes: {},
+    bpm: null,
+    isPlaying: null,
+    modified: false
+}
+
 // * new automerge implementation
 let Automerge;
 let amDoc = null
@@ -1924,7 +1933,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     // Load a version from the DAG
     async function loadVersion(targetHash, branch, fromPeer, fromPeerSequencer) {
-        
         // store the hash and branch for if a new peer joins
         // newPeerHash = targetHash
         // newPeerBranch = branch
@@ -3204,7 +3212,30 @@ document.addEventListener("DOMContentLoaded", function () {
             };
             sendDataChannelMessage(message)
 
-            
+            // ask history app if sequencer has been modified at all in this session, if it has, it will bundle the state and send back here to be passed along to the peer
+
+            sendMsgToHistoryApp({
+                appID: 'forkingPathsMain',
+                cmd: 'sequencerModificationCheck' 
+            })
+
+
+            // also send the current sharedSequencerState to the remote peer
+            // if(sharedSequencerState.modified){
+            //     console.log('\n\nsending sharedSequencerState to remote peer')
+            //     console.log(sharedSequencerState)
+            //     sendDataChannelMessage({
+            //         cmd: 'sharedSequencerState',
+            //         payload: sharedSequencerState
+            //     })
+            //     // sendMsgToHistoryApp({
+            //     //     appID: 'forkingPathsMain',
+            //     //     cmd: 'syncPeerSequencer',
+            //     //     action: 'sharedSequencerState',
+            //     //     data: sharedSequencerState
+            //     // })
+            // }
+
 
             // ensure that new peer loads the current state. 
             // const msg = {
@@ -3288,12 +3319,27 @@ document.addEventListener("DOMContentLoaded", function () {
                             break
 
                             case 'syncPeerSequencer':
+                                
                                 // relay the message to the history app
                                 sendMsgToHistoryApp({
                                     appID: 'forkingPathsMain',
                                     cmd: msg.cmd,
                                     data: msg
                                 })
+                            break
+
+                            case 'sharedSequencerState':
+                                // store the sequencer state
+                                sharedSequencerState = msg.payload
+
+                                // if history window is open, send the sequencer state
+                                sendMsgToHistoryApp({
+                                    appID: 'forkingPathsMain',
+                                    cmd: 'syncPeerSequencer',
+                                    action: 'sharedSequencerState',
+                                    data: sharedSequencerState
+                                })
+
                             break
                   
                         default:
@@ -3619,6 +3665,7 @@ document.addEventListener("DOMContentLoaded", function () {
             case 'syncPeerSequencer':
                 // send the sequencer update to remote peer
                 sendDataChannelMessage(event.data)
+
             break
             case 'historySequencerReady':
                 sendMsgToHistoryApp({
@@ -3627,6 +3674,17 @@ document.addEventListener("DOMContentLoaded", function () {
                     data: patchHistory
                         
                 })
+                
+                // if we have a remote peer and that peer has a sequencer state, send it to the local history window
+                if(sharedSequencerState){
+                    sendMsgToHistoryApp({
+                        appID: 'forkingPathsMain',
+                        cmd: 'syncPeerSequencer',
+                        action: 'sharedSequencerState',
+                        data: sharedSequencerState
+                    })
+                }
+                
                 
             break
 
@@ -3710,15 +3768,12 @@ document.addEventListener("DOMContentLoaded", function () {
             break
             case 'updateSequencer':
                 patchHistory = Automerge.change(patchHistory, (patchHistory) => {
-                    patchHistory.sequencer[event.data.setting] = event.data.data
+                    patchHistory.sequencer = event.data.data
                 });
 
-                sendMsgToHistoryApp({
-                    appID: 'forkingPathsMain',
-                    cmd: 'sequencerUpdate',
-                    data: patchHistory
-                        
-                })
+                console.log(event.data.data)
+                sharedSequencerState = event.data.data
+
             break
 
             case 'merge':
