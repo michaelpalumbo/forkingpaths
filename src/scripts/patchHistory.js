@@ -1116,8 +1116,21 @@ document.addEventListener("DOMContentLoaded", async () => {
                         break
 
                         case 'startStopSequencer':
+                            console.log('try to start')
+
+                                console.log(Tone.context.state)              
+                            if(Tone.context.state != 'running'){
+                                UI.sequencer.sync.popup.style.display = 'block';
+                            } else {
+                                UI.sequencer.control.startStop.click()
+                            }
+                            //     console.log('isPlaying')
+                            //     // syncd sequencer playback confirmation modal (opens on load if sequencer state from peer and sequencer is currently running)
+                            //     // we use this so that the player starts the audio context with a gesture (otherwise the browser blocks the sequencer start)
+                            //     
+                            // }
                             // set the state of the sequencer
-                            UI.sequencer.control.startStop.click()
+                            
                         break
 
                         case 'stepLengthFunctionSelect':
@@ -1473,7 +1486,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         document.getElementById('startPlaybackButton').addEventListener('click', async () => {
             // temporarily set isPlaying to false
-            isPlaying = !isPlaying
+            isPlaying = false
             startStopSequencer()
             UI.sequencer.sync.popup.style.display = 'none';  // hide modal
         });
