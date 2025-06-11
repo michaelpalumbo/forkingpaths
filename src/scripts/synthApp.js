@@ -3743,10 +3743,10 @@ document.addEventListener("DOMContentLoaded", function () {
                     cmd: 'setRoom',
                     room: room
                 })
-                // get room info (which includes the sequencer state of the remote peer)
-                ws.send(JSON.stringify({
-                    cmd: 'getSequencerState'
-                }))
+                // // get room info (which includes the sequencer state of the remote peer)
+                // ws.send(JSON.stringify({
+                //     cmd: 'getSequencerState'
+                // }))
                 
                 // sendMsgToHistoryApp({
                 //     appID: 'forkingPathsMain',

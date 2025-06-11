@@ -1009,7 +1009,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
                 case 'setRoom':
                     room = event.data.room
-                    console.log(room)
+                    
+                    if(room){
+                        console.log(room)
+                        ws.send(JSON.stringify({
+                            cmd: 'getSequencerState',
+                            room: room
+                        }))
+                    }
                 break
                 case 'remotePeerHistoryMousePosition':
                     switch(event.data.data.action){
@@ -1057,15 +1064,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
                 // this is part of the relay pipeline between this history window and the remote peer's history window
                 case 'syncPeerSequencer':
-                    console.log(event.data)
+                  
                     switch(event.data.data.action){
 
-                        case 'sharedSequencerState':
-                            console.log('snared!!!')
-
-                        break
                         case 'syncSequencerOnNewPeerConnection':
-                            console.log('syncQequencerOnNewPeerConnection!!!!')
                             let seqState = event.data.data.payload
                             // set sequencer table
                             seqState.tableData.forEach((step, index) => {
@@ -1391,6 +1393,13 @@ document.addEventListener("DOMContentLoaded", async () => {
                 cmd: 'historyWindowReady'
             });
 
+            // request current sequencer state
+            // console.log('room', room)
+            // ws.send(JSON.stringify({
+            //     cmd: 'getSequencerState',
+            //     room: room
+            // }))
+
         };
 
         ws.onmessage = (event) => {
@@ -1404,9 +1413,10 @@ document.addEventListener("DOMContentLoaded", async () => {
                     
                 break;
 
-                case 'roomsInfo':
-                    console.log(msg)
+                case 'sequencerState':
+                    console.log('sequencerState', msg.state)
                 break
+
             }
         };
 
