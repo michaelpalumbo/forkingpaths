@@ -3212,21 +3212,29 @@ document.addEventListener("DOMContentLoaded", function () {
             // also send the current sharedSequencerState to the remote peer
             if(sharedSequencerState){
                 console.log(sharedSequencerState)
-                // console.log('\n\nsending sharedSequencerState to remote peer')
+                console.log('\n\nsending sharedSequencerState to remote peer')
+
+                sendMsgToHistoryApp({
+                    appID: 'forkingPathsMain',
+                    cmd: 'syncPeerSequencer',
+                    action: 'sharedSequencerState',
+                    data: sharedSequencerState
+                })
+                
                 // console.log(sharedSequencerState)
                 // sendDataChannelMessage({
                 //     cmd: 'sharedSequencerState',
                 //     payload: sharedSequencerState
                 // })
-                sendMsgToHistoryApp({
-                    appID: 'forkingPathsMain',
-                    cmd: 'syncPeerSequencer',
-                    data: {
-                        action: 'syncSequencerOnNewPeerConnection',
-                        payload: sharedSequencerState
-                    }
+                // sendMsgToHistoryApp({
+                //     appID: 'forkingPathsMain',
+                //     cmd: 'sequencerModificationCheck',
+                    // data: {
+                    //     action: 'syncSequencerOnNewPeerConnection',
+                    //     payload: sharedSequencerState
+                    // }
  
-                })
+                // })
             } else {
                 // ask history app if sequencer has been modified at all in this session, if it has, it will bundle the state and send back here to be passed along to the peer
                 sendMsgToHistoryApp({
@@ -3327,19 +3335,20 @@ document.addEventListener("DOMContentLoaded", function () {
                                 })
                             break
 
-                            // case 'sharedSequencerState':
-                            //     // store the sequencer state
-                            //     sharedSequencerState = msg.payload
+                            case 'sharedSequencerState':
+                                // store the sequencer state
+                                sharedSequencerState = msg.payload
 
-                            //     // if history window is open, send the sequencer state
-                            //     sendMsgToHistoryApp({
-                            //         appID: 'forkingPathsMain',
-                            //         cmd: 'syncPeerSequencer',
-                            //         action: 'sharedSequencerState',
-                            //         data: sharedSequencerState
-                            //     })
+                                console.log(sharedSequencerState)
+                                // if history window is open, send the sequencer state
+                                sendMsgToHistoryApp({
+                                    appID: 'forkingPathsMain',
+                                    cmd: 'syncPeerSequencer',
+                                    action: 'sharedSequencerState',
+                                    data: sharedSequencerState
+                                })
 
-                            // break
+                            break
                   
                         default:
                             console.warn("Unknown custom message cmd:", msg.cmd);
@@ -3714,7 +3723,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     
                     sharedSequencerState = event.data.payload
                 }
-                // send the sequencer update to remote peer
+                // // send the sequencer update to remote peer
                 sendDataChannelMessage(event.data)
 
 
@@ -3738,13 +3747,17 @@ document.addEventListener("DOMContentLoaded", function () {
                 
                 // if we have a remote peer and that peer has a sequencer state, send it to the local history window
                 if(sharedSequencerState){
-                    sendMsgToHistoryApp({
-                        appID: 'forkingPathsMain',
-                        cmd: 'syncPeerSequencer',
-                        action: 'syncSequencerOnNewPeerConnection',
-                        data: sharedSequencerState
-                    })
-                }
+
+                sendMsgToHistoryApp({
+                    appID: 'forkingPathsMain',
+                    cmd: 'sequencerModificationCheck',
+                    // data: {
+                    //     action: 'syncSequencerOnNewPeerConnection',
+                    //     payload: sharedSequencerState
+                    // }
+ 
+                })
+            }
                 
                 
             break

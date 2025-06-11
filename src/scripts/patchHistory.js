@@ -1039,13 +1039,13 @@ document.addEventListener("DOMContentLoaded", async () => {
                                     sequenceOrderSelect: UI.sequencer.modes.sequenceOrderSelect.value,
                                     stepLengthFunctionSelect: UI.sequencer.modes.stepLengthFunctionSelect.value
                                 },
-                                rawBPM: rawBPM,
+                                rawBPM: UI.sequencer.control.bpm.value,
                                 isPlaying: isPlaying,
                             }
                         }
                         
                         sendToMainApp(msg)
-
+                        console.log('sequencer has been modified, sending sequencer data to main thread', msg)
                         // send back to main app to be sent to remote peer
                     }
                 break
@@ -1055,8 +1055,35 @@ document.addEventListener("DOMContentLoaded", async () => {
                     console.log(event.data)
                     switch(event.data.data.action){
 
+                        case 'sharedSequencerState':
+                            console.log('snared!!!')
+                        break
                         case 'syncSequencerOnNewPeerConnection':
-                            console.log(event.data.data)
+                            console.log('syncQequencerOnNewPeerConnection!!!!')
+                            let seqState = event.data.data.payload
+                            // set sequencer table
+                            seqState.tableData.forEach((step, index) => {
+                                console.log(index, step)
+                                if (step.node) {
+                                    // check if step node is a gesture, we need to hydrate the sequence first
+                                    // console.log(step)
+                                    if(step.node.label.split(' ')[0] === 'gesture'){
+                                    
+                                        sendToMainApp(
+                                            {
+                                                cmd: "hydrateGesture",
+                                                data: { hash: step.node.id, branch: step.node.branch, index: index },
+                                            }
+                                        ); 
+                                    }
+                        
+                                    
+                                    updateStepRow(index, step.node, null, step.stepLength, true);
+                                } else {
+                                    clearStepRow(index); // you'd need to define this if it doesn't already exist
+                                }
+                            });
+
 
                         break
                         case 'updateStepRow':
@@ -3521,9 +3548,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     });
 
-    let rawBPM
     function setBPM(rawValue){
-        rawBPM = rawValue
         let bpm = parseInt(rawValue, 10)
         const update = {
             cmd: 'updateSequencer',
