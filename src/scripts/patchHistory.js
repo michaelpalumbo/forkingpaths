@@ -508,7 +508,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             
             UI.sequencer.modes.stepLengthFunctionSelect.value = "userEditable"
             setSequencerSaveButtonState(false)
-            saveSequencerTable();
 
             // update the remote:
             sendToMainApp({  
@@ -584,7 +583,19 @@ document.addEventListener("DOMContentLoaded", async () => {
     function updateStepRow(index, nodeData, gestureData = null, stepLength, fromRemote = false) {
 
 
-
+        if(!fromRemote){
+                       
+            sendToMainApp({  
+                cmd: 'syncPeerSequencer', 
+                action: 'updateStepRow',
+                payload: {
+                    index: index,
+                    nodeData: nodeData,
+                    gestureData: gestureData,
+                    stepLength, stepLength
+                }
+            })
+        }
 
 
         const row = document.querySelectorAll("#dynamicTableBody2 tr")[index];
@@ -4717,14 +4728,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         setStepLengthFunction('userEditable')
         UI.sequencer.modes.stepLengthFunctionSelect.value = 'userEditable'
     }, 300);
-    
-    function syncPeerSequencer(cmd, data){
-        //! remember on the remote peer, when receiving any updates that modify the sequence, to also call setSequencerSaveButtonState(false)
-        // switch(cmd){
-        //     case ''
-        // }
-        
-    }
+
 
     // ensure history graph is always rendered (sometimes it doesn't render on page load, due to race conditions. see issue #90 in repo)
     setInterval(() => {
