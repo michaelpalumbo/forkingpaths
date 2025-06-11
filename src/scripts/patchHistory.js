@@ -515,7 +515,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     stepLength: select.value
                 }
             })
-            sequencerHasBeenModified = true
+            updateSequencerStateInServer()
 
           });
         });
@@ -581,7 +581,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         // first send update to any remote peer
         if(!fromRemote){
-            sequencerHasBeenModified = true
+            
             sendToMainApp({  
                 cmd: 'syncPeerSequencer', 
                 action: 'updateStepRow',
@@ -661,7 +661,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         // first send update to any remote peer
         if(!fromRemote){
-            sequencerHasBeenModified = true
+            // updateSequencerStateInServer()
             sendToMainApp({  
                 cmd: 'syncPeerSequencer', 
                 action: 'clearStepRow',
@@ -712,7 +712,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         
         // first send update to any remote peer
         if(!fromRemote){
-            sequencerHasBeenModified = true
+            // updateSequencerStateInServer()
             sendToMainApp({  
                 cmd: 'syncPeerSequencer', 
                 action: 'clearSequencer'
@@ -1026,28 +1026,28 @@ document.addEventListener("DOMContentLoaded", async () => {
                 break
                 case "sequencerModificationCheck":
                     
-                    if(sequencerHasBeenModified){
-                        // get the sequencer state
-                        let msg = {
-                            cmd: 'syncPeerSequencer',
-                            action: 'syncSequencerOnNewPeerConnection',
-                            payload: {
-                                tableData: storedSequencerTable,
-                                modes: {
-                                    playBackModeSelector: UI.sequencer.modes.playBackModeSelector.value,
-                                    emptyStepMode: UI.sequencer.modes.emptyStepMode.value,
-                                    sequenceOrderSelect: UI.sequencer.modes.sequenceOrderSelect.value,
-                                    stepLengthFunctionSelect: UI.sequencer.modes.stepLengthFunctionSelect.value
-                                },
-                                rawBPM: UI.sequencer.control.bpm.value,
-                                isPlaying: isPlaying,
-                            }
-                        }
+                    // if(sequencerHasBeenModified){
+                    //     // get the sequencer state
+                    //     let msg = {
+                    //         cmd: 'syncPeerSequencer',
+                    //         action: 'syncSequencerOnNewPeerConnection',
+                    //         payload: {
+                    //             tableData: storedSequencerTable,
+                    //             modes: {
+                    //                 playBackModeSelector: UI.sequencer.modes.playBackModeSelector.value,
+                    //                 emptyStepMode: UI.sequencer.modes.emptyStepMode.value,
+                    //                 sequenceOrderSelect: UI.sequencer.modes.sequenceOrderSelect.value,
+                    //                 stepLengthFunctionSelect: UI.sequencer.modes.stepLengthFunctionSelect.value
+                    //             },
+                    //             rawBPM: UI.sequencer.control.bpm.value,
+                    //             isPlaying: isPlaying,
+                    //         }
+                    //     }
                         
-                        sendToMainApp(msg)
-                        console.log('sequencer has been modified, sending sequencer data to main thread', msg)
+                    //     sendToMainApp(msg)
+                    //     console.log('sequencer has been modified, sending sequencer data to main thread', msg)
                         // send back to main app to be sent to remote peer
-                    }
+                    // }
                 break
 
                 // this is part of the relay pipeline between this history window and the remote peer's history window
@@ -1057,6 +1057,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
                         case 'sharedSequencerState':
                             console.log('snared!!!')
+
                         break
                         case 'syncSequencerOnNewPeerConnection':
                             console.log('syncQequencerOnNewPeerConnection!!!!')
@@ -1392,6 +1393,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
                     
                 break;
+
+                case 'roomsInfo':
+                    console.log(msg)
+                break
             }
         };
 
@@ -1414,6 +1419,27 @@ document.addEventListener("DOMContentLoaded", async () => {
     connectWebSocket();
 
 
+    function updateSequencerStateInServer(){
+        console.log('will update in server')
+        // get the sequencer state
+        let msg = {
+            cmd: 'sequencerStateUpdate',
+            state: {
+                tableData: storedSequencerTable,
+                modes: {
+                    playBackModeSelector: UI.sequencer.modes.playBackModeSelector.value,
+                    emptyStepMode: UI.sequencer.modes.emptyStepMode.value,
+                    sequenceOrderSelect: UI.sequencer.modes.sequenceOrderSelect.value,
+                    stepLengthFunctionSelect: UI.sequencer.modes.stepLengthFunctionSelect.value
+                },
+                rawBPM: UI.sequencer.control.bpm.value,
+                isPlaying: isPlaying,
+            }
+        }
+
+        ws.send(JSON.stringify(msg))
+        
+    }
 
 
     // *
@@ -1777,7 +1803,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         storedSequencerTable = tableData
 
-
+        updateSequencerStateInServer()
         // localStorage.sequencerTable = tableData
         return tableData; // Return the table data
     }
@@ -2680,7 +2706,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
         // send to remote
         if(e.isTrusted){
-            sequencerHasBeenModified = true
+            updateSequencerStateInServer()
             sendToMainApp({  
                 cmd: 'syncPeerSequencer', 
                 action: 'playBackModeSelector',
@@ -2696,7 +2722,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         // send to remote
         if(event.isTrusted){
-            sequencerHasBeenModified = true
+            updateSequencerStateInServer()
             sendToMainApp({  
                 cmd: 'syncPeerSequencer', 
                 action: 'emptyStepMode',
@@ -3539,7 +3565,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         // send to remote
         if(event.isTrusted){
-            sequencerHasBeenModified = true
+            updateSequencerStateInServer()
             sendToMainApp({  
                 cmd: 'syncPeerSequencer', 
                 action: 'bpmUpdate',
@@ -3570,7 +3596,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     UI.sequencer.control.startStop.addEventListener("click", async (event) => {
         // use the event.isTrusted to ensure that the click came from a user click (since we also programmatically cause a click when a remote peer starts the sequencer -- search for 'UI.sequencer.control.startStop.click()' to see where/why)
         if(event.isTrusted){
-            sequencerHasBeenModified = true
+            // updateSequencerStateInServer()
             sendToMainApp({  
                 cmd: 'syncPeerSequencer', 
                 action: 'startStopSequencer'
@@ -3638,6 +3664,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 isPlaying = !isPlaying;
             break
         }
+        updateSequencerStateInServer()
         
     });
 
@@ -3877,7 +3904,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         sendToMainApp(update)
 
         if(event.isTrusted){
-            sequencerHasBeenModified = true
+            updateSequencerStateInServer()
             sendToMainApp({  
                 cmd: 'syncPeerSequencer', 
                 action: 'sequenceOrderSelect',
@@ -3902,7 +3929,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         sendToMainApp(update)
  
         if(event.isTrusted){
-            sequencerHasBeenModified = true
+            updateSequencerStateInServer()
             sendToMainApp({  
                 cmd: 'syncPeerSequencer', 
                 action: 'stepLengthFunctionSelect',
