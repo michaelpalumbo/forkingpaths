@@ -1406,54 +1406,64 @@ document.addEventListener("DOMContentLoaded", async () => {
 
                 case 'sequencerState':
                     console.log('sequencerState', msg.state)
-                    if(msg.state && !sequencerSyncdWithServer){
+                    if(Object.keys(msg.state).length === 0 && msg.state){
+                        // this is an edge case, but happens if the synthApp refreshes or closes and the history app doesn't
+                        resetSequencerTable()
+                        sequencerSyncdWithServer = true
+                    }
+                    else if(msg.state && !sequencerSyncdWithServer){
                         // prevent sync with server more than once
                         sequencerSyncdWithServer = true
-                        // set set this here so that if msg.state.isPlaying===true, then isPlaying will be set in the saveSequencerTable() updates below
-                        if(msg.state.isPlaying){
-                            isPlaying = msg.state.isPlaying
-                        }
-                        let table = msg.state.tableData
-                        // set sequencer table
-                        table.forEach((step, index) => {
-                            
-                            if (step.node) {
-                                // check if step node is a gesture, we need to hydrate the sequence first
-                                // console.log(step)
-                                if(step.node.label.split(' ')[0] === 'gesture'){
-                                
-                                    sendToMainApp(
-                                        {
-                                            cmd: "hydrateGesture",
-                                            data: { hash: step.node.id, branch: step.node.branch, index: index },
-                                        }
-                                    ); 
-                                }
-                    
-                                
-                                updateStepRow(index, step.node, null, step.stepLength, true);
-                            } else {
-                                clearStepRow(index); // you'd need to define this if it doesn't already exist
-                            }
-                        });
-                        // set the modes
-                        Object.keys(msg.state.modes).forEach((mode, index)=>{
-                            // update value
-                            UI.sequencer.modes[mode].value = msg.state.modes[mode]
-                            // trigger change event to update them in the system
-                            const event = new Event('change', { bubbles: true });
-                            UI.sequencer.modes[mode].dispatchEvent(event);
-                        })
-                        // set the BPM
-                        setBPM(msg.state.rawBPM)
 
-                        // set the playback state (i.e. start it if isPlaying===true)
-                        if(msg.state.isPlaying){
-                            console.log('isPlaying')
-                            // syncd sequencer playback confirmation modal (opens on load if sequencer state from peer and sequencer is currently running)
-                            // we use this so that the player starts the audio context with a gesture (otherwise the browser blocks the sequencer start)
-                            UI.sequencer.sync.popup.style.display = 'block';
-                        }
+                        
+
+                        
+                            // set set this here so that if msg.state.isPlaying===true, then isPlaying will be set in the saveSequencerTable() updates below
+                            if(msg.state.isPlaying){
+                                isPlaying = msg.state.isPlaying
+                            }
+                            let table = msg.state.tableData
+                            // set sequencer table
+                            table.forEach((step, index) => {
+                                
+                                if (step.node) {
+                                    // check if step node is a gesture, we need to hydrate the sequence first
+                                    // console.log(step)
+                                    if(step.node.label.split(' ')[0] === 'gesture'){
+                                    
+                                        sendToMainApp(
+                                            {
+                                                cmd: "hydrateGesture",
+                                                data: { hash: step.node.id, branch: step.node.branch, index: index },
+                                            }
+                                        ); 
+                                    }
+                        
+                                    
+                                    updateStepRow(index, step.node, null, step.stepLength, true);
+                                } else {
+                                    clearStepRow(index); // you'd need to define this if it doesn't already exist
+                                }
+                            });
+                            // set the modes
+                            Object.keys(msg.state.modes).forEach((mode, index)=>{
+                                // update value
+                                UI.sequencer.modes[mode].value = msg.state.modes[mode]
+                                // trigger change event to update them in the system
+                                const event = new Event('change', { bubbles: true });
+                                UI.sequencer.modes[mode].dispatchEvent(event);
+                            })
+                            // set the BPM
+                            setBPM(msg.state.rawBPM)
+
+                            // set the playback state (i.e. start it if isPlaying===true)
+                            if(msg.state.isPlaying){
+                                console.log('isPlaying')
+                                // syncd sequencer playback confirmation modal (opens on load if sequencer state from peer and sequencer is currently running)
+                                // we use this so that the player starts the audio context with a gesture (otherwise the browser blocks the sequencer start)
+                                UI.sequencer.sync.popup.style.display = 'block';
+                            }
+                        
                     }
                     
                 break
