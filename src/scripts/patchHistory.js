@@ -413,7 +413,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     stepLengthFunction: 'userEditable',
                     playBack: 'mono',
                     emptyStep: 'passThrough',
-                    order: 'player-defined'
+                    order: 'forward'
                 },
                 stepLength: '4n'
             }
@@ -2001,7 +2001,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     function setSequenceOrder(order){
         sequencerData.settings.modes.order = order
         switch(order){
-            case 'player-defined':
+            case 'forward':
                 // createSequencerTable(storedSequencerTable)
             break
             case 'topologicalSort':
@@ -2010,7 +2010,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             case 'random':
                 // shuffleSequencerStepOrder()
                 // // set menu back to user-defined
-                // UI.sequencer.UI.sequencer.modes.sequenceOrderSelect.value = 'player-defined'
+                // UI.sequencer.UI.sequencer.modes.sequenceOrderSelect.value = 'forward'
             break
             default: console.log(order)
         }
