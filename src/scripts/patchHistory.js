@@ -361,6 +361,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                 },
                 table: {
                     body: document.getElementById("dynamicTableBody2")
+                },
+                sync: {
+                    popup: document.getElementById('playbackModal')
                 }
 
 
@@ -580,20 +583,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     function updateStepRow(index, nodeData, gestureData = null, stepLength, fromRemote = false) {
 
-        // first send update to any remote peer
-        if(!fromRemote){
-            
-            sendToMainApp({  
-                cmd: 'syncPeerSequencer', 
-                action: 'updateStepRow',
-                payload: {
-                    index: index,
-                    nodeData: nodeData,
-                    gestureData: gestureData,
-                    stepLength: stepLength
-                }
-            })
-        }
+
 
 
 
@@ -1419,7 +1409,10 @@ document.addEventListener("DOMContentLoaded", async () => {
                     if(msg.state && !sequencerSyncdWithServer){
                         // prevent sync with server more than once
                         sequencerSyncdWithServer = true
-                    
+                        // set set this here so that if msg.state.isPlaying===true, then isPlaying will be set in the saveSequencerTable() updates below
+                        if(msg.state.isPlaying){
+                            isPlaying = msg.state.isPlaying
+                        }
                         let table = msg.state.tableData
                         // set sequencer table
                         table.forEach((step, index) => {
@@ -1452,17 +1445,29 @@ document.addEventListener("DOMContentLoaded", async () => {
                             UI.sequencer.modes[mode].dispatchEvent(event);
                         })
                         // set the BPM
-                        
                         setBPM(msg.state.rawBPM)
 
                         // set the playback state (i.e. start it if isPlaying===true)
-
+                        if(msg.state.isPlaying){
+                            console.log('isPlaying')
+                            // syncd sequencer playback confirmation modal (opens on load if sequencer state from peer and sequencer is currently running)
+                            // we use this so that the player starts the audio context with a gesture (otherwise the browser blocks the sequencer start)
+                            UI.sequencer.sync.popup.style.display = 'block';
+                        }
                     }
                     
                 break
 
             }
         };
+
+        document.getElementById('startPlaybackButton').addEventListener('click', async () => {
+            // temporarily set isPlaying to false
+            isPlaying = !isPlaying
+            startStopSequencer()
+            UI.sequencer.sync.popup.style.display = 'none';  // hide modal
+        });
+
 
         ws.onclose = () => {
             console.log('WebSocket disconnected. Attempting to reconnect...');
@@ -1501,7 +1506,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                 isPlaying: isPlaying,
             }
         }
-        console.log('will update in server', msg)
         ws.send(JSON.stringify(msg))
         
     }
@@ -3667,8 +3671,11 @@ document.addEventListener("DOMContentLoaded", async () => {
                 action: 'startStopSequencer'
             })
         }
+        startStopSequencer()
+    });
 
-        // we have this here to prevent both modes running simultaneously (which can happen if anything glitches out)
+    async function startStopSequencer(){
+         // we have this here to prevent both modes running simultaneously (which can happen if anything glitches out)
         transport.stop();
         loop.stop();
         stopPolyphonicSequencer();
@@ -3730,9 +3737,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             break
         }
         updateSequencerStateInServer()
-        
-    });
-
+    }
     // Clear sequencer
     UI.sequencer.control.clear.addEventListener("click", async () => {
         // stop the sequencer

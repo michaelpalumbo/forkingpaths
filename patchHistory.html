@@ -327,9 +327,14 @@
         <div id="helpOverlayContent"></div>
       </div>
 
-      <canvas id="peerCursorsCanvas" style="position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:9999;"></canvas>
+    <!-- peer cursor canvas -->
+    <canvas id="peerCursorsCanvas" style="position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:9999;"></canvas>
 
-      
+    <!-- syncd sequencer playback confirmation modal (opens on load if sequencer state from peer and sequencer is currently running) -->
+     <div id="playbackModal" style="display:none;">
+        <p>Sequencer is synced with peer and is currently running on their end. Your browser requires a click to enable the sequencer — click below to start.</p>
+        <button id="startPlaybackButton">Start Playback</button>
+    </div>
     <!-- <div class="peer-cursor" id="peer-cursor">
         <div class="cursor-dot"></div>
         <div class="cursor-name">Alice</div>
