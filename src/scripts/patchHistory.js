@@ -1415,6 +1415,31 @@ document.addEventListener("DOMContentLoaded", async () => {
 
                 case 'sequencerState':
                     console.log('sequencerState', msg.state)
+
+                    let table = msg.state.tableData
+                    // set sequencer table
+                    table.forEach((step, index) => {
+                        console.log(index, step)
+                        if (step.node) {
+                            // check if step node is a gesture, we need to hydrate the sequence first
+                            // console.log(step)
+                            if(step.node.label.split(' ')[0] === 'gesture'){
+                            
+                                sendToMainApp(
+                                    {
+                                        cmd: "hydrateGesture",
+                                        data: { hash: step.node.id, branch: step.node.branch, index: index },
+                                    }
+                                ); 
+                            }
+                
+                            
+                            updateStepRow(index, step.node, null, step.stepLength, true);
+                        } else {
+                            clearStepRow(index); // you'd need to define this if it doesn't already exist
+                        }
+                    });
+                    
                 break
 
             }
