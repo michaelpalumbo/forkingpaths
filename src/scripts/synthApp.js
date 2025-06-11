@@ -3729,15 +3729,25 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
             break
-            case 'historySequencerReady':
-                
+            case 'historyWindowReady':
+                console.log(thisPeerID, room)
                 sendMsgToHistoryApp({
                     appID: 'forkingPathsMain',
                     cmd: 'reDrawHistoryGraph',
-                    data: patchHistory
-                        
+                    data: patchHistory,
+                    // room: room
                 })
 
+                sendMsgToHistoryApp({
+                    appID: 'forkingPathsMain',
+                    cmd: 'setRoom',
+                    room: room
+                })
+                // get room info (which includes the sequencer state of the remote peer)
+                ws.send(JSON.stringify({
+                    cmd: 'getSequencerState'
+                }))
+                
                 // sendMsgToHistoryApp({
                 //     appID: 'forkingPathsMain',
                 //     cmd: 'syncPeerSequencer',
@@ -3746,18 +3756,18 @@ document.addEventListener("DOMContentLoaded", function () {
                 // })
                 
                 // if we have a remote peer and that peer has a sequencer state, send it to the local history window
-                if(sharedSequencerState){
+                // if(sharedSequencerState){
 
-                sendMsgToHistoryApp({
-                    appID: 'forkingPathsMain',
-                    cmd: 'sequencerModificationCheck',
-                    // data: {
-                    //     action: 'syncSequencerOnNewPeerConnection',
-                    //     payload: sharedSequencerState
-                    // }
+                // sendMsgToHistoryApp({
+                //     appID: 'forkingPathsMain',
+                //     cmd: 'sequencerModificationCheck',
+                //     // data: {
+                //     //     action: 'syncSequencerOnNewPeerConnection',
+                //     //     payload: sharedSequencerState
+                //     // }
  
-                })
-            }
+                // })
+            // }
                 
                 
             break
@@ -5870,6 +5880,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function setRoomInfo(){
         room = roomDetails.room
+
+        sendMsgToHistoryApp({
+            appID: 'forkingPathsMain',
+            cmd: 'setRoom',
+            room: room
+        })
+
         // get automerge running!
         if(!automergeRunning){
             // set room info in collab panel

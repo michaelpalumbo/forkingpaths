@@ -27,7 +27,8 @@ if(!localStorage.appSettings){
     // appSettings = localStorage.getItem('appSettings')
 }
 
-
+let thisPeerID
+let room
 
 let graphJSONstore
 let firstNode = null
@@ -1006,6 +1007,10 @@ document.addEventListener("DOMContentLoaded", async () => {
             // console.log(event.data)
             switch (event.data.cmd){
 
+                case 'setRoom':
+                    room = event.data.room
+                    console.log(room)
+                break
                 case 'remotePeerHistoryMousePosition':
                     switch(event.data.data.action){
 
@@ -1152,6 +1157,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
                 case 'reDrawHistoryGraph':
                     patchHistory = event.data.data
+                    // thisPeerID = event.data.peerID
+                    // room = event.data.room
+
+                    // console.log(thisPeerID, room)
                     // reDrawHistoryGraph(patchHistory)
                             // Send the elements to the server for rendering
                     const update = JSON.stringify({
@@ -1379,8 +1388,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             reconnectInterval = 1000; // reset interval on successful reconnect
            
             sendToMainApp({
-                cmd: 'historySequencerReady'
+                cmd: 'historyWindowReady'
             });
+
         };
 
         ws.onmessage = (event) => {
@@ -1420,10 +1430,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
     function updateSequencerStateInServer(){
-        console.log('will update in server')
+        
         // get the sequencer state
         let msg = {
             cmd: 'sequencerStateUpdate',
+            room: room,
             state: {
                 tableData: storedSequencerTable,
                 modes: {
@@ -1436,7 +1447,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 isPlaying: isPlaying,
             }
         }
-
+        console.log('will update in server', msg)
         ws.send(JSON.stringify(msg))
         
     }
