@@ -1377,6 +1377,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     let ws
     let reconnectInterval = 1000;
     let retryAttempts = 0
+    let sequencerSyncdWithServer = false
     function connectWebSocket() {
         ws = new WebSocket(VITE_WS_URL);
 
@@ -1415,30 +1416,48 @@ document.addEventListener("DOMContentLoaded", async () => {
 
                 case 'sequencerState':
                     console.log('sequencerState', msg.state)
-
-                    let table = msg.state.tableData
-                    // set sequencer table
-                    table.forEach((step, index) => {
-                        console.log(index, step)
-                        if (step.node) {
-                            // check if step node is a gesture, we need to hydrate the sequence first
-                            // console.log(step)
-                            if(step.node.label.split(' ')[0] === 'gesture'){
+                    if(msg.state && !sequencerSyncdWithServer){
+                        // prevent sync with server more than once
+                        sequencerSyncdWithServer = true
+                    
+                        let table = msg.state.tableData
+                        // set sequencer table
+                        table.forEach((step, index) => {
                             
-                                sendToMainApp(
-                                    {
-                                        cmd: "hydrateGesture",
-                                        data: { hash: step.node.id, branch: step.node.branch, index: index },
-                                    }
-                                ); 
+                            if (step.node) {
+                                // check if step node is a gesture, we need to hydrate the sequence first
+                                // console.log(step)
+                                if(step.node.label.split(' ')[0] === 'gesture'){
+                                
+                                    sendToMainApp(
+                                        {
+                                            cmd: "hydrateGesture",
+                                            data: { hash: step.node.id, branch: step.node.branch, index: index },
+                                        }
+                                    ); 
+                                }
+                    
+                                
+                                updateStepRow(index, step.node, null, step.stepLength, true);
+                            } else {
+                                clearStepRow(index); // you'd need to define this if it doesn't already exist
                             }
-                
-                            
-                            updateStepRow(index, step.node, null, step.stepLength, true);
-                        } else {
-                            clearStepRow(index); // you'd need to define this if it doesn't already exist
-                        }
-                    });
+                        });
+                        // set the modes
+                        Object.keys(msg.state.modes).forEach((mode, index)=>{
+                            // update value
+                            UI.sequencer.modes[mode].value = msg.state.modes[mode]
+                            // trigger change event to update them in the system
+                            const event = new Event('change', { bubbles: true });
+                            UI.sequencer.modes[mode].dispatchEvent(event);
+                        })
+                        // set the BPM
+                        
+                        setBPM(msg.state.rawBPM)
+
+                        // set the playback state (i.e. start it if isPlaying===true)
+
+                    }
                     
                 break
 
@@ -4669,7 +4688,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     setTimeout(() => {
         setStepLengthFunction('userEditable')
         UI.sequencer.modes.stepLengthFunctionSelect.value = 'userEditable'
-    }, 1500);
+    }, 300);
     
     function syncPeerSequencer(cmd, data){
         //! remember on the remote peer, when receiving any updates that modify the sequence, to also call setSequencerSaveButtonState(false)
