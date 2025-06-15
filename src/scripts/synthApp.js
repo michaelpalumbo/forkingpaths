@@ -400,7 +400,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     // Get the saved volume level from localStorage, default to 0.5 (50%)
-    const savedVolume = parseFloat(localStorage.getItem('volume')) // || config.audio.initialVolume;
+    let savedVolume = parseFloat(localStorage.getItem('volume')) // || config.audio.initialVolume;
+    // if its a new user, set it so they don't have to 
+    if(Number.isNaN(savedVolume)){
+        console.log('snared')
+        savedVolume = 0.5
+        localStorage.setItem('volume', 0.5)
+    }
 
     // Audio context
     const audioContext = new window.AudioContext();
