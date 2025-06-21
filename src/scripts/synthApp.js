@@ -728,9 +728,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         ms: 500,
                         traversalMode: 'Sequential'
                     },
-                    synth: {
-                        rnboDeviceCache: null,
-                    }
+                    synth: {}
                 });
                 console.log("No saved patchHistory found. Starting fresh:", patchHistoryKey);
                 await saveDocument(patchHistoryKey, Automerge.save(patchHistory));
@@ -1144,8 +1142,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 traversalMode: 'Sequential'
             },
             synth: {
-                rnboDeviceCache: null,
             },
+            synthFile: synthFile
 
         }
         if(synthFile){
@@ -3464,26 +3462,26 @@ document.addEventListener("DOMContentLoaded", function () {
 //* Functions that directly handle UI interactions
 //*
 
-    UI.panel.collaboration.recallMode.selectmenu.value = getVersionRecallMode();
+    // UI.panel.collaboration.recallMode.selectmenu.value = getVersionRecallMode();
 
-    UI.panel.collaboration.recallMode.selectmenu.addEventListener('change', (e) => {
-        localStorage.setItem('versionRecallMode', e.target.value);
-        collaborationSettings.local.versionRecallMode = e.target.value
+    // UI.panel.collaboration.recallMode.selectmenu.addEventListener('change', (e) => {
+    //     localStorage.setItem('versionRecallMode', e.target.value);
+    //     collaborationSettings.local.versionRecallMode = e.target.value
       
-        // Send to peer
-        const message = {
-            cmd: 'version_recall_mode_announcement',
-            from: thisPeerID,
-            mode: e.target.value
-        };
-        sendDataChannelMessage(message)
-        // if (syncMessageDataChannel?.readyState === "open") {
+    //     // Send to peer
+    //     const message = {
+    //         cmd: 'version_recall_mode_announcement',
+    //         from: thisPeerID,
+    //         mode: e.target.value
+    //     };
+    //     sendDataChannelMessage(message)
+    //     // if (syncMessageDataChannel?.readyState === "open") {
 
-        //     syncMessageDataChannel.send(JSON.stringify(message));
-        // }
+    //     //     syncMessageDataChannel.send(JSON.stringify(message));
+    //     // }
         
 
-    });
+    // });
     // https://forms.gle/aerpRUgBR7bH1xpB9
  
     // opens the GitHub issue page in a new browser tab.
@@ -4872,7 +4870,7 @@ document.addEventListener("DOMContentLoaded", function () {
     //*
 
     
-    function updateSynthWorklet(cmd, data, structure, changeNode){
+    function updateSynthWorklet(cmd, data, structure){
 
         switch (cmd) {
             case 'setOutputVolume':
@@ -4887,15 +4885,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
             break
             case 'loadVersion':
-                // if a loaded version is for a paramChange, no need to recreate the graph
-                // if(changeNode && changeNode.msg === 'paramUpdate'){
-                //     synthWorklet.port.postMessage({ cmd: 'paramChange', data: changeNode });
-                // } else {
                 synthWorklet.port.postMessage({ 
                     cmd: 'loadVersion', 
                     data: data,
                 });
-                // }
             break
 
             case 'setSignalAnalysis':
@@ -4940,7 +4933,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 synthWorklet.port.postMessage({ cmd: 'paramChange', data: data });
             break
         }
-    
     }
 
     
