@@ -75,7 +75,7 @@ let sharedSequencerState = null
 
 // * new automerge implementation
 let Automerge;
-let amDoc = null
+let currentBranch = null
 let docID = null
 let onChange; // my custom automerge callback for changes made to the doc
 
@@ -501,7 +501,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // console.warn('make sure to uncomment the code below this message when finished making big changes to the history seq page')
     // Remove the flag when the graph window is closed
     window.addEventListener('beforeunload', () => {
-        console.log(DISABLE_HISTORY_WINDOW_CLOSE)
+        
         if(DISABLE_HISTORY_WINDOW_CLOSE === "1") {
             console.warn('remember to set VITE_DISABLE_HISTORY_WINDOW_CLOSE to 0 in .env.development')
    
@@ -664,59 +664,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     'text-margin-x': 10, // Optional: Move the label slightly up if desired
                 }
             },
-            // {
-            //     selector: '.sliderTrack',
-            //     style: {
-            //         'background-color': '#ddd', // Color for the remote peer's mouse node
-            //         'shape': 'rectangle',
-            //             'width': 'data(length)',
-            //             'height': 10,
-            //             'border-color': '#999',
-            //             'border-width': 1,
-            //             'label': 'data(label)', // Remove label for track
-            //             'text-valign': 'center',    // Vertically center the label
-            //             'text-halign': 'left', 
-            //             'text-margin-y': -20,
-            //             'text-margin-x': 70,
-            //             'text-opacity': 1, // Ensure no text is shown
-            //             'outline-width': 0, // Remove focus outline
-            //             // 'user-select': 'none', // Prevent text selection
-            //             // 'pointer-events': 'none' // Disable pointer events on the track
-            //     }
-            // },
-            // {
-            //     selector: '.sliderHandle',
-            //     style: {
-            //         'background-color': '#4CAF6F',
-            //         'shape': 'ellipse',
-            //         'width': 20,
-            //         'height': 20,
-            //         'label': '', // Remove label for handle
-            //         'text-opacity': 0, // Ensure no text is shown
-            //         'outline-width': 0, // Remove focus outline
-            //         // 'user-select': 'none', // Prevent text selection
-            //         // 'pointer-events': 'auto' // Enable pointer events for handle
-            //     }
-            // },
-            // {
-            //     selector: '.sliderLabel',
-            //     style: {
-            //         'background-color': '#4CAF6F',
-            //         'background-opacity': 0, // Transparent background
-            //         'color': '#333', // Dark text color for good contrast
-            //         'font-size': 12, // Adjust font size as needed
-            //         'text-halign': 'right', // Center the text horizontally
-            //         'text-valign': 'center', // Center the text vertically
-            //         'text-margin-x': -60, // Adjust the margin to position the label above the slider
-            //         'text-margin-y': -10, // Adjust the margin to position the label above the slider
-            //         'font-weight': 'bold', // Make the label stand out
-            //         // 'pointer-events': 'none', // Prevent interaction with the label
-            //         'text-background-opacity': 1, // Background for readability (set to 0 if not needed)
-            //         'text-background-color': '#FFFFFF', // Light background for better visibility
-            //         'text-background-padding': 2, // Add slight padding to the background
-            //         'border-width': 0 // No border around the label
-            //     }
-            // },
             {
                 selector: '.paramAnchorNode',
                 style: {
@@ -734,22 +681,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             }
 
-            // .selector(`#${sliderTrackId}`)
-            // .style({
-            //     'background-color': '#ddd',
-            //     'shape': 'rectangle',
-            //     'width': config.length,
-            //     'height': 10,
-            //     'border-color': '#999',
-            //     'border-width': 1,
-            //     'label': '', // Remove label for track
-            //     'text-opacity': 0, // Ensure no text is shown
-            //     'outline-width': 0, // Remove focus outline
-            //     'user-select': 'none', // Prevent text selection
-            //     'pointer-events': 'none' // Disable pointer events on the track
-            // })
-
-
         ]
     });
 
@@ -757,7 +688,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let automergeRunning = false
  
     //* AUTOMERGE IMPLEMENTATION
-    async function startAutomerge () {
+    async function startAutomerge() {
         automergeRunning = true
         // Load Automerge asynchronously and assign it to the global variable
         Automerge = await import('@automerge/automerge');
@@ -809,60 +740,18 @@ document.addEventListener("DOMContentLoaded", function () {
         syncState = Automerge.initSyncState()
 
         // * synth changes document
-        docID = 'forkingPathsDoc'; // Unique identifier for the document
-        // Load the document from patchHistory's store in IndexedDB or create a new one if it doesn't exist
-
-        // amDoc = await loadDocument(docID);
+        // Unique identifier for the document
+        docID = 'forkingPathsDoc'; 
         // if patchHistory doesn't contain a document, create a new one
         if (!patchHistory.docs[patchHistory.head.branch]) {
 
-            amDoc = Automerge.init();
+            currentBranch = Automerge.init();
 
             // load synthFile from indexedDB
-            // let synthFile = JSON.parse(localStorage.getItem('synthFile'))
-            // console.log('synthFile', synthFile)
             if (patchHistory.synthFile) {
-               
                 createNewPatchHistory(patchHistory.synthFile)
-                // const firstChangeLabel = synthFile.name
-                // ? `load_synth:${synthFile.name}`
-                // : 'load_synth:unnamed';
-            
-                // amDoc = Automerge.change(amDoc, firstChangeLabel, (amDoc) => {
-                //     amDoc.title = config.patchHistory.firstBranchName;
-                //     amDoc.changeType = { msg: firstChangeLabel };
-                //     amDoc.elements = synthFile.visualGraph?.elements?.nodes || [];
-                //     amDoc.synth = {
-                //         graph: synthFile.audioGraph || {
-                //         modules: {},
-                //         connections: []
-                //         }
-                //     };
-                //     amDoc.sequencer = { tableData: [] };
-                // });
-            
-                // const hash = Automerge.getHeads(amDoc)[0];
-                // previousHash = hash;
-            
-                // patchHistory = Automerge.change(patchHistory, (patchHistory) => {
-                //     patchHistory.branches[config.patchHistory.firstBranchName] = {
-                //         head: hash,
-                //         root: null,
-                //         parent: null,
-                //         history: [{ hash: hash, parent: null, msg: firstChangeLabel }]
-                //     };
-                
-                //     patchHistory.docs[config.patchHistory.firstBranchName] = Automerge.save(amDoc);
-                //     patchHistory.head.branch = config.patchHistory.firstBranchName;
-                //     patchHistory.head.hash = hash;
-                //     patchHistory.branchOrder.push(config.patchHistory.firstBranchName);
-                // });
-
-                // // send doc to history app
-                // reDrawHistoryGraph()
-            
             } else {
-                console.log("No synth file found. amDoc initialized but not changed.");
+                console.log("No synth file found. currentBranch initialized but not changed.");
                 previousHash = null;
 
                 try {
@@ -908,13 +797,13 @@ document.addEventListener("DOMContentLoaded", function () {
         } else {
 
             // patchHistory does contain at least one document, so grab whichever is the one that was last looked at
-            amDoc = Automerge.load(patchHistory.docs[patchHistory.head.branch]);
+            currentBranch = Automerge.load(patchHistory.docs[patchHistory.head.branch]);
 
             // wait 1 second before loading content (give the audio worklet a moment to load)
             setTimeout(()=>{
-                updateSynthWorklet('loadVersion', amDoc.synth.graph, null, amDoc.type)
+                updateSynthWorklet('loadVersion', currentBranch.synth.graph, null, currentBranch.type)
 
-                updateCytoscapeFromDocument(amDoc, 'buildUI');
+                updateCytoscapeFromDocument(currentBranch, 'buildUI');
                 
                 previousHash = patchHistory.head.hash
                 
@@ -922,14 +811,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 reDrawHistoryGraph()
 
                 // load the draw canvas
-                if(amDoc.drawing){
-                    loadCanvasVersion(amDoc.drawing)
+                if(currentBranch.drawing){
+                    loadCanvasVersion(currentBranch.drawing)
                 }
     
             }, 1000);
-
-
-
         }
     }
     
@@ -938,7 +824,7 @@ document.addEventListener("DOMContentLoaded", function () {
        
         // if(patchHistory && syncMessageDataChannel && syncMessageDataChannel.readyState === 'closed'){
         if(patchHistory && docUpdated){
-            // await saveDocument(docID, Automerge.save(amDoc));
+            // await saveDocument(docID, Automerge.save(currentBranch));
             await saveDocument(patchHistoryKey, Automerge.save(patchHistory));
             docUpdated = false
         }
@@ -956,12 +842,12 @@ document.addEventListener("DOMContentLoaded", function () {
             previousHash = patchHistory.head.hash
             
             // Apply the change using Automerge.change
-            amDoc = Automerge.change(amDoc, amMsg, changeCallback);
+            currentBranch = Automerge.change(currentBranch, amMsg, changeCallback);
 
 
             // If there was a change, call the onChangeCallback
-            if (amDoc !== doc && typeof onChangeCallback === 'function') {
-                let hash = Automerge.getHeads(amDoc)[0]
+            if (currentBranch !== doc && typeof onChangeCallback === 'function') {
+                let hash = Automerge.getHeads(currentBranch)[0]
                 
                 patchHistory = Automerge.change(patchHistory, (patchHistory) => {
 
@@ -988,11 +874,11 @@ document.addEventListener("DOMContentLoaded", function () {
                     });
 
                     // encode the doc as a binary object for efficiency
-                    patchHistory.docs[patchHistory.head.branch] = Automerge.save(amDoc)
+                    patchHistory.docs[patchHistory.head.branch] = Automerge.save(currentBranch)
                     // store the HEAD info
                     patchHistory.head.hash = hash
                     patchHistory.timeStamp = new Date().getTime()
-                    //? patchHistory.head.branch = amDoc.title
+                    //? patchHistory.head.branch = currentBranch.title
                     
                 });
 
@@ -1000,16 +886,16 @@ document.addEventListener("DOMContentLoaded", function () {
                 
                 updatePatchHistoryDatabase()
 
-                onChangeCallback(amDoc);
+                onChangeCallback(currentBranch);
             }
-            return amDoc;
+            return currentBranch;
         } else {
-            // player has made changes to an earlier version, so create a branch and set amDoc to new clone
+            // player has made changes to an earlier version, so create a branch and set currentBranch to new clone
 
-            // store previous amDoc in automergeDocuments, and its property is the hash of its head
-            automergeDocuments.otherDocs[patchHistory.head.branch] = amDoc
-            // set amDoc to current cloned doc
-            amDoc = Automerge.clone(automergeDocuments.current.doc)
+            // store previous currentBranch in automergeDocuments, and its property is the hash of its head
+            automergeDocuments.otherDocs[patchHistory.head.branch] = currentBranch
+            // set currentBranch to current cloned doc
+            currentBranch = Automerge.clone(automergeDocuments.current.doc)
 
             // create a new branch name
             const newBranchName = uuidv7();
@@ -1017,16 +903,14 @@ document.addEventListener("DOMContentLoaded", function () {
             let amMsg = makeChangeMessage(patchHistory.head.branch, changeMessage)
 
             // grab the current hash before making the new change:
-            previousHash = Automerge.getHeads(amDoc)[0]
-            //! if any issues with graph arise, try switching above code to this:
-            //! previousHash = patchHistory.head.hash
+            previousHash = Automerge.getHeads(currentBranch)[0]
             
             // Apply the change using Automerge.change
-            amDoc = Automerge.change(amDoc, amMsg, changeCallback);
-            let hash = Automerge.getHeads(amDoc)[0]
+            currentBranch = Automerge.change(currentBranch, amMsg, changeCallback);
+            let hash = Automerge.getHeads(currentBranch)[0]
             
             // If there was a change, call the onChangeCallback
-            if (amDoc !== doc && typeof onChangeCallback === 'function') {   
+            if (currentBranch !== doc && typeof onChangeCallback === 'function') {   
                 const timestamp = new Date().getTime()
                 patchHistory = Automerge.change(patchHistory, (patchHistory) => {
 
@@ -1043,7 +927,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     }
 
                     // store current doc
-                    patchHistory.docs[newBranchName] = Automerge.save(amDoc)
+                    patchHistory.docs[newBranchName] = Automerge.save(currentBranch)
                     
                     // store the HEAD info
                     patchHistory.head.hash = hash
@@ -1063,13 +947,13 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
                
                 // makeBranch(changeMessage, Automerge.getHeads(newDoc)[0])
-                onChangeCallback(amDoc);
+                onChangeCallback(currentBranch);
 
                 updatePatchHistoryDatabase()
                 automergeDocuments.newClone = false
 
             }
-            return amDoc;
+            return currentBranch;
 
         }
         
@@ -1137,75 +1021,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
        
         
-    }
-
-
-    function removeAllCables(){
-        console.warn(`nope, this isn't ready yet. see function removeAllCables. \nits almost ready, but the way that automerge handles array manipulation is super annoying...`)
-        alert('feature not yet ready')
-        // let cableSource =  highlightedEdge.data().source
-        // let cableTarget =  highlightedEdge.data().target
-        // let audioGraphConnections = amDoc.synth.graph.connections
-        // updateSynthWorklet('removeCable', { source: cableSource, target: cableTarget})
-        
-        // // let cycle = isEdgeInCycle(synthGraphCytoscape.$(`#${edgeId}`))
-
-        // // console.warn('todo: check if this cable was part of a cycle, if it is, ensure that its associated feedbackDelayNode is also removed from the synth.graph along with its 2 edges')
-
-        // // console.log('connections:', amDoc.synth.graph.connections)
-        // // console.log('cable data', highlightedEdge.data())
-
-        // amDoc = applyChange(amDoc, (amDoc) => {
-            
-        //     // set the change type
-        //     amDoc.changeType = {
-        //         msg: 'disconnect'
-        //     }
-        //     // Find the index of the object that matches the condition
-        //     const index = amDoc.elements.findIndex(el => el.id === highlightedEdge.data().id);
-
-        //     // If a match is found, remove the object from the array
-        //     if (index !== -1) {
-        //         amDoc.elements.splice(index, 1);
-        //     }
-            
-        //     // remove connection from audio graph
-        //     // Find the index of the object that matches the condition
-        //     let audioConnectionIndex = audioGraphConnections.findIndex(el => el.source === cableSource && el.target === cableTarget);
-        //     // If a match is found, remove the object from the array
-        //     if (audioConnectionIndex !== -1) {
-        //         amDoc.synth.graph.connections.splice(audioConnectionIndex, 1);
-        //     }
-        // }, onChange, `disconnect ${cableTarget.split('.')[1]} from ${cableSource.split('.')[1]}$PARENTS ${cableSource.split('.')[0]} ${cableTarget.split('.')[0]}`);
-
-        // synthGraphCytoscape.remove(highlightedEdge)
-        // highlightedEdge = null; // Clear the reference after deletion
-        /*
-        let indexes = []
-        const newElements = [];
-
-        amDoc.elements.forEach((el, index)=>{
-            if(el.type && el.type == 'edge'){
-                newElements.push(el);
-                // update audio
-                updateSynthWorklet('removeCable', { source: el.data.source, target: el.data.target})
-
-
-            }
-        })        
-
-        amDoc = applyChange(amDoc, (amDoc) => {
-            // Create a new array for elements without 'edge' type
-            // Remove all elements in-place
-            filterAutomergeArray(amDoc, "elements", (el) => el.type !== 'edge');
-            
-            amDoc.synth.graph.connections = []
-
-
-        }, onChange, `clear cables`);
-        console.log(amDoc.elements)
-        synthGraphCytoscape.edges().remove();
-        */
     }
 
     // a peer has created a new patch history, so update our patch history from that one and do all the same synth building stuff as createNewPatchHistory
@@ -1281,29 +1096,25 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     function createNewPatchHistory(synthFile, fromPeer){
 
-        
+        // clear the pen tool interface
         resetDrawing()
-        // deletes the document in the indexedDB instance
-        // deleteDocument(docID)
+        // delete the document in the indexedDB instance
         deleteDocument('patchHistory')
+        // clear DSP
         updateSynthWorklet('clearGraph')
-        // ensure their container divs are removed too
+        // ensure floating UI container divs are removed
         clearparamContainerDivs()
-        // clear the sequences
+        // clear the sequencer
         sendMsgToHistoryApp({
             appID: 'forkingPathsMain',
             cmd: 'newPatchHistory'
                 
         })
-
-
+        // tell server to erase the patchHistory & send a blank DAG to client(s)
         ws.send(JSON.stringify({
             cmd: 'clearHistoryGraph'
         }))
 
-
-
-        
         // Clear existing elements from Cytoscape instance
         synthGraphCytoscape.elements().remove();
         
@@ -1311,7 +1122,7 @@ document.addEventListener("DOMContentLoaded", function () {
         removeUIOverlay('allNodes')
         // ensure their container divs are removed too
         clearparamContainerDivs()
-
+        // init new patch history for Automerge
         let patchHistoryJSON = {
             title: "Forking Paths Patch History",
             forked_from_id: null, // used by the database to either determine this as the root of a tree of patch histories, or a fork from a stored history 
@@ -1344,10 +1155,10 @@ document.addEventListener("DOMContentLoaded", function () {
             patchHistoryJSON.synthFile = patchHistory.synthFile
             synthFile = patchHistory.synthFile
         }
-
+        // assign patch history to automerge
         patchHistory = Automerge.from(patchHistoryJSON)
-
-        amDoc = Automerge.init();
+        // clear the current automerge doc
+        currentBranch = Automerge.init();
 
         if(synthFile || patchHistory.synthFile){
 
@@ -1356,24 +1167,24 @@ document.addEventListener("DOMContentLoaded", function () {
             let amMsg = makeChangeMessage(config.patchHistory.firstBranchName, `loaded ${synthFile.filename}`)
         
             // Apply initial changes to the new document
-            amDoc = Automerge.change(amDoc, amMsg, (amDoc) => {
-                amDoc.title = config.patchHistory.firstBranchName;
-                amDoc.elements = [ ] 
+            currentBranch = Automerge.change(currentBranch, amMsg, (currentBranch) => {
+                currentBranch.title = config.patchHistory.firstBranchName;
+                currentBranch.elements = [ ] 
                 patchHistory.synthFile.visualGraph.elements.nodes.forEach((node)=>{
-                    amDoc.elements.push(node)
+                    currentBranch.elements.push(node)
                 })
                 
-                amDoc.synth = {
+                currentBranch.synth = {
                     graph: synthFile.audioGraph,
                     connections: []
                 }
                 
                 audioGraphDirty = true
 
-                amDoc.drawing = []
+                currentBranch.drawing = []
             }, onChange, `loaded ${synthFile.filename}`);
 
-            updateSynthWorklet('loadVersion', amDoc.synth.graph, null, amDoc.changeType)
+            updateSynthWorklet('loadVersion', currentBranch.synth.graph, null, currentBranch.changeNode)
          
             // load synth graph from file into cytoscape
             synthGraphCytoscape.json(patchHistory.synthFile.visualGraph)
@@ -1403,25 +1214,10 @@ document.addEventListener("DOMContentLoaded", function () {
         } else { 
             console.log('non synthFile')
             console.warn('synthFile nor patchHistory.synthFile not found')
-            // let amMsg = makeChangeMessage(config.patchHistory.firstBranchName, 'blank_patch')
-            // // Apply initial changes to the new document
-            // amDoc = Automerge.change(amDoc, amMsg, (amDoc) => {
-            //     amDoc.title = config.patchHistory.firstBranchName;
-            //     amDoc.elements = []
-            //     amDoc.synth = {
-            //         graph:{
-            //             modules: {
-            //             },
-            //             connections: []
-            //         }
-            //     }
-            // });
-
-            // updateCytoscapeFromDocument(amDoc, 'buildUI');
             
         }
 
-        let hash = Automerge.getHeads(amDoc)[0]
+        let hash = Automerge.getHeads(currentBranch)[0]
         previousHash = hash
 
         let msg = 'blank_patch'
@@ -1433,12 +1229,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 head: hash,
                 root: null,
                 parent: null,
-                // doc: amDoc,
+                // doc: currentBranch,
                 history: [ {hash: hash, parent: null, msg: msg} ] 
             }
             
             // encode the doc as a binary object for efficiency
-            patchHistory.docs[config.patchHistory.firstBranchName] = Automerge.save(amDoc)
+            patchHistory.docs[config.patchHistory.firstBranchName] = Automerge.save(currentBranch)
             patchHistory.head.branch = config.patchHistory.firstBranchName
             patchHistory.head.hash = hash 
             patchHistory.branchOrder.push(patchHistory.head.branch)
@@ -1465,11 +1261,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 forked_from_id: patchHistory.forked_from_id, // or null if this is a root version
             }
         }))
-        // addSpeaker()
-        // if(fromPeer){
-        //     sendSyncMessage()
-        // }
-        // sendSyncMessage()
 
         // get a binary from the new patchHistory
         const fullBinary = Automerge.save(patchHistory);
@@ -1478,7 +1269,7 @@ document.addEventListener("DOMContentLoaded", function () {
             cmd: 'replacePatchHistory',
             data: fromByteArray(fullBinary)  // base64 encoded or send as Uint8Array directly if channel supports it
         }
-
+        // sync with peer(s)
         sendDataChannelMessage(message)
     }
 
@@ -1510,155 +1301,6 @@ document.addEventListener("DOMContentLoaded", function () {
         // alert('Saved with ID: ' + data.synthFileId);
     }
     
-    // save forking paths doc (patchHistory) to disk
-    function saveAutomergeDocument(fileName) {
-        // Generate the binary format of the Automerge document
-        const binaryData = Automerge.save(patchHistory);
-
-        // Create a Blob object for the binary data
-        const blob = new Blob([binaryData], { type: 'application/octet-stream' });
-
-        // Create a URL for the Blob
-        const url = URL.createObjectURL(blob);
-
-        // Create a download link
-        const downloadLink = document.createElement('a');
-        downloadLink.href = url;
-        downloadLink.download = fileName;
-
-        // Optionally, add the link to the DOM and simulate a click
-        document.body.appendChild(downloadLink);
-        downloadLink.click();
-
-        // Clean up
-        document.body.removeChild(downloadLink);
-        URL.revokeObjectURL(url); // Release memory
-    }
-
-    // save patchHistory to user's computer as .patchhistory
-    async function saveFile(suggestedFilename) {
-        // Show the file save dialog
-        const fileName = await window.showSaveFilePicker({
-            suggestedName: suggestedFilename,
-            types: [
-                {
-                    description: "Forking Paths CRDT Files",
-                    accept: { "application/x-fpsynth": [".patchhistory"] }
-                },
-            ],
-        });
-        
-        // Create a writable stream
-        const writable = await fileName.createWritable();
-
-        // Write the blob data directly
-        const binaryData = Automerge.save(patchHistory); // this is a Uint8Array
-        await writable.write(binaryData);
-
-        // Close the file and commit the write
-        await writable.close();
-
-        // // Create a Blob object for the binary data
-        // const blob = new Blob([Automerge.save(patchHistory)], { type: 'application/octet-stream' });
-        // console.log(blob)
-        // // Create a URL for the Blob
-        // const url = URL.createObjectURL(blob);
-
-        // // Create a download link
-        // const downloadLink = document.createElement('a');
-        // downloadLink.href = url;
-        // downloadLink.download = fileName.name;
-
-        // // Optionally, add the link to the DOM and simulate a click
-        // document.body.appendChild(downloadLink);
-        // downloadLink.click();
-
-        // // Clean up
-        // document.body.removeChild(downloadLink);
-        // URL.revokeObjectURL(url); // Release memory
-
-        // // Write the content to the file
-        // const writable = await fileHandle.createWritable();
-        // await writable.write(Automerge.save(patchHistory));
-        // await writable.close();
-    }
-
-
-    // function branchManagement(cmd, ){
-    //     switch(cmd){
-
-    //     }
-
-
-    // }
-    /* 
-
-        SYNTH CYTOSCAPE
-
-    */
-
-        // Add this to your Cytoscape initialization or script
-
-
-    // function loadSynthGraphFromFile(graphJSON) {
-    //     parentNodePositions = []; // Array to store positions of all parent nodes
-
-    //     // Extract all parent nodes from the given document
-    //     const parentNodes = graphJSON.elements.nodes.filter(el => el.classes === ':parent');
-    //     parentNodes.forEach(parentNode => {
-    //         if (parentNode.position) {
-    //             parentNodePositions.push({
-    //                 id: parentNode.data.id,
-    //                 position: parentNode.position
-    //             });
-    //         }
-    //     });
-    
-    //     let elements = graphJSON.elements.nodes
-
-    //     // Clear existing elements from Cytoscape instance
-    //     synthGraphCytoscape.elements().remove();
-
-    //     // remove all dynamicly generated UI overlays (knobs, umenus, etc)
-    //     removeUIOverlay('allNodes')
-        
-    //     // ensure their container divs are removed too
-    //     clearparamContainerDivs()
-
-    //     synthGraphCytoscape.json(graphJSON);
-    //     // synthGraphCytoscape.add(elements)
-
-    //     parentNodePositions.forEach(parentNode => {
-    //         const node = synthGraphCytoscape.getElementById(parentNode.id);
-
-    //         if (node) {
-    //             // test
-    //             let pos = {x: parseFloat(parentNode.position.x), y: parseFloat(parentNode.position.y)}
-                
-    //             // pos = {x: Math.random() * 100 + 200, y: Math.random() * 100 + 200};
-    //             // pos = {x: 273.3788826175895, y: 434.9628649535062};
-    //             // let clonedPos = {...pos}
-    //             node.position(pos); // Set the position manually  
-    //         }
-    //     });
-        
-    //     // add overlay UI elements
-    //     let index = 0
-    //     elements.forEach((node)=>{
-            
-    //         if(node.classes === 'paramAnchorNode'){
-    //             // let value = graphJSON.synth.graph.modules[node.data.parent].params[node.data.label]
-    //             createFloatingOverlay(node.data.parent, node, index)
-        
-    //             index++
-    //         }
-    //     })
-    //     // Initial position and scale update. delay it to wait for cytoscape rendering to complete. 
-    //     setTimeout(() => {
-    //         updateKnobPositionAndScale('all');
-    //     }, 10); // Wait for the current rendering cycle to complete
-    // } 
-    
     // Function to update Cytoscape with the state from forkedDoc
     function updateCytoscapeFromDocument(forkedDoc, cmd, lastGestureValue) {
         App.synth.visual.modules = forkedDoc.synth.graph.modules
@@ -1687,16 +1329,7 @@ document.addEventListener("DOMContentLoaded", function () {
             
             // ensure their container divs are removed too
             clearparamContainerDivs()
-            
-            // synthGraphCytoscape.reset()
-            // pull modules from synthfile and populate cytoscape with parentNodes:
-            
-            // if this is the user's first time accessing the site (or from a private browser, etc), load the basic synth
 
-            // let synthFile = JSON.parse(localStorage.getItem('synthFile'))
-            
-                
-                
             // I do this from the synthFile because the parentNodes' dimensions respond to their childs' positioning
             synthGraphCytoscape.json(patchHistory.synthFile)
             // synthGraphCytoscape.nodes(':parent').forEach(n => console.log(n.id())); // lock all parent nodes so they can't be dragged
@@ -1717,20 +1350,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 synthGraphCytoscape.add(el);
             }
-
-            // syncedElements.forEach((el) => {
-            //     if (el.type === 'edge') {
-            //       const sourceExists = synthGraphCytoscape.getElementById(el.data.source).length > 0;
-            //       const targetExists = synthGraphCytoscape.getElementById(el.data.target).length > 0;
-              
-            //       if (!sourceExists || !targetExists) {
-            //         console.warn(`Skipping edge: ${el.data.id} due to missing source or target`);
-            //         return;
-            //       }
-            //     }
-              
-            //     synthGraphCytoscape.add(el);
-            //   });
             
             let index = 0
             elements.forEach((node)=>{
@@ -1762,11 +1381,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // 3. Add new elements to Cytoscape
             synthGraphCytoscape.add(syncedElements)
 
-            // loop through UI, update each param
-            // const synthModules = forkedDoc.synth.graph.modules
-
             // check to see if none of the overlays were made. this is the case if peer has a blank document and is syncing to another peer's doc
-            // const overlaysExist = document.querySelectorAll(".paramUIOverlayContainer").length > 0;
             const overlaysExist = document.querySelector('[id^="paramControl_parent:"]') !== null;
 
             if (!overlaysExist) {
@@ -1798,18 +1413,7 @@ document.addEventListener("DOMContentLoaded", function () {
  
     function reDrawHistoryGraph(){
         patchHistoryIsDirty = true
-        // if(!throttleSend){
-            
-        //     sendMsgToHistoryApp({
-        //         appID: 'forkingPathsMain',
-        //         cmd: 'reDrawHistoryGraph',
-        //         data: patchHistory
-                    
-        //     })
-        //     throttleSend = true
-        // }
 
-   
         sendMsgToHistoryApp({
             appID: 'forkingPathsMain',
             cmd: 'reDrawHistoryGraph',
@@ -1838,19 +1442,19 @@ document.addEventListener("DOMContentLoaded", function () {
         let mergedDoc = Automerge.merge(requestedDoc1, requestedDoc2)
 
         
-        // store previous amDoc in automergeDocuments, and its property is the hash of its head
-        //? automergeDocuments.otherDocs[patchHistory.head.branch] = amDoc
+        // store previous currentBranch in automergeDocuments, and its property is the hash of its head
+        //? automergeDocuments.otherDocs[patchHistory.head.branch] = currentBranch
 
         // grab the current hash before making the new change:
-        // previousHash = Automerge.getHeads(amDoc)[0]
+        // previousHash = Automerge.getHeads(currentBranch)[0]
         // we previously used this to get the hashes, but it means it grabs just the leaves of both branches, when what we want are the actual parent nodes (see next line that is not commented out)
         // let hashes = Automerge.getHeads(mergedDoc)
         let hashes = [ doc1.id, doc2.id ]
 
         // create empty change to 'flatten' the merged Doc
-        amDoc = Automerge.emptyChange(mergedDoc);
+        currentBranch = Automerge.emptyChange(mergedDoc);
 
-        let hash = Automerge.getHeads(amDoc)[0]
+        let hash = Automerge.getHeads(currentBranch)[0]
 
         const newBranchName = uuidv7()
 
@@ -1874,7 +1478,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             });
             // store current doc
-            patchHistory.docs[newBranchName] = Automerge.save(amDoc)
+            patchHistory.docs[newBranchName] = Automerge.save(currentBranch)
             
             // store the HEAD info
             patchHistory.head.hash = hash
@@ -1887,9 +1491,9 @@ document.addEventListener("DOMContentLoaded", function () {
         // set docUpdated so that indexedDB will save it
         docUpdated = true
        
-        updateSynthWorklet('loadVersion', amDoc.synth.graph)
+        updateSynthWorklet('loadVersion', currentBranch.synth.graph)
 
-        updateCytoscapeFromDocument(amDoc, 'buildUI');
+        updateCytoscapeFromDocument(currentBranch, 'buildUI');
 
         // update the historyGraph
         reDrawHistoryGraph()
@@ -1991,7 +1595,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 updateSynthWorklet('clearGraph')
             } else {
                 // send the synth graph from this point in the history to the DSP worklet first
-                updateSynthWorklet('loadVersion', historicalView.synth.graph, null, historicalView.changeType)
+                updateSynthWorklet('loadVersion', historicalView.synth.graph, null, historicalView.changeNode)
             }
 
             // send the visual graph from this point in the history to the synth cytoscape
@@ -2015,7 +1619,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // the selected hash belongs to the current branch
         else {
             // send the synth graph from this point in the history to the DSP worklet first
-            updateSynthWorklet('loadVersion', historicalView.synth.graph, null, historicalView.changeType)
+            updateSynthWorklet('loadVersion', historicalView.synth.graph, null, historicalView.changeNode)
             // send the visual graph from this point in the history to the synth cytoscape
             updateCytoscapeFromDocument(historicalView);
             // create a clone of the branch in case the player begins making changes
@@ -2047,7 +1651,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         if (recallMode === 'requestOpenLoadVersion'  && !fromPeer) {
-            // requestVersionRecallWithPermission(amDoc, Automerge.getHeads(amDoc)[0], patchHistory.head.branch);
+            // requestVersionRecallWithPermission(currentBranch, Automerge.getHeads(currentBranch)[0], patchHistory.head.branch);
             console.warn('not set up yet')
         }
 
@@ -2104,13 +1708,13 @@ document.addEventListener("DOMContentLoaded", function () {
         const updatedView = Automerge.view(requestedDoc, [hash]);
 
         // IMPORTANT: when more than 1 peer is in room, gesture changes will cause the first gesture value to appear instead of the last due to sync states bouncing around
-        if(updatedView.changeType && updatedView.changeType.msg === 'gesture' && syncMessageDataChannel.readyState === 'open'){
+        if(updatedView.changeNode && updatedView.changeNode.msg === 'gesture' && syncMessageDataChannel.readyState === 'open'){
 
             // get the last value of the gesture
             let lastValue = {
-                parent: updatedView.changeType.parent,
-                param: updatedView.changeType.param,
-                value: updatedView.changeType.values[updatedView.changeType.values.length - 1],
+                parent: updatedView.changeNode.parent,
+                param: updatedView.changeNode.param,
+                value: updatedView.changeNode.values[updatedView.changeNode.values.length - 1],
             }
 
             let tempGraph = updatedView.synth.graph
@@ -2122,7 +1726,7 @@ document.addEventListener("DOMContentLoaded", function () {
             updateCytoscapeFromDocument(updatedView, 'buildFromSyncMessage', lastValue)
         } else {
             // update them as normal
-            updateSynthWorklet('loadVersion', updatedView.synth.graph, null, updatedView.changeType)
+            updateSynthWorklet('loadVersion', updatedView.synth.graph, null, updatedView.changeNode)
 
             updateCytoscapeFromDocument(updatedView, 'buildFromSyncMessage')
         }
@@ -2131,7 +1735,7 @@ document.addEventListener("DOMContentLoaded", function () {
         reDrawHistoryGraph()
 
         // update local branch
-        amDoc = Automerge.clone(updatedView)
+        currentBranch = Automerge.clone(updatedView)
         // if(audioGraphDirty){
         //     audioGraphDirty = false
         // }
@@ -2164,120 +1768,6 @@ document.addEventListener("DOMContentLoaded", function () {
       
     }
       
-      
-
-        // !
-        // todo: update this with automerge version when either p2p or websocket server is working
-        // handle.on("ephemeral-message", (message) => {
-
-        //     let msg = message.message
-        //     switch (msg.msg){
-
-        //         case 'moveModule':
-        //             synthGraphCytoscape.getElementById(msg.module).position(msg.position);
-
-        //             // also update the module internal boundaries for params
-        //             updateSliderBoundaries(synthGraphCytoscape.getElementById(msg.module))
-        //         break
-
-        //         case 'startRemoteGhostCable':
-        //         case 'updateRemoteGhostCable':
-        //         case 'finishRemoteGhostCable':    
-
-        //             handleRemoteCables(msg.msg, msg.data.peer, msg.data.sourceNodeID, msg.data.position)
-
-        //         break
-
-        //         case 'peerMousePosition':
-        //             displayPeerPointers(msg.data.peer, msg.data.position)
-        //         break
-
-
-
-        //         default: console.log("got an ephemeral message: ", message)
-        //     }
-            
-        // })
-
-    // })();
-
-    // function sendEphemeralData (msg){
-    //     // only send once doc is ready
-    //     if(handle){
-    //         handle.broadcast(msg);
-    //     }
-        
-    // }
-
-    
-
-        /*
-        async function loadVersion(targetHash) {
-            // Set a batch size based on your performance tolerance
-            const BATCH_SIZE = 100; // Adjust as needed
-        
-            // Initialize a blank document to start replaying history
-            let forkedDoc = automergeInit();
-        
-            // Create a document handle via the repo
-            let forkedHandle = repo.create({ elements: [] });
-        
-            // Wait for the handle to be ready
-            await forkedHandle.whenReady();
-        
-            // Find the target index in historyNodes based on the hash
-            const targetIndex = historyNodes.findIndex(node => node.data.id === targetHash);
-        
-            if (targetIndex === -1) {
-                console.error('Target hash not found in document history.');
-                return;
-            }
-        
-            // Ensure changes are in chronological order (reverse if needed)
-            const orderedHistory = historyNodes.slice(0, targetIndex + 1);
-            if (orderedHistory[0].data.timestamp > orderedHistory[orderedHistory.length - 1].data.timestamp) {
-                orderedHistory.reverse();
-            }
-
-            // Apply changes in batches
-            let batch = [];
-            for (let i = 0; i < orderedHistory.length; i++) {
-                const changeBinary = orderedHistory[i].data.serializedChange;
-        
-                if (!(changeBinary instanceof Uint8Array)) {
-                    console.error(`Serialized change at index ${i} is not in Uint8Array format. Found:`, changeBinary);
-                    return;
-                }
-        
-                batch.push(changeBinary);
-        
-                // Apply changes in the batch if it reaches the batch size or if it's the last batch
-                if (batch.length >= BATCH_SIZE || i === orderedHistory.length -1) {
-                    try {
-                        forkedDoc = applyNewChanges(forkedDoc, batch);
-                        forkedDoc = getClone(forkedDoc); // Clone only after applying the batch
-                        console.log(`After batch ${Math.floor(i / BATCH_SIZE) + 1}, elements:`, forkedDoc.doc.elements);
-
-                        batch = []; // Clear the batch
-                    } catch (error) {
-                        console.error(`Error applying batch ending at index ${i}`, error);
-                        return;
-                    }
-                }
-            }
-        
-            console.log(`Version loaded successfully at hash ${targetHash}`);
-            console.log(forkedHandle)
-            // Usage: assuming `cy` is your Cytoscape instance and `forkedDoc` holds the document state
-            updateCytoscapeFromDocument(forkedHandle);
-        }
-        */
-
-
-
-
-
-
 //*
 //*
 //* UI UPDATES
@@ -2384,14 +1874,14 @@ document.addEventListener("DOMContentLoaded", function () {
         UI.draw.currentStrokePoints = []
         // clear the drawing array
         UI.draw.canvasStrokes = []
-        amDoc = applyChange(amDoc, (amDoc) => {
-            amDoc.drawing = []
+        currentBranch = applyChange(currentBranch, (currentBranch) => {
+            currentBranch.drawing = []
         }, onChange,  `draw Erase_Drawing`);
     }
 
     function resetDrawing(){
         // this is different, in this case we don't want to add to the version history
-        // this function is being called by newPatchHistory(), which already applies amDoc.drawing = [ ] within the patch init
+        // this function is being called by newPatchHistory(), which already applies currentBranch.drawing = [ ] within the patch init
         UI.draw.ctx.clearRect(0, 0, UI.draw.canvas.width, UI.draw.canvas.height);
 
         // clear the temp array of strokes
@@ -2660,7 +2150,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     }
                     div.remove()
                 });
-                amDoc.paramUIOverlays[data].forEach((childDiv)=>{
+                currentBranch.paramUIOverlays[data].forEach((childDiv)=>{
                     childDiv.removeKnob()
                     
                     // childDiv.parentNode.removeChild(childDiv);
@@ -2671,7 +2161,7 @@ document.addEventListener("DOMContentLoaded", function () {
             case 'allNodes':
                 // delete all param UI overlays
                 /*
-                Object.values(amDoc.paramUIOverlays).forEach((parentNode) => {
+                Object.values(currentBranch.paramUIOverlays).forEach((parentNode) => {
                     parentNode.forEach((paramUIDiv) => {
                         // paramUIDiv.parentNode.removeChild(paramUIDiv);
                         paramUIDiv.removeKnob()
@@ -2738,7 +2228,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // wait 500ms before syncing the graph
             setTimeout(() => {
-              updateSynthWorklet('loadVersion', amDoc.synth.graph, null, amDoc.type);
+              updateSynthWorklet('loadVersion', currentBranch.synth.graph, null, currentBranch.type);
             }, 500);
         
             audioToggleButton.style.backgroundColor = '#444';
@@ -2753,14 +2243,14 @@ document.addEventListener("DOMContentLoaded", function () {
         //         if (audioContext.state === 'running') {
         //                 // wait 500ms before syncing the graph
         //             setTimeout(() => {
-        //                 updateSynthWorklet('loadVersion', amDoc.synth.graph, null, amDoc.type);
+        //                 updateSynthWorklet('loadVersion', currentBranch.synth.graph, null, currentBranch.type);
 
         //                                     // clear this handler so it only fires once
         //                  audioContext.onstatechange = null;
 
         //             }, 500);
         //             // // now that the worklet is processing, push the graph
-        //             // updateSynthWorklet('loadVersion', amDoc.synth.graph, null, amDoc.type);
+        //             // updateSynthWorklet('loadVersion', currentBranch.synth.graph, null, currentBranch.type);
             
 
         //         }
@@ -2768,7 +2258,7 @@ document.addEventListener("DOMContentLoaded", function () {
         //     await audioContext.resume();
 
         //     // // re-sync the current synth state in the worklet
-        //     // updateSynthWorklet('loadVersion', amDoc.synth.graph, null, amDoc.type)
+        //     // updateSynthWorklet('loadVersion', currentBranch.synth.graph, null, currentBranch.type)
         //     console.log('should resume')
         //     audioToggleButton.style.backgroundColor = '#444'
         //     systemDropdown.style.backgroundColor = '#444'
@@ -2824,7 +2314,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     // Function to create and manage an overlay div
-    function createFloatingOverlay(parentNodeID, param, index, loadedValue) { // if loadedValue, this is the value from the amDoc to be passed in
+    function createFloatingOverlay(parentNodeID, param, index, loadedValue) { // if loadedValue, this is the value from the currentBranch to be passed in
         
         // const stepSize = determineStepSize(param.min, param.max, 'logarithmic', 100 )
         if(!virtualElements[parentNodeID]){
@@ -3157,7 +2647,7 @@ document.addEventListener("DOMContentLoaded", function () {
         .update();
     }
 
-    //*
+//*
 //*
 //* webRTC COMMUNICATION
 //* Functions that communicate between main app and server
@@ -3841,16 +3331,16 @@ document.addEventListener("DOMContentLoaded", function () {
             
             case 'saveSequence':
 
-                amDoc = applyChange(amDoc, (amDoc) => {
+                currentBranch = applyChange(currentBranch, (currentBranch) => {
                     // set the sequencer table data
-                    if(!amDoc.sequencer){
-                        amDoc.sequencer = {
+                    if(!currentBranch.sequencer){
+                        currentBranch.sequencer = {
                             tableData: []
                         }
                     }
-                    amDoc.sequencer.tableData = event.data.data
+                    currentBranch.sequencer.tableData = event.data.data
                     // set the change type
-                    amDoc.changeType = {
+                    currentBranch.changeNode = {
                         msg: 'sequence',
                         tableData: event.data.data,
                         timestamp: new Date().getTime()
@@ -3882,7 +3372,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 sendMsgToHistoryApp({
                     appID: 'forkingPathsMain',
                     cmd: 'hydrateGesture',
-                    data: hydratedView.changeType,   
+                    data: hydratedView.changeNode,   
                     index: event.data.data.index   
                 })
             break
@@ -3904,7 +3394,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 sendMsgToHistoryApp({
                     appID: 'forkingPathsMain',
                     cmd: 'getGestureData',
-                    data: gestureView.changeType,
+                    data: gestureView.changeNode,
                     recallGesture: recallGesture
                         
                 })
@@ -3949,11 +3439,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 // set newClone to true
                 automergeDocuments.newClone = true
 
-                amDoc = applyChange(amDoc, (amDoc) => {
-                    amDoc.synth.graph.modules[msg.assignTo.parent].params[msg.assignTo.param] = msg.scaledValues;
+                currentBranch = applyChange(currentBranch, (currentBranch) => {
+                    currentBranch.synth.graph.modules[msg.assignTo.parent].params[msg.assignTo.param] = msg.scaledValues;
                     audioGraphDirty = true;
                     // set the change type
-                    amDoc.changeType = {
+                    currentBranch.changeNode = {
                         msg: 'gesture',
                         param: msg.assignTo.param,
                         parent: msg.assignTo.parent,
@@ -4053,11 +3543,11 @@ document.addEventListener("DOMContentLoaded", function () {
             if(groupChange.values.length === 1){
                 // change is singular
                 // Update in Automerge
-                amDoc = applyChange(amDoc, (amDoc) => {
-                    amDoc.synth.graph.modules[groupChange.parentNode].params[groupChange.paramLabel] = groupChange.values[0];
+                currentBranch = applyChange(currentBranch, (currentBranch) => {
+                    currentBranch.synth.graph.modules[groupChange.parentNode].params[groupChange.paramLabel] = groupChange.values[0];
                     audioGraphDirty = true;
                     // set the change type
-                    amDoc.changeType = {
+                    currentBranch.changeNode = {
                         msg: 'paramUpdate',
                         param: groupChange.paramLabel,
                         parent: groupChange.parentNode,
@@ -4068,11 +3558,11 @@ document.addEventListener("DOMContentLoaded", function () {
             } else if(groupChange.values.length > 1){
                 // are storing a gesture
                 // Update in Automerge
-                amDoc = applyChange(amDoc, (amDoc) => {
-                    amDoc.synth.graph.modules[groupChange.parentNode].params[groupChange.paramLabel] = groupChange.values;
+                currentBranch = applyChange(currentBranch, (currentBranch) => {
+                    currentBranch.synth.graph.modules[groupChange.parentNode].params[groupChange.paramLabel] = groupChange.values;
                     audioGraphDirty = true;
                     // set the change type
-                    amDoc.changeType = {
+                    currentBranch.changeNode = {
                         msg: 'gesture',
                         param: groupChange.paramLabel,
                         parent: groupChange.parentNode,
@@ -4101,8 +3591,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 timestamp: Date.now()
             });
             
-            amDoc = applyChange(amDoc, (amDoc) => {
-                amDoc.drawing = UI.draw.canvasStrokes
+            currentBranch = applyChange(currentBranch, (currentBranch) => {
+                currentBranch.drawing = UI.draw.canvasStrokes
             }, onChange,  `draw added_strokes: ${UI.draw.currentStrokePoints.length}`);
 
             UI.draw.currentStrokePoints = [ ]
@@ -4271,11 +3761,11 @@ document.addEventListener("DOMContentLoaded", function () {
             // get latest branch
             let latestBranch = patchHistory.branchOrder[patchHistory.branchOrder.length - 1]
 
-            amDoc = Automerge.load(patchHistory.docs[latestBranch])
+            currentBranch = Automerge.load(patchHistory.docs[latestBranch])
 
-            updateSynthWorklet('loadVersion', amDoc.synth.graph)
+            updateSynthWorklet('loadVersion', currentBranch.synth.graph)
 
-            updateCytoscapeFromDocument(amDoc, 'buildUI');
+            updateCytoscapeFromDocument(currentBranch, 'buildUI');
             
             previousHash = patchHistory.head.hash
             
@@ -4534,7 +4024,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     if (isNearEndpoint(mousePos, sourcePos)) {
                         let cableSource =  edge.data().source
                         let cableTarget =  edge.data().target
-                        let audioGraphConnections = amDoc.synth.graph.connections
+                        let audioGraphConnections = currentBranch.synth.graph.connections
 
                         // delete the cable
                         synthGraphCytoscape.remove(edge);
@@ -4544,16 +4034,16 @@ document.addEventListener("DOMContentLoaded", function () {
                         console.warn('todo: check if this cable was part of a cycle, if it is, ensure that whichever edge in the cycle that has the feedback:true prop set in the audio graph is now set to false')                        
 
                         // * automerge version: 
-                        amDoc = applyChange(amDoc, (amDoc) => {
+                        currentBranch = applyChange(currentBranch, (currentBranch) => {
                             // Within the visual graph, Find the index of the object that matches the condition
-                            const index = amDoc.elements.findIndex(el => el.id === edge.data().id);
+                            const index = currentBranch.elements.findIndex(el => el.id === edge.data().id);
                             // set the change type
-                            amDoc.changeType = {
+                            currentBranch.changeNode = {
                                 msg: 'disconnect'
                             }
                             // If a match is found, remove the object from the array
                             if (index !== -1) {
-                                amDoc.elements.splice(index, 1);
+                                currentBranch.elements.splice(index, 1);
                             }
                             
                             // remove connection from audio graph
@@ -4561,7 +4051,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             let audioConnectionIndex = audioGraphConnections.findIndex(el => el.source === cableSource && el.target === cableTarget);
                             // If a match is found, remove the object from the array
                             if (audioConnectionIndex !== -1) {
-                                amDoc.synth.graph.connections.splice(audioConnectionIndex, 1);
+                                currentBranch.synth.graph.connections.splice(audioConnectionIndex, 1);
                             }                
                         }, onChange, `disconnect ${edge.data().source} from ${edge.data().target}$PARENTS ${parentSourceID} ${parentTargetID}`);
 
@@ -4612,7 +4102,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     } else if (isNearEndpoint(mousePos, targetPos)) {
                         let cableSource =  edge.data().source
                         let cableTarget =  edge.data().target
-                        let audioGraphConnections = amDoc.synth.graph.connections
+                        let audioGraphConnections = currentBranch.synth.graph.connections
 
                         // delete the cable
                         synthGraphCytoscape.remove(edge);
@@ -4621,16 +4111,16 @@ document.addEventListener("DOMContentLoaded", function () {
                         console.warn('todo: check if this cable was part of a cycle, if it is, ensure that whichever edge in the cycle that has the feedback:true prop set in the audio graph is now set to false')
 
                         // * automerge version:      
-                        amDoc = applyChange(amDoc, (amDoc) => {
+                        currentBranch = applyChange(currentBranch, (currentBranch) => {
                             // Find the index of the object that matches the condition
-                            const index = amDoc.elements.findIndex(el => el.id === edge.data().id);
+                            const index = currentBranch.elements.findIndex(el => el.id === edge.data().id);
                             // set the change type
-                            amDoc.changeType = {
+                            currentBranch.changeNode = {
                                 msg: 'disconnect'
                             }
                             // If a match is found, remove the object from the array
                             if (index !== -1) {
-                                amDoc.elements.splice(index, 1);
+                                currentBranch.elements.splice(index, 1);
                             }
 
                             // remove connection from audio graph
@@ -4638,7 +4128,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             let audioConnectionIndex = audioGraphConnections.findIndex(el => el.source === cableSource && el.target === cableTarget);
                             // If a match is found, remove the object from the array
                             if (audioConnectionIndex !== -1) {
-                                amDoc.synth.graph.connections.splice(audioConnectionIndex, 1);
+                                currentBranch.synth.graph.connections.splice(audioConnectionIndex, 1);
                             }
 
                         }, onChange, `disconnect ${edge.data().target} from ${edge.data().source}$PARENTS ${parentSourceID} ${parentTargetID}`);
@@ -4869,23 +4359,23 @@ document.addEventListener("DOMContentLoaded", function () {
                     updateSynthWorklet('addCable', { source: src, target: feedbackDelayNodeID + '.IN', feedback: cycle})                    
                     updateSynthWorklet('addCable', { source: feedbackDelayNodeID + '.OUT', target: targ, feedback: cycle})  
                     
-                    //todo to amDoc.synth.graph.connections: add 2 connections: {source: src, target: feedbackDelayNode.IN} & {source: feedbackDelayNode.IN, target: targ}
+                    //todo to currentBranch.synth.graph.connections: add 2 connections: {source: src, target: feedbackDelayNode.IN} & {source: feedbackDelayNode.IN, target: targ}
 
-                    amDoc = applyChange(amDoc, (amDoc) => {
-                        amDoc.elements.push({
+                    currentBranch = applyChange(currentBranch, (currentBranch) => {
+                        currentBranch.elements.push({
                             type: 'edge',
                             id: edgeId,
                             data: { id: edgeId, source: src, target: targ, kind: 'cable', colour: cableColour }
                         });
                         // set the change type
-                        amDoc.changeType = {
+                        currentBranch.changeNode = {
                             msg: 'connect'
                         }
                         // todo add feedbackDelayNode to synth.graph
-                        amDoc.synth.graph.modules[feedbackDelayNodeID] = {}
+                        currentBranch.synth.graph.modules[feedbackDelayNodeID] = {}
                         // todo figure out synth.graph.connections 
-                        amDoc.synth.graph.connections.push( { source: src, target: feedbackDelayNodeID + '.IN', feedback: cycle} )
-                        amDoc.synth.graph.connections.push( { source: feedbackDelayNodeID + '.OUT', target: targ, feedback: cycle} )
+                        currentBranch.synth.graph.connections.push( { source: src, target: feedbackDelayNodeID + '.IN', feedback: cycle} )
+                        currentBranch.synth.graph.connections.push( { source: feedbackDelayNodeID + '.OUT', target: targ, feedback: cycle} )
 
                         audioGraphDirty = true
                      }, onChange,  `connect ${temporaryCables.local.source.data().label} to ${temporaryCables.local.targetNode.data().label}$PARENTS ${parentSourceID} ${parentTargetID}`);
@@ -4896,17 +4386,17 @@ document.addEventListener("DOMContentLoaded", function () {
                     updateSynthWorklet('addCable', { source: src, target: targ, feedback: cycle })
                     
                     // * automerge version:                
-                    amDoc = applyChange(amDoc, (amDoc) => {
-                        amDoc.elements.push({
+                    currentBranch = applyChange(currentBranch, (currentBranch) => {
+                        currentBranch.elements.push({
                             type: 'edge',
                             id: edgeId,
                             data: { id: edgeId, source: src, target: targ, kind: 'cable', colour: cableColour }
                         });
                         // set the change type
-                        amDoc.changeType = {
+                        currentBranch.changeNode = {
                             msg: 'connect'
                         }
-                        amDoc.synth.graph.connections.push( { source: src, target: targ, feedback: cycle })
+                        currentBranch.synth.graph.connections.push( { source: src, target: targ, feedback: cycle })
                         audioGraphDirty = true
                     }, onChange,  `connect ${temporaryCables.local.source.data().label} to ${temporaryCables.local.targetNode.data().label}$PARENTS ${parentSourceID} ${parentTargetID}`);
 
@@ -4964,15 +4454,15 @@ document.addEventListener("DOMContentLoaded", function () {
         } else if (heldModule){
             // * automerge version: 
             /*
-            const elementIndex = amDoc.elements.findIndex(el => el.data.id === heldModule.data().id);
+            const elementIndex = currentBranch.elements.findIndex(el => el.data.id === heldModule.data().id);
 
             //  Ensure position values are deeply copied
             const positionCopy = { x: heldModule.position().x, y: heldModule.position().y };
-            amDoc = applyChange(amDoc, (amDoc) => {
+            currentBranch = applyChange(currentBranch, (currentBranch) => {
                 
                 if (elementIndex !== -1) {
                     // update the position
-                    amDoc.elements[elementIndex].position = positionCopy
+                    currentBranch.elements[elementIndex].position = positionCopy
                     
                     // {
                     //     x: heldModule.position().x,
@@ -5134,22 +4624,22 @@ document.addEventListener("DOMContentLoaded", function () {
         if (highlightedEdge && (event.key === 'Backspace' || event.key === 'Delete')) {
             let cableSource =  highlightedEdge.data().source
             let cableTarget =  highlightedEdge.data().target
-            let audioGraphConnections = amDoc.synth.graph.connections
+            let audioGraphConnections = currentBranch.synth.graph.connections
             updateSynthWorklet('removeCable', { source: cableSource, target: cableTarget})
             
 
-            amDoc = applyChange(amDoc, (amDoc) => {
+            currentBranch = applyChange(currentBranch, (currentBranch) => {
                 
                 // set the change type
-                amDoc.changeType = {
+                currentBranch.changeNode = {
                     msg: 'disconnect'
                 }
                 // Find the index of the object that matches the condition
-                const index = amDoc.elements.findIndex(el => el.id === highlightedEdge.data().id);
+                const index = currentBranch.elements.findIndex(el => el.id === highlightedEdge.data().id);
 
                 // If a match is found, remove the object from the array
                 if (index !== -1) {
-                    amDoc.elements.splice(index, 1);
+                    currentBranch.elements.splice(index, 1);
                 }
                 
                 // remove connection from audio graph
@@ -5157,7 +4647,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 let audioConnectionIndex = audioGraphConnections.findIndex(el => el.source === cableSource && el.target === cableTarget);
                 // If a match is found, remove the object from the array
                 if (audioConnectionIndex !== -1) {
-                    amDoc.synth.graph.connections.splice(audioConnectionIndex, 1);
+                    currentBranch.synth.graph.connections.splice(audioConnectionIndex, 1);
                 }
             }, onChange, `disconnect ${cableTarget.split('.')[1]} from ${cableSource.split('.')[1]}$PARENTS ${cableSource.split('.')[0]} ${cableTarget.split('.')[0]}`);
 
@@ -5209,7 +4699,6 @@ document.addEventListener("DOMContentLoaded", function () {
     let highlightedEdge = null; // Variable to store the currently highlighted edge
 
     // function to create a cable
-
     function startCable(source, position){
         temporaryCables.local.source = source;
         const mousePos = position;
@@ -5383,7 +4872,7 @@ document.addEventListener("DOMContentLoaded", function () {
     //*
 
     
-    function updateSynthWorklet(cmd, data, structure, changeType){
+    function updateSynthWorklet(cmd, data, structure, changeNode){
 
         switch (cmd) {
             case 'setOutputVolume':
@@ -5399,8 +4888,8 @@ document.addEventListener("DOMContentLoaded", function () {
             break
             case 'loadVersion':
                 // if a loaded version is for a paramChange, no need to recreate the graph
-                // if(changeType && changeType.msg === 'paramUpdate'){
-                //     synthWorklet.port.postMessage({ cmd: 'paramChange', data: changeType });
+                // if(changeNode && changeNode.msg === 'paramUpdate'){
+                //     synthWorklet.port.postMessage({ cmd: 'paramChange', data: changeNode });
                 // } else {
                 synthWorklet.port.postMessage({ 
                     cmd: 'loadVersion', 

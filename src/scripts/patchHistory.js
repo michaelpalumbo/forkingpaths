@@ -1840,7 +1840,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         } else if (func === "userEditable") {
             // Add logic for user-editable step length
         } else if (func === "closenessCentrality") {
-            calculateDistancesFromTableRows()
+            calculateCentrality()
         }
         else if (func === "euclideanDistance") {
             calculateEuclideanDistances()
@@ -1957,7 +1957,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         saveSequencerTable()
         
     }
-    function calculateDistancesFromTableRows() {
+    function calculateCentrality() {
         if(!storedSequencerTable){
             return
         }
@@ -2036,8 +2036,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                         param: node.param,
                         value: node.value
                     }
-                    
-                    //! uncomment this when in patcHistory Script
+                
                     sendToMainApp({
                         cmd: 'playGesture',
                         data: data,
@@ -2046,13 +2045,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     
                     
                 } else {
-                    // process it using the gesturedata assign range data for scaling
-    
-                    // convert the value from the source value's min and max to gestureData.assign.range
-                    // first get the min and max of the source value
-                    // synthParamRanges
-    
-                    
+
                     let value = node.value
                     
                     let storedParam = patchHistory.synthFile.audioGraph.modules[node.parent].moduleSpec.parameters[node.param]
@@ -2067,12 +2060,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             
                 }
     
-                // if(gesture.loop && gesture.length === delay){
-                //     playGesture('repeat')
-                //     // setTimeout(() => {
-                //     //     playGesture('repeat')
-                //     // }, 250);
-                // }
             }, delay);
     
             gesture.scheduler.push(timeoutID)
@@ -2425,9 +2412,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
                     // convert the value from the source value's min and max to gestureData.assign.range
                     // first get the min and max of the source value
-                    // synthParamRanges
-
-                    
+                    // synthParamRanges        
                     let value = node.data.value
                     
                     let storedParam = patchHistory.synthFile.audioGraph.modules[node.data.parents].moduleSpec.parameters[node.data.param]

@@ -1,0 +1,194 @@
+\chapter{Patch History Window Code Excerpts}
+\label{app:patchHistoryExcerpts}
+
+\begin{table}[h]
+  \centering
+  \caption{Overview of Notable Code Listings from patchHistory.js, the script for the Patch History Window}
+  \begin{tabular}{@{}llll@{}}
+    \toprule
+    \textbf{Listing} & \textbf{Function} & \textbf{Purpose} & \textbf{Lines} \\
+    \midrule
+    A.1 & createMerge() & Merges two changeNodes selected by player & 1822–1901 \\
+    A.2 & startCable()      & Create a temporary cable     & 5213-5255 \\
+    A.3 & handleRemoteCables() & Renders temporary cables from peers       & 5257–5314 \\
+    A.4 & isEdgeInCycle() & Graph cycle detection for feedback cables       & 5581–5703 \\
+    A.5 & updateSynthWorklet() & Passes synth graph updates to DSP       & 5386–5455 \\
+    % A.3 & handleRemoteCables() & Renders temporary cables from peers       & 5257–5314 \\
+    % …add more rows here…
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+
+
+\section{playGesture()}
+
+\begin{lstlisting}[language=JavaScript, caption={Plays a gesture when the player either selects its associated changeNode, or from within the Gesture Editor}, label={lst:playgesture-function}]]
+
+function playGesture(mode) {
+        gestureCy.nodes().removeClass('highlighted')
+        // 'repeat' is passed by the function call when looping is on, so we don't want to have to get the same data again if the loop is on
+        if(mode != 'repeat'){
+            // reset the gesture scheduler
+            gestureData.scheduler = [ ]
+            
+            // sort objects by timestamp
+            // sortedGestureNodes = [...gestureData.nodes].sort((a, b) => a.data.timestamp - b.data.timestamp);
+            // Get the starting timestamp (the earliest one)
+            // gestureData.startTime = sortedGestureNodes[0].data.timestamp;
+            // gestureData.endTime = sortedGestureNodes[sortedGestureNodes.length - 1].data.timestamp;
+            // gestureData.length = gestureData.endTime - gestureData.startTime
+        }
+ 
+        // create the scheduler
+        gestureData.nodes.forEach((node) => {
+            const delay = node.data.timestamp - gestureData.startTime; // Calculate delay from the start
+
+            // Use setTimeout to schedule the callback
+            const timeoutID = setTimeout(() => {
+                
+                // highlight the node
+                let hNode = gestureCy.getElementById(node.data.id);
+                hNode.addClass('highlighted');
+
+                if(gestureData.assign.param === 'default'){
+                    
+                    let data = {
+                        parent: node.data.parents,
+                        param: node.data.param,
+                        value: node.data.value
+                    }
+                    sendToMainApp({
+                        cmd: 'playGesture',
+                        data: data,
+                        kind: 'n/a'
+                    })
+
+            
+                } else {
+                    // process it using the gesturedata assign range data for scaling
+
+                    // convert the value from the source value's min and max to gestureData.assign.range
+                    // first get the min and max of the source value
+                    // synthParamRanges        
+                    let value = node.data.value
+                    
+                    let storedParam = patchHistory.synthFile.audioGraph.modules[node.data.parents].moduleSpec.parameters[node.data.param]
+                    let targetParam = gestureData.assign
+                    
+                    sendToMainApp({
+                        cmd: 'playGesture',
+                        data: convertParams(storedParam, targetParam, value),
+                        kind: targetParam.kind
+
+                    })
+            
+                }
+
+                if(UI.gestureEditor.loop.checked && gestureData.length === delay){
+                    playGesture('repeat')
+                    // setTimeout(() => {
+                    //     playGesture('repeat')
+                    // }, 250);
+                }
+            }, delay);
+
+
+
+            gestureData.scheduler.push(timeoutID)
+        });
+
+        // get the end of the gesture
+        const maxDelay = Math.max(...gestureData.nodes.map(node => node.data.timestamp - gestureData.startTime));
+
+        const finalTimeoutID = setTimeout(() => {
+            gestureCy.elements().removeClass('highlighted');
+
+            // if looping is off, set the stop button back to 'play'
+            if (!UI.gestureEditor.loop.checked) {
+                UI.gestureEditor.play.textContent = 'Play'
+            }
+        }, maxDelay + 1); // +1 to ensure it's last
+
+        gestureData.scheduler.push(finalTimeoutID);
+        
+
+
+    }
+\end{lstlisting}
+
+\section{functionName}
+
+\begin{lstlisting}[language=JavaScript, caption={This function plays a gesture when triggered from a sequencer step. It uses the quantizeGesture function to ensure that it plays back entirely within the current step length.}, label={lst:playGestureFromSequencerStep-function}]]
+
+// playback a stored gesture from a sequencer step
+    function playGestureFromSequencerStep(gesture, stepLength){
+        
+        let quantizedGesture = quantizeGesture(gesture, stepLength)
+        
+        // create the scheduler
+        quantizedGesture.forEach((node) => {
+            const delay = node.t * 1000; // (convert to milliseconds)
+            
+            // Use setTimeout to schedule the callback
+            const timeoutID = setTimeout(() => {
+                if(gesture.assign.param === 'default'){
+                    
+                    let data = {
+                        parent: node.parent,
+                        param: node.param,
+                        value: node.value
+                    }
+                
+                    sendToMainApp({
+                        cmd: 'playGesture',
+                        data: data,
+                        kind: 'n/a'
+                    })
+    
+                    
+                } else {
+
+                    let value = node.value
+                    
+                    let storedParam = patchHistory.synthFile.audioGraph.modules[node.parent].moduleSpec.parameters[node.param]
+                    let targetParam = gesture.assign
+                    
+                    sendToMainApp({
+                        cmd: 'playGesture',
+                        data: convertParams(storedParam, targetParam, value),
+                        kind: targetParam.kind
+    
+                    })
+            
+                }
+    
+            }, delay);
+    
+            gesture.scheduler.push(timeoutID)
+        });
+    }
+    
+    function quantizeGesture(gesture, stepLength) {
+        const duration = gesture.endTime - gesture.startTime;
+        const scale = stepLength / duration;
+      
+        // Map each point's timestamp to the new interval [0, stepLength]
+        return gesture.gesturePoints.map(point => ({
+          ...point,
+          t: (point.timestamp - gesture.startTime) * scale
+        }));
+    }
+
+\end{lstlisting}
+
+\section{functionName}
+
+\begin{lstlisting}[language=JavaScript, caption={The createMerge function takes two changeNodes selected by the player and merges them. A new branch is created to store the result of the merge. The unified patch state is then loaded into the main application and rendered in the visual and audio synth graphs.}, label={lst:functionName-function}]]
+
+% INSERT A FUNCTION FROM PATCHHISTORY.JS HERE 
+\end{lstlisting}
+
+\bigskip
+\textbf{Complete File} — The full, commented source is archived at
+\\https://github.com/michaelpalumbo/forkingpaths/blob/dissertationJune/src/scripts/patchHistory.js
