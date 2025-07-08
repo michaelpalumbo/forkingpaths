@@ -3859,9 +3859,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
             break
             case 'updateSequencer':
-                patchHistory = Automerge.change(patchHistory, (patchHistory) => {
-                    patchHistory.sequencer = event.data.data
-                });
+                // sometimes on load, Automerge isn't running before this is called:
+                if(Automerge){
+                    patchHistory = Automerge.change(patchHistory, (patchHistory) => {
+                        patchHistory.sequencer = event.data.data
+                    });
+                }
+
 
                 // sharedSequencerState = event.data.data
 
