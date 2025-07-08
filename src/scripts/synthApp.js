@@ -1644,7 +1644,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const recallMode = getVersionRecallMode();
         // ensure that loadVersion calls from the peer don't make past this point, becuase otherwise they'd send it back and forth forever 
         if (recallMode === 'openLoadVersion' && !fromPeer && !fromPeerSequencer) {
-            console.log('openVersionRecall')
+            // console.log('openVersionRecall')
             openVersionRecall(targetHash, branch);
         }
 
@@ -1670,7 +1670,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function sendSyncMessage() {
         if(!roomDetails.peer1 || !roomDetails.peer2){
-            console.log('not connected to a peer, holding syncMessage transmission')
             return
         }
         if (syncMessageDataChannel && syncMessageDataChannel.readyState === "open") {
@@ -1914,7 +1913,6 @@ document.addEventListener("DOMContentLoaded", function () {
         // 1. Clear the canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        console.log(strokes)
         // 2. Loop through each stroke
         for (const stroke of strokes) {
             if (!stroke.points || stroke.points.length < 2) continue;
@@ -2809,7 +2807,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                             case 'remotePeerCollaborationSettings':
                                 collaborationSettings.remotePeer.versionRecallMode = msg.data.local.versionRecallMode
-                                UI.panel.collaboration.recallMode.remote.innerText = `Remote peer mode: ${msg.data.local.versionRecallMode}`;
+                                // UI.panel.collaboration.recallMode.remote.innerText = `Remote peer mode: ${msg.data.local.versionRecallMode}`;
 
                                 showSnackbar(`Peer ${msg.from} joined this session`, 3000)
                             break
