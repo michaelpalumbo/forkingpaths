@@ -1,3 +1,21 @@
+functions to document:
+
+X playgesture
+
+X playGestureFromSequencerStep()
+
+X midiInput
+
+X updateStepRow()
+
+x monophonic-sequencer 1697-1782 (not documented in thesis.tex)
+
+x polyphonic-sequencer 1787-1848 (not documented in thesis.tex)
+
+x calculateEuclideanDistance() 1915-1959 - not doc'd
+
+calculateCentrality()  1960 - 1999
+
 \chapter{Patch History Window Code Excerpts}
 \label{app:patchHistoryExcerpts}
 
@@ -8,13 +26,15 @@
     \toprule
     \textbf{Listing} & \textbf{Function} & \textbf{Purpose} & \textbf{Lines} \\
     \midrule
-    A.1 & createMerge() & Merges two changeNodes selected by player & 1822–1901 \\
-    A.2 & startCable()      & Create a temporary cable     & 5213-5255 \\
-    A.3 & handleRemoteCables() & Renders temporary cables from peers       & 5257–5314 \\
-    A.4 & isEdgeInCycle() & Graph cycle detection for feedback cables       & 5581–5703 \\
-    A.5 & updateSynthWorklet() & Passes synth graph updates to DSP       & 5386–5455 \\
-    % A.3 & handleRemoteCables() & Renders temporary cables from peers       & 5257–5314 \\
-    % …add more rows here…
+        \ref{lst:playGesture-function} & playGesture() & Gesture playback from selected changeNode & 2370-2459 \\
+        \ref{lst:playGestureFromSequencerStep-function} & playGestureFromSequencerStep() & Gesture playback from sequencer & 2022-2067 \\
+        \ref{lst:midi-input} & MIDI CC Input & Map MIDI CC to graph traversal & 283-315 \\
+        \ref{lst:updateStepRow} & updateStepRow() & Assign a changeNode to a step & 583-660 \\
+        \ref{lst:monophonic-sequencer} & Monophonic Playback & Steps recalled one at a time & 1697-1782 \\
+        \ref{lst:polyphonic-sequencer} & Polyphonic Playback & Each step becomes its own loop & 1787-1848 \\
+        \ref{lst:calculateEuclideanDistance} & calculateEuclideanDistance() & Map changeNode distance onto step length & 1915-1959 \\
+        \ref{lst:calculateCentrality} & calculateCentrality() & Map changeNode centrality onto step length & 1960 - 1999 \\
+
     \bottomrule
   \end{tabular}
 \end{table}
