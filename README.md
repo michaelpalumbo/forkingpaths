@@ -1,6 +1,8 @@
 # Forking Paths
 *A Modular Synthesizer with Patch Histories*  
 
+[Video Demo](https://youtu.be/sdCopOgIWnA)
+
 Forking Paths is a modular synthesizer app that uses software version control concepts to capture every change you make to your patch. These records, which I call *Patch Histories*, let you revisit any previous synth state, make modifications without overwriting, and even sequence the playback of different versions of your patches in a sequencer.  
 
 ELI5: Think of it as getting creative with the undo/redo history of a software synthesizer. 
