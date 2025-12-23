@@ -39,14 +39,6 @@ const App = {
         }
     }
 }
-
-// ICE server configuration (using a public STUN server)
-const configuration = {
-    iceServers: [
-      { urls: 'stun:stun.l.google.com:19302' }
-      // Optionally add TURN servers here
-    ]
-  };
   
 // Create the RTCPeerConnection.
 let syncMessageDataChannel;
@@ -54,9 +46,6 @@ let peerPointerDataChannel
 
 let thisPeerID
 
-let dbSynthFiles = {
-
-}
 // * Audio 
 let audioGraphDirty = false
 let synthWorklet; // the audioWorklet for managing and running the audio graph
@@ -121,6 +110,7 @@ let isSliderDragging = false;
 // store param changes belonging to a single param within a gesture as a list     
 let groupChange = { }
 
+let dbSynthFiles
 // * CYTOSCAPE
 
 let parentNodePositions = []
@@ -2982,8 +2972,24 @@ document.addEventListener("DOMContentLoaded", function () {
         
         ws.onmessage = async (event) => {
             let msg = JSON.parse(event.data)
+            console.log(msg)
             switch(msg.cmd){
+                // we've received a parameter update from a 3rd party (i.e. a max patch)
+                case "externalParamUpdate":
+                    console.log(msg)
 
+                    currentBranch = applyChange(currentBranch, (currentBranch) => {
+                        // currentBranch.synth.graph.modules[groupChange.parentNode].params[groupChange.paramLabel] = groupChange.values[0];
+                        // audioGraphDirty = true;
+                        // set the change type
+                        currentBranch.changeNode = {
+                            msg: 'paramUpdate',
+                            param: msg.param,
+                            parent: "none",
+                            value: msg.value
+                        }
+                    }, onChange, `paramUpdate ${msg.param} = ${msg.value}`);
+                break;
                 // cases to ignore (destined for other clients)
                 case 'patchHistoriesList':
                     //ignore

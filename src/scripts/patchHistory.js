@@ -12,7 +12,7 @@ import { toByteArray, fromByteArray } from 'base64-js';
 const VITE_WS_URL = import.meta.env.VITE_WS_URL
 // const VITE_WS_URL = "wss://historygraphrenderer.onrender.com/10000"
 // const ws = new WebSocket(VITE_WS_URL);
-
+console.log(VITE_WS_URL)
 if(!localStorage.appSettings){
     let settings = {
         sequencer: {
@@ -1356,37 +1356,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         );
 
     }
-
-    // ws.onopen = () => {
-    //     console.log('Connected to WebSocket server at ', VITE_WS_URL);
-    //     // ws.send('Hello, server!');
-    //     sendToMainApp({
-    //         cmd: 'historySequencerReady'
-    //     })
-
-    // };
-    
-    // ws.onmessage = (event) => {
-    //     // console.log('Message from server:', event.data);
-    
-    //     const msg = JSON.parse(event.data)
-    //     switch(msg.cmd){
-    //         case 'historyGraphRenderUpdate':
-    //             historyGraphNodesArray = msg.data.elements.nodes
-
-    //             setGraphFromHistoryRenderer(msg)
-                
-    //             graphJSONstore = msg
-    //         break
-    //     }
-
-        
-    // };
-    
-    // ws.onclose = () => {
-    //     console.log('Disconnected from WebSocket server');
-    // };
-
     
     let ws
     let reconnectInterval = 1000;
