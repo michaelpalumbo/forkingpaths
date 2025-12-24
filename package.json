@@ -52,6 +52,8 @@
     "map-range": "^0.1.2",
     "marked": "^15.0.2",
     "nanotimer": "^0.3.15",
+    "osc": "^2.4.5",
+    "oscquery": "^1.1.1",
     "pako": "^2.1.0",
     "randomcolor": "^0.6.2",
     "scale-number-range": "^1.0.3",

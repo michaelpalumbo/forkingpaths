@@ -3483,6 +3483,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             selectedNode = event.target.data()
            
+            console.log(selectedNode)
+
+            //! fp2 hack: we don't yet have a way to detect gestures coming from external sources, so for now we will ignore the label prop
+            if(!event.target.data().label){
+                return
+            }
             // we want to handle gesture nodes differently than the others
             if(event.target.data().label.split(' ')[0] === 'gesture'){
           

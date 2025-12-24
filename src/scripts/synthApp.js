@@ -28,6 +28,7 @@ import { fromByteArray, toByteArray } from 'base64-js';
 import Chance from 'chance';
 const chance = new Chance();
 
+
 // TODO: look for comments with this: //* old -repo version 
 // TODO: when new automerge implementation is working, remove their related code sections
 
@@ -718,7 +719,8 @@ document.addEventListener("DOMContentLoaded", function () {
                         ms: 500,
                         traversalMode: 'Sequential'
                     },
-                    synth: {}
+                    synth: { },
+                    openSoundControl: { }
                 });
                 console.log("No saved patchHistory found. Starting fresh:", patchHistoryKey);
                 await saveDocument(patchHistoryKey, Automerge.save(patchHistory));
@@ -1133,7 +1135,8 @@ document.addEventListener("DOMContentLoaded", function () {
             },
             synth: {
             },
-            synthFile: synthFile
+            synthFile: synthFile,
+            openSoundControl: { }
 
         }
         if(synthFile){
@@ -1539,6 +1542,9 @@ document.addEventListener("DOMContentLoaded", function () {
         // Use `Automerge.view()` to view the state at this specific point in history
         const historicalView = Automerge.view(requestedDoc, [targetHash]);
 
+        console.log(historicalView)
+
+        oscRecall(historicalView.openSoundControl)
         if(historicalView.drawing){
             loadCanvasVersion(historicalView.drawing)
         }
@@ -1550,7 +1556,7 @@ document.addEventListener("DOMContentLoaded", function () {
         //     requestMergeOrReplace('replace', Automerge.save(historicalView));
         //     return; // Stop here — the update will happen after peer accepts
         // }
-         
+        
         // Check if we're on the head; reset clone if true (so we don't trigger opening a new branch with changes made to head)
         // compare the point in history we want (targetHash) against the head of its associated branch (head)
         if (head === targetHash){
@@ -2972,23 +2978,61 @@ document.addEventListener("DOMContentLoaded", function () {
         
         ws.onmessage = async (event) => {
             let msg = JSON.parse(event.data)
-            console.log(msg)
+            
             switch(msg.cmd){
-                // we've received a parameter update from a 3rd party (i.e. a max patch)
-                case "externalParamUpdate":
-                    console.log(msg)
 
+                case 'namespaceState':
+                    console.log(msg.data)
+                    // in this case, FP is receiving the full state of the OSC namespace in Max including the values. 
+                    // i could be wrong, but i think this would always be the first changeNode in the history graph. maybe it needs to be a new changeNode type?
                     currentBranch = applyChange(currentBranch, (currentBranch) => {
-                        // currentBranch.synth.graph.modules[groupChange.parentNode].params[groupChange.paramLabel] = groupChange.values[0];
-                        // audioGraphDirty = true;
+                        currentBranch.openSoundControl = msg.data
                         // set the change type
                         currentBranch.changeNode = {
                             msg: 'paramUpdate',
-                            param: msg.param,
+                            param: "namespace",
                             parent: "none",
-                            value: msg.value
+                            value: 'placeholder'
                         }
-                    }, onChange, `paramUpdate ${msg.param} = ${msg.value}`);
+                    }, onChange, `paramUpdate namespace = placeholder`);
+                break
+                case 'OSCmsg':
+                    // console.log(msg)
+                    let AP = msg.data.address
+                    let TTS = msg.data.args
+                    
+                    currentBranch = applyChange(currentBranch, (currentBranch) => {
+                        if(!currentBranch.openSoundControl){
+                            currentBranch.openSoundControl = {}
+                        }
+                        if(!currentBranch.openSoundControl[AP]){
+                            currentBranch.openSoundControl[AP] = []
+                        }
+                        currentBranch.openSoundControl[AP] = TTS
+                        // set the change type
+                        currentBranch.changeNode = {
+                            msg: 'paramUpdate',
+                            param: AP,
+                            parent: "none",
+                            value: TTS
+                        }
+                    }, onChange, `paramUpdate ${AP} = ${TTS}`);
+                break;
+                // we've received a parameter update from a 3rd party (i.e. a max patch)
+                case "externalParamUpdate":
+                    // console.log(msg)
+
+                    // currentBranch = applyChange(currentBranch, (currentBranch) => {
+                    //     // currentBranch.synth.graph.modules[groupChange.parentNode].params[groupChange.paramLabel] = groupChange.values[0];
+                    //     // audioGraphDirty = true;
+                    //     // set the change type
+                    //     currentBranch.changeNode = {
+                    //         msg: 'paramUpdate',
+                    //         param: msg.param,
+                    //         parent: "none",
+                    //         value: msg.args
+                    //     }
+                    // }, onChange, `paramUpdate ${msg.param} = ${msg.value}`);
                 break;
                 // cases to ignore (destined for other clients)
                 case 'patchHistoriesList':
@@ -5393,6 +5437,14 @@ document.addEventListener("DOMContentLoaded", function () {
             startAutomerge()
         }
 
+    }
+
+
+    function oscRecall(oscSpace){
+        ws.send(JSON.stringify({
+            cmd: 'oscRecall',
+            data: oscSpace
+        }))
     }
 
     

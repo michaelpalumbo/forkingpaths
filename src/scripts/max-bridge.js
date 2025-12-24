@@ -3,9 +3,30 @@
 // import Max from ('max-api');
 // import WebSocket from ("ws");
 
-const path = require("path");
-const Max = require("max-api");
-const WebSocket = require("ws");
+// const path = require("path");
+// const Max = require("max-api");
+// const WebSocket = require("ws");
+// const { OSCQueryDiscovery } = require("oscquery");
+// import { OSCQueryDiscovery } from "oscquery";
+
+import path from "path";
+import Max from "max-api";
+import WebSocket from "ws";
+import { OSCQueryDiscovery } from "oscquery";
+
+
+async function check(ip, port) {
+  const d = new OSCQueryDiscovery();
+  const svc = await d.queryNewService(ip, port);
+  console.log("OSCQuery server found:", svc.address, svc.port);
+  console.log("Methods:", svc.flat().map(m => m.full_path));
+}
+
+check("127.0.0.1", 30339).catch(err => {
+  console.error("No OSCQuery at that ip:port:", err?.message ?? err);
+});
+
+
 
 console.log("test")
 // Create a connection to your WS server
