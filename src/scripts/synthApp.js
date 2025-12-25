@@ -720,7 +720,8 @@ document.addEventListener("DOMContentLoaded", function () {
                         traversalMode: 'Sequential'
                     },
                     synth: { },
-                    openSoundControl: { }
+                    openSoundControl: { },
+                    parameterSpace: { }
                 });
                 console.log("No saved patchHistory found. Starting fresh:", patchHistoryKey);
                 await saveDocument(patchHistoryKey, Automerge.save(patchHistory));
@@ -1136,7 +1137,8 @@ document.addEventListener("DOMContentLoaded", function () {
             synth: {
             },
             synthFile: synthFile,
-            openSoundControl: { }
+            openSoundControl: { },
+            parameterSpace: { }
 
         }
         if(synthFile){
@@ -3018,6 +3020,27 @@ document.addEventListener("DOMContentLoaded", function () {
                         }
                     }, onChange, `paramUpdate ${AP} = ${TTS}`);
                 break;
+
+                case 'maxParamUpdate':
+                    console.log(msg)
+                    currentBranch = applyChange(currentBranch, (currentBranch) => {
+                        if(!currentBranch.parameterSpace){
+                            currentBranch.parameterSpace = {}
+                        }
+                        if(!currentBranch.parameterSpace[msg.param]){
+                            currentBranch.openSoundControl[msg.param] = []
+                        }
+                        currentBranch.openSoundControl[msg.param] = msg.value
+                        // set the change type
+                        currentBranch.changeNode = {
+                            msg: 'paramUpdate',
+                            param: msg.param,
+                            parent: "none",
+                            value: msg.value
+                        }
+                    }, onChange, `paramUpdate ${msg.param} = ${msg.value}`);
+                break;
+
                 // we've received a parameter update from a 3rd party (i.e. a max patch)
                 case "externalParamUpdate":
                     // console.log(msg)
