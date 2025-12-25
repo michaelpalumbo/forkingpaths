@@ -3049,7 +3049,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             parent: "none",
                             value: msg.value
                         }
-                    }, onChange, `paramUpdate ${msg.param} = ${msg.value}`);
+                    }, onChange, `paramUpdate ${msg.param} = ${msg.value} $external`);
                 break;
 
                 case 'maxCachedState':
@@ -3065,7 +3065,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             parent: "none",
                             value: 'fullState'
                         }
-                    }, onChange, `paramUpdate namespace = placeholder`);
+                    }, onChange, `paramUpdate $external`);
                 break
 
                 // we've received a parameter update from a 3rd party (i.e. a max patch)

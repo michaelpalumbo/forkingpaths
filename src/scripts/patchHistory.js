@@ -542,6 +542,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             // if player clicks the 2nd cell, assign the change node to that row
             row.cells[1].addEventListener("click", () => {
                 if (selectedNode && hid.key.cmd) {
+                    console.log(selectedNode)
                     if(selectedNode.label.split(' ')[0] === 'sequence'){
                         alert('adding sequence changeNodes to a sequencer step not yet supported (coming soon!)')
                     } else {
