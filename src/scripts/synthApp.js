@@ -1547,6 +1547,10 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log(historicalView)
 
         oscRecall(historicalView.openSoundControl)
+
+        // recall max patch state
+        maxStateRecall(historicalView.parameterSpace)
+
         if(historicalView.drawing){
             loadCanvasVersion(historicalView.drawing)
         }
@@ -2983,6 +2987,12 @@ document.addEventListener("DOMContentLoaded", function () {
             
             switch(msg.cmd){
 
+                //! ignore these. they are bootstraps and we can delete these once we merge synthapp.js with server.js for the native version of fp2
+                case 'maxStateRecall':
+                    // do nuthin
+                break
+
+                //? keep this for now in case we can reuse it for other oscQuery-enabled programs
                 case 'namespaceState':
                     console.log(msg.data)
                     // in this case, FP is receiving the full state of the OSC namespace in Max including the values. 
@@ -2998,6 +3008,8 @@ document.addEventListener("DOMContentLoaded", function () {
                         }
                     }, onChange, `paramUpdate namespace = placeholder`);
                 break
+
+                //? keep this for now in case we can reuse it for other oscQuery-enabled programs
                 case 'OSCmsg':
                     // console.log(msg)
                     let AP = msg.data.address
@@ -3022,15 +3034,14 @@ document.addEventListener("DOMContentLoaded", function () {
                 break;
 
                 case 'maxParamUpdate':
-                    console.log(msg)
                     currentBranch = applyChange(currentBranch, (currentBranch) => {
                         if(!currentBranch.parameterSpace){
                             currentBranch.parameterSpace = {}
                         }
                         if(!currentBranch.parameterSpace[msg.param]){
-                            currentBranch.openSoundControl[msg.param] = []
+                            currentBranch.parameterSpace[msg.param] = []
                         }
-                        currentBranch.openSoundControl[msg.param] = msg.value
+                        currentBranch.parameterSpace[msg.param] = msg.value
                         // set the change type
                         currentBranch.changeNode = {
                             msg: 'paramUpdate',
@@ -3040,6 +3051,22 @@ document.addEventListener("DOMContentLoaded", function () {
                         }
                     }, onChange, `paramUpdate ${msg.param} = ${msg.value}`);
                 break;
+
+                case 'maxCachedState':
+                    console.log(msg.data)
+                    // in this case, FP is receiving the full state of the OSC namespace in Max including the values. 
+                    // i could be wrong, but i think this would always be the first changeNode in the history graph. maybe it needs to be a new changeNode type?
+                    currentBranch = applyChange(currentBranch, (currentBranch) => {
+                        currentBranch.parameterSpace = msg.data
+                        // set the change type
+                        currentBranch.changeNode = {
+                            msg: 'paramUpdate',
+                            param: "parameterSpace",
+                            parent: "none",
+                            value: 'fullState'
+                        }
+                    }, onChange, `paramUpdate namespace = placeholder`);
+                break
 
                 // we've received a parameter update from a 3rd party (i.e. a max patch)
                 case "externalParamUpdate":
@@ -5464,9 +5491,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     function oscRecall(oscSpace){
+        // ws.send(JSON.stringify({
+        //     cmd: 'oscRecall',
+        //     data: oscSpace
+        // }))
+    }
+
+    function maxStateRecall(paramState){
         ws.send(JSON.stringify({
-            cmd: 'oscRecall',
-            data: oscSpace
+            cmd: 'maxStateRecall',
+            data: paramState
         }))
     }
 
